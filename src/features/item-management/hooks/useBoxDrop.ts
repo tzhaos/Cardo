@@ -1,0 +1,223 @@
+import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import { useUIStore } from '../../../domains/ui/store/useUIStore';
+import { useWorkspaceStore } from '../../../domains/workspace/store/useWorkspaceStore';
+import type { BoxData } from '../../../types/box';
+import { createExternalItemsFromTransfer, createTextItemFromTransfer } from '../services/createExternalItemsFromTransfer';
+import { parseDraggedBoxItem } from '../services/parseDraggedBoxItem';
+
+interface DropIndicator {
+  id: string;
+  position: 'before' | 'after';
+}
+
+interface UseBoxDropOptions {
+  box: BoxData;
+  onUpdate: (updates: Partial<BoxData>) => void;
+}
+
+export function useBoxDrop({ box, onUpdate }: UseBoxDropOptions) {
+  const draggedItemInfo = useUIStore((state) => state.draggedItemInfo);
+  const setDraggedItemInfo = useUIStore((state) => state.setDraggedItemInfo);
+  const moveItem = useWorkspaceStore((state) => state.moveItem);
+  const bringToFront = useWorkspaceStore((state) => state.bringToFront);
+
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [dropIndicator, setDropIndicator] = useState<DropIndicator | null>(null);
+  const dragCounter = useRef(0);
+
+  useEffect(() => {
+    if (draggedItemInfo) {
+      return;
+    }
+
+    dragCounter.current = 0;
+    setIsDragOver(false);
+    setDropIndicator(null);
+  }, [draggedItemInfo]);
+
+  const clearDropState = () => {
+    dragCounter.current = 0;
+    setIsDragOver(false);
+    setDropIndicator(null);
+  };
+
+  const handleContainerDragEnter = (event: React.DragEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    dragCounter.current += 1;
+
+    if (draggedItemInfo?.sourceBoxId !== box.id) {
+      setIsDragOver(true);
+    }
+  };
+
+  const handleContainerDragLeave = (event: React.DragEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    dragCounter.current -= 1;
+
+    if (dragCounter.current <= 0) {
+      clearDropState();
+    }
+  };
+
+  const handleContainerDragOver = (event: React.DragEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (event.target === event.currentTarget) {
+      setDropIndicator(null);
+    }
+
+    if (draggedItemInfo) {
+      event.dataTransfer.dropEffect = 'move';
+
+      if (draggedItemInfo.sourceBoxId !== box.id) {
+        setIsDragOver(true);
+      }
+
+      return;
+    }
+
+    if (
+      event.dataTransfer.types.includes('application/json') ||
+      event.dataTransfer.types.includes('Files') ||
+      event.dataTransfer.types.includes('text/plain') ||
+      event.dataTransfer.types.includes('text/uri-list')
+    ) {
+      event.dataTransfer.dropEffect = event.dataTransfer.types.includes('application/json')
+        ? 'move'
+        : 'copy';
+      setIsDragOver(true);
+    }
+  };
+
+  const handleContainerDrop = (event: React.DragEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    clearDropState();
+
+    const parsedDragPayload = parseDraggedBoxItem(event.dataTransfer);
+
+    if (parsedDragPayload) {
+      moveItem(parsedDragPayload.itemId, parsedDragPayload.sourceBoxId, box.id);
+      setDraggedItemInfo(null);
+      return;
+    }
+
+    if (draggedItemInfo) {
+      moveItem(draggedItemInfo.itemId, draggedItemInfo.sourceBoxId, box.id);
+      setDraggedItemInfo(null);
+      return;
+    }
+
+    const externalItems = createExternalItemsFromTransfer(event.dataTransfer);
+
+    if (externalItems.length > 0) {
+      onUpdate({ items: [...box.items, ...externalItems] });
+      toast.success(`Added ${externalItems.length} item(s)`);
+      return;
+    }
+
+    const textItem = createTextItemFromTransfer(event.dataTransfer);
+
+    if (textItem) {
+      onUpdate({ items: [...box.items, textItem] });
+      toast.success(`Added ${textItem.type === 'url' ? 'URL' : 'note'}`);
+    }
+  };
+
+  const handleItemDragStart = (event: React.DragEvent, itemId: string) => {
+    if ((event.target as HTMLElement).closest('input, button')) {
+      event.preventDefault();
+      return;
+    }
+
+    bringToFront(box.id);
+    setDraggedItemInfo({ itemId, sourceBoxId: box.id });
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', itemId);
+    event.dataTransfer.setData(
+      'application/json',
+      JSON.stringify({
+        type: 'box-item',
+        itemId,
+        sourceBoxId: box.id,
+      }),
+    );
+  };
+
+  const handleItemDragOver = (event: React.DragEvent, itemId: string) => {
+    event.preventDefault();
+
+    const parsedDragPayload = parseDraggedBoxItem(event.dataTransfer);
+    const sourceBoxId = draggedItemInfo?.sourceBoxId || parsedDragPayload?.sourceBoxId;
+    const draggedItemId = draggedItemInfo?.itemId || parsedDragPayload?.itemId;
+
+    if (!sourceBoxId || !draggedItemId) {
+      setDropIndicator(null);
+      return;
+    }
+
+    event.stopPropagation();
+    event.dataTransfer.dropEffect = 'move';
+
+    if (draggedItemId === itemId) {
+      setDropIndicator(null);
+      return;
+    }
+
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const isAfter =
+      box.layout === 'grid'
+        ? event.clientX > rect.left + rect.width / 2
+        : event.clientY > rect.top + rect.height / 2;
+
+    setDropIndicator({
+      id: itemId,
+      position: isAfter ? 'after' : 'before',
+    });
+  };
+
+  const handleItemDrop = (event: React.DragEvent, itemId: string) => {
+    event.preventDefault();
+
+    const parsedDragPayload = parseDraggedBoxItem(event.dataTransfer);
+    const activeDrag = parsedDragPayload || draggedItemInfo;
+
+    if (!activeDrag) {
+      setDropIndicator(null);
+      return;
+    }
+
+    event.stopPropagation();
+    clearDropState();
+
+    let targetIndex = box.items.findIndex((item) => item.id === itemId);
+
+    if (dropIndicator?.position === 'after') {
+      targetIndex += 1;
+    }
+
+    moveItem(activeDrag.itemId, activeDrag.sourceBoxId, box.id, targetIndex);
+    setDraggedItemInfo(null);
+  };
+
+  return {
+    isDragOver,
+    dropIndicator,
+    handleContainerDragEnter,
+    handleContainerDragLeave,
+    handleContainerDragOver,
+    handleContainerDrop,
+    handleItemDragStart,
+    handleItemDragOver,
+    handleItemDrop,
+    handleItemDragEnd: () => {
+      setDraggedItemInfo(null);
+      setDropIndicator(null);
+    },
+    bringBoxToFront: () => bringToFront(box.id),
+  };
+}
