@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useUIStore } from '../../../domains/ui/store/useUIStore';
 import { useWorkspaceStore } from '../../../domains/workspace/store/useWorkspaceStore';
+import { isFormControlElement } from '../../../lib/dom';
 import type { BoxData } from '../../../types/box';
 import { createExternalItemsFromTransfer, createTextItemFromTransfer } from '../services/createExternalItemsFromTransfer';
 import { parseDraggedBoxItem } from '../services/parseDraggedBoxItem';
@@ -18,6 +19,7 @@ interface UseBoxDropOptions {
 
 export function useBoxDrop({ box, onUpdate }: UseBoxDropOptions) {
   const draggedItemInfo = useUIStore((state) => state.draggedItemInfo);
+  const editingSessionId = useUIStore((state) => state.editingSessionId);
   const setDraggedItemInfo = useUIStore((state) => state.setDraggedItemInfo);
   const moveItem = useWorkspaceStore((state) => state.moveItem);
   const bringToFront = useWorkspaceStore((state) => state.bringToFront);
@@ -27,14 +29,14 @@ export function useBoxDrop({ box, onUpdate }: UseBoxDropOptions) {
   const dragCounter = useRef(0);
 
   useEffect(() => {
-    if (draggedItemInfo) {
+    if (draggedItemInfo && !editingSessionId) {
       return;
     }
 
     dragCounter.current = 0;
     setIsDragOver(false);
     setDropIndicator(null);
-  }, [draggedItemInfo]);
+  }, [draggedItemInfo, editingSessionId]);
 
   const clearDropState = () => {
     dragCounter.current = 0;
@@ -43,6 +45,10 @@ export function useBoxDrop({ box, onUpdate }: UseBoxDropOptions) {
   };
 
   const handleContainerDragEnter = (event: React.DragEvent) => {
+    if (editingSessionId) {
+      return;
+    }
+
     event.preventDefault();
     event.stopPropagation();
     dragCounter.current += 1;
@@ -53,6 +59,11 @@ export function useBoxDrop({ box, onUpdate }: UseBoxDropOptions) {
   };
 
   const handleContainerDragLeave = (event: React.DragEvent) => {
+    if (editingSessionId) {
+      clearDropState();
+      return;
+    }
+
     event.preventDefault();
     event.stopPropagation();
     dragCounter.current -= 1;
@@ -63,6 +74,11 @@ export function useBoxDrop({ box, onUpdate }: UseBoxDropOptions) {
   };
 
   const handleContainerDragOver = (event: React.DragEvent) => {
+    if (editingSessionId) {
+      clearDropState();
+      return;
+    }
+
     event.preventDefault();
     event.stopPropagation();
 
@@ -94,6 +110,11 @@ export function useBoxDrop({ box, onUpdate }: UseBoxDropOptions) {
   };
 
   const handleContainerDrop = (event: React.DragEvent) => {
+    if (editingSessionId) {
+      clearDropState();
+      return;
+    }
+
     event.preventDefault();
     event.stopPropagation();
     clearDropState();
@@ -129,7 +150,7 @@ export function useBoxDrop({ box, onUpdate }: UseBoxDropOptions) {
   };
 
   const handleItemDragStart = (event: React.DragEvent, itemId: string) => {
-    if ((event.target as HTMLElement).closest('input, button')) {
+    if (editingSessionId || isFormControlElement(event.target)) {
       event.preventDefault();
       return;
     }
@@ -149,6 +170,11 @@ export function useBoxDrop({ box, onUpdate }: UseBoxDropOptions) {
   };
 
   const handleItemDragOver = (event: React.DragEvent, itemId: string) => {
+    if (editingSessionId) {
+      setDropIndicator(null);
+      return;
+    }
+
     event.preventDefault();
 
     const parsedDragPayload = parseDraggedBoxItem(event.dataTransfer);
@@ -181,6 +207,11 @@ export function useBoxDrop({ box, onUpdate }: UseBoxDropOptions) {
   };
 
   const handleItemDrop = (event: React.DragEvent, itemId: string) => {
+    if (editingSessionId) {
+      setDropIndicator(null);
+      return;
+    }
+
     event.preventDefault();
 
     const parsedDragPayload = parseDraggedBoxItem(event.dataTransfer);
