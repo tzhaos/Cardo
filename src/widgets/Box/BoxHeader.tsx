@@ -1,7 +1,8 @@
 import { LayoutGrid, List, Lock, Minus, Package, Unlock, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import type { BoxData } from '../../types/box';
+import { useUIStore } from '../../domains/ui/store/useUIStore';
 import { cn } from '../../lib/utils';
+import type { BoxData } from '../../types/box';
 import BoxThemePicker from './BoxThemePicker';
 
 interface BoxHeaderProps {
@@ -25,8 +26,14 @@ export default function BoxHeader({
   onClose,
   onDragStart,
 }: BoxHeaderProps) {
-  const [isEditing, setIsEditing] = useState(false);
+  const editorId = `box:${data.id}:title`;
+  const editingSessionId = useUIStore((state) => state.editingSessionId);
+  const setEditingSessionId = useUIStore((state) => state.setEditingSessionId);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [draftTitle, setDraftTitle] = useState(data.title);
+
+  const isEditing = editingSessionId === editorId;
+  const isInteractionLocked = Boolean(editingSessionId && editingSessionId !== editorId);
 
   useEffect(() => {
     if (!isEditing || !inputRef.current) {
@@ -37,16 +44,60 @@ export default function BoxHeader({
     inputRef.current.select();
   }, [isEditing]);
 
+  useEffect(() => {
+    if (isEditing) {
+      return;
+    }
+
+    setDraftTitle(data.title);
+  }, [data.title, isEditing]);
+
+  useEffect(
+    () => () => {
+      const state = useUIStore.getState();
+
+      if (state.editingSessionId === editorId) {
+        state.setEditingSessionId(null);
+      }
+    },
+    [editorId],
+  );
+
+  const finishEditing = (shouldSave: boolean) => {
+    if (shouldSave) {
+      const nextTitle = draftTitle.trim();
+
+      if (nextTitle && nextTitle !== data.title) {
+        onUpdate({ title: nextTitle });
+      }
+    } else {
+      setDraftTitle(data.title);
+    }
+
+    if (useUIStore.getState().editingSessionId === editorId) {
+      setEditingSessionId(null);
+    }
+  };
+
   return (
     <div
-      className="group flex h-10 shrink-0 select-none items-center justify-between border-b border-white/10 px-3 active:cursor-grabbing cursor-grab"
-      onPointerDown={onDragStart}
+      className={cn(
+        'group flex h-10 shrink-0 select-none items-center justify-between border-b border-white/10 px-3',
+        isEditing || isInteractionLocked ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
+      )}
+      onPointerDown={isEditing || isInteractionLocked ? undefined : onDragStart}
     >
       <div
         className="flex flex-1 items-center gap-2 overflow-hidden"
         onDoubleClick={(event) => {
           event.stopPropagation();
-          setIsEditing(true);
+
+          if (isInteractionLocked) {
+            return;
+          }
+
+          setDraftTitle(data.title);
+          setEditingSessionId(editorId);
         }}
       >
         <Package size={14} className="shrink-0 text-white/60" />
@@ -54,16 +105,25 @@ export default function BoxHeader({
           <input
             ref={inputRef}
             type="text"
-            value={data.title}
-            onChange={(event) => onUpdate({ title: event.target.value })}
-            onBlur={() => setIsEditing(false)}
+            value={draftTitle}
+            onChange={(event) => setDraftTitle(event.target.value)}
+            onBlur={() => finishEditing(true)}
             onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === 'Escape') {
-                setIsEditing(false);
+              event.stopPropagation();
+
+              if (event.key === 'Enter') {
+                finishEditing(true);
+              }
+
+              if (event.key === 'Escape') {
+                finishEditing(false);
               }
             }}
-            className="w-full truncate rounded border-none bg-black/20 px-1 text-sm font-medium text-white/90 outline-none focus:ring-1 focus:ring-white/20"
+            className="w-full truncate rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-sm font-medium text-white/90 outline-none transition-colors focus:border-white/20 focus:ring-2 focus:ring-white/15"
             onPointerDown={(event) => event.stopPropagation()}
+            onPaste={(event) => event.stopPropagation()}
+            onDragStart={(event) => event.stopPropagation()}
+            onDrop={(event) => event.stopPropagation()}
           />
         ) : (
           <span className="truncate px-1 text-sm font-medium text-white/90 pointer-events-none">
@@ -75,7 +135,9 @@ export default function BoxHeader({
       <div
         className={cn(
           'flex shrink-0 items-center gap-1 transition-opacity duration-200',
-          isHovering ? 'opacity-100' : 'opacity-0',
+          isInteractionLocked ? 'pointer-events-none opacity-0' : '',
+          isEditing ? 'pointer-events-none opacity-20' : '',
+          !isEditing && isHovering ? 'opacity-100' : !isEditing ? 'opacity-0' : '',
         )}
       >
         <BoxThemePicker

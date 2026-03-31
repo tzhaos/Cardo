@@ -20,6 +20,7 @@ export default function BoxContainer({ data }: BoxContainerProps) {
   const deleteBox = useWorkspaceStore((state) => state.deleteBox);
 
   const activeBoxId = useUIStore((state) => state.activeBoxId);
+  const editingSessionId = useUIStore((state) => state.editingSessionId);
   const setActiveBox = useUIStore((state) => state.setActiveBox);
   const setSnapPreview = useUIStore((state) => state.setSnapPreview);
 
@@ -52,7 +53,7 @@ export default function BoxContainer({ data }: BoxContainerProps) {
     event.preventDefault();
     event.stopPropagation();
 
-    if (data.isLocked) {
+    if (data.isLocked || editingSessionId) {
       return;
     }
 
@@ -111,7 +112,7 @@ export default function BoxContainer({ data }: BoxContainerProps) {
     event.preventDefault();
     event.stopPropagation();
 
-    if (data.isLocked) {
+    if (data.isLocked || editingSessionId) {
       return;
     }
 
@@ -186,7 +187,13 @@ export default function BoxContainer({ data }: BoxContainerProps) {
       />
 
       {!data.isLocked && (
-        <div className="absolute bottom-0 right-0 h-4 w-4 cursor-se-resize" onMouseDown={handleResize}>
+        <div
+          className={cn(
+            'absolute bottom-0 right-0 h-4 w-4',
+            editingSessionId ? 'cursor-not-allowed opacity-20' : 'cursor-se-resize',
+          )}
+          onMouseDown={handleResize}
+        >
           <svg
             viewBox="0 0 24 24"
             className="h-full w-full text-white/20"

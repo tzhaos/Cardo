@@ -1,3 +1,4 @@
+import { useUIStore } from '../../../domains/ui/store/useUIStore';
 import { cn } from '../../../lib/utils';
 import type { BoxData, BoxItemData } from '../../../types/box';
 
@@ -24,16 +25,20 @@ export default function DraggableItem({
   onDragEnd,
   children,
 }: DraggableItemProps) {
+  const editingSessionId = useUIStore((state) => state.editingSessionId);
+  const dragDisabled = Boolean(editingSessionId);
+
   return (
     <div
       key={item.id}
-      draggable
+      draggable={!dragDisabled}
       onDragStart={(event) => onDragStart(event, item.id)}
       onDragOver={(event) => onDragOver(event, item.id)}
       onDrop={(event) => onDrop(event, item.id)}
       onDragEnd={onDragEnd}
       className={cn(
-        'relative cursor-grab transition-all duration-200 active:cursor-grabbing',
+        'relative transition-all duration-200',
+        dragDisabled ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
         isBeingDragged ? 'scale-95 opacity-30' : 'opacity-100',
       )}
     >
