@@ -188,8 +188,8 @@ export const NEW_BOX_TITLE_KEY: MessageKey = 'box.new';
 
 export const SYSTEM_BOX_TITLE_KEYS = {
   folders: 'box.folders',
-  webpages: 'box.links',
-  clipboard: 'box.notes',
+  links: 'box.links',
+  notes: 'box.notes',
 } as const satisfies Record<string, MessageKey>;
 
 export const ITEM_TYPE_LABEL_KEYS = {

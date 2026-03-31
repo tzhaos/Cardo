@@ -1,23 +1,26 @@
 import type { BoxData } from '../../../types/box';
 import { MESSAGES, NEW_BOX_TITLE_KEY, SYSTEM_BOX_TITLE_KEYS } from '../../i18n/model/messages';
+import { inferSystemBoxRole } from './workspaceRoles';
 
 const ENGLISH_BOX_TITLES = {
   [SYSTEM_BOX_TITLE_KEYS.folders]: MESSAGES.en[SYSTEM_BOX_TITLE_KEYS.folders],
-  [SYSTEM_BOX_TITLE_KEYS.webpages]: MESSAGES.en[SYSTEM_BOX_TITLE_KEYS.webpages],
-  [SYSTEM_BOX_TITLE_KEYS.clipboard]: MESSAGES.en[SYSTEM_BOX_TITLE_KEYS.clipboard],
+  [SYSTEM_BOX_TITLE_KEYS.links]: MESSAGES.en[SYSTEM_BOX_TITLE_KEYS.links],
+  [SYSTEM_BOX_TITLE_KEYS.notes]: MESSAGES.en[SYSTEM_BOX_TITLE_KEYS.notes],
   [NEW_BOX_TITLE_KEY]: MESSAGES.en[NEW_BOX_TITLE_KEY],
 } as const;
 
 export const DEFAULT_SYSTEM_BOX_TITLES = {
   folders: ENGLISH_BOX_TITLES[SYSTEM_BOX_TITLE_KEYS.folders],
-  webpages: ENGLISH_BOX_TITLES[SYSTEM_BOX_TITLE_KEYS.webpages],
-  clipboard: ENGLISH_BOX_TITLES[SYSTEM_BOX_TITLE_KEYS.clipboard],
+  links: ENGLISH_BOX_TITLES[SYSTEM_BOX_TITLE_KEYS.links],
+  notes: ENGLISH_BOX_TITLES[SYSTEM_BOX_TITLE_KEYS.notes],
 } as const;
 
 export const DEFAULT_NEW_BOX_TITLE = ENGLISH_BOX_TITLES[NEW_BOX_TITLE_KEY];
 
-function getSystemTitleKey(box: Pick<BoxData, 'id'>) {
-  return SYSTEM_BOX_TITLE_KEYS[box.id as keyof typeof SYSTEM_BOX_TITLE_KEYS] ?? null;
+function getSystemTitleKey(box: Pick<BoxData, 'id' | 'role'>) {
+  const role = inferSystemBoxRole(box);
+
+  return role ? SYSTEM_BOX_TITLE_KEYS[role] : null;
 }
 
 function getEnglishTitleForKey(titleKey: string | null | undefined) {
@@ -73,6 +76,7 @@ export function normalizeBoxTitle(box: BoxData): BoxData {
 
   return {
     ...box,
+    role: inferSystemBoxRole(box),
     titleKey: null,
   };
 }

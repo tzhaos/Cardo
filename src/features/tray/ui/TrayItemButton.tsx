@@ -1,11 +1,11 @@
 import { Package } from 'lucide-react';
 import { motion } from 'motion/react';
 import { getBoxDisplayTitle } from '../../../domains/workspace/model/boxTitles';
+import { useWorkspaceStore } from '../../../domains/workspace/store/useWorkspaceStore';
 import { cn } from '../../../lib/utils';
-import type { BoxData } from '../../../types/box';
 
 interface TrayItemButtonProps {
-  box: BoxData;
+  boxId: string;
   onClick: () => void;
 }
 
@@ -23,7 +23,13 @@ function getIconGradient(theme: string) {
   return 'bg-gradient-to-br from-zinc-500 to-zinc-700';
 }
 
-export default function TrayItemButton({ box, onClick }: TrayItemButtonProps) {
+export default function TrayItemButton({ boxId, onClick }: TrayItemButtonProps) {
+  const box = useWorkspaceStore((state) => state.boxesById[boxId]);
+
+  if (!box) {
+    return null;
+  }
+
   const displayTitle = getBoxDisplayTitle(box);
 
   return (

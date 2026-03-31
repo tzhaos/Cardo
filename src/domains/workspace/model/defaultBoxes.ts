@@ -7,6 +7,7 @@ export function createInitialBoxes(): BoxData[] {
   return [
     {
       id: 'folders',
+      role: 'folders',
       title: DEFAULT_SYSTEM_BOX_TITLES.folders,
       titleKey: null,
       x: 100,
@@ -22,7 +23,8 @@ export function createInitialBoxes(): BoxData[] {
     },
     {
       id: 'webpages',
-      title: DEFAULT_SYSTEM_BOX_TITLES.webpages,
+      role: 'links',
+      title: DEFAULT_SYSTEM_BOX_TITLES.links,
       titleKey: null,
       x: 450,
       y: 100,
@@ -37,7 +39,8 @@ export function createInitialBoxes(): BoxData[] {
     },
     {
       id: 'clipboard',
-      title: DEFAULT_SYSTEM_BOX_TITLES.clipboard,
+      role: 'notes',
+      title: DEFAULT_SYSTEM_BOX_TITLES.notes,
       titleKey: null,
       x: 800,
       y: 100,
