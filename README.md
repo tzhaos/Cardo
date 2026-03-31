@@ -6,32 +6,34 @@
 
 # KhaosBox
 
-KhaosBox turns the browser new tab page into a desktop-like workspace for collecting links, notes, files, and folders inside movable boxes. It is designed for quick capture, lightweight organization, and fast reopening without leaving your browser flow.
+KhaosBox turns the browser new tab page into a desktop-like workspace for collecting links, notes, files, and folders inside movable boxes. It is built for quick capture, lightweight organization, and fast reopening without leaving the browser.
 
-The project ships as a Manifest V3 browser extension and also includes a Vite-powered web preview so the UI can be developed outside the extension runtime.
+The project ships as a Manifest V3 browser extension and also includes a Vite-powered web preview so the same UI can be developed outside the extension runtime.
 
 ## Highlights
 
-- Desktop-style workspace with draggable, resizable, lockable, minimizable boxes
+- Desktop-style workspace with draggable, resizable, lockable, and minimizable boxes
 - List and grid layouts for each box
 - Support for links, notes, files, and folders
 - Drag-and-drop between boxes, plus in-box reordering with visual drop indicators
-- Smart paste behavior that routes URLs and plain text into the right place
+- Smart paste behavior that turns URLs, plain text, Windows paths, UNC paths, and `file://` URIs into the right item types
 - Pin important items to keep them at the top of a box
+- Per-box theme presets, global light/dark mode, and English/Chinese UI toggle
 - Import and export workspace data as JSON
-- Runtime-aware persistence: `chrome.storage.local` in extension mode, `localStorage` in web preview mode
+- Runtime-aware persistence: `chrome.storage.local` in extension mode and `localStorage` in web preview mode
 
-## How It Works
+## Current Behavior
 
 - The default workspace starts with three boxes: `Folders`, `Links`, and `Notes`.
 - Clicking a link opens it in the browser.
 - Clicking a note copies its content to the clipboard.
 - Clicking a file or folder attempts to open it through a custom `localexplorer:` protocol.
 - Press `Ctrl + \`` to minimize or restore all boxes at once.
-- Pasting text adds a URL to `Links`, plain text to `Notes`, or to the currently active box when one is selected.
+- Pasting text creates a URL, note, file, or folder item based on the pasted content. Without an active box, URLs go to `Links` and other pasted content goes to `Notes`.
+- The bottom dock lets you create boxes, import/export JSON, switch the app theme, and toggle the UI language.
 
 > [!NOTE]
-> File and folder launching depends on a machine-level handler for the `localexplorer:` protocol. This repository triggers that protocol but does not include the local handler itself.
+> File and folder launching still depends on a machine-level handler for the `localexplorer:` protocol. This repository currently includes Windows native-host build artifacts under `native-host/windows/build/win-x64/`, but handler installation and registration are still external to the extension, and no setup guide is documented here yet.
 
 ## Tech Stack
 
@@ -76,6 +78,8 @@ The build outputs are written to `dist/`, including:
 
 - `dist/manifest.json`
 - `dist/extension/pages/newtab.html`
+- `dist/index.html`
+- `dist/_locales/`
 
 ### Preview the production build
 
@@ -105,18 +109,20 @@ After loading, opening a new tab should show the KhaosBox workspace.
 | `npm run preview` | Serve the built output locally |
 | `npm run clean` | Remove the `dist/` directory |
 | `npm run lint` | Run TypeScript type-checking without emitting files |
+| `npm test` | Run the current Node-based test suite |
 
 ## Project Structure
 
 ```text
 .
 |-- brand/                 # Logos and brand assets
-|-- extension/             # Manifest and extension-specific HTML entry points
+|-- extension/             # Manifest, locales, icons, and extension HTML entry points
+|-- native-host/           # Native launcher-related artifacts (currently Windows build output only)
 |-- src/
 |   |-- app/               # App shells and bootstraps
 |   |-- domains/           # Core models, services, and Zustand stores
 |   |-- features/          # User-facing behaviors such as drag/drop and tray interactions
-|   |-- platform/          # Runtime adapters for storage, clipboard, navigation, native bridge
+|   |-- platform/          # Runtime adapters for storage, clipboard, navigation, and native bridge
 |   `-- widgets/           # Reusable UI building blocks
 |-- index.html             # Web preview entry
 |-- vite.config.ts         # Multi-page Vite build for preview + extension pages
@@ -125,10 +131,10 @@ After loading, opening a new tab should show the KhaosBox workspace.
 
 ## Architecture Notes
 
-KhaosBox keeps the UI and runtime concerns separated:
+KhaosBox keeps UI behavior and runtime concerns separated:
 
-- `src/domains` owns workspace data, item creation, layout logic, and persisted state.
-- `src/features` implements flows like box drag/drop, add-item interactions, and tray behavior.
-- `src/platform` switches storage and launch behavior depending on whether the app is running in a browser extension or in the standalone web preview.
+- `src/domains` owns workspace data, item creation, layout logic, import/export, and persisted state.
+- `src/features` implements flows like box drag/drop, add-item interactions, tray actions, and global shortcuts.
+- `src/platform` switches storage, clipboard, navigation, and local resource launching behavior depending on whether the app is running in an extension or in the standalone web preview.
 
 This split makes it easy to iterate on the UI locally while still shipping the same core app inside the extension shell.
