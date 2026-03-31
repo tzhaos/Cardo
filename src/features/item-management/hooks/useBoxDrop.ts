@@ -5,7 +5,9 @@ import { useUIStore } from '../../../domains/ui/store/useUIStore';
 import { useWorkspaceStore } from '../../../domains/workspace/store/useWorkspaceStore';
 import { isFormControlElement } from '../../../lib/dom';
 import type { BoxData } from '../../../types/box';
-import { createExternalItemsFromTransfer, createTextItemFromTransfer } from '../services/createExternalItemsFromTransfer';
+import type { ItemType } from '../../../types/item';
+import { createExternalDraftFromTransfer } from '../services/createExternalDraftFromTransfer';
+import { createTextItemFromTransfer } from '../services/createExternalItemsFromTransfer';
 import { parseDraggedBoxItem } from '../services/parseDraggedBoxItem';
 
 interface DropIndicator {
@@ -16,9 +18,10 @@ interface DropIndicator {
 interface UseBoxDropOptions {
   box: BoxData;
   onUpdate: (updates: Partial<BoxData>) => void;
+  onOpenExternalDraft: (type: Extract<ItemType, 'file' | 'folder'>, title: string) => void;
 }
 
-export function useBoxDrop({ box, onUpdate }: UseBoxDropOptions) {
+export function useBoxDrop({ box, onUpdate, onOpenExternalDraft }: UseBoxDropOptions) {
   const { t } = useI18n();
   const draggedItemInfo = useUIStore((state) => state.draggedItemInfo);
   const editingSessionId = useUIStore((state) => state.editingSessionId);
@@ -100,7 +103,6 @@ export function useBoxDrop({ box, onUpdate }: UseBoxDropOptions) {
 
     if (
       event.dataTransfer.types.includes('application/json') ||
-      event.dataTransfer.types.includes('Files') ||
       event.dataTransfer.types.includes('text/plain') ||
       event.dataTransfer.types.includes('text/uri-list')
     ) {
@@ -121,6 +123,16 @@ export function useBoxDrop({ box, onUpdate }: UseBoxDropOptions) {
     event.stopPropagation();
     clearDropState();
 
+    if (event.dataTransfer.types.includes('Files')) {
+      const externalDraft = createExternalDraftFromTransfer(event.dataTransfer);
+
+      if (externalDraft) {
+        onOpenExternalDraft(externalDraft.type, externalDraft.title);
+      }
+
+      return;
+    }
+
     const parsedDragPayload = parseDraggedBoxItem(event.dataTransfer);
 
     if (parsedDragPayload) {
@@ -132,14 +144,6 @@ export function useBoxDrop({ box, onUpdate }: UseBoxDropOptions) {
     if (draggedItemInfo) {
       moveItem(draggedItemInfo.itemId, draggedItemInfo.sourceBoxId, box.id);
       setDraggedItemInfo(null);
-      return;
-    }
-
-    const externalItems = createExternalItemsFromTransfer(event.dataTransfer);
-
-    if (externalItems.length > 0) {
-      onUpdate({ items: [...box.items, ...externalItems] });
-      toast.success(t('toast.addedItems', { count: externalItems.length }));
       return;
     }
 

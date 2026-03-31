@@ -2,6 +2,7 @@ import type { BoxItemData } from '../../../types/box';
 import type { ItemType } from '../../../types/item';
 import { deriveItemTitle } from './deriveItemTitle';
 import { isUrlText } from './isUrlText';
+import { parseLocalPathText } from './parseLocalPathText';
 
 interface CreateItemInput {
   type: ItemType;
@@ -23,6 +24,15 @@ export function createItem({ type, content, title, isPinned = false }: CreateIte
 }
 
 export function createItemFromText(text: string) {
+  const parsedLocalPath = parseLocalPathText(text);
+
+  if (parsedLocalPath) {
+    return createItem({
+      type: parsedLocalPath.type,
+      content: parsedLocalPath.normalizedPath,
+    });
+  }
+
   const type: ItemType = isUrlText(text) ? 'url' : 'note';
   return createItem({ type, content: text });
 }
