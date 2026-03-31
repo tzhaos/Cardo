@@ -124,103 +124,97 @@ export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: Ite
 
   const contentLabel =
     item.type === 'note' ? t('item.content') : item.type === 'url' ? t('item.address') : t('item.path');
-  const editorLabel =
-    item.type === 'folder'
-      ? t('item.folderEditor')
-      : item.type === 'file'
-        ? t('item.fileEditor')
-        : item.type === 'url'
-          ? t('item.linkEditor')
-          : t('item.noteEditor');
+  const usesSingleLineContentEditor = item.type !== 'note';
+  const textInputClassName =
+    'w-full rounded-xl border border-white/10 bg-black/35 px-3 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-white/25 focus:border-white/20 focus:ring-2 focus:ring-white/10';
 
   if (isEditing) {
     return (
       <div
         className={cn(
-          'relative flex flex-col overflow-hidden rounded-2xl border border-white/15 bg-neutral-950/80 shadow-[0_20px_45px_rgba(0,0,0,0.4)] backdrop-blur-xl',
-          layout === 'grid' ? 'min-h-[230px]' : 'min-h-[210px]',
+          'relative overflow-hidden rounded-2xl border border-white/15 bg-neutral-950/85 shadow-[0_20px_45px_rgba(0,0,0,0.4)] backdrop-blur-xl',
+          layout === 'grid' ? 'min-h-[210px]' : '',
         )}
         onClick={stopInteraction}
         onPointerDown={stopInteraction}
       >
-        <div className="flex items-center justify-between border-b border-white/10 px-3 py-2.5">
-          <div className="flex min-w-0 items-center gap-2">
-            <div className="rounded-xl border border-white/10 bg-white/5 p-2 text-white/80">{icon}</div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-white/90">{item.title}</p>
-              <p className="text-[10px] uppercase tracking-[0.18em] text-white/40">
-                {editorLabel}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={handleCancel}
-            className="rounded-lg border border-white/10 p-2 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
-            title={t('item.cancelEditing')}
-          >
-            <X size={14} />
-          </button>
-        </div>
+        <div className="flex items-start gap-3 p-3">
+          <div className="flex min-w-0 flex-1 flex-col gap-2.5">
+            <label className="block">
+              <input
+                ref={titleInputRef}
+                value={editTitle}
+                onChange={(event) => setEditTitle(event.target.value)}
+                onKeyDown={handleEditorKeyDown}
+                onPointerDown={stopInteraction}
+                onPaste={stopInteraction}
+                onDragStart={stopInteraction}
+                onDrop={stopInteraction}
+                className={cn(
+                  textInputClassName,
+                  'h-11 border-white/12 bg-white/[0.04] text-lg font-semibold text-white placeholder:text-white/35',
+                )}
+                placeholder={t('item.title')}
+                aria-label={t('item.title')}
+              />
+            </label>
 
-        <div className="flex flex-1 flex-col gap-3 p-3">
-          <label className="flex flex-col gap-1.5">
-            <span className="text-[10px] uppercase tracking-[0.16em] text-white/40">
-              {t('item.title')}
-            </span>
-            <input
-              ref={titleInputRef}
-              value={editTitle}
-              onChange={(event) => setEditTitle(event.target.value)}
-              onKeyDown={handleEditorKeyDown}
-              onPointerDown={stopInteraction}
-              onPaste={stopInteraction}
-              onDragStart={stopInteraction}
-              onDrop={stopInteraction}
-              className="w-full rounded-xl border border-white/10 bg-black/35 px-3 py-2.5 text-sm font-medium text-white outline-none transition-colors placeholder:text-white/25 focus:border-white/20 focus:ring-2 focus:ring-white/10"
-              placeholder={t('item.title')}
-            />
-          </label>
-
-          <label className="flex flex-1 flex-col gap-1.5">
-            <span className="text-[10px] uppercase tracking-[0.16em] text-white/40">
-              {contentLabel}
-            </span>
-            <textarea
-              value={editContent}
-              onChange={(event) => setEditContent(event.target.value)}
-              onKeyDown={handleEditorKeyDown}
-              onPointerDown={stopInteraction}
-              onPaste={stopInteraction}
-              onDragStart={stopInteraction}
-              onDrop={stopInteraction}
-              className={cn(
-                'min-h-[92px] flex-1 resize-none rounded-xl border border-white/10 bg-black/35 px-3 py-2.5 text-sm text-white/80 outline-none transition-colors placeholder:text-white/25 focus:border-white/20 focus:ring-2 focus:ring-white/10',
-                item.type === 'file' || item.type === 'folder' || item.type === 'url'
-                  ? 'font-mono text-[12px]'
-                  : '',
+            <label className="block flex-1">
+              {usesSingleLineContentEditor ? (
+                <input
+                  value={editContent}
+                  onChange={(event) => setEditContent(event.target.value)}
+                  onKeyDown={handleEditorKeyDown}
+                  onPointerDown={stopInteraction}
+                  onPaste={stopInteraction}
+                  onDragStart={stopInteraction}
+                  onDrop={stopInteraction}
+                  className={cn(
+                    textInputClassName,
+                    'h-9 border-white/10 bg-white/[0.03] text-white/80',
+                    'font-mono text-[12px]',
+                  )}
+                  placeholder={contentLabel}
+                  aria-label={contentLabel}
+                />
+              ) : (
+                <textarea
+                  value={editContent}
+                  onChange={(event) => setEditContent(event.target.value)}
+                  onKeyDown={handleEditorKeyDown}
+                  onPointerDown={stopInteraction}
+                  onPaste={stopInteraction}
+                  onDragStart={stopInteraction}
+                  onDrop={stopInteraction}
+                  className={cn(
+                    textInputClassName,
+                    'min-h-[96px] resize-none border-white/10 bg-white/[0.03] text-white/80',
+                  )}
+                  placeholder={contentLabel}
+                  aria-label={contentLabel}
+                />
               )}
-              placeholder={contentLabel}
-            />
-          </label>
+            </label>
+          </div>
 
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-[11px] text-white/35">{t('item.saveHint')}</p>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleCancel}
-                className="rounded-xl border border-white/10 px-3 py-2 text-xs font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={!editContent.trim()}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-white/12 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-white/18 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <Check size={14} />
-                {t('item.saveChanges')}
-              </button>
-            </div>
+          <div className="flex shrink-0 items-start gap-2 pt-1">
+            <button
+              onClick={handleSave}
+              disabled={!editContent.trim()}
+              className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-[0_12px_24px_rgba(16,185,129,0.22)] transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-35"
+              title={t('item.saveChanges')}
+              aria-label={t('item.saveChanges')}
+            >
+              <Check size={18} />
+            </button>
+            <button
+              onClick={handleCancel}
+              className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-500 text-white shadow-[0_12px_24px_rgba(239,68,68,0.2)] transition-colors hover:bg-red-400"
+              title={t('item.cancelEditing')}
+              aria-label={t('item.cancelEditing')}
+            >
+              <X size={18} />
+            </button>
           </div>
         </div>
       </div>

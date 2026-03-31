@@ -11,9 +11,10 @@ interface UseAddItemOptions {
   showAddMenu: boolean;
   onUpdate: (updates: Partial<BoxData>) => void;
   onClose: () => void;
+  onOpen: () => void;
 }
 
-export function useAddItem({ box, showAddMenu, onUpdate, onClose }: UseAddItemOptions) {
+export function useAddItem({ box, showAddMenu, onUpdate, onClose, onOpen }: UseAddItemOptions) {
   const { t } = useI18n();
   const [addingType, setAddingType] = useState<ItemType | null>(null);
   const [newItemTitle, setNewItemTitle] = useState('');
@@ -47,59 +48,6 @@ export function useAddItem({ box, showAddMenu, onUpdate, onClose }: UseAddItemOp
   };
 
   const handleAddItemType = async (type: ItemType) => {
-    if (type === 'file') {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.multiple = true;
-      input.onchange = (event) => {
-        const files = Array.from((event.target as HTMLInputElement).files || []);
-
-        if (files.length === 0) {
-          return;
-        }
-
-        appendItems(
-          files.map((file) =>
-            createItem({
-              type: 'file',
-              title: file.name,
-              content: file.webkitRelativePath || file.name,
-            }),
-          ),
-        );
-        toast.success(t('toast.addedFiles', { count: files.length }));
-        closeComposer();
-      };
-      input.click();
-      return;
-    }
-
-    if (type === 'folder') {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.webkitdirectory = true;
-      input.onchange = (event) => {
-        const files = Array.from((event.target as HTMLInputElement).files || []);
-
-        if (files.length === 0) {
-          return;
-        }
-
-        const rootName = files[0].webkitRelativePath.split('/')[0] || t('itemType.folder');
-        appendItems([
-          createItem({
-            type: 'folder',
-            title: rootName,
-            content: rootName,
-          }),
-        ]);
-        toast.success(t('toast.addedFolder', { name: rootName }));
-        closeComposer();
-      };
-      input.click();
-      return;
-    }
-
     if (type === 'note') {
       try {
         const clipboardText = await navigator.clipboard.readText();
@@ -117,6 +65,13 @@ export function useAddItem({ box, showAddMenu, onUpdate, onClose }: UseAddItemOp
 
     setAddingType(type);
     setNewItemTitle('');
+    setNewItemContent('');
+  };
+
+  const openDraft = (type: Extract<ItemType, 'file' | 'folder'>, title = '') => {
+    onOpen();
+    setAddingType(type);
+    setNewItemTitle(title);
     setNewItemContent('');
   };
 
@@ -147,6 +102,7 @@ export function useAddItem({ box, showAddMenu, onUpdate, onClose }: UseAddItemOp
     setNewItemTitle,
     setNewItemContent,
     handleAddItemType,
+    openDraft,
     confirmAdd,
     cancelAdd: addingType ? returnToTypePicker : closeComposer,
   };

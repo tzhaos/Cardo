@@ -34,6 +34,7 @@ export default function BoxContent({
     setNewItemTitle,
     setNewItemContent,
     handleAddItemType,
+    openDraft,
     confirmAdd,
     cancelAdd,
   } = useAddItem({
@@ -41,6 +42,7 @@ export default function BoxContent({
     showAddMenu,
     onUpdate,
     onClose: () => setShowAddMenu(false),
+    onOpen: () => setShowAddMenu(true),
   });
 
   const {
@@ -58,6 +60,10 @@ export default function BoxContent({
   } = useBoxDrop({
     box: data,
     onUpdate,
+    onOpenExternalDraft: (type, title) => {
+      setShowAddMenu(true);
+      openDraft(type, title);
+    },
   });
 
   const renderItemContent = (item: BoxItemData) => {
