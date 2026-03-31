@@ -1,7 +1,8 @@
 import type { BoxData } from '../../../types/box';
 import { DEFAULT_SYSTEM_BOX_TITLES } from './boxTitles';
+import { DEFAULT_BOX_THEME } from './boxThemes';
 
-export const DEFAULT_BOX_THEME = 'bg-zinc-900/90 border-zinc-700';
+export { DEFAULT_BOX_THEME } from './boxThemes';
 
 export function createInitialBoxes(): BoxData[] {
   return [

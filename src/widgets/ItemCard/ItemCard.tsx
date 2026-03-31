@@ -126,13 +126,13 @@ export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: Ite
     item.type === 'note' ? t('item.content') : item.type === 'url' ? t('item.address') : t('item.path');
   const usesSingleLineContentEditor = item.type !== 'note';
   const textInputClassName =
-    'w-full rounded-xl border border-white/10 bg-black/35 px-3 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-white/25 focus:border-white/20 focus:ring-2 focus:ring-white/10';
+    'kb-item-input w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition-colors';
 
   if (isEditing) {
     return (
       <div
         className={cn(
-          'relative overflow-hidden rounded-2xl border border-white/15 bg-neutral-950/85 shadow-[0_20px_45px_rgba(0,0,0,0.4)] backdrop-blur-xl',
+          'kb-item-editor relative overflow-hidden rounded-2xl border backdrop-blur-xl',
           layout === 'grid' ? 'min-h-[210px]' : '',
         )}
         onClick={stopInteraction}
@@ -150,10 +150,7 @@ export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: Ite
                 onPaste={stopInteraction}
                 onDragStart={stopInteraction}
                 onDrop={stopInteraction}
-                className={cn(
-                  textInputClassName,
-                  'h-11 border-white/12 bg-white/[0.04] text-lg font-semibold text-white placeholder:text-white/35',
-                )}
+                className={cn(textInputClassName, 'h-11 text-lg font-semibold')}
                 placeholder={t('item.title')}
                 aria-label={t('item.title')}
               />
@@ -169,11 +166,7 @@ export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: Ite
                   onPaste={stopInteraction}
                   onDragStart={stopInteraction}
                   onDrop={stopInteraction}
-                  className={cn(
-                    textInputClassName,
-                    'h-9 border-white/10 bg-white/[0.03] text-white/80',
-                    'font-mono text-[12px]',
-                  )}
+                  className={cn(textInputClassName, 'h-9 font-mono text-[12px]')}
                   placeholder={contentLabel}
                   aria-label={contentLabel}
                 />
@@ -186,10 +179,7 @@ export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: Ite
                   onPaste={stopInteraction}
                   onDragStart={stopInteraction}
                   onDrop={stopInteraction}
-                  className={cn(
-                    textInputClassName,
-                    'min-h-[96px] resize-none border-white/10 bg-white/[0.03] text-white/80',
-                  )}
+                  className={cn(textInputClassName, 'min-h-[96px] resize-none')}
                   placeholder={contentLabel}
                   aria-label={contentLabel}
                 />
@@ -233,8 +223,8 @@ export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: Ite
       className={cn(
         'group rounded-xl border border-transparent transition-all duration-200',
         layout === 'grid'
-          ? 'relative flex cursor-pointer flex-col items-center gap-2 p-3 hover:border-white/10 hover:bg-white/10 hover:shadow-md'
-          : 'flex shrink-0 cursor-pointer items-center justify-between p-2.5 hover:border-white/5 hover:bg-white/10',
+          ? 'kb-item-card-grid relative flex cursor-pointer flex-col items-center gap-2 p-3'
+          : 'kb-item-card-list flex shrink-0 cursor-pointer items-center justify-between p-2.5',
         isInteractionLocked ? 'cursor-default opacity-55' : '',
       )}
     >
@@ -247,7 +237,7 @@ export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: Ite
       >
         <div
           className={cn(
-            'relative rounded-xl bg-black/20 shadow-inner transition-transform duration-300',
+            'kb-item-icon-chip relative rounded-xl shadow-inner transition-transform duration-300',
             layout === 'grid' ? 'p-2 group-hover:scale-110' : 'shrink-0 rounded-lg p-1.5 group-hover:scale-105',
           )}
         >
@@ -265,13 +255,13 @@ export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: Ite
         </div>
 
         {layout === 'grid' ? (
-          <span className="w-full break-words px-1 text-center text-xs font-medium leading-tight text-white/90 line-clamp-2">
+          <span className="kb-item-title w-full break-words px-1 text-center text-xs font-medium leading-tight line-clamp-2">
             {item.title}
           </span>
         ) : (
           <div className="flex flex-col justify-center overflow-hidden">
-            <span className="truncate text-sm font-medium text-white/90">{item.title}</span>
-            <span className="mt-0.5 truncate text-[11px] text-white/50">{item.content}</span>
+            <span className="kb-item-title truncate text-sm font-medium">{item.title}</span>
+            <span className="kb-item-content mt-0.5 truncate text-[11px]">{item.content}</span>
           </div>
         )}
       </div>
@@ -293,8 +283,8 @@ export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: Ite
           className={cn(
             'transition-colors',
             layout === 'grid'
-              ? 'rounded-md border border-white/10 bg-zinc-800/90 p-1.5 text-white/80 shadow-sm backdrop-blur-sm hover:bg-zinc-700 hover:text-white'
-              : 'rounded-md p-1.5 text-white/50 hover:bg-white/15 hover:text-white',
+              ? 'kb-item-grid-control rounded-md border p-1.5 shadow-sm backdrop-blur-sm'
+              : 'kb-item-list-control rounded-md p-1.5',
           )}
           title={item.isPinned ? t('item.unpin') : layout === 'grid' ? t('item.pin') : t('item.pinToTop')}
         >
@@ -309,8 +299,8 @@ export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: Ite
           className={cn(
             'transition-colors',
             layout === 'grid'
-              ? 'rounded-md border border-white/10 bg-zinc-800/90 p-1.5 text-white/80 shadow-sm backdrop-blur-sm hover:bg-blue-500/80 hover:text-white'
-              : 'rounded-md p-1.5 text-white/50 hover:bg-blue-500/20 hover:text-blue-400',
+              ? 'kb-item-grid-control rounded-md border p-1.5 shadow-sm backdrop-blur-sm hover:bg-blue-500/80 hover:text-white'
+              : 'kb-item-list-control rounded-md p-1.5 hover:bg-blue-500/20 hover:text-blue-400',
           )}
           title={t('item.edit')}
         >
@@ -324,8 +314,8 @@ export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: Ite
           className={cn(
             'transition-colors',
             layout === 'grid'
-              ? 'rounded-md border border-white/10 bg-zinc-800/90 p-1.5 text-white/80 shadow-sm backdrop-blur-sm hover:bg-red-500/80 hover:text-white'
-              : 'rounded-md p-1.5 text-white/50 hover:bg-red-500/20 hover:text-red-400',
+              ? 'kb-item-grid-control rounded-md border p-1.5 shadow-sm backdrop-blur-sm hover:bg-red-500/80 hover:text-white'
+              : 'kb-item-list-control rounded-md p-1.5 hover:bg-red-500/20 hover:text-red-400',
           )}
           title={t('item.delete')}
         >

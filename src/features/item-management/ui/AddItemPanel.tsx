@@ -38,7 +38,7 @@ export default function AddItemPanel({
       <button
         onClick={onOpen}
         className={cn(
-          'flex items-center justify-center gap-2 rounded-lg border border-dashed border-white/20 text-white/40 transition-all hover:border-white/40 hover:bg-white/5 hover:text-white/80',
+          'kb-add-trigger flex items-center justify-center gap-2 rounded-lg border border-dashed transition-all',
           layout === 'grid' ? 'aspect-square flex-col' : 'mt-2 h-10 w-full shrink-0',
         )}
       >
@@ -51,15 +51,15 @@ export default function AddItemPanel({
   return (
     <div
       className={cn(
-        'flex flex-col gap-1 rounded-lg border border-dashed border-white/20 bg-white/5 p-2',
+        'kb-add-panel flex flex-col gap-1 rounded-lg border border-dashed p-2',
         layout === 'grid' ? 'col-span-3' : 'mt-2 w-full shrink-0',
       )}
     >
       {addingType ? (
         <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between px-1 text-xs text-white/50">
+          <div className="kb-subtle-text flex items-center justify-between px-1 text-xs">
             <span>{t('addItem.addType', { type: t(ITEM_TYPE_LABEL_KEYS[addingType]) })}</span>
-            <button onClick={onCancel} className="hover:text-white">
+            <button onClick={onCancel} className="kb-secondary-button transition-colors">
               <X size={12} />
             </button>
           </div>
@@ -69,7 +69,7 @@ export default function AddItemPanel({
             value={newItemTitle}
             onChange={(event) => onTitleChange(event.target.value)}
             placeholder={t('addItem.titleOptional')}
-            className="w-full rounded bg-black/40 px-2 py-1.5 text-xs text-white outline-none placeholder:text-white/30 focus:ring-1 focus:ring-white/40"
+            className="kb-add-input w-full rounded px-2 py-1.5 text-xs outline-none"
           />
 
           <input
@@ -91,20 +91,20 @@ export default function AddItemPanel({
                 onCancel();
               }
             }}
-            className="w-full rounded bg-black/40 px-2 py-1.5 text-xs text-white outline-none placeholder:text-white/30 focus:ring-1 focus:ring-white/40"
+            className="kb-add-input w-full rounded px-2 py-1.5 text-xs outline-none"
           />
 
           <div className="mt-1 flex justify-end gap-1">
             <button
               onClick={onCancel}
-              className="rounded px-2 py-1 text-xs text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+              className="kb-secondary-button rounded px-2 py-1 text-xs transition-colors"
             >
               {t('common.cancel')}
             </button>
             <button
               onClick={onConfirm}
               disabled={!newItemContent.trim()}
-              className="rounded bg-white/10 px-2 py-1 text-xs text-white transition-colors hover:bg-white/20 disabled:opacity-50"
+              className="kb-primary-button rounded px-2 py-1 text-xs transition-colors disabled:opacity-50"
             >
               {t('common.add')}
             </button>
@@ -112,9 +112,9 @@ export default function AddItemPanel({
         </div>
       ) : (
         <>
-          <div className="flex items-center justify-between px-1 text-xs text-white/50">
+          <div className="kb-subtle-text flex items-center justify-between px-1 text-xs">
             <span>{t('addItem.chooseType')}</span>
-            <button onClick={onCancel} className="hover:text-white">
+            <button onClick={onCancel} className="kb-secondary-button transition-colors">
               <X size={12} />
             </button>
           </div>
@@ -122,28 +122,28 @@ export default function AddItemPanel({
           <div className="grid grid-cols-2 gap-1">
             <button
               onClick={() => onStartAdd('file')}
-              className="flex items-center gap-2 rounded p-1.5 text-xs text-white/80 transition-colors hover:bg-white/10"
+              className="kb-secondary-button flex items-center gap-2 rounded p-1.5 text-xs transition-colors"
             >
               <File size={12} className="text-blue-400" />
               {t(ITEM_TYPE_PLURAL_KEYS.file)}
             </button>
             <button
               onClick={() => onStartAdd('folder')}
-              className="flex items-center gap-2 rounded p-1.5 text-xs text-white/80 transition-colors hover:bg-white/10"
+              className="kb-secondary-button flex items-center gap-2 rounded p-1.5 text-xs transition-colors"
             >
               <Folder size={12} className="text-amber-400" />
               {t(ITEM_TYPE_PLURAL_KEYS.folder)}
             </button>
             <button
               onClick={() => onStartAdd('url')}
-              className="flex items-center gap-2 rounded p-1.5 text-xs text-white/80 transition-colors hover:bg-white/10"
+              className="kb-secondary-button flex items-center gap-2 rounded p-1.5 text-xs transition-colors"
             >
               <LinkIcon size={12} className="text-emerald-400" />
               {t(ITEM_TYPE_PLURAL_KEYS.url)}
             </button>
             <button
               onClick={() => onStartAdd('note')}
-              className="flex items-center gap-2 rounded p-1.5 text-xs text-white/80 transition-colors hover:bg-white/10"
+              className="kb-secondary-button flex items-center gap-2 rounded p-1.5 text-xs transition-colors"
             >
               <ClipboardPaste size={12} className="text-purple-400" />
               {t(ITEM_TYPE_PLURAL_KEYS.note)}

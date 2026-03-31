@@ -133,7 +133,7 @@ export default function BoxContent({
 
       {pinnedItems.map(renderDraggableItem)}
       {pinnedItems.length > 0 && data.layout === 'list' && (
-        <div className="my-1 h-px shrink-0 bg-white/10" />
+        <div className="kb-list-divider my-1 h-px shrink-0" />
       )}
       {regularItems.map(renderDraggableItem)}
 

@@ -8,7 +8,6 @@ const EN_MESSAGES = {
   'dock.importJson': 'Import JSON',
   'dock.switchToEnglish': 'Switch to English',
   'dock.switchToChinese': 'Switch to Chinese',
-  'dock.languageBadge': 'EN',
   'dock.exportFilePrefix': 'khaosbox-backup',
   'workspace.hideAllBoxes': 'Hiding all boxes',
   'workspace.showAllBoxes': 'Showing all boxes',
@@ -87,6 +86,8 @@ const EN_MESSAGES = {
   'item.edit': 'Edit',
   'item.delete': 'Delete',
   'dropZone.add': 'Drop to add',
+  'dock.switchToLightTheme': 'Switch to light theme',
+  'dock.switchToDarkTheme': 'Switch to dark theme',
 } as const;
 
 export type MessageKey = keyof typeof EN_MESSAGES;
@@ -102,7 +103,6 @@ export const MESSAGES: Record<AppLocale, MessageDictionary> = {
     'dock.importJson': '导入 JSON',
     'dock.switchToEnglish': '切换到 English',
     'dock.switchToChinese': '切换到 中文',
-    'dock.languageBadge': '中',
     'dock.exportFilePrefix': 'khaosbox-备份',
     'workspace.hideAllBoxes': '隐藏全部盒子',
     'workspace.showAllBoxes': '显示全部盒子',
@@ -181,6 +181,8 @@ export const MESSAGES: Record<AppLocale, MessageDictionary> = {
     'item.edit': '编辑',
     'item.delete': '删除',
     'dropZone.add': '拖放添加',
+    'dock.switchToLightTheme': '切换到明亮主题',
+    'dock.switchToDarkTheme': '切换到暗夜主题',
   },
 };
 
