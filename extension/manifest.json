@@ -13,6 +13,5 @@
   "permissions": ["storage"],
   "chrome_url_overrides": {
     "newtab": "extension/pages/newtab.html"
-  },
-  "options_page": "extension/pages/options.html"
+  }
 }

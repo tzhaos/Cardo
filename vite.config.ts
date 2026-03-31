@@ -38,7 +38,6 @@ export default defineConfig(() => {
         input: {
           preview: path.resolve(__dirname, 'index.html'),
           newtab: path.resolve(__dirname, 'extension/pages/newtab.html'),
-          options: path.resolve(__dirname, 'extension/pages/options.html'),
         },
       },
     },

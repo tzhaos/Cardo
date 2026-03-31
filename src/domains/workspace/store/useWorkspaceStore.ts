@@ -3,7 +3,6 @@ import { persist } from 'zustand/middleware';
 import type { BoxData } from '../../../types/box';
 import { createItemFromText } from '../../items/services/createItem';
 import { createPlatformJSONStorage } from '../../../platform/storage/createPlatformStateStorage';
-import { useSettingsStore } from '../../settings/store/useSettingsStore';
 import { useUIStore } from '../../ui/store/useUIStore';
 import { createInitialBoxes, DEFAULT_BOX_THEME, getMaxZIndex } from '../model/defaultBoxes';
 
@@ -64,7 +63,6 @@ export const useWorkspaceStore = create<WorkspaceState>()(
 
       createBox: () => {
         const nextZIndex = get().maxZIndex + 1;
-        const defaultNewBoxLayout = useSettingsStore.getState().defaultNewBoxLayout;
 
         const newBox: BoxData = {
           id: `box-${Date.now()}`,
@@ -76,7 +74,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           theme: DEFAULT_BOX_THEME,
           isLocked: false,
           isMinimized: false,
-          layout: defaultNewBoxLayout,
+          layout: 'list',
           zIndex: nextZIndex,
           items: [],
         };

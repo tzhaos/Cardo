@@ -1,5 +1,4 @@
 import { toast } from 'sonner';
-import { useSettingsStore } from '../domains/settings/store/useSettingsStore';
 import { BoxItemData } from '../types/item';
 import { openLocalResource } from '../platform/openLocalResource';
 import { openUrl } from '../platform/openUrl';
@@ -14,11 +13,6 @@ export const useItemActions = () => {
         await writeText(item.content);
         toast.success('Copied to clipboard!');
       } else {
-        if (!useSettingsStore.getState().allowLocalResourceLaunch) {
-          toast.error('Local resource launch is disabled in settings');
-          return;
-        }
-
         openLocalResource(item.content);
         toast.success(`Opening via LocalExplore: ${item.title}`);
       }
