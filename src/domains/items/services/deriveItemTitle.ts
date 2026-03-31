@@ -1,16 +1,17 @@
-import { ITEM_TYPE_LABEL_KEYS } from '../../i18n/model/messages';
-import { translate } from '../../i18n/services/translate';
+import { ITEM_TYPE_LABEL_KEYS, MESSAGES } from '../../i18n/model/messages';
 import type { ItemType } from '../../../types/item';
+
+const DEFAULT_MESSAGES = MESSAGES.en;
 
 export function deriveItemTitle(type: ItemType, content: string) {
   const normalizedContent = content.trim();
 
   if (!normalizedContent) {
-    return translate('item.untitled');
+    return DEFAULT_MESSAGES['item.untitled'];
   }
 
   if (type === 'url') {
-    return normalizedContent.replace(/^https?:\/\//i, '').split('/')[0] || translate('item.linkFallback');
+    return normalizedContent.replace(/^https?:\/\//i, '').split('/')[0] || DEFAULT_MESSAGES['item.linkFallback'];
   }
 
   if (type === 'note') {
@@ -19,8 +20,6 @@ export function deriveItemTitle(type: ItemType, content: string) {
 
   return (
     normalizedContent.split(/[/\\]/).pop() ||
-    translate('item.newType', {
-      type: translate(ITEM_TYPE_LABEL_KEYS[type]),
-    })
+    DEFAULT_MESSAGES['item.newType'].replace('{type}', DEFAULT_MESSAGES[ITEM_TYPE_LABEL_KEYS[type]])
   );
 }

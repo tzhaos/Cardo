@@ -1,19 +1,20 @@
 import { motion } from 'motion/react';
-import { useEffect, useRef, useState } from 'react';
-import { calculateSnap } from '../../domains/layout/services/calculateSnap';
+import { useEffect, useState } from 'react';
 import { useUIStore } from '../../domains/ui/store/useUIStore';
 import { useWorkspaceStore } from '../../domains/workspace/store/useWorkspaceStore';
 import { cn } from '../../lib/utils';
 import type { BoxData } from '../../types/box';
 import BoxContent from './BoxContent';
+import { useBoxDrag } from './hooks/useBoxDrag';
+import { useBoxResize } from './hooks/useBoxResize';
 import BoxHeader from './BoxHeader';
 
 interface BoxContainerProps {
-  data: BoxData;
+  boxId: string;
 }
 
-export default function BoxContainer({ data }: BoxContainerProps) {
-  const allBoxes = useWorkspaceStore((state) => state.boxes);
+export default function BoxContainer({ boxId }: BoxContainerProps) {
+  const data = useWorkspaceStore((state) => state.boxesById[boxId]);
   const updateBox = useWorkspaceStore((state) => state.updateBox);
   const bringToFront = useWorkspaceStore((state) => state.bringToFront);
   const toggleMinimize = useWorkspaceStore((state) => state.toggleMinimize);
@@ -22,14 +23,15 @@ export default function BoxContainer({ data }: BoxContainerProps) {
   const activeBoxId = useUIStore((state) => state.activeBoxId);
   const editingSessionId = useUIStore((state) => state.editingSessionId);
   const setActiveBox = useUIStore((state) => state.setActiveBox);
-  const setSnapPreview = useUIStore((state) => state.setSnapPreview);
 
   const [isHovering, setIsHovering] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [showThemePicker, setShowThemePicker] = useState(false);
   const [showAddMenu, setShowAddMenu] = useState(false);
-  const boxRef = useRef<HTMLDivElement>(null);
-  const lastSnapRef = useRef<string | null>(null);
+
+  if (!data) {
+    return null;
+  }
 
   const isActive = activeBoxId === data.id;
 
@@ -49,99 +51,19 @@ export default function BoxContainer({ data }: BoxContainerProps) {
     setActiveBox(data.id);
   };
 
-  const handleDragStart = (event: React.PointerEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-
-    if (data.isLocked || editingSessionId) {
-      return;
-    }
-
-    setIsDragging(true);
-    focusBox();
-
-    const startX = event.clientX;
-    const startY = event.clientY;
-    const initialBoxX = data.x;
-    const initialBoxY = data.y;
-
-    const onPointerMove = (moveEvent: PointerEvent) => {
-      const offsetX = moveEvent.clientX - startX;
-      const offsetY = moveEvent.clientY - startY;
-      const newX = initialBoxX + offsetX;
-      const newY = initialBoxY + offsetY;
-      const snap = calculateSnap(newX, newY, data.width, data.height, allBoxes, data.id);
-
-      applyBoxUpdates({ x: newX, y: newY });
-
-      const snapKey = `${snap.x},${snap.y}`;
-
-      if (lastSnapRef.current === snapKey) {
-        return;
-      }
-
-      lastSnapRef.current = snapKey;
-      setSnapPreview({
-        x: snap.x,
-        y: snap.y,
-        width: data.width,
-        height: data.height,
-        guides: snap.guides,
-      });
-    };
-
-    const onPointerUp = () => {
-      setIsDragging(false);
-
-      if (lastSnapRef.current) {
-        const [snappedX, snappedY] = lastSnapRef.current.split(',').map(Number);
-        applyBoxUpdates({ x: snappedX, y: snappedY });
-      }
-
-      lastSnapRef.current = null;
-      setSnapPreview(null);
-      document.removeEventListener('pointermove', onPointerMove);
-      document.removeEventListener('pointerup', onPointerUp);
-    };
-
-    document.addEventListener('pointermove', onPointerMove);
-    document.addEventListener('pointerup', onPointerUp);
-  };
-
-  const handleResize = (event: React.MouseEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-
-    if (data.isLocked || editingSessionId) {
-      return;
-    }
-
-    const startX = event.clientX;
-    const startY = event.clientY;
-    const startWidth = data.width;
-    const startHeight = data.height;
-
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      let newWidth = Math.max(200, startWidth + moveEvent.clientX - startX);
-      let newHeight = Math.max(150, startHeight + moveEvent.clientY - startY);
-
-      newWidth = Math.round(newWidth / 20) * 20;
-      newHeight = Math.round(newHeight / 20) * 20;
-      applyBoxUpdates({ width: newWidth, height: newHeight });
-    };
-
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    };
-
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-  };
+  const { handleDragStart } = useBoxDrag({
+    box: data,
+    onFocus: focusBox,
+    onUpdate: applyBoxUpdates,
+    setIsDragging,
+  });
+  const { handleResize } = useBoxResize({
+    box: data,
+    onUpdate: applyBoxUpdates,
+  });
 
   return (
     <motion.div
-      ref={boxRef}
       onMouseDown={focusBox}
       initial={{ x: data.x, y: data.y, opacity: 0, scale: 0.95 }}
       animate={{

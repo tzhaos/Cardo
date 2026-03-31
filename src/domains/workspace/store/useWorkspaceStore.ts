@@ -1,22 +1,34 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { BoxData } from '../../../types/box';
-import { createItemFromText } from '../../items/services/createItem';
 import { createPlatformJSONStorage } from '../../../platform/storage/createPlatformStateStorage';
-import { useUIStore } from '../../ui/store/useUIStore';
-import { DEFAULT_NEW_BOX_TITLE, normalizeBoxes } from '../model/boxTitles';
-import { createInitialBoxes, DEFAULT_BOX_THEME, getMaxZIndex } from '../model/defaultBoxes';
+import {
+  addPastedItem,
+  bringBoxToFront,
+  createBox,
+  deleteBox,
+  moveItem,
+  replaceBoxes,
+  toggleAllBoxesMinimized,
+  toggleBoxMinimize,
+  updateBox,
+} from '../model/workspaceCommands';
+import { createInitialBoxes } from '../model/defaultBoxes';
+import { normalizePersistedWorkspaceSnapshot } from '../model/workspaceSchema';
+import { createWorkspaceDataState, WORKSPACE_STATE_VERSION } from '../model/workspaceState';
 
 interface WorkspaceState {
-  boxes: BoxData[];
+  version: number;
+  boxesById: Record<string, BoxData>;
+  boxOrder: string[];
   maxZIndex: number;
   bringToFront: (id: string) => void;
   updateBox: (id: string, updates: Partial<BoxData>) => void;
   toggleMinimize: (id: string) => void;
   deleteBox: (id: string) => void;
-  createBox: () => void;
+  createBox: (viewport: { width: number; height: number }) => string;
   toggleAllMinimized: () => boolean;
-  addPastedItem: (text: string) => string | null;
+  addPastedItem: (text: string, activeBoxId: string | null) => string | null;
   moveItem: (
     itemId: string,
     sourceBoxId: string,
@@ -30,176 +42,61 @@ interface WorkspaceState {
 export const useWorkspaceStore = create<WorkspaceState>()(
   persist(
     (set, get) => ({
-      boxes: createInitialBoxes(),
-      maxZIndex: 12,
+      ...createWorkspaceDataState(createInitialBoxes(), WORKSPACE_STATE_VERSION),
 
       bringToFront: (id) => {
-        const nextZIndex = get().maxZIndex + 1;
-
-        set({
-          maxZIndex: nextZIndex,
-          boxes: get().boxes.map((box) => (box.id === id ? { ...box, zIndex: nextZIndex } : box)),
-        });
+        set(bringBoxToFront(get(), id));
       },
 
       updateBox: (id, updates) => {
-        set({
-          boxes: get().boxes.map((box) => (box.id === id ? { ...box, ...updates } : box)),
-        });
+        set(updateBox(get(), id, updates));
       },
 
       toggleMinimize: (id) => {
-        set({
-          boxes: get().boxes.map((box) =>
-            box.id === id ? { ...box, isMinimized: !box.isMinimized } : box,
-          ),
-        });
+        set(toggleBoxMinimize(get(), id));
       },
 
       deleteBox: (id) => {
-        set({
-          boxes: get().boxes.filter((box) => box.id !== id),
-        });
+        set(deleteBox(get(), id));
       },
 
-      createBox: () => {
-        const nextZIndex = get().maxZIndex + 1;
-
-        const newBox: BoxData = {
-          id: `box-${Date.now()}`,
-          title: DEFAULT_NEW_BOX_TITLE,
-          titleKey: null,
-          x: window.innerWidth / 2 - 160,
-          y: window.innerHeight / 2 - 200,
-          width: 320,
-          height: 400,
-          theme: DEFAULT_BOX_THEME,
-          isLocked: false,
-          isMinimized: false,
-          layout: 'list',
-          zIndex: nextZIndex,
-          items: [],
-        };
-
-        set({
-          maxZIndex: nextZIndex,
-          boxes: [...get().boxes, newBox],
+      createBox: (viewport) => {
+        const nextState = createBox(get(), {
+          viewportWidth: viewport.width,
+          viewportHeight: viewport.height,
         });
 
-        useUIStore.getState().setActiveBox(newBox.id);
+        set(nextState);
+        return nextState.createdBox.id;
       },
 
       toggleAllMinimized: () => {
-        const allMinimized = get().boxes.every((box) => box.isMinimized);
+        const nextState = toggleAllBoxesMinimized(get());
 
-        set({
-          boxes: get().boxes.map((box) => ({ ...box, isMinimized: !allMinimized })),
-        });
-
-        return !allMinimized;
+        set(nextState);
+        return nextState.areBoxesNowMinimized;
       },
 
-      addPastedItem: (text) => {
-        const boxes = get().boxes;
-        const activeBoxId = useUIStore.getState().activeBoxId;
-        const newItem = createItemFromText(text);
-        const isUrl = newItem.type === 'url';
+      addPastedItem: (text, activeBoxId) => {
+        const nextState = addPastedItem(get(), activeBoxId, text);
 
-        let targetBox = activeBoxId ? boxes.find((box) => box.id === activeBoxId) : null;
-
-        if (!targetBox) {
-          targetBox = boxes.find((box) => box.id === (isUrl ? 'webpages' : 'clipboard'));
-        }
-
-        if (!targetBox) {
-          targetBox = boxes[0];
-        }
-
-        if (!targetBox) {
-          return null;
-        }
-
-        set({
-          boxes: boxes.map((box) =>
-            box.id === targetBox.id ? { ...box, items: [...box.items, newItem] } : box,
-          ),
-        });
-
-        return targetBox.id;
+        set(nextState);
+        return nextState.targetBoxId;
       },
 
       moveItem: (itemId, sourceBoxId, targetBoxId, targetIndex) => {
-        set((state) => {
-          const boxes = [...state.boxes];
-          const sourceBoxIndex = boxes.findIndex((box) => box.id === sourceBoxId);
-          const targetBoxIndex = boxes.findIndex((box) => box.id === targetBoxId);
-
-          if (sourceBoxIndex === -1 || targetBoxIndex === -1) {
-            return state;
-          }
-
-          const sourceBox = { ...boxes[sourceBoxIndex], items: [...boxes[sourceBoxIndex].items] };
-          const itemIndex = sourceBox.items.findIndex((item) => item.id === itemId);
-
-          if (itemIndex === -1) {
-            return state;
-          }
-
-          const [item] = sourceBox.items.splice(itemIndex, 1);
-
-          if (sourceBoxId === targetBoxId) {
-            if (targetIndex !== undefined) {
-              const adjustedIndex = targetIndex > itemIndex ? targetIndex - 1 : targetIndex;
-              const referenceItem =
-                sourceBox.items[adjustedIndex] || sourceBox.items[adjustedIndex - 1];
-
-              if (referenceItem) {
-                item.isPinned = referenceItem.isPinned;
-              }
-
-              sourceBox.items.splice(adjustedIndex, 0, item);
-            } else {
-              item.isPinned = false;
-              sourceBox.items.push(item);
-            }
-
-            boxes[sourceBoxIndex] = sourceBox;
-          } else {
-            const targetBox = { ...boxes[targetBoxIndex], items: [...boxes[targetBoxIndex].items] };
-
-            if (targetIndex !== undefined) {
-              const referenceItem = targetBox.items[targetIndex] || targetBox.items[targetIndex - 1];
-
-              if (referenceItem) {
-                item.isPinned = referenceItem.isPinned;
-              }
-
-              targetBox.items.splice(targetIndex, 0, item);
-            } else {
-              item.isPinned = false;
-              targetBox.items.push(item);
-            }
-
-            boxes[sourceBoxIndex] = sourceBox;
-            boxes[targetBoxIndex] = targetBox;
-          }
-
-          return { boxes };
-        });
+        set(moveItem(get(), itemId, sourceBoxId, targetBoxId, targetIndex));
       },
 
       replaceBoxes: (boxes) => {
-        const normalizedBoxes = normalizeBoxes(boxes);
-
-        set({
-          boxes: normalizedBoxes,
-          maxZIndex: getMaxZIndex(normalizedBoxes),
-        });
+        set(replaceBoxes(boxes));
       },
 
       clearBoxes: () => {
         set({
-          boxes: [],
+          version: WORKSPACE_STATE_VERSION,
+          boxesById: {},
+          boxOrder: [],
           maxZIndex: 0,
         });
       },
@@ -207,18 +104,21 @@ export const useWorkspaceStore = create<WorkspaceState>()(
     {
       name: 'khaosbox-workspace',
       storage: createPlatformJSONStorage<WorkspaceState>(),
-      partialize: ({ boxes, maxZIndex }) => ({ boxes, maxZIndex }),
+      partialize: ({ version, boxesById, boxOrder, maxZIndex }) => ({
+        version,
+        boxesById,
+        boxOrder,
+        maxZIndex,
+      }),
       merge: (persistedState, currentState) => {
-        const mergedState = {
-          ...currentState,
-          ...(persistedState as Partial<WorkspaceState>),
-        };
-        const boxes = normalizeBoxes(mergedState.boxes ?? currentState.boxes);
+        const normalizedState = normalizePersistedWorkspaceSnapshot(persistedState);
 
         return {
-          ...mergedState,
-          boxes,
-          maxZIndex: getMaxZIndex(boxes),
+          ...currentState,
+          version: normalizedState.version,
+          boxesById: normalizedState.boxesById,
+          boxOrder: normalizedState.boxOrder,
+          maxZIndex: normalizedState.maxZIndex,
         };
       },
     },
