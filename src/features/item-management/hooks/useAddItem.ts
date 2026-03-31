@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { useI18n } from '../../../domains/i18n/hooks/useI18n';
+import { ITEM_TYPE_LABEL_KEYS } from '../../../domains/i18n/model/messages';
 import { createItem, createItemFromText } from '../../../domains/items/services/createItem';
 import type { BoxData } from '../../../types/box';
 import type { ItemType } from '../../../types/item';
@@ -12,6 +14,7 @@ interface UseAddItemOptions {
 }
 
 export function useAddItem({ box, showAddMenu, onUpdate, onClose }: UseAddItemOptions) {
+  const { t } = useI18n();
   const [addingType, setAddingType] = useState<ItemType | null>(null);
   const [newItemTitle, setNewItemTitle] = useState('');
   const [newItemContent, setNewItemContent] = useState('');
@@ -64,7 +67,7 @@ export function useAddItem({ box, showAddMenu, onUpdate, onClose }: UseAddItemOp
             }),
           ),
         );
-        toast.success(`Added ${files.length} file(s)`);
+        toast.success(t('toast.addedFiles', { count: files.length }));
         closeComposer();
       };
       input.click();
@@ -82,7 +85,7 @@ export function useAddItem({ box, showAddMenu, onUpdate, onClose }: UseAddItemOp
           return;
         }
 
-        const rootName = files[0].webkitRelativePath.split('/')[0] || 'Folder';
+        const rootName = files[0].webkitRelativePath.split('/')[0] || t('itemType.folder');
         appendItems([
           createItem({
             type: 'folder',
@@ -90,7 +93,7 @@ export function useAddItem({ box, showAddMenu, onUpdate, onClose }: UseAddItemOp
             content: rootName,
           }),
         ]);
-        toast.success(`Added folder ${rootName}`);
+        toast.success(t('toast.addedFolder', { name: rootName }));
         closeComposer();
       };
       input.click();
@@ -103,7 +106,7 @@ export function useAddItem({ box, showAddMenu, onUpdate, onClose }: UseAddItemOp
 
         if (clipboardText) {
           appendItems([createItemFromText(clipboardText)]);
-          toast.success('Added item from clipboard');
+          toast.success(t('toast.addedFromClipboard'));
           closeComposer();
           return;
         }
@@ -129,7 +132,11 @@ export function useAddItem({ box, showAddMenu, onUpdate, onClose }: UseAddItemOp
         content: newItemContent,
       }),
     ]);
-    toast.success(`Added new ${addingType}`);
+    toast.success(
+      t('toast.addedNewType', {
+        type: t(ITEM_TYPE_LABEL_KEYS[addingType]),
+      }),
+    );
     closeComposer();
   };
 

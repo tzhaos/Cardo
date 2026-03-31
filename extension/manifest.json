@@ -1,9 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "KhaosBox",
-  "short_name": "KhaosBox",
-  "description": "A new tab workspace for organizing links and notes.",
+  "name": "__MSG_extensionName__",
+  "short_name": "__MSG_extensionShortName__",
+  "description": "__MSG_extensionDescription__",
   "version": "0.1.0",
+  "default_locale": "en",
   "icons": {
     "16": "extension/icons/icon-16.png",
     "32": "extension/icons/icon-32.png",

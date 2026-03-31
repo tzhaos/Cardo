@@ -1,11 +1,13 @@
-import { Download, Plus, Upload } from 'lucide-react';
+import { Download, Languages, Plus, Upload } from 'lucide-react';
 import { useRef, type ChangeEvent } from 'react';
 import { toast } from 'sonner';
+import { useI18n } from '../../../domains/i18n/hooks/useI18n';
 import { useWorkspaceStore } from '../../../domains/workspace/store/useWorkspaceStore';
 import type { BoxData } from '../../../types/box';
 import TrayItemButton from './TrayItemButton';
 
 export default function TrayDock() {
+  const { locale, toggleLocale, t } = useI18n();
   const boxes = useWorkspaceStore((state) => state.boxes);
   const toggleMinimize = useWorkspaceStore((state) => state.toggleMinimize);
   const createBox = useWorkspaceStore((state) => state.createBox);
@@ -19,10 +21,10 @@ export default function TrayDock() {
     const anchor = document.createElement('a');
 
     anchor.href = url;
-    anchor.download = `khaosbox-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    anchor.download = `${t('dock.exportFilePrefix')}-${new Date().toISOString().slice(0, 10)}.json`;
     anchor.click();
     URL.revokeObjectURL(url);
-    toast.success('Data exported successfully');
+    toast.success(t('toast.dataExported'));
   };
 
   const handleImport = (event: ChangeEvent<HTMLInputElement>) => {
@@ -42,9 +44,9 @@ export default function TrayDock() {
         }
 
         replaceBoxes(importedBoxes as BoxData[]);
-        toast.success('Data imported successfully');
+        toast.success(t('toast.dataImported'));
       } catch {
-        toast.error('Failed to import: invalid JSON file');
+        toast.error(t('toast.importFailed'));
       }
 
       if (fileInputRef.current) {
@@ -66,7 +68,8 @@ export default function TrayDock() {
 
         <button
           onClick={() => createBox()}
-          title="Create box"
+          title={t('dock.createBox')}
+          aria-label={t('dock.createBox')}
           className="rounded-xl bg-white/5 p-2 text-white/70 transition-colors hover:bg-white/15 hover:text-white"
         >
           <Plus size={20} />
@@ -74,7 +77,8 @@ export default function TrayDock() {
 
         <button
           onClick={handleExport}
-          title="Export JSON"
+          title={t('dock.exportJson')}
+          aria-label={t('dock.exportJson')}
           className="rounded-xl bg-white/5 p-2 text-white/70 transition-colors hover:bg-white/15 hover:text-white"
         >
           <Download size={20} />
@@ -82,10 +86,23 @@ export default function TrayDock() {
 
         <button
           onClick={() => fileInputRef.current?.click()}
-          title="Import JSON"
+          title={t('dock.importJson')}
+          aria-label={t('dock.importJson')}
           className="rounded-xl bg-white/5 p-2 text-white/70 transition-colors hover:bg-white/15 hover:text-white"
         >
           <Upload size={20} />
+        </button>
+
+        <button
+          onClick={toggleLocale}
+          title={t(locale === 'zh' ? 'dock.switchToEnglish' : 'dock.switchToChinese')}
+          aria-label={t(locale === 'zh' ? 'dock.switchToEnglish' : 'dock.switchToChinese')}
+          className="relative rounded-xl bg-white/5 p-2 text-white/70 transition-colors hover:bg-white/15 hover:text-white"
+        >
+          <Languages size={20} />
+          <span className="absolute -bottom-1 -right-1 rounded-full border border-neutral-900 bg-white px-1 text-[9px] font-bold leading-4 text-neutral-900">
+            {t('dock.languageBadge')}
+          </span>
         </button>
         <input
           type="file"

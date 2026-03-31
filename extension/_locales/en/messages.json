@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "KhaosBox"
+  },
+  "extensionShortName": {
+    "message": "KhaosBox"
+  },
+  "extensionDescription": {
+    "message": "A new tab workspace for organizing links and notes."
+  }
+}

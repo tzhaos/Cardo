@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useI18n } from '../../../domains/i18n/hooks/useI18n';
 import { useUIStore } from '../../../domains/ui/store/useUIStore';
 import { useWorkspaceStore } from '../../../domains/workspace/store/useWorkspaceStore';
 import { isFormControlElement } from '../../../lib/dom';
@@ -18,6 +19,7 @@ interface UseBoxDropOptions {
 }
 
 export function useBoxDrop({ box, onUpdate }: UseBoxDropOptions) {
+  const { t } = useI18n();
   const draggedItemInfo = useUIStore((state) => state.draggedItemInfo);
   const editingSessionId = useUIStore((state) => state.editingSessionId);
   const setDraggedItemInfo = useUIStore((state) => state.setDraggedItemInfo);
@@ -137,7 +139,7 @@ export function useBoxDrop({ box, onUpdate }: UseBoxDropOptions) {
 
     if (externalItems.length > 0) {
       onUpdate({ items: [...box.items, ...externalItems] });
-      toast.success(`Added ${externalItems.length} item(s)`);
+      toast.success(t('toast.addedItems', { count: externalItems.length }));
       return;
     }
 
@@ -145,7 +147,11 @@ export function useBoxDrop({ box, onUpdate }: UseBoxDropOptions) {
 
     if (textItem) {
       onUpdate({ items: [...box.items, textItem] });
-      toast.success(`Added ${textItem.type === 'url' ? 'URL' : 'note'}`);
+      toast.success(
+        t('toast.addedType', {
+          type: textItem.type === 'url' ? t('workspace.pastedUrl') : t('itemType.note'),
+        }),
+      );
     }
   };
 

@@ -5,6 +5,7 @@ export type { BoxItemData };
 export interface BoxData {
   id: string;
   title: string;
+  titleKey?: string | null;
   x: number;
   y: number;
   width: number;

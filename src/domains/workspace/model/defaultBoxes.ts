@@ -1,4 +1,5 @@
 import type { BoxData } from '../../../types/box';
+import { DEFAULT_SYSTEM_BOX_TITLES } from './boxTitles';
 
 export const DEFAULT_BOX_THEME = 'bg-zinc-900/90 border-zinc-700';
 
@@ -6,7 +7,8 @@ export function createInitialBoxes(): BoxData[] {
   return [
     {
       id: 'folders',
-      title: 'Folders',
+      title: DEFAULT_SYSTEM_BOX_TITLES.folders,
+      titleKey: null,
       x: 100,
       y: 100,
       width: 320,
@@ -20,7 +22,8 @@ export function createInitialBoxes(): BoxData[] {
     },
     {
       id: 'webpages',
-      title: 'Links',
+      title: DEFAULT_SYSTEM_BOX_TITLES.webpages,
+      titleKey: null,
       x: 450,
       y: 100,
       width: 320,
@@ -34,7 +37,8 @@ export function createInitialBoxes(): BoxData[] {
     },
     {
       id: 'clipboard',
-      title: 'Notes',
+      title: DEFAULT_SYSTEM_BOX_TITLES.clipboard,
+      titleKey: null,
       x: 800,
       y: 100,
       width: 320,

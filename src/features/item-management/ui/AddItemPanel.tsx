@@ -1,4 +1,6 @@
 import { ClipboardPaste, File, Folder, Link as LinkIcon, Plus, X } from 'lucide-react';
+import { useI18n } from '../../../domains/i18n/hooks/useI18n';
+import { ITEM_TYPE_LABEL_KEYS, ITEM_TYPE_PLURAL_KEYS } from '../../../domains/i18n/model/messages';
 import { cn } from '../../../lib/utils';
 import type { ItemType } from '../../../types/item';
 
@@ -29,6 +31,8 @@ export default function AddItemPanel({
   onOpen,
   showAddMenu,
 }: AddItemPanelProps) {
+  const { t } = useI18n();
+
   if (!showAddMenu) {
     return (
       <button
@@ -39,7 +43,7 @@ export default function AddItemPanel({
         )}
       >
         <Plus size={16} />
-        <span className="text-xs font-medium">Add Item</span>
+        <span className="text-xs font-medium">{t('addItem.button')}</span>
       </button>
     );
   }
@@ -54,7 +58,7 @@ export default function AddItemPanel({
       {addingType ? (
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between px-1 text-xs text-white/50">
-            <span className="capitalize">Add {addingType}</span>
+            <span>{t('addItem.addType', { type: t(ITEM_TYPE_LABEL_KEYS[addingType]) })}</span>
             <button onClick={onCancel} className="hover:text-white">
               <X size={12} />
             </button>
@@ -64,7 +68,7 @@ export default function AddItemPanel({
             autoFocus
             value={newItemTitle}
             onChange={(event) => onTitleChange(event.target.value)}
-            placeholder="Title (optional)"
+            placeholder={t('addItem.titleOptional')}
             className="w-full rounded bg-black/40 px-2 py-1.5 text-xs text-white outline-none placeholder:text-white/30 focus:ring-1 focus:ring-white/40"
           />
 
@@ -73,10 +77,10 @@ export default function AddItemPanel({
             onChange={(event) => onContentChange(event.target.value)}
             placeholder={
               addingType === 'url'
-                ? 'https://...'
+                ? t('addItem.urlPlaceholder')
                 : addingType === 'file' || addingType === 'folder'
-                  ? 'Path...'
-                  : 'Content...'
+                  ? t('addItem.pathPlaceholder')
+                  : t('addItem.contentPlaceholder')
             }
             onKeyDown={(event) => {
               if (event.key === 'Enter') {
@@ -95,21 +99,21 @@ export default function AddItemPanel({
               onClick={onCancel}
               className="rounded px-2 py-1 text-xs text-white/60 transition-colors hover:bg-white/10 hover:text-white"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               onClick={onConfirm}
               disabled={!newItemContent.trim()}
               className="rounded bg-white/10 px-2 py-1 text-xs text-white transition-colors hover:bg-white/20 disabled:opacity-50"
             >
-              Add
+              {t('common.add')}
             </button>
           </div>
         </div>
       ) : (
         <>
           <div className="flex items-center justify-between px-1 text-xs text-white/50">
-            <span>Choose type:</span>
+            <span>{t('addItem.chooseType')}</span>
             <button onClick={onCancel} className="hover:text-white">
               <X size={12} />
             </button>
@@ -121,28 +125,28 @@ export default function AddItemPanel({
               className="flex items-center gap-2 rounded p-1.5 text-xs text-white/80 transition-colors hover:bg-white/10"
             >
               <File size={12} className="text-blue-400" />
-              Files
+              {t(ITEM_TYPE_PLURAL_KEYS.file)}
             </button>
             <button
               onClick={() => onStartAdd('folder')}
               className="flex items-center gap-2 rounded p-1.5 text-xs text-white/80 transition-colors hover:bg-white/10"
             >
               <Folder size={12} className="text-amber-400" />
-              Folders
+              {t(ITEM_TYPE_PLURAL_KEYS.folder)}
             </button>
             <button
               onClick={() => onStartAdd('url')}
               className="flex items-center gap-2 rounded p-1.5 text-xs text-white/80 transition-colors hover:bg-white/10"
             >
               <LinkIcon size={12} className="text-emerald-400" />
-              Links
+              {t(ITEM_TYPE_PLURAL_KEYS.url)}
             </button>
             <button
               onClick={() => onStartAdd('note')}
               className="flex items-center gap-2 rounded p-1.5 text-xs text-white/80 transition-colors hover:bg-white/10"
             >
               <ClipboardPaste size={12} className="text-purple-400" />
-              Notes
+              {t(ITEM_TYPE_PLURAL_KEYS.note)}
             </button>
           </div>
         </>

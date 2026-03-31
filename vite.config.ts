@@ -11,12 +11,17 @@ function copyExtensionAssets() {
       const outDir = options.dir ? path.resolve(options.dir) : path.resolve(__dirname, 'dist');
       const manifestSource = path.resolve(__dirname, 'extension/manifest.json');
       const iconsSource = path.resolve(__dirname, 'extension/icons');
+      const localesSource = path.resolve(__dirname, 'extension/_locales');
 
       fs.mkdirSync(outDir, { recursive: true });
       fs.copyFileSync(manifestSource, path.join(outDir, 'manifest.json'));
 
       if (fs.existsSync(iconsSource)) {
         fs.cpSync(iconsSource, path.join(outDir, 'extension/icons'), { recursive: true });
+      }
+
+      if (fs.existsSync(localesSource)) {
+        fs.cpSync(localesSource, path.join(outDir, '_locales'), { recursive: true });
       }
     },
   };

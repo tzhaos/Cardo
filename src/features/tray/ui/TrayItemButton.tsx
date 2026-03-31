@@ -1,5 +1,6 @@
 import { Package } from 'lucide-react';
 import { motion } from 'motion/react';
+import { getBoxDisplayTitle } from '../../../domains/workspace/model/boxTitles';
 import { cn } from '../../../lib/utils';
 import type { BoxData } from '../../../types/box';
 
@@ -23,6 +24,8 @@ function getIconGradient(theme: string) {
 }
 
 export default function TrayItemButton({ box, onClick }: TrayItemButtonProps) {
+  const displayTitle = getBoxDisplayTitle(box);
+
   return (
     <button
       onClick={onClick}
@@ -31,7 +34,7 @@ export default function TrayItemButton({ box, onClick }: TrayItemButtonProps) {
         'hover:scale-105 hover:bg-white/10 active:scale-95',
         !box.isMinimized ? 'bg-white/10 shadow-inner' : 'bg-transparent',
       )}
-      title={box.title}
+      title={displayTitle}
     >
       <div
         className={cn(
@@ -42,7 +45,9 @@ export default function TrayItemButton({ box, onClick }: TrayItemButtonProps) {
         <Package size={14} className="text-white/90" />
       </div>
 
-      <span className="max-w-[100px] truncate text-sm font-medium text-white/90">{box.title}</span>
+      <span className="max-w-[100px] truncate text-sm font-medium text-white/90">
+        {displayTitle}
+      </span>
 
       {!box.isMinimized && (
         <motion.div
