@@ -19,7 +19,6 @@ The project ships as a Manifest V3 browser extension and also includes a Vite-po
 - Smart paste behavior that routes URLs and plain text into the right place
 - Pin important items to keep them at the top of a box
 - Import and export workspace data as JSON
-- Extension options for default box layout and local resource launching
 - Runtime-aware persistence: `chrome.storage.local` in extension mode, `localStorage` in web preview mode
 
 ## How It Works
@@ -77,7 +76,6 @@ The build outputs are written to `dist/`, including:
 
 - `dist/manifest.json`
 - `dist/extension/pages/newtab.html`
-- `dist/extension/pages/options.html`
 
 ### Preview the production build
 
@@ -95,7 +93,7 @@ npm run preview
 4. Choose **Load unpacked**.
 5. Select the repository's [`dist`](./dist) folder.
 
-After loading, opening a new tab should show the KhaosBox workspace. The extension options page exposes global defaults, while day-to-day editing happens on the new tab page itself.
+After loading, opening a new tab should show the KhaosBox workspace.
 
 ## Scripts
 
@@ -117,7 +115,7 @@ After loading, opening a new tab should show the KhaosBox workspace. The extensi
 |-- src/
 |   |-- app/               # App shells and bootstraps
 |   |-- domains/           # Core models, services, and Zustand stores
-|   |-- features/          # User-facing behaviors such as drag/drop and settings
+|   |-- features/          # User-facing behaviors such as drag/drop and tray interactions
 |   |-- platform/          # Runtime adapters for storage, clipboard, navigation, native bridge
 |   `-- widgets/           # Reusable UI building blocks
 |-- index.html             # Web preview entry
@@ -129,8 +127,8 @@ After loading, opening a new tab should show the KhaosBox workspace. The extensi
 
 KhaosBox keeps the UI and runtime concerns separated:
 
-- `src/domains` owns workspace data, item creation, layout logic, and persisted settings.
-- `src/features` implements flows like box drag/drop, add-item interactions, tray behavior, and settings dialogs.
+- `src/domains` owns workspace data, item creation, layout logic, and persisted state.
+- `src/features` implements flows like box drag/drop, add-item interactions, and tray behavior.
 - `src/platform` switches storage and launch behavior depending on whether the app is running in a browser extension or in the standalone web preview.
 
 This split makes it easy to iterate on the UI locally while still shipping the same core app inside the extension shell.

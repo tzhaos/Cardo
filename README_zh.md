@@ -77,7 +77,6 @@ npm run build
 
 - `dist/manifest.json`
 - `dist/extension/pages/newtab.html`
-- `dist/extension/pages/options.html`
 
 ### 预览生产构建
 

@@ -7,7 +7,6 @@ import { isEditableElement } from '../../../lib/dom';
 import Background from '../../../widgets/DesktopShell/Background';
 import BrandBadge from '../../../widgets/DesktopShell/BrandBadge';
 import BoxContainer from '../../../widgets/Box/BoxContainer';
-import SettingsDialog from '../../settings-panel/ui/SettingsDialog';
 import TrayDock from '../../tray/ui/TrayDock';
 import SnapOverlay from './SnapOverlay';
 
@@ -74,7 +73,6 @@ export default function WorkspaceDesktop() {
         ))}
 
       <TrayDock />
-      <SettingsDialog />
     </div>
   );
 }
