@@ -1,6 +1,7 @@
 import { createItem } from '../../items/services/createItem';
 import { normalizeBoxes } from './boxTitles';
 import { createInitialBoxes, DEFAULT_BOX_THEME, getMaxZIndex } from './defaultBoxes';
+import { resolveBoxTheme } from './boxThemes';
 import {
   createWorkspaceDataState,
   WORKSPACE_STATE_VERSION,
@@ -132,7 +133,7 @@ function normalizeBox(input: unknown, index: number, options: NormalizeOptions):
     y: getFiniteNumber(input.y, DEFAULT_BOX_Y + index * 40),
     width: clamp(getFiniteNumber(input.width, DEFAULT_BOX_WIDTH), MIN_BOX_WIDTH),
     height: clamp(getFiniteNumber(input.height, DEFAULT_BOX_HEIGHT), MIN_BOX_HEIGHT),
-    theme: getString(input.theme)?.trim() || DEFAULT_BOX_THEME,
+    theme: resolveBoxTheme(getString(input.theme)?.trim() || DEFAULT_BOX_THEME),
     isLocked: getBoolean(input.isLocked),
     isMinimized: getBoolean(input.isMinimized),
     layout: normalizeLayout(input.layout) ?? 'list',

@@ -1,6 +1,8 @@
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useUIStore } from '../../domains/ui/store/useUIStore';
+import { useThemeStore } from '../../domains/ui/store/useThemeStore';
+import { getBoxThemeSurfaceClass } from '../../domains/workspace/model/boxThemes';
 import { useWorkspaceStore } from '../../domains/workspace/store/useWorkspaceStore';
 import { cn } from '../../lib/utils';
 import type { BoxData } from '../../types/box';
@@ -23,6 +25,7 @@ export default function BoxContainer({ boxId }: BoxContainerProps) {
   const activeBoxId = useUIStore((state) => state.activeBoxId);
   const editingSessionId = useUIStore((state) => state.editingSessionId);
   const setActiveBox = useUIStore((state) => state.setActiveBox);
+  const appTheme = useThemeStore((state) => state.theme);
 
   const [isHovering, setIsHovering] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -34,6 +37,7 @@ export default function BoxContainer({ boxId }: BoxContainerProps) {
   }
 
   const isActive = activeBoxId === data.id;
+  const surfaceClassName = getBoxThemeSurfaceClass(data.theme, appTheme);
 
   useEffect(() => {
     if (isActive) {
@@ -71,18 +75,23 @@ export default function BoxContainer({ boxId }: BoxContainerProps) {
         y: data.y,
         opacity: 1,
         scale: isDragging ? 1.02 : 1,
-        boxShadow: isDragging
-          ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-          : '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
       }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={isDragging ? { duration: 0 } : { type: 'spring', stiffness: 350, damping: 25 }}
-      style={{ width: data.width, height: data.height, zIndex: data.zIndex }}
+      style={{
+        width: data.width,
+        height: data.height,
+        zIndex: data.zIndex,
+        boxShadow: isDragging
+          ? 'var(--box-drag-shadow)'
+          : isActive && !data.isLocked
+            ? 'var(--box-active-shadow)'
+            : 'var(--box-shadow)',
+      }}
       className={cn(
-        'absolute flex flex-col overflow-hidden rounded-xl border backdrop-blur-md transition-colors duration-300',
-        data.theme,
+        'kb-box absolute flex flex-col overflow-hidden rounded-xl border backdrop-blur-md transition-[background-color,border-color,color] duration-300',
+        surfaceClassName,
         data.isLocked ? 'ring-1 ring-red-500/50' : '',
-        isActive && !data.isLocked ? 'ring-2 ring-white/30 shadow-[0_0_15px_rgba(255,255,255,0.1)]' : '',
       )}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => {
@@ -118,7 +127,7 @@ export default function BoxContainer({ boxId }: BoxContainerProps) {
         >
           <svg
             viewBox="0 0 24 24"
-            className="h-full w-full text-white/20"
+            className="kb-resize-handle h-full w-full"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"

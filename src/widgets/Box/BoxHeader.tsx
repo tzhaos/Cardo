@@ -86,7 +86,7 @@ export default function BoxHeader({
   return (
     <div
       className={cn(
-        'group flex h-10 shrink-0 select-none items-center justify-between border-b border-white/10 px-3',
+        'kb-box-header group flex h-10 shrink-0 select-none items-center justify-between border-b px-3',
         isEditing || isInteractionLocked ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
       )}
       onPointerDown={isEditing || isInteractionLocked ? undefined : onDragStart}
@@ -104,7 +104,7 @@ export default function BoxHeader({
           setEditingSessionId(editorId);
         }}
       >
-        <Package size={14} className="shrink-0 text-white/60" />
+        <Package size={14} className="kb-box-muted shrink-0" />
         {isEditing ? (
           <input
             ref={inputRef}
@@ -123,14 +123,14 @@ export default function BoxHeader({
                 finishEditing(false);
               }
             }}
-            className="w-full truncate rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-sm font-medium text-white/90 outline-none transition-colors focus:border-white/20 focus:ring-2 focus:ring-white/15"
+            className="kb-box-input w-full truncate rounded-lg border px-2 py-1 text-sm font-medium outline-none transition-colors"
             onPointerDown={(event) => event.stopPropagation()}
             onPaste={(event) => event.stopPropagation()}
             onDragStart={(event) => event.stopPropagation()}
             onDrop={(event) => event.stopPropagation()}
           />
         ) : (
-          <span className="truncate px-1 text-sm font-medium text-white/90 pointer-events-none">
+          <span className="kb-box-title pointer-events-none truncate px-1 text-sm font-medium">
             {displayTitle}
           </span>
         )}
@@ -152,7 +152,7 @@ export default function BoxHeader({
 
         <button
           onClick={() => onUpdate({ layout: data.layout === 'grid' ? 'list' : 'grid' })}
-          className="rounded-md p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+          className="kb-icon-button rounded-md p-1.5 transition-colors"
           title={t('box.toggleLayout')}
           onPointerDown={(event) => event.stopPropagation()}
         >
@@ -161,18 +161,18 @@ export default function BoxHeader({
 
         <button
           onClick={() => onUpdate({ isLocked: !data.isLocked })}
-          className="rounded-md p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+          className="kb-icon-button rounded-md p-1.5 transition-colors"
           title={data.isLocked ? t('box.unlockPosition') : t('box.lockPosition')}
           onPointerDown={(event) => event.stopPropagation()}
         >
           {data.isLocked ? <Lock size={14} className="text-red-400" /> : <Unlock size={14} />}
         </button>
 
-        <div className="mx-1 h-4 w-px bg-white/20" />
+        <div className="kb-list-divider mx-1 h-4 w-px" />
 
         <button
           onClick={onMinimize}
-          className="rounded-md p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+          className="kb-icon-button rounded-md p-1.5 transition-colors"
           title={t('box.minimize')}
           onPointerDown={(event) => event.stopPropagation()}
         >
@@ -181,7 +181,7 @@ export default function BoxHeader({
 
         <button
           onClick={onClose}
-          className="rounded-md p-1.5 text-white/60 transition-colors hover:bg-red-500/20 hover:text-red-400"
+          className="kb-icon-button kb-icon-button-danger rounded-md p-1.5 transition-colors"
           title={t('box.close')}
           onPointerDown={(event) => event.stopPropagation()}
         >
