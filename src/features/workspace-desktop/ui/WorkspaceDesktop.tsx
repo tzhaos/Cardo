@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
 import { Toaster, toast } from 'sonner';
+import { useI18n } from '../../../domains/i18n/hooks/useI18n';
 import { isUrlText } from '../../../domains/items/services/isUrlText';
 import { useUIStore } from '../../../domains/ui/store/useUIStore';
+import { getBoxDisplayTitle } from '../../../domains/workspace/model/boxTitles';
 import { useWorkspaceStore } from '../../../domains/workspace/store/useWorkspaceStore';
 import { isEditableElement } from '../../../lib/dom';
 import Background from '../../../widgets/DesktopShell/Background';
@@ -11,11 +13,16 @@ import TrayDock from '../../tray/ui/TrayDock';
 import SnapOverlay from './SnapOverlay';
 
 export default function WorkspaceDesktop() {
+  const { t } = useI18n();
   const boxes = useWorkspaceStore((state) => state.boxes);
   const toggleAllMinimized = useWorkspaceStore((state) => state.toggleAllMinimized);
   const addPastedItem = useWorkspaceStore((state) => state.addPastedItem);
   const setActiveBox = useUIStore((state) => state.setActiveBox);
   const editingSessionId = useUIStore((state) => state.editingSessionId);
+
+  useEffect(() => {
+    document.title = t('app.brand');
+  }, [t]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -25,7 +32,7 @@ export default function WorkspaceDesktop() {
 
       if (event.ctrlKey && event.key === '`') {
         const areBoxesMinimized = toggleAllMinimized();
-        toast(areBoxesMinimized ? 'Hiding all boxes' : 'Showing all boxes');
+        toast(areBoxesMinimized ? t('workspace.hideAllBoxes') : t('workspace.showAllBoxes'));
       }
     };
 
@@ -40,10 +47,21 @@ export default function WorkspaceDesktop() {
         return;
       }
 
-      const targetBoxTitle = addPastedItem(text);
+      const targetBoxId = addPastedItem(text);
 
-      if (targetBoxTitle) {
-        toast.success(`Pasted ${isUrlText(text) ? 'URL' : 'text'} to ${targetBoxTitle}`);
+      if (targetBoxId) {
+        const targetBox = boxes.find((box) => box.id === targetBoxId);
+
+        if (!targetBox) {
+          return;
+        }
+
+        toast.success(
+          t('workspace.pastedTypeToBox', {
+            itemType: isUrlText(text) ? t('workspace.pastedUrl') : t('workspace.pastedText'),
+            boxTitle: getBoxDisplayTitle(targetBox),
+          }),
+        );
       }
     };
 
@@ -54,7 +72,7 @@ export default function WorkspaceDesktop() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('paste', handlePaste);
     };
-  }, [addPastedItem, editingSessionId, toggleAllMinimized]);
+  }, [addPastedItem, boxes, editingSessionId, t, toggleAllMinimized]);
 
   return (
     <div

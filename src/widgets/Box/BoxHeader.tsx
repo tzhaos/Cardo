@@ -1,6 +1,8 @@
 import { LayoutGrid, List, Lock, Minus, Package, Unlock, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { useI18n } from '../../domains/i18n/hooks/useI18n';
 import { useUIStore } from '../../domains/ui/store/useUIStore';
+import { getBoxDisplayTitle } from '../../domains/workspace/model/boxTitles';
 import { cn } from '../../lib/utils';
 import type { BoxData } from '../../types/box';
 import BoxThemePicker from './BoxThemePicker';
@@ -26,11 +28,13 @@ export default function BoxHeader({
   onClose,
   onDragStart,
 }: BoxHeaderProps) {
+  const { t } = useI18n();
   const editorId = `box:${data.id}:title`;
   const editingSessionId = useUIStore((state) => state.editingSessionId);
   const setEditingSessionId = useUIStore((state) => state.setEditingSessionId);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [draftTitle, setDraftTitle] = useState(data.title);
+  const displayTitle = getBoxDisplayTitle(data);
+  const [draftTitle, setDraftTitle] = useState(displayTitle);
 
   const isEditing = editingSessionId === editorId;
   const isInteractionLocked = Boolean(editingSessionId && editingSessionId !== editorId);
@@ -49,8 +53,8 @@ export default function BoxHeader({
       return;
     }
 
-    setDraftTitle(data.title);
-  }, [data.title, isEditing]);
+    setDraftTitle(displayTitle);
+  }, [displayTitle, isEditing]);
 
   useEffect(
     () => () => {
@@ -67,11 +71,11 @@ export default function BoxHeader({
     if (shouldSave) {
       const nextTitle = draftTitle.trim();
 
-      if (nextTitle && nextTitle !== data.title) {
-        onUpdate({ title: nextTitle });
+      if (nextTitle && nextTitle !== displayTitle) {
+        onUpdate({ title: nextTitle, titleKey: null });
       }
     } else {
-      setDraftTitle(data.title);
+      setDraftTitle(displayTitle);
     }
 
     if (useUIStore.getState().editingSessionId === editorId) {
@@ -96,7 +100,7 @@ export default function BoxHeader({
             return;
           }
 
-          setDraftTitle(data.title);
+          setDraftTitle(displayTitle);
           setEditingSessionId(editorId);
         }}
       >
@@ -127,7 +131,7 @@ export default function BoxHeader({
           />
         ) : (
           <span className="truncate px-1 text-sm font-medium text-white/90 pointer-events-none">
-            {data.title}
+            {displayTitle}
           </span>
         )}
       </div>
@@ -149,7 +153,7 @@ export default function BoxHeader({
         <button
           onClick={() => onUpdate({ layout: data.layout === 'grid' ? 'list' : 'grid' })}
           className="rounded-md p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
-          title="Toggle Layout"
+          title={t('box.toggleLayout')}
           onPointerDown={(event) => event.stopPropagation()}
         >
           {data.layout === 'grid' ? <List size={14} /> : <LayoutGrid size={14} />}
@@ -158,7 +162,7 @@ export default function BoxHeader({
         <button
           onClick={() => onUpdate({ isLocked: !data.isLocked })}
           className="rounded-md p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
-          title={data.isLocked ? 'Unlock Position' : 'Lock Position'}
+          title={data.isLocked ? t('box.unlockPosition') : t('box.lockPosition')}
           onPointerDown={(event) => event.stopPropagation()}
         >
           {data.isLocked ? <Lock size={14} className="text-red-400" /> : <Unlock size={14} />}
@@ -169,7 +173,7 @@ export default function BoxHeader({
         <button
           onClick={onMinimize}
           className="rounded-md p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
-          title="Minimize"
+          title={t('box.minimize')}
           onPointerDown={(event) => event.stopPropagation()}
         >
           <Minus size={14} />
@@ -178,7 +182,7 @@ export default function BoxHeader({
         <button
           onClick={onClose}
           className="rounded-md p-1.5 text-white/60 transition-colors hover:bg-red-500/20 hover:text-red-400"
-          title="Close Box"
+          title={t('box.close')}
           onPointerDown={(event) => event.stopPropagation()}
         >
           <X size={14} />

@@ -4,6 +4,7 @@ import type { BoxData } from '../../../types/box';
 import { createItemFromText } from '../../items/services/createItem';
 import { createPlatformJSONStorage } from '../../../platform/storage/createPlatformStateStorage';
 import { useUIStore } from '../../ui/store/useUIStore';
+import { DEFAULT_NEW_BOX_TITLE, normalizeBoxes } from '../model/boxTitles';
 import { createInitialBoxes, DEFAULT_BOX_THEME, getMaxZIndex } from '../model/defaultBoxes';
 
 interface WorkspaceState {
@@ -66,7 +67,8 @@ export const useWorkspaceStore = create<WorkspaceState>()(
 
         const newBox: BoxData = {
           id: `box-${Date.now()}`,
-          title: 'New Box',
+          title: DEFAULT_NEW_BOX_TITLE,
+          titleKey: null,
           x: window.innerWidth / 2 - 160,
           y: window.innerHeight / 2 - 200,
           width: 320,
@@ -123,7 +125,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           ),
         });
 
-        return targetBox.title;
+        return targetBox.id;
       },
 
       moveItem: (itemId, sourceBoxId, targetBoxId, targetIndex) => {
@@ -187,9 +189,11 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       },
 
       replaceBoxes: (boxes) => {
+        const normalizedBoxes = normalizeBoxes(boxes);
+
         set({
-          boxes,
-          maxZIndex: getMaxZIndex(boxes),
+          boxes: normalizedBoxes,
+          maxZIndex: getMaxZIndex(normalizedBoxes),
         });
       },
 
@@ -204,6 +208,19 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       name: 'khaosbox-workspace',
       storage: createPlatformJSONStorage<WorkspaceState>(),
       partialize: ({ boxes, maxZIndex }) => ({ boxes, maxZIndex }),
+      merge: (persistedState, currentState) => {
+        const mergedState = {
+          ...currentState,
+          ...(persistedState as Partial<WorkspaceState>),
+        };
+        const boxes = normalizeBoxes(mergedState.boxes ?? currentState.boxes);
+
+        return {
+          ...mergedState,
+          boxes,
+          maxZIndex: getMaxZIndex(boxes),
+        };
+      },
     },
   ),
 );

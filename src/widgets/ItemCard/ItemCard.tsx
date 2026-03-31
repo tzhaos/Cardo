@@ -1,5 +1,6 @@
 import { Check, Pencil, Pin, PinOff, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { useI18n } from '../../domains/i18n/hooks/useI18n';
 import { deriveItemTitle } from '../../domains/items/services/deriveItemTitle';
 import { useUIStore } from '../../domains/ui/store/useUIStore';
 import { useItemActions } from '../../hooks/useItemActions';
@@ -15,6 +16,7 @@ interface ItemCardProps {
 }
 
 export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: ItemCardProps) {
+  const { t } = useI18n();
   const editorId = `item:${item.id}`;
   const editingSessionId = useUIStore((state) => state.editingSessionId);
   const setEditingSessionId = useUIStore((state) => state.setEditingSessionId);
@@ -121,15 +123,15 @@ export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: Ite
   };
 
   const contentLabel =
-    item.type === 'note' ? 'Content' : item.type === 'url' ? 'Address' : 'Path';
+    item.type === 'note' ? t('item.content') : item.type === 'url' ? t('item.address') : t('item.path');
   const editorLabel =
     item.type === 'folder'
-      ? 'Folder editor'
+      ? t('item.folderEditor')
       : item.type === 'file'
-        ? 'File editor'
+        ? t('item.fileEditor')
         : item.type === 'url'
-          ? 'Link editor'
-          : 'Note editor';
+          ? t('item.linkEditor')
+          : t('item.noteEditor');
 
   if (isEditing) {
     return (
@@ -154,7 +156,7 @@ export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: Ite
           <button
             onClick={handleCancel}
             className="rounded-lg border border-white/10 p-2 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
-            title="Cancel editing"
+            title={t('item.cancelEditing')}
           >
             <X size={14} />
           </button>
@@ -162,7 +164,9 @@ export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: Ite
 
         <div className="flex flex-1 flex-col gap-3 p-3">
           <label className="flex flex-col gap-1.5">
-            <span className="text-[10px] uppercase tracking-[0.16em] text-white/40">Title</span>
+            <span className="text-[10px] uppercase tracking-[0.16em] text-white/40">
+              {t('item.title')}
+            </span>
             <input
               ref={titleInputRef}
               value={editTitle}
@@ -173,7 +177,7 @@ export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: Ite
               onDragStart={stopInteraction}
               onDrop={stopInteraction}
               className="w-full rounded-xl border border-white/10 bg-black/35 px-3 py-2.5 text-sm font-medium text-white outline-none transition-colors placeholder:text-white/25 focus:border-white/20 focus:ring-2 focus:ring-white/10"
-              placeholder="Title"
+              placeholder={t('item.title')}
             />
           </label>
 
@@ -200,13 +204,13 @@ export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: Ite
           </label>
 
           <div className="flex items-center justify-between gap-3">
-            <p className="text-[11px] text-white/35">Esc cancels. Ctrl/Cmd + Enter saves.</p>
+            <p className="text-[11px] text-white/35">{t('item.saveHint')}</p>
             <div className="flex items-center gap-2">
               <button
                 onClick={handleCancel}
                 className="rounded-xl border border-white/10 px-3 py-2 text-xs font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleSave}
@@ -214,7 +218,7 @@ export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: Ite
                 className="inline-flex items-center gap-1.5 rounded-xl bg-white/12 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-white/18 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Check size={14} />
-                Save changes
+                {t('item.saveChanges')}
               </button>
             </div>
           </div>
@@ -298,7 +302,7 @@ export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: Ite
               ? 'rounded-md border border-white/10 bg-zinc-800/90 p-1.5 text-white/80 shadow-sm backdrop-blur-sm hover:bg-zinc-700 hover:text-white'
               : 'rounded-md p-1.5 text-white/50 hover:bg-white/15 hover:text-white',
           )}
-          title={item.isPinned ? 'Unpin' : layout === 'grid' ? 'Pin' : 'Pin to top'}
+          title={item.isPinned ? t('item.unpin') : layout === 'grid' ? t('item.pin') : t('item.pinToTop')}
         >
           {item.isPinned ? (
             <PinOff size={layout === 'grid' ? 12 : 14} />
@@ -314,7 +318,7 @@ export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: Ite
               ? 'rounded-md border border-white/10 bg-zinc-800/90 p-1.5 text-white/80 shadow-sm backdrop-blur-sm hover:bg-blue-500/80 hover:text-white'
               : 'rounded-md p-1.5 text-white/50 hover:bg-blue-500/20 hover:text-blue-400',
           )}
-          title="Edit"
+          title={t('item.edit')}
         >
           <Pencil size={layout === 'grid' ? 12 : 14} />
         </button>
@@ -329,7 +333,7 @@ export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: Ite
               ? 'rounded-md border border-white/10 bg-zinc-800/90 p-1.5 text-white/80 shadow-sm backdrop-blur-sm hover:bg-red-500/80 hover:text-white'
               : 'rounded-md p-1.5 text-white/50 hover:bg-red-500/20 hover:text-red-400',
           )}
-          title="Delete"
+          title={t('item.delete')}
         >
           <X size={layout === 'grid' ? 12 : 14} />
         </button>

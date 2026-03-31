@@ -1,23 +1,26 @@
 import { toast } from 'sonner';
+import { useI18n } from '../domains/i18n/hooks/useI18n';
 import { BoxItemData } from '../types/item';
 import { openLocalResource } from '../platform/openLocalResource';
 import { openUrl } from '../platform/openUrl';
 import { writeText } from '../platform/writeText';
 
 export const useItemActions = () => {
+  const { t } = useI18n();
+
   const openItem = async (item: BoxItemData) => {
     try {
       if (item.type === 'url') {
         openUrl(item.content);
       } else if (item.type === 'note') {
         await writeText(item.content);
-        toast.success('Copied to clipboard!');
+        toast.success(t('toast.copiedToClipboard'));
       } else {
         openLocalResource(item.content);
-        toast.success(`Opening via LocalExplore: ${item.title}`);
+        toast.success(t('toast.openingLocalResource', { title: item.title }));
       }
     } catch (error) {
-      toast.error(`Unable to open "${item.title}"`);
+      toast.error(t('toast.unableToOpen', { title: item.title }));
     }
   };
 

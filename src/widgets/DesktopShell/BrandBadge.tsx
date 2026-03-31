@@ -1,4 +1,8 @@
+import { useI18n } from '../../domains/i18n/hooks/useI18n';
+
 export default function BrandBadge() {
+  const { t } = useI18n();
+
   return (
     <div className="pointer-events-none absolute left-6 top-6 z-0 flex select-none items-center gap-2 opacity-50">
       <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/20 bg-white/10 backdrop-blur-md">
@@ -19,7 +23,7 @@ export default function BrandBadge() {
           <line x1="12" y1="22.08" x2="12" y2="12" />
         </svg>
       </div>
-      <span className="font-semibold tracking-wide text-white/80">KhaosBox</span>
+      <span className="font-semibold tracking-wide text-white/80">{t('app.brand')}</span>
     </div>
   );
 }
