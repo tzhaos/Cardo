@@ -27,13 +27,13 @@ The project ships as a Manifest V3 browser extension and also includes a Vite-po
 - The default workspace starts with three boxes: `Folders`, `Links`, and `Notes`.
 - Clicking a link opens it in the browser.
 - Clicking a note copies its content to the clipboard.
-- Clicking a file or folder attempts to open it through a custom `localexplorer:` protocol.
+- Clicking a file or folder attempts to open it through a custom `kbe:` protocol. With the bundled Windows handler installed, folders open in File Explorer and files open with their associated desktop app.
 - Press `Ctrl + \`` to minimize or restore all boxes at once.
 - Pasting text creates a URL, note, file, or folder item based on the pasted content. Without an active box, URLs go to `Links` and other pasted content goes to `Notes`.
 - The bottom dock lets you create boxes, import/export JSON, switch the app theme, and toggle the UI language.
 
 > [!NOTE]
-> File and folder launching still depends on a machine-level handler for the `localexplorer:` protocol. This repository currently includes Windows native-host build artifacts under `native-host/windows/build/win-x64/`, but handler installation and registration are still external to the extension, and no setup guide is documented here yet.
+> File and folder launching still depends on a machine-level handler for the `kbe:` protocol. This repository now includes the Windows handler source, publish scripts, and per-user install/uninstall scripts under `native-host/windows/`.
 
 ## Tech Stack
 
@@ -87,6 +87,42 @@ The build outputs are written to `dist/`, including:
 npm run preview
 ```
 
+### Install the KBE handler on Windows
+
+KhaosBox hands local files and folders off through a `kbe:` URI. To make those links work on Windows, build and register the bundled handler for the current user:
+
+```bash
+npm run native-host:install
+```
+
+This command will:
+
+- publish `native-host/windows/KhaosBoxExplorer.csproj`
+- copy the executable into `%LOCALAPPDATA%\\KhaosBox\\KhaosBoxExplorer\\`
+- register `HKCU\\Software\\Classes\\kbe`
+
+To remove the handler later:
+
+```bash
+npm run native-host:uninstall
+```
+
+Detailed options and troubleshooting live in [`native-host/windows/README.md`](./native-host/windows/README.md).
+
+### Build an MSI installer
+
+To generate a standard Windows `.msi` installer:
+
+```bash
+npm run native-host:msi
+```
+
+That command publishes the app and produces:
+
+- `native-host/windows/release/KhaosBoxExplorer-win-x64.msi`
+
+The MSI installs `KhaosBoxExplorer.exe` into `%LOCALAPPDATA%\\KhaosBox\\KhaosBoxExplorer\\`, registers `HKCU\\Software\\Classes\\kbe`, and adds a normal Windows uninstall entry.
+
 ## Load as an Unpacked Extension
 
 1. Run `npm run build`.
@@ -106,6 +142,11 @@ After loading, opening a new tab should show the KhaosBox workspace.
 | `npm run dev` | Start the Vite development server on port `3000` |
 | `npm run build` | Build the preview pages and extension assets into `dist/` |
 | `npm run build:extension` | Alias for the extension build |
+| `npm run native-host:build` | Build the Windows `kbe:` protocol handler project |
+| `npm run native-host:publish` | Publish the Windows handler into `native-host/windows/build/win-x64/` |
+| `npm run native-host:msi` | Build a Windows MSI installer for `KhaosBoxExplorer` |
+| `npm run native-host:install` | Publish and register the Windows handler for the current user |
+| `npm run native-host:uninstall` | Remove the Windows handler registration and installed files |
 | `npm run preview` | Serve the built output locally |
 | `npm run clean` | Remove the `dist/` directory |
 | `npm run lint` | Run TypeScript type-checking without emitting files |
@@ -117,7 +158,7 @@ After loading, opening a new tab should show the KhaosBox workspace.
 .
 |-- brand/                 # Logos and brand assets
 |-- extension/             # Manifest, locales, icons, and extension HTML entry points
-|-- native-host/           # Native launcher-related artifacts (currently Windows build output only)
+|-- native-host/           # Windows kbe handler source, scripts, and build output
 |-- src/
 |   |-- app/               # App shells and bootstraps
 |   |-- domains/           # Core models, services, and Zustand stores
