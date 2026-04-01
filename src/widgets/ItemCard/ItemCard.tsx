@@ -12,10 +12,18 @@ interface ItemCardProps {
   layout: 'grid' | 'list';
   icon: React.ReactNode;
   onUpdate: (updates: Partial<BoxItemData>) => void;
+  onSetPinned: (isPinned: boolean) => void;
   onDelete: () => void;
 }
 
-export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: ItemCardProps) {
+export default function ItemCard({
+  item,
+  layout,
+  icon,
+  onUpdate,
+  onSetPinned,
+  onDelete,
+}: ItemCardProps) {
   const { t } = useI18n();
   const editorId = `item:${item.id}`;
   const editingSessionId = useUIStore((state) => state.editingSessionId);
@@ -278,7 +286,7 @@ export default function ItemCard({ item, layout, icon, onUpdate, onDelete }: Ite
         <button
           onClick={(event) => {
             event.stopPropagation();
-            onUpdate({ isPinned: !item.isPinned });
+            onSetPinned(!item.isPinned);
           }}
           className={cn(
             'transition-colors',

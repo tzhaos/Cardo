@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { createPlatformJSONStorage } from '../../../platform/storage/createPlatformStateStorage';
+import { createExtensionJSONStorage } from '../../../extension/storage/createExtensionJSONStorage';
 import { DEFAULT_APP_THEME, getAlternateAppTheme, type AppTheme } from '../model/theme';
 
 interface ThemeState {
@@ -16,7 +16,7 @@ export const useThemeStore = create<ThemeState>()(
     }),
     {
       name: 'khaosbox-theme',
-      storage: createPlatformJSONStorage<ThemeState>(),
+      storage: createExtensionJSONStorage<ThemeState>(),
       partialize: ({ theme }) => ({ theme }),
     },
   ),

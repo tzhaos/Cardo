@@ -1,25 +1,25 @@
 import { toast } from 'sonner';
+import { openItem as openItemUseCase } from '../app/use-cases/openItem';
 import { useI18n } from '../domains/i18n/hooks/useI18n';
 import { BoxItemData } from '../types/item';
-import { openKbeResource } from '../platform/kbe/openKbeResource';
-import { openUrl } from '../platform/openUrl';
-import { writeText } from '../platform/writeText';
 
 export const useItemActions = () => {
   const { t } = useI18n();
 
   const openItem = async (item: BoxItemData) => {
-    try {
-      if (item.type === 'url') {
-        openUrl(item.content);
-      } else if (item.type === 'note') {
-        await writeText(item.content);
-        toast.success(t('toast.copiedToClipboard'));
-      } else {
-        openKbeResource(item.content);
-        toast.success(t('toast.openingLocalResource', { title: item.title }));
-      }
-    } catch (error) {
+    const result = await openItemUseCase(item);
+
+    if (result.status === 'copied-note') {
+      toast.success(t('toast.copiedToClipboard'));
+      return;
+    }
+
+    if (result.status === 'requested-local-resource') {
+      toast.message(t('toast.requestedLocalResource', { title: item.title }));
+      return;
+    }
+
+    if (result.status === 'failed') {
       toast.error(t('toast.unableToOpen', { title: item.title }));
     }
   };

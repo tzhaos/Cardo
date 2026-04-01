@@ -6,6 +6,7 @@ interface Props {
   item: BoxItemData;
   layout: 'grid' | 'list';
   onUpdate: (updates: Partial<BoxItemData>) => void;
+  onSetPinned: (isPinned: boolean) => void;
   onDelete: () => void;
 }
 

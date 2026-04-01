@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { createPlatformJSONStorage } from '../../../platform/storage/createPlatformStateStorage';
+import { createExtensionJSONStorage } from '../../../extension/storage/createExtensionJSONStorage';
 import { detectPreferredLocale, getAlternateLocale, type AppLocale } from '../model/locale';
 
 interface LocaleState {
@@ -18,7 +18,7 @@ export const useLocaleStore = create<LocaleState>()(
     }),
     {
       name: 'khaosbox-locale',
-      storage: createPlatformJSONStorage<LocaleState>(),
+      storage: createExtensionJSONStorage<LocaleState>(),
       partialize: ({ locale }) => ({ locale }),
     },
   ),
