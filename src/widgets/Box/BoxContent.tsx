@@ -4,6 +4,8 @@ import type { BoxData, BoxItemData } from '../../types/box';
 import { cn } from '../../lib/utils';
 import { useAddItem } from '../../features/item-management/hooks/useAddItem';
 import { useBoxDrop } from '../../features/item-management/hooks/useBoxDrop';
+import { createItem } from '../../domains/items/services/createItem';
+import { useWorkspaceStore } from '../../domains/workspace/store/useWorkspaceStore';
 import AddItemPanel from '../../features/item-management/ui/AddItemPanel';
 import DraggableItem from '../../features/item-management/ui/DraggableItem';
 import DropZoneOverlay from '../../features/item-management/ui/DropZoneOverlay';
@@ -15,16 +17,14 @@ interface BoxContentProps {
   data: BoxData;
   showAddMenu: boolean;
   setShowAddMenu: (show: boolean) => void;
-  onUpdate: (updates: Partial<BoxData>) => void;
 }
 
-export default function BoxContent({
-  data,
-  showAddMenu,
-  setShowAddMenu,
-  onUpdate,
-}: BoxContentProps) {
+export default function BoxContent({ data, showAddMenu, setShowAddMenu }: BoxContentProps) {
   const draggedItemInfo = useUIStore((state) => state.draggedItemInfo);
+  const addItem = useWorkspaceStore((state) => state.addItem);
+  const updateItem = useWorkspaceStore((state) => state.updateItem);
+  const deleteItem = useWorkspaceStore((state) => state.deleteItem);
+  const setItemPinned = useWorkspaceStore((state) => state.setItemPinned);
   const [listKey] = useState(() => `box-content-${data.id}`);
 
   const {
@@ -38,9 +38,17 @@ export default function BoxContent({
     confirmAdd,
     cancelAdd,
   } = useAddItem({
-    box: data,
     showAddMenu,
-    onUpdate,
+    onAddExistingItem: (item) => addItem(data.id, item),
+    onAddItem: (type, title, content) =>
+      addItem(
+        data.id,
+        createItem({
+          type,
+          title,
+          content,
+        }),
+      ),
     onClose: () => setShowAddMenu(false),
     onOpen: () => setShowAddMenu(true),
   });
@@ -59,7 +67,6 @@ export default function BoxContent({
     bringBoxToFront,
   } = useBoxDrop({
     box: data,
-    onUpdate,
     onOpenExternalDraft: (type, title) => {
       setShowAddMenu(true);
       openDraft(type, title);
@@ -70,16 +77,9 @@ export default function BoxContent({
     const commonProps = {
       item,
       layout: data.layout,
-      onUpdate: (updates: Partial<BoxItemData>) =>
-        onUpdate({
-          items: data.items.map((currentItem) =>
-            currentItem.id === item.id ? { ...currentItem, ...updates } : currentItem,
-          ),
-        }),
-      onDelete: () =>
-        onUpdate({
-          items: data.items.filter((currentItem) => currentItem.id !== item.id),
-        }),
+      onUpdate: (updates: Partial<BoxItemData>) => updateItem(data.id, item.id, updates),
+      onSetPinned: (isPinned: boolean) => setItemPinned(data.id, item.id, isPinned),
+      onDelete: () => deleteItem(data.id, item.id),
     };
 
     if (item.type === 'file' || item.type === 'folder') {

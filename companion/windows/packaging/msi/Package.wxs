@@ -1,0 +1,57 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package
+    Name="KhaosBox Companion"
+    Manufacturer="KhaosBox"
+    Version="0.1.0"
+    UpgradeCode="{96327B63-1B77-4C06-85D0-3E257E29217A}"
+    Language="1033"
+    InstallerVersion="500"
+    Scope="perUser">
+
+    <SummaryInformation
+      Description="KhaosBox Companion protocol handler for kbe URIs"
+      Manufacturer="KhaosBox" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of KhaosBox Companion is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <StandardDirectory Id="LocalAppDataFolder">
+      <Directory Id="KhaosBoxRootDir" Name="KhaosBox">
+        <Directory Id="INSTALLFOLDER" Name="Companion" />
+      </Directory>
+    </StandardDirectory>
+
+    <Feature Id="MainFeature" Title="KhaosBox Companion" Level="1">
+      <ComponentRef Id="cmpKhaosBoxCompanionExe" />
+    </Feature>
+  </Package>
+
+  <Fragment>
+    <Component Id="cmpKhaosBoxCompanionExe" Directory="INSTALLFOLDER" Guid="{76F4F257-D124-45D8-925D-559DF4332E91}">
+      <File
+        Id="filKhaosBoxCompanionExe"
+        Source="$(var.PublishDir)\KhaosBoxCompanion.exe" />
+
+      <RemoveFolder Id="RemoveInstallFolder" Directory="INSTALLFOLDER" On="uninstall" />
+      <RemoveFolder Id="RemoveKhaosBoxRootDir" Directory="KhaosBoxRootDir" On="uninstall" />
+
+      <RegistryKey Root="HKCU" Key="Software\Classes\kbe" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
+        <RegistryValue Type="string" Value="URL:KhaosBox Companion Protocol" />
+        <RegistryValue Name="URL Protocol" Type="string" Value="" />
+
+        <RegistryKey Key="DefaultIcon">
+          <RegistryValue Type="string" Value="[#filKhaosBoxCompanionExe]" />
+        </RegistryKey>
+
+        <RegistryKey Key="shell\open\command">
+          <RegistryValue Type="string" Value="&quot;[#filKhaosBoxCompanionExe]&quot; &quot;%1&quot;" />
+        </RegistryKey>
+      </RegistryKey>
+
+      <RegistryKey Root="HKCU" Key="Software\KhaosBox\Companion" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
+        <RegistryValue Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+        <RegistryValue Name="InstallPath" Type="string" Value="[INSTALLFOLDER]" />
+      </RegistryKey>
+    </Component>
+  </Fragment>
+</Wix>

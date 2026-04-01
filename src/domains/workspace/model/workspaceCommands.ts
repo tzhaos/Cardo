@@ -3,6 +3,7 @@ import { DEFAULT_NEW_BOX_TITLE } from './boxTitles';
 import { DEFAULT_BOX_THEME } from './defaultBoxes';
 import { createWorkspaceDataState, findBoxByRole, type WorkspaceDataState } from './workspaceState';
 import type { BoxData } from '../../../types/box';
+import type { BoxItemData } from '../../../types/item';
 
 interface WorkspaceSnapshotLike extends WorkspaceDataState {}
 
@@ -148,12 +149,44 @@ export function addPastedItem(
   }
 
   return {
-    ...updateBoxById(snapshot, targetBox.id, (box) => ({
-      ...box,
-      items: [...box.items, newItem],
-    })),
+    ...addItem(snapshot, targetBox.id, newItem),
     targetBoxId: targetBox.id,
   };
+}
+
+export function addItem(snapshot: WorkspaceSnapshotLike, boxId: string, item: BoxItemData) {
+  return updateBoxById(snapshot, boxId, (box) => ({
+    ...box,
+    items: [...box.items, item],
+  }));
+}
+
+export function updateItem(
+  snapshot: WorkspaceSnapshotLike,
+  boxId: string,
+  itemId: string,
+  updates: Partial<BoxItemData>,
+) {
+  return updateBoxById(snapshot, boxId, (box) => ({
+    ...box,
+    items: box.items.map((item) => (item.id === itemId ? { ...item, ...updates } : item)),
+  }));
+}
+
+export function deleteItem(snapshot: WorkspaceSnapshotLike, boxId: string, itemId: string) {
+  return updateBoxById(snapshot, boxId, (box) => ({
+    ...box,
+    items: box.items.filter((item) => item.id !== itemId),
+  }));
+}
+
+export function setItemPinned(
+  snapshot: WorkspaceSnapshotLike,
+  boxId: string,
+  itemId: string,
+  isPinned: boolean,
+) {
+  return updateItem(snapshot, boxId, itemId, { isPinned });
 }
 
 export function moveItem(

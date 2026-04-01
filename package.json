@@ -5,18 +5,17 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "vite --port=3000 --host=0.0.0.0",
+    "dev": "vite build --watch",
     "build": "vite build",
-    "build:extension": "vite build",
-    "native-host:build": "dotnet build native-host/windows/KhaosBoxExplorer.csproj",
-    "native-host:publish": "dotnet publish native-host/windows/KhaosBoxExplorer.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o native-host/windows/build/win-x64",
-    "native-host:msi": "powershell -ExecutionPolicy Bypass -File native-host/windows/build-msi.ps1",
-    "native-host:install": "powershell -ExecutionPolicy Bypass -File native-host/windows/install.ps1",
-    "native-host:uninstall": "powershell -ExecutionPolicy Bypass -File native-host/windows/uninstall.ps1",
-    "preview": "vite preview",
-    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "companion:windows:build": "dotnet build companion/windows/src/KhaosBoxCompanion.csproj",
+    "companion:windows:publish": "dotnet publish companion/windows/src/KhaosBoxCompanion.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o artifacts/companion/windows/publish/win-x64",
+    "companion:windows:msi": "powershell -ExecutionPolicy Bypass -File companion/windows/scripts/build-msi.ps1",
+    "companion:windows:install": "powershell -ExecutionPolicy Bypass -File companion/windows/scripts/install.ps1",
+    "companion:windows:uninstall": "powershell -ExecutionPolicy Bypass -File companion/windows/scripts/uninstall.ps1",
+    "clean": "node -e \"const fs=require('node:fs'); ['artifacts','dist','companion/windows/src/bin','companion/windows/src/obj','companion/windows/tests/bin','companion/windows/tests/obj','companion/windows/packaging/msi/bin','companion/windows/packaging/msi/obj'].forEach((path)=>fs.rmSync(path,{recursive:true,force:true}))\"",
     "lint": "tsc --noEmit",
-    "test": "tsx --test src/domains/workspace/model/workspaceModel.test.ts src/domains/items/services/createItem.test.ts src/features/item-management/services/createExternalDraftFromTransfer.test.ts src/platform/kbe/createKbeUrl.test.ts"
+    "test:ts": "tsx --test src/domains/workspace/model/workspaceModel.test.ts src/domains/items/services/createItem.test.ts src/features/item-management/services/createExternalDraftFromTransfer.test.ts src/integrations/companion/createKbeUrl.test.ts",
+    "test": "npm run test:ts && dotnet test companion/windows/tests/KhaosBoxCompanion.Tests.csproj"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",

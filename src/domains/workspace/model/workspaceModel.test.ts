@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createItem } from '../../items/services/createItem';
 import { createInitialBoxes, DEFAULT_BOX_THEME } from './defaultBoxes';
-import { addPastedItem, moveItem } from './workspaceCommands';
+import { addItem, addPastedItem, deleteItem, moveItem, setItemPinned, updateItem } from './workspaceCommands';
 import {
   WorkspaceImportError,
   normalizePersistedWorkspaceSnapshot,
@@ -21,6 +21,32 @@ test('addPastedItem routes URL text to the links system box role', () => {
   assert.equal(nextState.targetBoxId, 'webpages');
   assert.equal(nextState.boxesById.webpages.items.length, 1);
   assert.equal(nextState.boxesById.webpages.items[0]?.type, 'url');
+});
+
+test('item commands add, update, pin, and delete items without direct array mutation in UI', () => {
+  const snapshot = createWorkspaceDataState(createInitialBoxes(), WORKSPACE_STATE_VERSION);
+  const createdItem = createItem({
+    type: 'note',
+    title: 'Scratch',
+    content: 'Initial note',
+  });
+
+  const withItem = addItem(snapshot, 'clipboard', createdItem);
+  assert.equal(withItem.boxesById.clipboard.items.length, 1);
+  assert.equal(withItem.boxesById.clipboard.items[0].title, 'Scratch');
+
+  const withUpdatedItem = updateItem(withItem, 'clipboard', createdItem.id, {
+    title: 'Updated scratch',
+    content: 'Updated note',
+  });
+  assert.equal(withUpdatedItem.boxesById.clipboard.items[0].title, 'Updated scratch');
+  assert.equal(withUpdatedItem.boxesById.clipboard.items[0].content, 'Updated note');
+
+  const withPinnedItem = setItemPinned(withUpdatedItem, 'clipboard', createdItem.id, true);
+  assert.equal(withPinnedItem.boxesById.clipboard.items[0].isPinned, true);
+
+  const withoutItem = deleteItem(withPinnedItem, 'clipboard', createdItem.id);
+  assert.equal(withoutItem.boxesById.clipboard.items.length, 0);
 });
 
 test('moveItem moves an item between boxes and inherits the reference pin state', () => {

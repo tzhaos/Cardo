@@ -1,16 +1,21 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { BoxData } from '../../../types/box';
-import { createPlatformJSONStorage } from '../../../platform/storage/createPlatformStateStorage';
+import type { BoxItemData } from '../../../types/item';
+import { createExtensionJSONStorage } from '../../../extension/storage/createExtensionJSONStorage';
 import {
+  addItem,
   addPastedItem,
   bringBoxToFront,
+  deleteItem,
   createBox,
   deleteBox,
   moveItem,
   replaceBoxes,
+  setItemPinned,
   toggleAllBoxesMinimized,
   toggleBoxMinimize,
+  updateItem,
   updateBox,
 } from '../model/workspaceCommands';
 import { createInitialBoxes } from '../model/defaultBoxes';
@@ -29,6 +34,10 @@ interface WorkspaceState {
   createBox: (viewport: { width: number; height: number }) => string;
   toggleAllMinimized: () => boolean;
   addPastedItem: (text: string, activeBoxId: string | null) => string | null;
+  addItem: (boxId: string, item: BoxItemData) => void;
+  updateItem: (boxId: string, itemId: string, updates: Partial<BoxItemData>) => void;
+  deleteItem: (boxId: string, itemId: string) => void;
+  setItemPinned: (boxId: string, itemId: string, isPinned: boolean) => void;
   moveItem: (
     itemId: string,
     sourceBoxId: string,
@@ -84,6 +93,22 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         return nextState.targetBoxId;
       },
 
+      addItem: (boxId, item) => {
+        set(addItem(get(), boxId, item));
+      },
+
+      updateItem: (boxId, itemId, updates) => {
+        set(updateItem(get(), boxId, itemId, updates));
+      },
+
+      deleteItem: (boxId, itemId) => {
+        set(deleteItem(get(), boxId, itemId));
+      },
+
+      setItemPinned: (boxId, itemId, isPinned) => {
+        set(setItemPinned(get(), boxId, itemId, isPinned));
+      },
+
       moveItem: (itemId, sourceBoxId, targetBoxId, targetIndex) => {
         set(moveItem(get(), itemId, sourceBoxId, targetBoxId, targetIndex));
       },
@@ -103,7 +128,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
     }),
     {
       name: 'khaosbox-workspace',
-      storage: createPlatformJSONStorage<WorkspaceState>(),
+      storage: createExtensionJSONStorage<WorkspaceState>(),
       partialize: ({ version, boxesById, boxOrder, maxZIndex }) => ({
         version,
         boxesById,

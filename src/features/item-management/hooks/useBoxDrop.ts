@@ -17,15 +17,15 @@ interface DropIndicator {
 
 interface UseBoxDropOptions {
   box: BoxData;
-  onUpdate: (updates: Partial<BoxData>) => void;
   onOpenExternalDraft: (type: Extract<ItemType, 'file' | 'folder'>, title: string) => void;
 }
 
-export function useBoxDrop({ box, onUpdate, onOpenExternalDraft }: UseBoxDropOptions) {
+export function useBoxDrop({ box, onOpenExternalDraft }: UseBoxDropOptions) {
   const { t } = useI18n();
   const draggedItemInfo = useUIStore((state) => state.draggedItemInfo);
   const editingSessionId = useUIStore((state) => state.editingSessionId);
   const setDraggedItemInfo = useUIStore((state) => state.setDraggedItemInfo);
+  const addItem = useWorkspaceStore((state) => state.addItem);
   const moveItem = useWorkspaceStore((state) => state.moveItem);
   const bringToFront = useWorkspaceStore((state) => state.bringToFront);
 
@@ -150,7 +150,7 @@ export function useBoxDrop({ box, onUpdate, onOpenExternalDraft }: UseBoxDropOpt
     const textItem = createTextItemFromTransfer(event.dataTransfer);
 
     if (textItem) {
-      onUpdate({ items: [...box.items, textItem] });
+      addItem(box.id, textItem);
       toast.success(
         t('toast.addedType', {
           type: textItem.type === 'url' ? t('workspace.pastedUrl') : t('itemType.note'),

@@ -1,0 +1,13 @@
+<Project Sdk="WixToolset.Sdk/5.0.2">
+  <PropertyGroup>
+    <OutputType>Package</OutputType>
+    <Platform>x64</Platform>
+    <DefineConstants>PublishDir=$(PublishDir)</DefineConstants>
+    <SuppressIces>ICE91</SuppressIces>
+  </PropertyGroup>
+
+  <Target Name="CopyMsiToPackageRoot" AfterTargets="Build" Condition="'$(MsiOutputPath)' != ''">
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(MsiOutputPath)'))" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(MsiOutputPath)" OverwriteReadOnlyFiles="true" />
+  </Target>
+</Project>

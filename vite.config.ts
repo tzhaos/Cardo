@@ -4,14 +4,36 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { defineConfig } from 'vite';
 
+const EXTENSION_OUT_DIR = path.resolve(__dirname, 'artifacts/extension/unpacked');
+
+function relocateBuiltNewtab(outDir: string) {
+  const builtNewtabSource = path.join(outDir, 'assets/extension-shell/pages/newtab.html');
+  const builtNewtabTarget = path.join(outDir, 'extension/pages/newtab.html');
+
+  if (!fs.existsSync(builtNewtabSource)) {
+    return;
+  }
+
+  fs.mkdirSync(path.dirname(builtNewtabTarget), { recursive: true });
+  fs.renameSync(builtNewtabSource, builtNewtabTarget);
+
+  const shellAssetRoot = path.join(outDir, 'assets/extension-shell');
+
+  if (fs.existsSync(shellAssetRoot)) {
+    fs.rmSync(shellAssetRoot, { recursive: true, force: true });
+  }
+}
+
 function copyExtensionAssets() {
   return {
     name: 'copy-extension-assets',
     writeBundle(options: { dir?: string }) {
-      const outDir = options.dir ? path.resolve(options.dir) : path.resolve(__dirname, 'dist');
-      const manifestSource = path.resolve(__dirname, 'extension/manifest.json');
-      const iconsSource = path.resolve(__dirname, 'extension/icons');
-      const localesSource = path.resolve(__dirname, 'extension/_locales');
+      const outDir = options.dir
+        ? path.resolve(options.dir)
+        : EXTENSION_OUT_DIR;
+      const manifestSource = path.resolve(__dirname, 'assets/extension-shell/manifest.json');
+      const iconsSource = path.resolve(__dirname, 'assets/extension-shell/icons');
+      const localesSource = path.resolve(__dirname, 'assets/extension-shell/_locales');
 
       fs.mkdirSync(outDir, { recursive: true });
       fs.copyFileSync(manifestSource, path.join(outDir, 'manifest.json'));
@@ -24,6 +46,9 @@ function copyExtensionAssets() {
         fs.cpSync(localesSource, path.join(outDir, '_locales'), { recursive: true });
       }
     },
+    closeBundle() {
+      relocateBuiltNewtab(EXTENSION_OUT_DIR);
+    },
   };
 }
 
@@ -35,14 +60,11 @@ export default defineConfig(() => {
         '@': path.resolve(__dirname, '.'),
       },
     },
-    server: {
-      hmr: process.env.DISABLE_HMR !== 'true',
-    },
     build: {
+      outDir: EXTENSION_OUT_DIR,
       rollupOptions: {
         input: {
-          preview: path.resolve(__dirname, 'index.html'),
-          newtab: path.resolve(__dirname, 'extension/pages/newtab.html'),
+          newtab: path.resolve(__dirname, 'assets/extension-shell/pages/newtab.html'),
         },
       },
     },

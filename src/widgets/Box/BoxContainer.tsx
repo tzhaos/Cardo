@@ -114,7 +114,6 @@ export default function BoxContainer({ boxId }: BoxContainerProps) {
         data={data}
         showAddMenu={showAddMenu}
         setShowAddMenu={setShowAddMenu}
-        onUpdate={applyBoxUpdates}
       />
 
       {!data.isLocked && (

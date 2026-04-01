@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <CompanionArtifactsRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\artifacts\companion\windows\'))</CompanionArtifactsRoot>
+    <BaseOutputPath>$(CompanionArtifactsRoot)bin\$(MSBuildProjectName)\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(CompanionArtifactsRoot)obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)\bin\**;$(MSBuildProjectDirectory)\obj\**</DefaultItemExcludes>
+  </PropertyGroup>
+</Project>

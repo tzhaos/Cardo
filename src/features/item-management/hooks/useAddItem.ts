@@ -2,19 +2,24 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useI18n } from '../../../domains/i18n/hooks/useI18n';
 import { ITEM_TYPE_LABEL_KEYS } from '../../../domains/i18n/model/messages';
-import { createItem, createItemFromText } from '../../../domains/items/services/createItem';
-import type { BoxData } from '../../../types/box';
+import { createItemFromText } from '../../../domains/items/services/createItem';
 import type { ItemType } from '../../../types/item';
 
 interface UseAddItemOptions {
-  box: BoxData;
   showAddMenu: boolean;
-  onUpdate: (updates: Partial<BoxData>) => void;
+  onAddItem: (type: ItemType, title: string, content: string) => void;
+  onAddExistingItem: (item: ReturnType<typeof createItemFromText>) => void;
   onClose: () => void;
   onOpen: () => void;
 }
 
-export function useAddItem({ box, showAddMenu, onUpdate, onClose, onOpen }: UseAddItemOptions) {
+export function useAddItem({
+  showAddMenu,
+  onAddItem,
+  onAddExistingItem,
+  onClose,
+  onOpen,
+}: UseAddItemOptions) {
   const { t } = useI18n();
   const [addingType, setAddingType] = useState<ItemType | null>(null);
   const [newItemTitle, setNewItemTitle] = useState('');
@@ -43,17 +48,13 @@ export function useAddItem({ box, showAddMenu, onUpdate, onClose, onOpen }: UseA
     setNewItemContent('');
   };
 
-  const appendItems = (items: BoxData['items']) => {
-    onUpdate({ items: [...box.items, ...items] });
-  };
-
   const handleAddItemType = async (type: ItemType) => {
     if (type === 'note') {
       try {
         const clipboardText = await navigator.clipboard.readText();
 
         if (clipboardText) {
-          appendItems([createItemFromText(clipboardText)]);
+          onAddExistingItem(createItemFromText(clipboardText));
           toast.success(t('toast.addedFromClipboard'));
           closeComposer();
           return;
@@ -80,13 +81,7 @@ export function useAddItem({ box, showAddMenu, onUpdate, onClose, onOpen }: UseA
       return;
     }
 
-    appendItems([
-      createItem({
-        type: addingType,
-        title: newItemTitle,
-        content: newItemContent,
-      }),
-    ]);
+    onAddItem(addingType, newItemTitle, newItemContent);
     toast.success(
       t('toast.addedNewType', {
         type: t(ITEM_TYPE_LABEL_KEYS[addingType]),
