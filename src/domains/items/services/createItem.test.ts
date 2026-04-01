@@ -45,3 +45,11 @@ test('createItemFromText turns pasted UNC paths into folder items', () => {
   assert.equal(item.content, '\\\\shfile01.lisuantech.com\\SW');
   assert.equal(item.title, 'SW');
 });
+
+test('createItemFromText preserves Chinese folder paths', () => {
+  const item = createItemFromText('V:\\共享目录\\中文 文件夹');
+
+  assert.equal(item.type, 'folder');
+  assert.equal(item.content, 'V:\\共享目录\\中文 文件夹');
+  assert.equal(item.title, '中文 文件夹');
+});

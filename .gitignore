@@ -8,3 +8,8 @@ coverage/
 *.pem
 .env*
 !.env.example
+native-host/windows/bin/
+native-host/windows/obj/
+native-host/windows/release/
+native-host/windows/installer/bin/
+native-host/windows/installer/obj/
