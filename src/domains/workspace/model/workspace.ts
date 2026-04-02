@@ -81,6 +81,7 @@ export type WorkspaceCommand =
 export const WORKSPACE_SCHEMA_VERSION = 3 as const;
 export const WORKSPACE_EXPORT_VERSION = 2 as const;
 export const SYSTEM_BOX_ROLES: WorkspaceBoxRole[] = ['folders', 'links', 'notes'];
+export const MAX_WORKSPACE_BOXES = 12;
 
 export function isWorkspaceBoxRole(value: unknown): value is WorkspaceBoxRole {
   return typeof value === 'string' && SYSTEM_BOX_ROLES.includes(value as WorkspaceBoxRole);

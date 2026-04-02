@@ -24,7 +24,7 @@ export default function WorkspaceDesktop() {
     >
       <Background />
       <BrandBadge label={t('app.brand')} />
-      <Toaster theme={theme} position="top-center" />
+      <Toaster theme={theme} position="bottom-right" />
       <SnapOverlay />
 
       {visibleBoxes.map((box) => (

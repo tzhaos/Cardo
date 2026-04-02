@@ -9,6 +9,7 @@ export interface ItemCardProps {
   isInteractionLocked: boolean;
   editTitle: string;
   editContent: string;
+  editorRootRef?: React.RefObject<HTMLDivElement | null>;
   titleInputRef: React.RefObject<HTMLInputElement | null>;
   contentLabel: string;
   titlePlaceholder: string;
@@ -44,6 +45,7 @@ export default function ItemCard({
   isInteractionLocked,
   editTitle,
   editContent,
+  editorRootRef,
   titleInputRef,
   contentLabel,
   titlePlaceholder,
@@ -81,6 +83,7 @@ export default function ItemCard({
   if (isEditing) {
     return (
       <div
+        ref={editorRootRef}
         className={cn(
           'kb-item-editor relative overflow-hidden rounded-2xl border backdrop-blur-xl',
           layout === 'grid' ? 'min-h-[210px]' : '',

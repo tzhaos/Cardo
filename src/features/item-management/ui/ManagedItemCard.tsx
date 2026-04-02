@@ -46,6 +46,7 @@ export default function ManagedItemCard({
   const setEditingSessionId = useInteractionStore((state) => state.setEditingSessionId);
   const [editTitle, setEditTitle] = useState(item.title);
   const [editContent, setEditContent] = useState(item.content);
+  const editorRootRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const { openItem } = useItemActions();
 
@@ -69,6 +70,29 @@ export default function ManagedItemCard({
     titleInputRef.current.focus();
     titleInputRef.current.select();
   }, [isEditing]);
+
+  useEffect(() => {
+    if (!isEditing) {
+      return;
+    }
+
+    const handlePointerDownOutside = (event: PointerEvent) => {
+      const editorRoot = editorRootRef.current;
+      const target = event.target;
+
+      if (!editorRoot || !(target instanceof Node) || editorRoot.contains(target)) {
+        return;
+      }
+
+      handleSave();
+    };
+
+    document.addEventListener('pointerdown', handlePointerDownOutside, true);
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDownOutside, true);
+    };
+  }, [isEditing, editTitle, editContent, item.type, onUpdate]);
 
   useEffect(
     () => () => {
@@ -138,6 +162,7 @@ export default function ManagedItemCard({
     isInteractionLocked,
     editTitle,
     editContent,
+    editorRootRef,
     titleInputRef,
     contentLabel:
       item.type === 'note' ? t('item.content') : item.type === 'url' ? t('item.address') : t('item.path'),

@@ -50,7 +50,7 @@ export default function BoxContainer({
           ? 'var(--box-drag-shadow)'
           : isActive && !box.isLocked
             ? 'var(--box-active-shadow)'
-            : 'var(--box-shadow)',
+            : 'none',
       }}
       className={cn(
         'kb-box absolute flex flex-col overflow-hidden rounded-xl border backdrop-blur-md transition-[background-color,border-color,color] duration-300',

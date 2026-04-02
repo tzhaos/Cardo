@@ -1,10 +1,25 @@
 import { DEFAULT_BOX_THEME } from '../../domains/workspace/model/boxThemes';
-import type { WorkspaceBox } from '../../domains/workspace/model/workspace';
+import {
+  MAX_WORKSPACE_BOXES,
+  type WorkspaceBox,
+} from '../../domains/workspace/model/workspace';
 import { useWorkspaceStore } from '../stores/useWorkspaceStore';
 import { createId } from './createId';
 
+export type CreateWorkspaceBoxResult =
+  | { status: 'created'; box: WorkspaceBox }
+  | { status: 'limit-reached'; limit: number };
+
 export function createWorkspaceBox(viewport: { width: number; height: number }) {
   const { snapshot, dispatch } = useWorkspaceStore.getState();
+
+  if (snapshot.boxOrder.length >= MAX_WORKSPACE_BOXES) {
+    return {
+      status: 'limit-reached' as const,
+      limit: MAX_WORKSPACE_BOXES,
+    };
+  }
+
   const box: WorkspaceBox = {
     id: createId('box'),
     role: null,
@@ -28,5 +43,8 @@ export function createWorkspaceBox(viewport: { width: number; height: number }) 
     box,
   });
 
-  return box;
+  return {
+    status: 'created' as const,
+    box,
+  };
 }
