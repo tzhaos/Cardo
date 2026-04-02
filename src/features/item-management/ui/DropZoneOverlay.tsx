@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react';
-import { useI18n } from '../../../domains/i18n/hooks/useI18n';
+import { useI18n } from '../../../app/hooks/useI18n';
 
 export default function DropZoneOverlay() {
   const { t } = useI18n();

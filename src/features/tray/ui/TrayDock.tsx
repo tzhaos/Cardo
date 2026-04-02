@@ -1,13 +1,16 @@
 import { Download, MoonStar, Plus, SunMedium, Upload } from 'lucide-react';
 import { useRef, type ChangeEvent } from 'react';
 import { toast } from 'sonner';
-import { useShallow } from 'zustand/react/shallow';
-import { useI18n } from '../../../domains/i18n/hooks/useI18n';
-import { useUIStore } from '../../../domains/ui/store/useUIStore';
-import { useThemeStore } from '../../../domains/ui/store/useThemeStore';
-import { parseImportedWorkspaceBoxes } from '../../../domains/workspace/model/workspaceSchema';
-import { createWorkspaceExportPayload } from '../../../domains/workspace/model/workspaceState';
-import { useWorkspaceStore } from '../../../domains/workspace/store/useWorkspaceStore';
+import { useI18n } from '../../../app/hooks/useI18n';
+import { runtimeDocumentPort } from '../../../app/ports/defaultPorts';
+import { createWorkspaceBox } from '../../../app/use-cases/createWorkspaceBox';
+import { exportWorkspace } from '../../../app/use-cases/exportWorkspace';
+import { importWorkspace } from '../../../app/use-cases/importWorkspace';
+import { toggleLocale } from '../../../app/use-cases/toggleLocale';
+import { toggleTheme } from '../../../app/use-cases/toggleTheme';
+import { useInteractionStore } from '../../../app/stores/useInteractionStore';
+import { usePreferencesStore } from '../../../app/stores/usePreferencesStore';
+import { useTrayBoxes, useWorkspaceDispatch } from '../../../app/stores/useWorkspaceSelectors';
 import { cn } from '../../../lib/utils';
 import TrayItemButton from './TrayItemButton';
 
@@ -39,64 +42,40 @@ function LocaleToggleGlyph({ locale }: { locale: 'zh' | 'en' }) {
 }
 
 export default function TrayDock() {
-  const { locale, toggleLocale, t } = useI18n();
-  const theme = useThemeStore((state) => state.theme);
-  const toggleTheme = useThemeStore((state) => state.toggleTheme);
-  const boxIds = useWorkspaceStore(useShallow((state) => state.boxOrder));
-  const toggleMinimize = useWorkspaceStore((state) => state.toggleMinimize);
-  const createBox = useWorkspaceStore((state) => state.createBox);
-  const replaceBoxes = useWorkspaceStore((state) => state.replaceBoxes);
-  const setActiveBox = useUIStore((state) => state.setActiveBox);
+  const { locale, t } = useI18n();
+  const theme = usePreferencesStore((state) => state.theme);
+  const boxes = useTrayBoxes();
+  const dispatch = useWorkspaceDispatch();
+  const setActiveBox = useInteractionStore((state) => state.setActiveBox);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleExport = () => {
-    const data = JSON.stringify(createWorkspaceExportPayload(useWorkspaceStore.getState()), null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-
-    anchor.href = url;
-    anchor.download = `${t('dock.exportFilePrefix')}-${new Date().toISOString().slice(0, 10)}.json`;
-    anchor.click();
-    URL.revokeObjectURL(url);
+    exportWorkspace(t('dock.exportFilePrefix'));
     toast.success(t('toast.dataExported'));
   };
 
-  const handleImport = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleImport = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
 
     if (!file) {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (loadEvent) => {
-      try {
-        const importedBoxes = parseImportedWorkspaceBoxes(
-          JSON.parse(loadEvent.target?.result as string) as unknown,
-        );
+    try {
+      await importWorkspace(file);
+      toast.success(t('toast.dataImported'));
+    } catch {
+      toast.error(t('toast.importFailed'));
+    }
 
-        toast.success(t('toast.dataImported'));
-        replaceBoxes(importedBoxes);
-      } catch {
-        toast.error(t('toast.importFailed'));
-      }
-
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    };
-
-    reader.readAsText(file);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleCreateBox = () => {
-    const createdBoxId = createBox({
-      width: window.innerWidth,
-      height: window.innerHeight,
-    });
-
-    setActiveBox(createdBoxId);
+    const createdBox = createWorkspaceBox(runtimeDocumentPort.getViewport());
+    setActiveBox(createdBox.id);
   };
 
   const themeToggleTitle = t(theme === 'dark' ? 'dock.switchToLightTheme' : 'dock.switchToDarkTheme');
@@ -104,8 +83,18 @@ export default function TrayDock() {
   return (
     <div className="fixed bottom-6 left-1/2 z-[99990] -translate-x-1/2">
       <div className="kb-dock flex items-center gap-2 rounded-2xl border px-4 py-2 backdrop-blur-md">
-        {boxIds.map((boxId) => (
-          <TrayItemButton key={boxId} boxId={boxId} onClick={() => toggleMinimize(boxId)} />
+        {boxes.map((box) => (
+          <TrayItemButton
+            key={box.id}
+            box={box}
+            onClick={() => {
+              dispatch({
+                type: 'box.update',
+                boxId: box.id,
+                updates: { isMinimized: !box.isMinimized },
+              });
+            }}
+          />
         ))}
 
         <div className="kb-dock-divider mx-2 h-8 w-px" />

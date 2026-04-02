@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { useI18n } from '../../../domains/i18n/hooks/useI18n';
-import { useUIStore } from '../../../domains/ui/store/useUIStore';
-import { useWorkspaceStore } from '../../../domains/workspace/store/useWorkspaceStore';
+import { useI18n } from '../../../app/hooks/useI18n';
+import { addItemDraftToBox } from '../../../app/use-cases/addItemDraftToBox';
+import { useInteractionStore } from '../../../app/stores/useInteractionStore';
+import { useWorkspaceDispatch } from '../../../app/stores/useWorkspaceSelectors';
+import { ITEM_TYPE_LABEL_KEYS } from '../../../domains/i18n/model/messages';
 import { isFormControlElement } from '../../../lib/dom';
-import type { BoxData } from '../../../types/box';
-import type { ItemType } from '../../../types/item';
+import type { ItemDraft, ItemType } from '../../../domains/items/model/item';
+import type { WorkspaceBox } from '../../../domains/workspace/model/workspace';
 import { createExternalDraftFromTransfer } from '../services/createExternalDraftFromTransfer';
 import { createTextItemFromTransfer } from '../services/createExternalItemsFromTransfer';
 import { parseDraggedBoxItem } from '../services/parseDraggedBoxItem';
@@ -16,18 +18,16 @@ interface DropIndicator {
 }
 
 interface UseBoxDropOptions {
-  box: BoxData;
-  onOpenExternalDraft: (type: Extract<ItemType, 'file' | 'folder'>, title: string) => void;
+  box: WorkspaceBox;
+  onOpenExternalDraft: (draft: ItemDraft) => void;
 }
 
 export function useBoxDrop({ box, onOpenExternalDraft }: UseBoxDropOptions) {
   const { t } = useI18n();
-  const draggedItemInfo = useUIStore((state) => state.draggedItemInfo);
-  const editingSessionId = useUIStore((state) => state.editingSessionId);
-  const setDraggedItemInfo = useUIStore((state) => state.setDraggedItemInfo);
-  const addItem = useWorkspaceStore((state) => state.addItem);
-  const moveItem = useWorkspaceStore((state) => state.moveItem);
-  const bringToFront = useWorkspaceStore((state) => state.bringToFront);
+  const draggedItemInfo = useInteractionStore((state) => state.draggedItemInfo);
+  const editingSessionId = useInteractionStore((state) => state.editingSessionId);
+  const setDraggedItemInfo = useInteractionStore((state) => state.setDraggedItemInfo);
+  const dispatch = useWorkspaceDispatch();
 
   const [isDragOver, setIsDragOver] = useState(false);
   const [dropIndicator, setDropIndicator] = useState<DropIndicator | null>(null);
@@ -127,7 +127,7 @@ export function useBoxDrop({ box, onOpenExternalDraft }: UseBoxDropOptions) {
       const externalDraft = createExternalDraftFromTransfer(event.dataTransfer);
 
       if (externalDraft) {
-        onOpenExternalDraft(externalDraft.type, externalDraft.title);
+        onOpenExternalDraft(externalDraft);
       }
 
       return;
@@ -136,13 +136,23 @@ export function useBoxDrop({ box, onOpenExternalDraft }: UseBoxDropOptions) {
     const parsedDragPayload = parseDraggedBoxItem(event.dataTransfer);
 
     if (parsedDragPayload) {
-      moveItem(parsedDragPayload.itemId, parsedDragPayload.sourceBoxId, box.id);
+      dispatch({
+        type: 'item.move',
+        itemId: parsedDragPayload.itemId,
+        sourceBoxId: parsedDragPayload.sourceBoxId,
+        targetBoxId: box.id,
+      });
       setDraggedItemInfo(null);
       return;
     }
 
     if (draggedItemInfo) {
-      moveItem(draggedItemInfo.itemId, draggedItemInfo.sourceBoxId, box.id);
+      dispatch({
+        type: 'item.move',
+        itemId: draggedItemInfo.itemId,
+        sourceBoxId: draggedItemInfo.sourceBoxId,
+        targetBoxId: box.id,
+      });
       setDraggedItemInfo(null);
       return;
     }
@@ -150,10 +160,10 @@ export function useBoxDrop({ box, onOpenExternalDraft }: UseBoxDropOptions) {
     const textItem = createTextItemFromTransfer(event.dataTransfer);
 
     if (textItem) {
-      addItem(box.id, textItem);
+      addItemDraftToBox(box.id, textItem);
       toast.success(
         t('toast.addedType', {
-          type: textItem.type === 'url' ? t('workspace.pastedUrl') : t('itemType.note'),
+          type: textItem.type === 'url' ? t('workspace.pastedUrl') : t(ITEM_TYPE_LABEL_KEYS[textItem.type]),
         }),
       );
     }
@@ -165,7 +175,7 @@ export function useBoxDrop({ box, onOpenExternalDraft }: UseBoxDropOptions) {
       return;
     }
 
-    bringToFront(box.id);
+    dispatch({ type: 'box.bringToFront', boxId: box.id });
     setDraggedItemInfo({ itemId, sourceBoxId: box.id });
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/plain', itemId);
@@ -241,7 +251,13 @@ export function useBoxDrop({ box, onOpenExternalDraft }: UseBoxDropOptions) {
       targetIndex += 1;
     }
 
-    moveItem(activeDrag.itemId, activeDrag.sourceBoxId, box.id, targetIndex);
+    dispatch({
+      type: 'item.move',
+      itemId: activeDrag.itemId,
+      sourceBoxId: activeDrag.sourceBoxId,
+      targetBoxId: box.id,
+      targetIndex,
+    });
     setDraggedItemInfo(null);
   };
 
@@ -259,6 +275,6 @@ export function useBoxDrop({ box, onOpenExternalDraft }: UseBoxDropOptions) {
       setDraggedItemInfo(null);
       setDropIndicator(null);
     },
-    bringBoxToFront: () => bringToFront(box.id),
+    bringBoxToFront: () => dispatch({ type: 'box.bringToFront', boxId: box.id }),
   };
 }

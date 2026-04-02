@@ -1,0 +1,22 @@
+import type { ClipboardPort } from './ClipboardPort';
+import type { FileExportPort } from './FileExportPort';
+import type { FileImportPort } from './FileImportPort';
+import type { LocalResourcePort } from './LocalResourcePort';
+import type { RuntimeDocumentPort } from './RuntimeDocumentPort';
+import type { TabsPort } from './TabsPort';
+import type { WorkspaceStoragePort } from './WorkspaceStoragePort';
+import { browserClipboardPort } from '../../extension/clipboard/browserClipboardPort';
+import { browserFileExportPort } from '../../extension/files/browserFileExportPort';
+import { browserFileImportPort } from '../../extension/files/browserFileImportPort';
+import { browserTabsPort } from '../../extension/navigation/browserTabsPort';
+import { browserRuntimeDocumentPort } from '../../extension/runtime/browserRuntimeDocumentPort';
+import { chromeWorkspaceStoragePort } from '../../extension/storage/chromeWorkspaceStoragePort';
+import { companionLocalResourcePort } from '../../integrations/companion/companionLocalResourcePort';
+
+export const workspaceStoragePort: WorkspaceStoragePort = chromeWorkspaceStoragePort;
+export const clipboardPort: ClipboardPort = browserClipboardPort;
+export const fileExportPort: FileExportPort = browserFileExportPort;
+export const fileImportPort: FileImportPort = browserFileImportPort;
+export const tabsPort: TabsPort = browserTabsPort;
+export const runtimeDocumentPort: RuntimeDocumentPort = browserRuntimeDocumentPort;
+export const localResourcePort: LocalResourcePort = companionLocalResourcePort;

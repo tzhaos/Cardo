@@ -1,10 +1,11 @@
-import { useUIStore } from '../../../domains/ui/store/useUIStore';
+import { useInteractionStore } from '../../../app/stores/useInteractionStore';
 import { cn } from '../../../lib/utils';
-import type { BoxData, BoxItemData } from '../../../types/box';
+import type { WorkspaceItem } from '../../../domains/items/model/item';
+import type { WorkspaceBox } from '../../../domains/workspace/model/workspace';
 
 interface DraggableItemProps {
-  item: BoxItemData;
-  layout: BoxData['layout'];
+  item: WorkspaceItem;
+  layout: WorkspaceBox['layout'];
   isBeingDragged: boolean;
   dropIndicator: { id: string; position: 'before' | 'after' } | null;
   onDragStart: (event: React.DragEvent, itemId: string) => void;
@@ -25,7 +26,7 @@ export default function DraggableItem({
   onDragEnd,
   children,
 }: DraggableItemProps) {
-  const editingSessionId = useUIStore((state) => state.editingSessionId);
+  const editingSessionId = useInteractionStore((state) => state.editingSessionId);
   const dragDisabled = Boolean(editingSessionId);
 
   return (

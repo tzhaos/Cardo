@@ -1,31 +1,34 @@
 import { useEffect, useEffectEvent } from 'react';
 import { toast } from 'sonner';
-import { useI18n } from '../../../domains/i18n/hooks/useI18n';
-import { isUrlText } from '../../../domains/items/services/isUrlText';
-import { useUIStore } from '../../../domains/ui/store/useUIStore';
+import { useI18n } from '../../../app/hooks/useI18n';
+import { runtimeDocumentPort } from '../../../app/ports/defaultPorts';
+import { pasteTextItem } from '../../../app/use-cases/pasteTextItem';
+import { toggleAllBoxesMinimized } from '../../../app/use-cases/toggleAllBoxesMinimized';
+import { useInteractionStore } from '../../../app/stores/useInteractionStore';
+import { useWorkspaceStore } from '../../../app/stores/useWorkspaceStore';
+import { ITEM_TYPE_LABEL_KEYS } from '../../../domains/i18n/model/messages';
 import { getBoxDisplayTitle } from '../../../domains/workspace/model/boxTitles';
-import { getBoxById } from '../../../domains/workspace/model/workspaceState';
-import { useWorkspaceStore } from '../../../domains/workspace/store/useWorkspaceStore';
+import { getWorkspaceBox } from '../../../domains/workspace/model/workspaceSelectors';
 import { isEditableElement } from '../../../lib/dom';
 
 export function useWorkspaceGlobalEvents() {
   const { t } = useI18n();
 
   const handleKeyDown = useEffectEvent((event: KeyboardEvent) => {
-    const { editingSessionId } = useUIStore.getState();
+    const { editingSessionId } = useInteractionStore.getState();
 
     if (event.defaultPrevented || editingSessionId || isEditableElement(event.target)) {
       return;
     }
 
     if (event.ctrlKey && event.key === '`') {
-      const areBoxesMinimized = useWorkspaceStore.getState().toggleAllMinimized();
+      const areBoxesMinimized = toggleAllBoxesMinimized();
       toast(areBoxesMinimized ? t('workspace.hideAllBoxes') : t('workspace.showAllBoxes'));
     }
   });
 
   const handlePaste = useEffectEvent((event: ClipboardEvent) => {
-    const { activeBoxId, editingSessionId } = useUIStore.getState();
+    const { activeBoxId, editingSessionId } = useInteractionStore.getState();
 
     if (event.defaultPrevented || editingSessionId || isEditableElement(event.target)) {
       return;
@@ -37,14 +40,13 @@ export function useWorkspaceGlobalEvents() {
       return;
     }
 
-    const workspaceState = useWorkspaceStore.getState();
-    const targetBoxId = workspaceState.addPastedItem(text, activeBoxId);
+    const pastedResult = pasteTextItem(text, activeBoxId);
 
-    if (!targetBoxId) {
+    if (!pastedResult) {
       return;
     }
 
-    const targetBox = getBoxById(useWorkspaceStore.getState(), targetBoxId);
+    const targetBox = getWorkspaceBox(useWorkspaceStore.getState().snapshot, pastedResult.boxId);
 
     if (!targetBox) {
       return;
@@ -52,23 +54,28 @@ export function useWorkspaceGlobalEvents() {
 
     toast.success(
       t('workspace.pastedTypeToBox', {
-        itemType: isUrlText(text) ? t('workspace.pastedUrl') : t('workspace.pastedText'),
-        boxTitle: getBoxDisplayTitle(targetBox),
+        itemType:
+          pastedResult.item.type === 'url'
+            ? t('workspace.pastedUrl')
+            : pastedResult.item.type === 'note'
+              ? t('workspace.pastedText')
+              : t(ITEM_TYPE_LABEL_KEYS[pastedResult.item.type]),
+        boxTitle: getBoxDisplayTitle(targetBox, t),
       }),
     );
   });
 
   useEffect(() => {
-    document.title = t('app.brand');
+    runtimeDocumentPort.setDocumentTitle(t('app.brand'));
   }, [t]);
 
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('paste', handlePaste);
+    runtimeDocumentPort.addWindowListener('keydown', handleKeyDown);
+    runtimeDocumentPort.addWindowListener('paste', handlePaste);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('paste', handlePaste);
+      runtimeDocumentPort.removeWindowListener('keydown', handleKeyDown);
+      runtimeDocumentPort.removeWindowListener('paste', handlePaste);
     };
   }, [handleKeyDown, handlePaste]);
 }

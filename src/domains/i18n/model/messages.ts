@@ -1,5 +1,5 @@
-import type { ItemType } from '../../../types/item';
-import type { AppLocale } from './locale';
+import type { ItemType } from '../../items/model/item';
+import type { AppLocale } from '../../preferences/model/preferences';
 
 const EN_MESSAGES = {
   'app.brand': 'KhaosBox',
@@ -102,11 +102,11 @@ export const MESSAGES: Record<AppLocale, MessageDictionary> = {
     'dock.exportJson': '导出 JSON',
     'dock.importJson': '导入 JSON',
     'dock.switchToEnglish': '切换到 English',
-    'dock.switchToChinese': '切换到 中文',
+    'dock.switchToChinese': '切换到中文',
     'dock.exportFilePrefix': 'khaosbox-备份',
     'workspace.hideAllBoxes': '隐藏全部盒子',
     'workspace.showAllBoxes': '显示全部盒子',
-    'workspace.pastedTypeToBox': '已将{itemType}粘贴到 {boxTitle}',
+    'workspace.pastedTypeToBox': '已将{itemType}粘贴到{boxTitle}',
     'workspace.pastedUrl': 'URL',
     'workspace.pastedText': '文本',
     'box.folders': '文件夹',
@@ -132,7 +132,7 @@ export const MESSAGES: Record<AppLocale, MessageDictionary> = {
     'theme.gradSunset': '日落',
     'theme.gradOcean': '海洋',
     'addItem.button': '添加项目',
-    'addItem.chooseType': '选择类型：',
+    'addItem.chooseType': '选择类型:',
     'addItem.addType': '添加{type}',
     'addItem.titleOptional': '标题（可选）',
     'addItem.urlPlaceholder': 'https://...',
@@ -181,8 +181,30 @@ export const MESSAGES: Record<AppLocale, MessageDictionary> = {
     'item.edit': '编辑',
     'item.delete': '删除',
     'dropZone.add': '拖放添加',
-    'dock.switchToLightTheme': '切换到明亮主题',
-    'dock.switchToDarkTheme': '切换到暗夜主题',
+    'dock.switchToLightTheme': '切换到亮色主题',
+    'dock.switchToDarkTheme': '切换到暗色主题',
+  },
+};
+
+export const EXTENSION_LOCALE_CODES: Record<AppLocale, string> = {
+  en: 'en',
+  zh: 'zh_CN',
+};
+
+export const EXTENSION_LOCALE_MESSAGES: Record<AppLocale, Record<string, { message: string }>> = {
+  en: {
+    extensionName: { message: 'KhaosBox' },
+    extensionShortName: { message: 'KhaosBox' },
+    extensionDescription: {
+      message: 'A new tab workspace for organizing links, notes, files, and folders.',
+    },
+  },
+  zh: {
+    extensionName: { message: 'KhaosBox' },
+    extensionShortName: { message: 'KhaosBox' },
+    extensionDescription: {
+      message: '一个用于整理链接、笔记、文件和文件夹的新标签页工作区。',
+    },
   },
 };
 

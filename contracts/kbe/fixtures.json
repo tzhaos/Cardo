@@ -1,0 +1,34 @@
+{
+  "encodeCases": [
+    {
+      "resourcePath": "V:\\共享目录\\中文 文件夹",
+      "expectedUrl": "kbe:V:/%E5%85%B1%E4%BA%AB%E7%9B%AE%E5%BD%95/%E4%B8%AD%E6%96%87%20%E6%96%87%E4%BB%B6%E5%A4%B9"
+    },
+    {
+      "resourcePath": "\\\\server\\共享\\中文目录",
+      "expectedUrl": "kbe://server/%E5%85%B1%E4%BA%AB/%E4%B8%AD%E6%96%87%E7%9B%AE%E5%BD%95"
+    },
+    {
+      "resourcePath": "file:///C:/Work/Specs.pdf",
+      "expectedUrl": "kbe:file:///C:/Work/Specs.pdf"
+    }
+  ],
+  "parseCases": [
+    {
+      "rawInput": "kbe:V:/Shared/Chinese Folder",
+      "expectedPath": "V:\\Shared\\Chinese Folder"
+    },
+    {
+      "rawInput": "kbe://server/share/Docs",
+      "expectedPath": "\\\\server\\share\\Docs"
+    },
+    {
+      "rawInput": "kbe:file:///C:/Work/Specs.pdf",
+      "expectedPath": "C:\\Work\\Specs.pdf"
+    },
+    {
+      "rawInput": "kbe:file://server/share/Docs",
+      "expectedPath": "\\\\server\\share\\Docs"
+    }
+  ]
+}

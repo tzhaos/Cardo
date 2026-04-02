@@ -1,4 +1,4 @@
-import { createItemFromText } from '../../../domains/items/services/createItem';
+import { parseTextToItemDraft } from '../../../domains/items/services/parseTextToItemDraft';
 
 function getUriListEntries(dataTransfer: DataTransfer) {
   return dataTransfer
@@ -12,7 +12,7 @@ export function createTextItemFromTransfer(dataTransfer: DataTransfer) {
   const urlData = getUriListEntries(dataTransfer)[0];
 
   if (urlData) {
-    return createItemFromText(urlData);
+    return parseTextToItemDraft(urlData);
   }
 
   const textData = dataTransfer.getData('text/plain') || dataTransfer.getData('text');
@@ -21,5 +21,5 @@ export function createTextItemFromTransfer(dataTransfer: DataTransfer) {
     return null;
   }
 
-  return createItemFromText(textData);
+  return parseTextToItemDraft(textData);
 }

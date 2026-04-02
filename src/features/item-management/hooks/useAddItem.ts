@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { useI18n } from '../../../domains/i18n/hooks/useI18n';
+import { readClipboardItem } from '../../../app/use-cases/readClipboardItem';
+import { useI18n } from '../../../app/hooks/useI18n';
 import { ITEM_TYPE_LABEL_KEYS } from '../../../domains/i18n/model/messages';
-import { createItemFromText } from '../../../domains/items/services/createItem';
-import type { ItemType } from '../../../types/item';
+import type { ItemType } from '../../../domains/items/model/item';
 
 interface UseAddItemOptions {
   showAddMenu: boolean;
   onAddItem: (type: ItemType, title: string, content: string) => void;
-  onAddExistingItem: (item: ReturnType<typeof createItemFromText>) => void;
+  onAddExistingItem: (item: NonNullable<Awaited<ReturnType<typeof readClipboardItem>>>) => void;
   onClose: () => void;
   onOpen: () => void;
 }
@@ -50,17 +50,13 @@ export function useAddItem({
 
   const handleAddItemType = async (type: ItemType) => {
     if (type === 'note') {
-      try {
-        const clipboardText = await navigator.clipboard.readText();
+      const clipboardItem = await readClipboardItem();
 
-        if (clipboardText) {
-          onAddExistingItem(createItemFromText(clipboardText));
-          toast.success(t('toast.addedFromClipboard'));
-          closeComposer();
-          return;
-        }
-      } catch {
-        // Fall through to manual form entry.
+      if (clipboardItem) {
+        onAddExistingItem(clipboardItem);
+        toast.success(t('toast.addedFromClipboard'));
+        closeComposer();
+        return;
       }
     }
 

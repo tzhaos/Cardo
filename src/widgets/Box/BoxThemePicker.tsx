@@ -1,26 +1,32 @@
 import { Palette } from 'lucide-react';
-import { useI18n } from '../../domains/i18n/hooks/useI18n';
-import { useThemeStore } from '../../domains/ui/store/useThemeStore';
 import { BOX_THEMES, getBoxThemePreviewClass } from '../../domains/workspace/model/boxThemes';
+import type { BoxThemeId } from '../../domains/workspace/model/workspace';
+import type { AppTheme } from '../../domains/preferences/model/preferences';
 import { cn } from '../../lib/utils';
-import type { BoxThemeId } from '../../types/box';
 
 interface Props {
+  appTheme: AppTheme;
   showThemePicker: boolean;
   setShowThemePicker: (show: boolean) => void;
+  buttonLabel: string;
   onUpdate: (theme: BoxThemeId) => void;
+  getThemeLabel: (labelKey: (typeof BOX_THEMES)[number]['labelKey']) => string;
 }
 
-export default function BoxThemePicker({ showThemePicker, setShowThemePicker, onUpdate }: Props) {
-  const { t } = useI18n();
-  const appTheme = useThemeStore((state) => state.theme);
-
+export default function BoxThemePicker({
+  appTheme,
+  showThemePicker,
+  setShowThemePicker,
+  buttonLabel,
+  onUpdate,
+  getThemeLabel,
+}: Props) {
   return (
     <div className="relative">
       <button
         onClick={() => setShowThemePicker(!showThemePicker)}
         className="kb-icon-button rounded-md p-1.5 transition-colors"
-        title={t('box.theme')}
+        title={buttonLabel}
         onPointerDown={(event) => event.stopPropagation()}
       >
         <Palette size={14} />
@@ -41,7 +47,7 @@ export default function BoxThemePicker({ showThemePicker, setShowThemePicker, on
                 'h-6 w-6 rounded-full border shadow-sm transition-transform hover:scale-110',
                 getBoxThemePreviewClass(theme.id, appTheme),
               )}
-              title={t(theme.labelKey)}
+              title={getThemeLabel(theme.labelKey)}
             />
           ))}
         </div>

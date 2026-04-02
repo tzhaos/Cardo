@@ -1,4 +1,4 @@
-import type { BoxData } from '../../../types/box';
+import type { WorkspaceBox } from '../../workspace/model/workspace';
 import type { SnapGuide } from '../model/snap';
 
 export function calculateSnap(
@@ -6,7 +6,7 @@ export function calculateSnap(
   newY: number,
   width: number,
   height: number,
-  allBoxes: BoxData[],
+  allBoxes: WorkspaceBox[],
   currentId: string,
 ) {
   const snapThreshold = 10;
@@ -24,16 +24,16 @@ export function calculateSnap(
       continue;
     }
 
-    if (!snappedXFlag && Math.abs(newX - other.x) < snapThreshold) {
-      snappedX = other.x;
+    if (!snappedXFlag && Math.abs(newX - other.bounds.x) < snapThreshold) {
+      snappedX = other.bounds.x;
       snappedXFlag = true;
-      guides.push({ type: 'vertical', pos: other.x });
+      guides.push({ type: 'vertical', pos: other.bounds.x });
     }
 
-    if (!snappedYFlag && Math.abs(newY - other.y) < snapThreshold) {
-      snappedY = other.y;
+    if (!snappedYFlag && Math.abs(newY - other.bounds.y) < snapThreshold) {
+      snappedY = other.bounds.y;
       snappedYFlag = true;
-      guides.push({ type: 'horizontal', pos: other.y });
+      guides.push({ type: 'horizontal', pos: other.bounds.y });
     }
   }
 

@@ -1,8 +1,8 @@
 import { ClipboardPaste, File, Folder, Link as LinkIcon, Plus, X } from 'lucide-react';
-import { useI18n } from '../../../domains/i18n/hooks/useI18n';
+import { useI18n } from '../../../app/hooks/useI18n';
 import { ITEM_TYPE_LABEL_KEYS, ITEM_TYPE_PLURAL_KEYS } from '../../../domains/i18n/model/messages';
 import { cn } from '../../../lib/utils';
-import type { ItemType } from '../../../types/item';
+import type { ItemType } from '../../../domains/items/model/item';
 
 interface AddItemPanelProps {
   layout: 'grid' | 'list';

@@ -1,8 +1,6 @@
-import type { BoxItemData } from '../../../types/box';
-import type { ItemType } from '../../../types/item';
-import { deriveItemTitle } from './deriveItemTitle';
-import { isUrlText } from './isUrlText';
-import { parseLocalPathText } from './parseLocalPathText';
+import type { ItemDraft, ItemType } from '../model/item';
+import { createWorkspaceItem } from '../model/item';
+import { parseTextToItemDraft } from './parseTextToItemDraft';
 
 interface CreateItemInput {
   type: ItemType;
@@ -11,28 +9,15 @@ interface CreateItemInput {
   isPinned?: boolean;
 }
 
-export function createItem({ type, content, title, isPinned = false }: CreateItemInput): BoxItemData {
-  const normalizedContent = content.trim();
-
-  return {
-    id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+export function createItem({ type, content, title, isPinned = false }: CreateItemInput) {
+  return createWorkspaceItem(`legacy-item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, {
     type,
-    title: title?.trim() || deriveItemTitle(type, normalizedContent),
-    content: normalizedContent,
+    content,
+    title,
     isPinned,
-  };
+  });
 }
 
-export function createItemFromText(text: string) {
-  const parsedLocalPath = parseLocalPathText(text);
-
-  if (parsedLocalPath) {
-    return createItem({
-      type: parsedLocalPath.type,
-      content: parsedLocalPath.normalizedPath,
-    });
-  }
-
-  const type: ItemType = isUrlText(text) ? 'url' : 'note';
-  return createItem({ type, content: text });
+export function createItemFromText(text: string): ItemDraft {
+  return parseTextToItemDraft(text);
 }

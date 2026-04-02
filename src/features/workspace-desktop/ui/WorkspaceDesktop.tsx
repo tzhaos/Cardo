@@ -1,21 +1,21 @@
 import { Toaster } from 'sonner';
-import { useShallow } from 'zustand/react/shallow';
-import { useUIStore } from '../../../domains/ui/store/useUIStore';
-import { useThemeStore } from '../../../domains/ui/store/useThemeStore';
-import { getVisibleBoxIds } from '../../../domains/workspace/model/workspaceState';
-import { useWorkspaceStore } from '../../../domains/workspace/store/useWorkspaceStore';
+import { useI18n } from '../../../app/hooks/useI18n';
+import { useInteractionStore } from '../../../app/stores/useInteractionStore';
+import { usePreferencesStore } from '../../../app/stores/usePreferencesStore';
+import { useVisibleBoxes } from '../../../app/stores/useWorkspaceSelectors';
 import Background from '../../../widgets/DesktopShell/Background';
 import BrandBadge from '../../../widgets/DesktopShell/BrandBadge';
-import BoxContainer from '../../../widgets/Box/BoxContainer';
+import ManagedBox from '../../box-management/ui/ManagedBox';
 import TrayDock from '../../tray/ui/TrayDock';
 import { useWorkspaceGlobalEvents } from '../hooks/useWorkspaceGlobalEvents';
 import SnapOverlay from './SnapOverlay';
 
 export default function WorkspaceDesktop() {
   useWorkspaceGlobalEvents();
-  const visibleBoxIds = useWorkspaceStore(useShallow((state) => getVisibleBoxIds(state)));
-  const setActiveBox = useUIStore((state) => state.setActiveBox);
-  const theme = useThemeStore((state) => state.theme);
+  const { t } = useI18n();
+  const visibleBoxes = useVisibleBoxes();
+  const setActiveBox = useInteractionStore((state) => state.setActiveBox);
+  const theme = usePreferencesStore((state) => state.theme);
 
   return (
     <div
@@ -23,12 +23,12 @@ export default function WorkspaceDesktop() {
       onPointerDown={() => setActiveBox(null)}
     >
       <Background />
-      <BrandBadge />
+      <BrandBadge label={t('app.brand')} />
       <Toaster theme={theme} position="top-center" />
       <SnapOverlay />
 
-      {visibleBoxIds.map((boxId) => (
-        <BoxContainer key={boxId} boxId={boxId} />
+      {visibleBoxes.map((box) => (
+        <ManagedBox key={box.id} boxId={box.id} />
       ))}
 
       <TrayDock />

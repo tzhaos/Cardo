@@ -1,8 +1,8 @@
-import { useI18n } from '../../domains/i18n/hooks/useI18n';
+interface BrandBadgeProps {
+  label: string;
+}
 
-export default function BrandBadge() {
-  const { t } = useI18n();
-
+export default function BrandBadge({ label }: BrandBadgeProps) {
   return (
     <div className="kb-brand-shell pointer-events-none absolute left-6 top-6 z-0 flex select-none items-center gap-2 opacity-70">
       <div className="kb-brand-mark flex h-8 w-8 items-center justify-center rounded-xl border backdrop-blur-md">
@@ -23,7 +23,7 @@ export default function BrandBadge() {
           <line x1="12" y1="22.08" x2="12" y2="12" />
         </svg>
       </div>
-      <span className="kb-brand-text font-semibold tracking-wide">{t('app.brand')}</span>
+      <span className="kb-brand-text font-semibold tracking-wide">{label}</span>
     </div>
   );
 }

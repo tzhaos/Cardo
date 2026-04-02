@@ -1,6 +1,6 @@
 import type { MessageKey } from '../../i18n/model/messages';
 import type { AppTheme } from '../../ui/model/theme';
-import type { BoxThemeId } from '../../../types/box';
+import type { BoxThemeId } from './workspace';
 
 interface BoxThemeDefinition {
   id: BoxThemeId;

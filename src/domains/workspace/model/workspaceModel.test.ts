@@ -1,131 +1,115 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createItem } from '../../items/services/createItem';
-import { createInitialBoxes, DEFAULT_BOX_THEME } from './defaultBoxes';
-import { addItem, addPastedItem, deleteItem, moveItem, setItemPinned, updateItem } from './workspaceCommands';
+import { createWorkspaceItem } from '../../items/model/item';
+import { createInitialWorkspaceSnapshot, createWorkspaceSnapshot } from './createInitialWorkspaceSnapshot';
+import { reduceWorkspace } from './reduceWorkspace';
 import {
-  WorkspaceImportError,
-  normalizePersistedWorkspaceSnapshot,
-  parseImportedWorkspaceBoxes,
-} from './workspaceSchema';
-import {
-  createWorkspaceDataState,
-  createWorkspaceExportPayload,
-  WORKSPACE_STATE_VERSION,
-} from './workspaceState';
+  createWorkspaceExportDocument,
+  parseWorkspaceExportDocument,
+  parseWorkspaceSnapshot,
+} from './workspaceCodec';
 
-test('addPastedItem routes URL text to the links system box role', () => {
-  const snapshot = createWorkspaceDataState(createInitialBoxes(), WORKSPACE_STATE_VERSION);
-  const nextState = addPastedItem(snapshot, null, 'https://example.com/docs');
-
-  assert.equal(nextState.targetBoxId, 'webpages');
-  assert.equal(nextState.boxesById.webpages.items.length, 1);
-  assert.equal(nextState.boxesById.webpages.items[0]?.type, 'url');
-});
-
-test('item commands add, update, pin, and delete items without direct array mutation in UI', () => {
-  const snapshot = createWorkspaceDataState(createInitialBoxes(), WORKSPACE_STATE_VERSION);
-  const createdItem = createItem({
+test('workspace reducer adds, updates, pins, and deletes items immutably', () => {
+  const snapshot = createInitialWorkspaceSnapshot();
+  const noteItem = createWorkspaceItem('item-note', {
     type: 'note',
     title: 'Scratch',
     content: 'Initial note',
   });
 
-  const withItem = addItem(snapshot, 'clipboard', createdItem);
-  assert.equal(withItem.boxesById.clipboard.items.length, 1);
-  assert.equal(withItem.boxesById.clipboard.items[0].title, 'Scratch');
-
-  const withUpdatedItem = updateItem(withItem, 'clipboard', createdItem.id, {
-    title: 'Updated scratch',
-    content: 'Updated note',
+  const withItem = reduceWorkspace(snapshot, {
+    type: 'item.add',
+    boxId: 'system-notes',
+    item: noteItem,
   });
-  assert.equal(withUpdatedItem.boxesById.clipboard.items[0].title, 'Updated scratch');
-  assert.equal(withUpdatedItem.boxesById.clipboard.items[0].content, 'Updated note');
+  assert.equal(withItem.boxesById['system-notes'].items.length, 1);
+  assert.equal(withItem.boxesById['system-notes'].items[0].title, 'Scratch');
 
-  const withPinnedItem = setItemPinned(withUpdatedItem, 'clipboard', createdItem.id, true);
-  assert.equal(withPinnedItem.boxesById.clipboard.items[0].isPinned, true);
+  const withUpdatedItem = reduceWorkspace(withItem, {
+    type: 'item.update',
+    boxId: 'system-notes',
+    itemId: noteItem.id,
+    updates: {
+      title: 'Updated scratch',
+      content: 'Updated note',
+    },
+  });
+  assert.equal(withUpdatedItem.boxesById['system-notes'].items[0].title, 'Updated scratch');
+  assert.equal(withUpdatedItem.boxesById['system-notes'].items[0].content, 'Updated note');
 
-  const withoutItem = deleteItem(withPinnedItem, 'clipboard', createdItem.id);
-  assert.equal(withoutItem.boxesById.clipboard.items.length, 0);
+  const withPinnedItem = reduceWorkspace(withUpdatedItem, {
+    type: 'item.setPinned',
+    boxId: 'system-notes',
+    itemId: noteItem.id,
+    isPinned: true,
+  });
+  assert.equal(withPinnedItem.boxesById['system-notes'].items[0].isPinned, true);
+
+  const withoutItem = reduceWorkspace(withPinnedItem, {
+    type: 'item.delete',
+    boxId: 'system-notes',
+    itemId: noteItem.id,
+  });
+  assert.equal(withoutItem.boxesById['system-notes'].items.length, 0);
 });
 
-test('moveItem moves an item between boxes and inherits the reference pin state', () => {
-  const boxes = createInitialBoxes().map((box) => ({ ...box, items: [...box.items] }));
-
-  boxes[0].items = [
-    createItem({
-      type: 'folder',
-      title: 'Source',
-      content: 'C:/Source',
-      isPinned: false,
-    }),
-  ];
-  boxes[1].items = [
-    createItem({
-      type: 'url',
-      title: 'Pinned target',
-      content: 'https://example.com',
-      isPinned: true,
-    }),
-  ];
-
-  const sourceItemId = boxes[0].items[0].id;
-  const snapshot = createWorkspaceDataState(boxes, WORKSPACE_STATE_VERSION);
-  const nextState = moveItem(snapshot, sourceItemId, 'folders', 'webpages', 0);
-
-  assert.equal(nextState.boxesById.folders.items.length, 0);
-  assert.equal(nextState.boxesById.webpages.items.length, 2);
-  assert.equal(nextState.boxesById.webpages.items[0].id, sourceItemId);
-  assert.equal(nextState.boxesById.webpages.items[0].isPinned, true);
-});
-
-test('normalizePersistedWorkspaceSnapshot migrates legacy array state to versioned normalized state', () => {
-  const normalized = normalizePersistedWorkspaceSnapshot({
-    boxes: [
-      {
-        id: 'webpages',
-        title: '链接',
-        x: 24,
-        y: 48,
-        width: 180,
-        height: 120,
-        theme: '',
-        isLocked: false,
-        isMinimized: false,
-        layout: 'list',
-        items: [],
-        zIndex: 4,
-      },
-    ],
-    maxZIndex: 1,
+test('move item inherits pin state without mutating the original item reference', () => {
+  const baseline = createInitialWorkspaceSnapshot();
+  const sourceItem = createWorkspaceItem('item-source', {
+    type: 'folder',
+    title: 'Source',
+    content: 'C:\\Source',
+    isPinned: false,
+  });
+  const pinnedTarget = createWorkspaceItem('item-target', {
+    type: 'url',
+    title: 'Pinned target',
+    content: 'https://example.com',
+    isPinned: true,
   });
 
-  assert.equal(normalized.version, WORKSPACE_STATE_VERSION);
-  assert.deepEqual(normalized.boxOrder, ['webpages']);
-  assert.equal(normalized.boxesById.webpages.role, 'links');
-  assert.equal(normalized.boxesById.webpages.title, 'Links');
-  assert.equal(normalized.boxesById.webpages.width, 200);
-  assert.equal(normalized.boxesById.webpages.height, 150);
-  assert.equal(normalized.boxesById.webpages.theme, DEFAULT_BOX_THEME);
-  assert.equal(normalized.maxZIndex, 4);
+  const snapshot = createWorkspaceSnapshot([
+    {
+      ...baseline.boxesById['system-folders'],
+      items: [sourceItem],
+    },
+    {
+      ...baseline.boxesById['system-links'],
+      items: [pinnedTarget],
+    },
+    baseline.boxesById['system-notes'],
+  ]);
+
+  const nextState = reduceWorkspace(snapshot, {
+    type: 'item.move',
+    itemId: sourceItem.id,
+    sourceBoxId: 'system-folders',
+    targetBoxId: 'system-links',
+    targetIndex: 0,
+  });
+
+  assert.equal(snapshot.boxesById['system-folders'].items[0].isPinned, false);
+  assert.equal(nextState.boxesById['system-folders'].items.length, 0);
+  assert.equal(nextState.boxesById['system-links'].items.length, 2);
+  assert.equal(nextState.boxesById['system-links'].items[0].id, sourceItem.id);
+  assert.equal(nextState.boxesById['system-links'].items[0].isPinned, true);
 });
 
-test('parseImportedWorkspaceBoxes accepts versioned export payloads', () => {
-  const snapshot = createWorkspaceDataState(createInitialBoxes(), WORKSPACE_STATE_VERSION);
-  const payload = createWorkspaceExportPayload(snapshot);
-  const importedBoxes = parseImportedWorkspaceBoxes(payload);
+test('workspace export document round-trips with current schema', () => {
+  const snapshot = createInitialWorkspaceSnapshot();
+  const document = createWorkspaceExportDocument(snapshot);
+  const parsed = parseWorkspaceExportDocument(document);
 
-  assert.equal(importedBoxes.length, 3);
-  assert.equal(importedBoxes[1].role, 'links');
+  assert.equal(parsed.version, 2);
+  assert.equal(parsed.boxes.length, 3);
+  assert.equal(parsed.boxes[1].role, 'links');
 });
 
-test('parseImportedWorkspaceBoxes rejects invalid payloads', () => {
-  assert.throws(
-    () =>
-      parseImportedWorkspaceBoxes({
-        version: WORKSPACE_STATE_VERSION,
-        boxes: [{ items: [{ type: 'note' }] }],
-      }),
-    WorkspaceImportError,
-  );
+test('workspace snapshot parser accepts only schema version 3 payloads', () => {
+  const snapshot = createInitialWorkspaceSnapshot();
+  const parsed = parseWorkspaceSnapshot(snapshot);
+
+  assert.ok(parsed);
+  assert.equal(parsed?.schemaVersion, 3);
+  assert.equal(parseWorkspaceSnapshot({ version: 2, boxes: [] }), null);
 });
