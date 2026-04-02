@@ -70,6 +70,43 @@ This runs `vite build --watch` and continuously refreshes `artifacts/extension/u
 
 After loading, opening a new tab should show the KhaosBox workspace.
 
+## Root Scripts
+
+For the common Windows workflows, you can use the root PowerShell scripts instead of remembering multiple commands:
+
+### Local build
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\build.ps1
+```
+
+This builds:
+
+- the unpacked browser extension into `artifacts/extension/unpacked`
+- the Windows companion in local build mode
+
+### Release publish
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\release.ps1
+```
+
+This builds the extension and publishes the Windows companion in `Release` mode to:
+
+- `artifacts/companion/windows/publish/win-x64`
+
+### MSI package
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\package.ps1
+```
+
+This builds the extension and creates:
+
+- `artifacts/companion/windows/packages/KhaosBoxCompanion-win-x64.msi`
+
+All three root scripts also support optional flags such as `-Clean`, `-RunChecks`, and selective skip flags where appropriate.
+
 ## Windows Companion
 
 Build the Windows companion:
@@ -110,6 +147,9 @@ More details live in [`companion/windows/README.md`](./companion/windows/README.
 
 | Command | Description |
 | --- | --- |
+| `.\build.ps1` | Build the unpacked extension plus the Windows companion local build |
+| `.\release.ps1` | Build the unpacked extension plus the Windows companion `Release` publish |
+| `.\package.ps1` | Build the unpacked extension and generate the Windows companion MSI |
 | `npm run dev` | Watch extension builds into `artifacts/extension/unpacked` |
 | `npm run build` | Build the browser extension into `artifacts/extension/unpacked` |
 | `npm run companion:windows:build` | Build the Windows companion project |
@@ -129,23 +169,28 @@ More details live in [`companion/windows/README.md`](./companion/windows/README.
 |-- artifacts/            # All generated output: extension, publish, packages, bin/obj
 |-- assets/
 |   |-- brand/            # Logos and brand assets
-|   `-- extension-shell/  # Manifest, locales, icons, and extension HTML entry points
+|   `-- extension-shell/  # Manifest, icons, and extension HTML entry points
 |-- companion/            # Windows companion app source, scripts, packaging, and docs
+|-- scripts/              # Repo-level tooling such as architecture checks and migrations
 |-- src/
-|   |-- app/              # App bootstrap and use cases
-|   |-- domains/          # Core models, services, and Zustand stores
-|   |-- extension/        # Browser-extension host capabilities
-|   |-- features/         # User-facing behaviors such as drag/drop and tray interactions
-|   |-- integrations/     # External integrations such as the Windows companion
-|   `-- widgets/          # Reusable UI building blocks
+|   |-- app/              # Stores, ports, use cases, bootstrap, and migrations
+|   |-- domains/          # Pure models, reducers, selectors, and codecs
+|   |-- extension/        # Browser-extension adapters for clipboard, files, tabs, runtime, and storage
+|   |-- features/         # React controllers for box management, item management, tray, and desktop events
+|   |-- integrations/     # External integration adapters such as the Windows companion
+|   `-- widgets/          # Pure presentational UI building blocks
 `-- vite.config.ts        # Extension build configuration
 ```
 
 ## Architecture Notes
 
-- `src/domains` owns workspace data, item creation, layout logic, import/export, and persisted state.
+- `src/domains` owns the pure application core: workspace models, the `reduceWorkspace(...)` reducer, selectors, import/export codecs, item parsing, and preferences primitives.
+- `src/app` owns orchestration: Zustand stores, runtime ports, and use cases such as opening items, importing/exporting workspaces, clipboard reads, and box creation.
 - `assets/extension-shell` owns the browser extension shell inputs that get copied into the unpacked extension.
 - `assets/brand` owns reusable branding assets and stays separate from extension packaging inputs.
-- `src/extension` owns browser-extension capabilities such as tabs and storage.
-- `src/integrations/companion` owns the `kbe:` protocol request boundary.
-- `src/app/use-cases/openItem.ts` is the single entrypoint for opening links, notes, files, and folders.
+- `src/extension` owns browser-specific adapter implementations such as tabs, clipboard, runtime document access, file import/export, and Chrome storage.
+- `src/integrations/companion` owns the `kbe:` boundary used to ask Windows to open local files and folders.
+- `src/features` contains the React control layer. It translates user interactions into app use cases or workspace commands.
+- `src/widgets` is intentionally presentation-only. Widgets receive prepared state and callbacks instead of reaching into stores directly.
+- Extension locale files are generated at build time from the app message catalog in `src/domains/i18n/model/messages.ts`.
+- The persisted workspace format is `WorkspaceSnapshotV3`; export/import uses `WorkspaceExportDocumentV2`.

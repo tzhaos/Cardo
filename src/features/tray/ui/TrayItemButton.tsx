@@ -8,22 +8,26 @@ import { cn } from '../../../lib/utils';
 
 interface TrayItemButtonProps {
   box: WorkspaceBox;
+  compact?: boolean;
   onClick: () => void;
 }
 
-export default function TrayItemButton({ box, onClick }: TrayItemButtonProps) {
+export default function TrayItemButton({ box, compact = false, onClick }: TrayItemButtonProps) {
   const { t } = useI18n();
   const displayTitle = getBoxDisplayTitle(box, t);
+  const isVisible = !box.isMinimized;
 
   return (
     <button
       onClick={onClick}
       className={cn(
-        'kb-dock-item relative flex h-10 items-center gap-2 rounded-xl px-3 transition-all duration-200',
+        'kb-dock-item relative flex h-10 items-center gap-2 rounded-xl transition-all duration-200',
         'hover:scale-105 active:scale-95',
-        !box.isMinimized ? 'kb-dock-item-active shadow-inner' : 'bg-transparent',
+        compact ? 'w-10 justify-center px-0' : 'px-3',
+        isVisible ? 'kb-dock-item-active' : 'bg-transparent',
       )}
       title={displayTitle}
+      aria-label={displayTitle}
     >
       <div
         className={cn(
@@ -34,12 +38,18 @@ export default function TrayItemButton({ box, onClick }: TrayItemButtonProps) {
         <Package size={14} className="text-white/90" />
       </div>
 
-      <span className="kb-item-title max-w-[100px] truncate text-sm font-medium">{displayTitle}</span>
+      {!compact && (
+        <span className="kb-item-title max-w-[100px] truncate text-sm font-medium">{displayTitle}</span>
+      )}
 
-      {!box.isMinimized && (
+      {isVisible && (
         <motion.div
           layoutId={`active-${box.id}`}
-          className="kb-dock-indicator absolute -bottom-1.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full"
+          className={cn(
+            'kb-dock-indicator absolute rounded-full ring-2 ring-black/10',
+            getBoxThemeDockIconClass(box.theme),
+            compact ? 'right-1 top-1 h-2.5 w-2.5' : 'right-1.5 top-1.5 h-2 w-2',
+          )}
         />
       )}
     </button>
