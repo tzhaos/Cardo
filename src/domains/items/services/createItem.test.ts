@@ -14,10 +14,10 @@ test('parseLocalPathText recognizes drive-letter folder paths', () => {
 });
 
 test('parseLocalPathText recognizes UNC folder paths', () => {
-  const parsed = parseLocalPathText('\\\\shfile01.lisuantech.com\\SW');
+  const parsed = parseLocalPathText('\\\\server\\share');
 
   assert.deepEqual(parsed, {
-    normalizedPath: '\\\\shfile01.lisuantech.com\\SW',
+    normalizedPath: '\\\\server\\share',
     type: 'folder',
   });
 });
@@ -40,11 +40,11 @@ test('parseTextToItemDraft turns pasted drive paths into folder drafts', () => {
 });
 
 test('parseTextToItemDraft turns pasted UNC paths into folder drafts', () => {
-  const item = createWorkspaceItem('item-unc', parseTextToItemDraft('\\\\shfile01.lisuantech.com\\SW'));
+  const item = createWorkspaceItem('item-unc', parseTextToItemDraft('\\\\server\\share'));
 
   assert.equal(item.type, 'folder');
-  assert.equal(item.content, '\\\\shfile01.lisuantech.com\\SW');
-  assert.equal(item.title, 'SW');
+  assert.equal(item.content, '\\\\server\\share');
+  assert.equal(item.title, 'share');
 });
 
 test('parseTextToItemDraft preserves Chinese folder paths', () => {
@@ -53,4 +53,12 @@ test('parseTextToItemDraft preserves Chinese folder paths', () => {
   assert.equal(item.type, 'folder');
   assert.equal(item.content, 'V:\\共享目录\\中文 文件夹');
   assert.equal(item.title, '中文 文件夹');
+});
+
+test('parseTextToItemDraft treats dotted version folders as folders', () => {
+  const item = createWorkspaceItem('item-version-folder', parseTextToItemDraft('F:\\Tools\\pcnt_tools_v2.2.0'));
+
+  assert.equal(item.type, 'folder');
+  assert.equal(item.content, 'F:\\Tools\\pcnt_tools_v2.2.0');
+  assert.equal(item.title, 'pcnt_tools_v2.2.0');
 });

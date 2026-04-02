@@ -1,21 +1,24 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import path from 'node:path';
 import test from 'node:test';
 import { createKbeUrl } from './createKbeUrl';
 
-interface KbeFixtureDocument {
-  encodeCases: Array<{
-    resourcePath: string;
-    expectedUrl: string;
-  }>;
-}
+test('createKbeUrl encodes drive-letter folder paths', () => {
+  assert.equal(
+    createKbeUrl('V:\\Shared\\Chinese Folder'),
+    'kbe:V:/Shared/Chinese%20Folder',
+  );
+});
 
-const fixturePath = path.resolve(import.meta.dirname, '../../../contracts/kbe/fixtures.json');
-const fixtures = JSON.parse(fs.readFileSync(fixturePath, 'utf8')) as KbeFixtureDocument;
+test('createKbeUrl encodes UNC folder paths as opaque kbe payloads', () => {
+  assert.equal(
+    createKbeUrl('\\\\server\\share\\Driver_Package\\win_signed'),
+    'kbe:%2F%2Fserver%2Fshare%2FDriver_Package%2Fwin_signed',
+  );
+});
 
-for (const fixture of fixtures.encodeCases) {
-  test(`createKbeUrl encodes ${fixture.resourcePath}`, () => {
-    assert.equal(createKbeUrl(fixture.resourcePath), fixture.expectedUrl);
-  });
-}
+test('createKbeUrl preserves nested file URIs for parser normalization', () => {
+  assert.equal(
+    createKbeUrl('file:///C:/Work/Specs.pdf'),
+    'kbe:file:///C:/Work/Specs.pdf',
+  );
+});
