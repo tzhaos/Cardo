@@ -5,6 +5,43 @@ interface ParsedLocalPath {
   type: Extract<ItemType, 'file' | 'folder'>;
 }
 
+const COMMON_FILE_EXTENSIONS = new Set([
+  '7z',
+  'apk',
+  'bat',
+  'cmd',
+  'csv',
+  'doc',
+  'docx',
+  'dll',
+  'exe',
+  'gif',
+  'iso',
+  'jpeg',
+  'jpg',
+  'json',
+  'log',
+  'md',
+  'msi',
+  'pdf',
+  'png',
+  'ppt',
+  'pptx',
+  'ps1',
+  'rar',
+  'svg',
+  'tar',
+  'txt',
+  'wav',
+  'webp',
+  'xls',
+  'xlsx',
+  'xml',
+  'yaml',
+  'yml',
+  'zip',
+]);
+
 function trimWrappingQuotes(value: string) {
   if (
     (value.startsWith('"') && value.endsWith('"')) ||
@@ -30,8 +67,21 @@ function trimTrailingSeparators(path: string) {
 
 function hasFileLikeExtension(path: string) {
   const lastSegment = path.split(/[/\\]/).pop() ?? '';
+  const extensionMatch = lastSegment.match(/\.([^./\\\s]+)$/);
 
-  return /\.[^./\\\s]+$/.test(lastSegment);
+  if (!extensionMatch) {
+    return false;
+  }
+
+  const extension = extensionMatch[1]?.toLowerCase() ?? '';
+
+  if (!extension || /^\d+$/.test(extension)) {
+    return false;
+  }
+
+  // Be conservative for pasted local paths: versioned folders like "v2.2.0"
+  // are common, so we only treat known extensions as files.
+  return COMMON_FILE_EXTENSIONS.has(extension);
 }
 
 function fromFileUri(value: string) {
