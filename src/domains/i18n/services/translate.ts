@@ -1,7 +1,5 @@
+import { DEFAULT_LOCALE, type AppLocale } from '../../preferences/model/preferences';
 import { MESSAGES, type MessageKey } from '../model/messages';
-import type { AppLocale } from '../model/locale';
-import { DEFAULT_LOCALE } from '../model/locale';
-import { useLocaleStore } from '../store/useLocaleStore';
 
 export interface TranslationParams {
   [key: string]: number | string;
@@ -25,8 +23,4 @@ export function translateForLocale(
 ) {
   const template = MESSAGES[locale][key] ?? MESSAGES[DEFAULT_LOCALE][key] ?? key;
   return formatMessage(template, params);
-}
-
-export function translate(key: MessageKey, params?: TranslationParams) {
-  return translateForLocale(useLocaleStore.getState().locale, key, params);
 }

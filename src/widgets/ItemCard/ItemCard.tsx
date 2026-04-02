@@ -1,140 +1,82 @@
-import { Check, Pencil, Pin, PinOff, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { useI18n } from '../../domains/i18n/hooks/useI18n';
-import { deriveItemTitle } from '../../domains/items/services/deriveItemTitle';
-import { useUIStore } from '../../domains/ui/store/useUIStore';
-import { useItemActions } from '../../hooks/useItemActions';
 import { cn } from '../../lib/utils';
-import type { BoxItemData } from '../../types/item';
+import type { WorkspaceItem } from '../../domains/items/model/item';
 
-interface ItemCardProps {
-  item: BoxItemData;
+export interface ItemCardProps {
+  item: WorkspaceItem;
   layout: 'grid' | 'list';
   icon: React.ReactNode;
-  onUpdate: (updates: Partial<BoxItemData>) => void;
-  onSetPinned: (isPinned: boolean) => void;
-  onDelete: () => void;
+  isEditing: boolean;
+  isInteractionLocked: boolean;
+  editTitle: string;
+  editContent: string;
+  titleInputRef: React.RefObject<HTMLInputElement | null>;
+  contentLabel: string;
+  titlePlaceholder: string;
+  saveLabel: string;
+  cancelLabel: string;
+  pinLabel: string;
+  pinToTopLabel: string;
+  unpinLabel: string;
+  editLabel: string;
+  deleteLabel: string;
+  saveIcon: React.ReactNode;
+  cancelIcon: React.ReactNode;
+  editIcon: React.ReactNode;
+  pinIcon: React.ReactNode;
+  unpinIcon: React.ReactNode;
+  deleteIcon: React.ReactNode;
+  onCardClick: () => void;
+  onStartEdit: (event: React.SyntheticEvent) => void;
+  onEditTitleChange: (value: string) => void;
+  onEditContentChange: (value: string) => void;
+  onEditorKeyDown: (event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onSave: (event?: React.SyntheticEvent) => void;
+  onCancel: (event?: React.SyntheticEvent) => void;
+  onTogglePinned: (event: React.SyntheticEvent) => void;
+  onDeleteClick: (event: React.SyntheticEvent) => void;
 }
 
 export default function ItemCard({
   item,
   layout,
   icon,
-  onUpdate,
-  onSetPinned,
-  onDelete,
+  isEditing,
+  isInteractionLocked,
+  editTitle,
+  editContent,
+  titleInputRef,
+  contentLabel,
+  titlePlaceholder,
+  saveLabel,
+  cancelLabel,
+  pinLabel,
+  pinToTopLabel,
+  unpinLabel,
+  editLabel,
+  deleteLabel,
+  saveIcon,
+  cancelIcon,
+  editIcon,
+  pinIcon,
+  unpinIcon,
+  deleteIcon,
+  onCardClick,
+  onStartEdit,
+  onEditTitleChange,
+  onEditContentChange,
+  onEditorKeyDown,
+  onSave,
+  onCancel,
+  onTogglePinned,
+  onDeleteClick,
 }: ItemCardProps) {
-  const { t } = useI18n();
-  const editorId = `item:${item.id}`;
-  const editingSessionId = useUIStore((state) => state.editingSessionId);
-  const setEditingSessionId = useUIStore((state) => state.setEditingSessionId);
-  const [editTitle, setEditTitle] = useState(item.title);
-  const [editContent, setEditContent] = useState(item.content);
-  const titleInputRef = useRef<HTMLInputElement>(null);
-  const { openItem } = useItemActions();
-
-  const isEditing = editingSessionId === editorId;
-  const isInteractionLocked = Boolean(editingSessionId && editingSessionId !== editorId);
-
-  useEffect(() => {
-    if (!isEditing) {
-      return;
-    }
-
-    setEditTitle(item.title);
-    setEditContent(item.content);
-  }, [isEditing, item.content, item.title]);
-
-  useEffect(() => {
-    if (!isEditing || !titleInputRef.current) {
-      return;
-    }
-
-    titleInputRef.current.focus();
-    titleInputRef.current.select();
-  }, [isEditing]);
-
-  useEffect(
-    () => () => {
-      const state = useUIStore.getState();
-
-      if (state.editingSessionId === editorId) {
-        state.setEditingSessionId(null);
-      }
-    },
-    [editorId],
-  );
+  const usesSingleLineContentEditor = item.type !== 'note';
+  const textInputClassName =
+    'kb-item-input w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition-colors';
 
   const stopInteraction = (event: React.SyntheticEvent) => {
     event.stopPropagation();
   };
-
-  const openEditor = (event: React.SyntheticEvent) => {
-    event.stopPropagation();
-
-    if (isInteractionLocked) {
-      return;
-    }
-
-    setEditTitle(item.title);
-    setEditContent(item.content);
-    setEditingSessionId(editorId);
-  };
-
-  const closeEditor = () => {
-    if (useUIStore.getState().editingSessionId === editorId) {
-      setEditingSessionId(null);
-    }
-  };
-
-  const handleCancel = (event?: React.SyntheticEvent) => {
-    event?.stopPropagation();
-    setEditTitle(item.title);
-    setEditContent(item.content);
-    closeEditor();
-  };
-
-  const handleSave = (event?: React.SyntheticEvent) => {
-    event?.stopPropagation();
-
-    const nextContent = editContent.trim();
-
-    if (!nextContent) {
-      return;
-    }
-
-    onUpdate({
-      title: editTitle.trim() || deriveItemTitle(item.type, nextContent),
-      content: nextContent,
-    });
-    closeEditor();
-  };
-
-  const handleEditorKeyDown = (
-    event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    event.stopPropagation();
-
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      handleCancel();
-      return;
-    }
-
-    if (
-      event.key === 'Enter' &&
-      (event.currentTarget.tagName === 'INPUT' || event.ctrlKey || event.metaKey)
-    ) {
-      event.preventDefault();
-      handleSave();
-    }
-  };
-
-  const contentLabel =
-    item.type === 'note' ? t('item.content') : item.type === 'url' ? t('item.address') : t('item.path');
-  const usesSingleLineContentEditor = item.type !== 'note';
-  const textInputClassName =
-    'kb-item-input w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition-colors';
 
   if (isEditing) {
     return (
@@ -152,15 +94,15 @@ export default function ItemCard({
               <input
                 ref={titleInputRef}
                 value={editTitle}
-                onChange={(event) => setEditTitle(event.target.value)}
-                onKeyDown={handleEditorKeyDown}
+                onChange={(event) => onEditTitleChange(event.target.value)}
+                onKeyDown={onEditorKeyDown}
                 onPointerDown={stopInteraction}
                 onPaste={stopInteraction}
                 onDragStart={stopInteraction}
                 onDrop={stopInteraction}
                 className={cn(textInputClassName, 'h-11 text-lg font-semibold')}
-                placeholder={t('item.title')}
-                aria-label={t('item.title')}
+                placeholder={titlePlaceholder}
+                aria-label={titlePlaceholder}
               />
             </label>
 
@@ -168,8 +110,8 @@ export default function ItemCard({
               {usesSingleLineContentEditor ? (
                 <input
                   value={editContent}
-                  onChange={(event) => setEditContent(event.target.value)}
-                  onKeyDown={handleEditorKeyDown}
+                  onChange={(event) => onEditContentChange(event.target.value)}
+                  onKeyDown={onEditorKeyDown}
                   onPointerDown={stopInteraction}
                   onPaste={stopInteraction}
                   onDragStart={stopInteraction}
@@ -181,8 +123,8 @@ export default function ItemCard({
               ) : (
                 <textarea
                   value={editContent}
-                  onChange={(event) => setEditContent(event.target.value)}
-                  onKeyDown={handleEditorKeyDown}
+                  onChange={(event) => onEditContentChange(event.target.value)}
+                  onKeyDown={onEditorKeyDown}
                   onPointerDown={stopInteraction}
                   onPaste={stopInteraction}
                   onDragStart={stopInteraction}
@@ -197,21 +139,21 @@ export default function ItemCard({
 
           <div className="flex shrink-0 items-start gap-2 pt-1">
             <button
-              onClick={handleSave}
+              onClick={onSave}
               disabled={!editContent.trim()}
               className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-[0_12px_24px_rgba(16,185,129,0.22)] transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-35"
-              title={t('item.saveChanges')}
-              aria-label={t('item.saveChanges')}
+              title={saveLabel}
+              aria-label={saveLabel}
             >
-              <Check size={18} />
+              {saveIcon}
             </button>
             <button
-              onClick={handleCancel}
+              onClick={onCancel}
               className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-500 text-white shadow-[0_12px_24px_rgba(239,68,68,0.2)] transition-colors hover:bg-red-400"
-              title={t('item.cancelEditing')}
-              aria-label={t('item.cancelEditing')}
+              title={cancelLabel}
+              aria-label={cancelLabel}
             >
-              <X size={18} />
+              {cancelIcon}
             </button>
           </div>
         </div>
@@ -221,13 +163,7 @@ export default function ItemCard({
 
   return (
     <div
-      onClick={() => {
-        if (editingSessionId) {
-          return;
-        }
-
-        void openItem(item);
-      }}
+      onClick={onCardClick}
       className={cn(
         'group rounded-xl border border-transparent transition-all duration-200',
         layout === 'grid'
@@ -284,50 +220,40 @@ export default function ItemCard({
         )}
       >
         <button
-          onClick={(event) => {
-            event.stopPropagation();
-            onSetPinned(!item.isPinned);
-          }}
+          onClick={onTogglePinned}
           className={cn(
             'transition-colors',
             layout === 'grid'
               ? 'kb-item-grid-control rounded-md border p-1.5 shadow-sm backdrop-blur-sm'
               : 'kb-item-list-control rounded-md p-1.5',
           )}
-          title={item.isPinned ? t('item.unpin') : layout === 'grid' ? t('item.pin') : t('item.pinToTop')}
+          title={item.isPinned ? unpinLabel : layout === 'grid' ? pinLabel : pinToTopLabel}
         >
-          {item.isPinned ? (
-            <PinOff size={layout === 'grid' ? 12 : 14} />
-          ) : (
-            <Pin size={layout === 'grid' ? 12 : 14} />
-          )}
+          {item.isPinned ? unpinIcon : pinIcon}
         </button>
         <button
-          onClick={openEditor}
+          onClick={onStartEdit}
           className={cn(
             'transition-colors',
             layout === 'grid'
               ? 'kb-item-grid-control rounded-md border p-1.5 shadow-sm backdrop-blur-sm hover:bg-blue-500/80 hover:text-white'
               : 'kb-item-list-control rounded-md p-1.5 hover:bg-blue-500/20 hover:text-blue-400',
           )}
-          title={t('item.edit')}
+          title={editLabel}
         >
-          <Pencil size={layout === 'grid' ? 12 : 14} />
+          {editIcon}
         </button>
         <button
-          onClick={(event) => {
-            event.stopPropagation();
-            onDelete();
-          }}
+          onClick={onDeleteClick}
           className={cn(
             'transition-colors',
             layout === 'grid'
               ? 'kb-item-grid-control rounded-md border p-1.5 shadow-sm backdrop-blur-sm hover:bg-red-500/80 hover:text-white'
               : 'kb-item-list-control rounded-md p-1.5 hover:bg-red-500/20 hover:text-red-400',
           )}
-          title={t('item.delete')}
+          title={deleteLabel}
         >
-          <X size={layout === 'grid' ? 12 : 14} />
+          {deleteIcon}
         </button>
       </div>
     </div>

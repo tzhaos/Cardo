@@ -1,23 +1,19 @@
 import { Package } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useI18n } from '../../../app/hooks/useI18n';
 import { getBoxThemeDockIconClass } from '../../../domains/workspace/model/boxThemes';
 import { getBoxDisplayTitle } from '../../../domains/workspace/model/boxTitles';
-import { useWorkspaceStore } from '../../../domains/workspace/store/useWorkspaceStore';
+import type { WorkspaceBox } from '../../../domains/workspace/model/workspace';
 import { cn } from '../../../lib/utils';
 
 interface TrayItemButtonProps {
-  boxId: string;
+  box: WorkspaceBox;
   onClick: () => void;
 }
 
-export default function TrayItemButton({ boxId, onClick }: TrayItemButtonProps) {
-  const box = useWorkspaceStore((state) => state.boxesById[boxId]);
-
-  if (!box) {
-    return null;
-  }
-
-  const displayTitle = getBoxDisplayTitle(box);
+export default function TrayItemButton({ box, onClick }: TrayItemButtonProps) {
+  const { t } = useI18n();
+  const displayTitle = getBoxDisplayTitle(box, t);
 
   return (
     <button

@@ -1,128 +1,75 @@
 import { motion } from 'motion/react';
-import { useEffect, useState } from 'react';
-import { useUIStore } from '../../domains/ui/store/useUIStore';
-import { useThemeStore } from '../../domains/ui/store/useThemeStore';
-import { getBoxThemeSurfaceClass } from '../../domains/workspace/model/boxThemes';
-import { useWorkspaceStore } from '../../domains/workspace/store/useWorkspaceStore';
+import type { ReactNode } from 'react';
+import type { WorkspaceBox } from '../../domains/workspace/model/workspace';
 import { cn } from '../../lib/utils';
-import type { BoxData } from '../../types/box';
-import BoxContent from './BoxContent';
-import { useBoxDrag } from './hooks/useBoxDrag';
-import { useBoxResize } from './hooks/useBoxResize';
-import BoxHeader from './BoxHeader';
 
 interface BoxContainerProps {
-  boxId: string;
+  box: WorkspaceBox;
+  isActive: boolean;
+  isDragging: boolean;
+  surfaceClassName: string;
+  editingSessionId: string | null;
+  onFocus: () => void;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+  onResizeStart: (event: React.MouseEvent) => void;
+  header: ReactNode;
+  content: ReactNode;
 }
 
-export default function BoxContainer({ boxId }: BoxContainerProps) {
-  const data = useWorkspaceStore((state) => state.boxesById[boxId]);
-  const updateBox = useWorkspaceStore((state) => state.updateBox);
-  const bringToFront = useWorkspaceStore((state) => state.bringToFront);
-  const toggleMinimize = useWorkspaceStore((state) => state.toggleMinimize);
-  const deleteBox = useWorkspaceStore((state) => state.deleteBox);
-
-  const activeBoxId = useUIStore((state) => state.activeBoxId);
-  const editingSessionId = useUIStore((state) => state.editingSessionId);
-  const setActiveBox = useUIStore((state) => state.setActiveBox);
-  const appTheme = useThemeStore((state) => state.theme);
-
-  const [isHovering, setIsHovering] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [showThemePicker, setShowThemePicker] = useState(false);
-  const [showAddMenu, setShowAddMenu] = useState(false);
-
-  if (!data) {
-    return null;
-  }
-
-  const isActive = activeBoxId === data.id;
-  const surfaceClassName = getBoxThemeSurfaceClass(data.theme, appTheme);
-
-  useEffect(() => {
-    if (isActive) {
-      return;
-    }
-
-    setShowAddMenu(false);
-    setShowThemePicker(false);
-  }, [isActive]);
-
-  const applyBoxUpdates = (updates: Partial<BoxData>) => updateBox(data.id, updates);
-
-  const focusBox = () => {
-    bringToFront(data.id);
-    setActiveBox(data.id);
-  };
-
-  const { handleDragStart } = useBoxDrag({
-    box: data,
-    onFocus: focusBox,
-    onUpdate: applyBoxUpdates,
-    setIsDragging,
-  });
-  const { handleResize } = useBoxResize({
-    box: data,
-    onUpdate: applyBoxUpdates,
-  });
-
+export default function BoxContainer({
+  box,
+  isActive,
+  isDragging,
+  surfaceClassName,
+  editingSessionId,
+  onFocus,
+  onMouseEnter,
+  onMouseLeave,
+  onResizeStart,
+  header,
+  content,
+}: BoxContainerProps) {
   return (
     <motion.div
-      onMouseDown={focusBox}
-      initial={{ x: data.x, y: data.y, opacity: 0, scale: 0.95 }}
+      onMouseDown={onFocus}
+      initial={{ x: box.bounds.x, y: box.bounds.y, opacity: 0, scale: 0.95 }}
       animate={{
-        x: data.x,
-        y: data.y,
+        x: box.bounds.x,
+        y: box.bounds.y,
         opacity: 1,
         scale: isDragging ? 1.02 : 1,
       }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={isDragging ? { duration: 0 } : { type: 'spring', stiffness: 350, damping: 25 }}
       style={{
-        width: data.width,
-        height: data.height,
-        zIndex: data.zIndex,
+        width: box.bounds.width,
+        height: box.bounds.height,
+        zIndex: box.zIndex,
         boxShadow: isDragging
           ? 'var(--box-drag-shadow)'
-          : isActive && !data.isLocked
+          : isActive && !box.isLocked
             ? 'var(--box-active-shadow)'
             : 'var(--box-shadow)',
       }}
       className={cn(
         'kb-box absolute flex flex-col overflow-hidden rounded-xl border backdrop-blur-md transition-[background-color,border-color,color] duration-300',
         surfaceClassName,
-        data.isLocked ? 'ring-1 ring-red-500/50' : '',
+        box.isLocked ? 'ring-1 ring-red-500/50' : '',
       )}
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => {
-        setIsHovering(false);
-        setShowThemePicker(false);
-      }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
-      <BoxHeader
-        data={data}
-        isHovering={isHovering}
-        showThemePicker={showThemePicker}
-        setShowThemePicker={setShowThemePicker}
-        onUpdate={applyBoxUpdates}
-        onMinimize={() => toggleMinimize(data.id)}
-        onClose={() => deleteBox(data.id)}
-        onDragStart={handleDragStart}
-      />
+      {header}
+      {content}
 
-      <BoxContent
-        data={data}
-        showAddMenu={showAddMenu}
-        setShowAddMenu={setShowAddMenu}
-      />
-
-      {!data.isLocked && (
+      {!box.isLocked && (
         <div
           className={cn(
             'absolute bottom-0 right-0 h-4 w-4',
             editingSessionId ? 'cursor-not-allowed opacity-20' : 'cursor-se-resize',
           )}
-          onMouseDown={handleResize}
+          onMouseDown={onResizeStart}
         >
           <svg
             viewBox="0 0 24 24"

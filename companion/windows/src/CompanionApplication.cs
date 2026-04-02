@@ -28,7 +28,7 @@ internal static class CompanionApplication
     try
     {
       var request = KbeRequestParser.Parse(args[0]);
-      LocalResourceOpener.Open(request.TargetPath);
+      new LocalResourceOpener().Open(request.TargetPath);
       return 0;
     }
     catch (Exception exception)

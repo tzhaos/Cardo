@@ -1,4 +1,4 @@
-import type { ItemType } from '../../../types/item';
+import type { ItemType } from '../model/item';
 
 interface ParsedLocalPath {
   normalizedPath: string;

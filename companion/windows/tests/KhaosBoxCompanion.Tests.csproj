@@ -15,4 +15,11 @@
   <ItemGroup>
     <ProjectReference Include="..\src\KhaosBoxCompanion.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\..\contracts\kbe\fixtures.json">
+      <Link>fixtures.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

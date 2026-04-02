@@ -1,88 +1,55 @@
 import { LayoutGrid, List, Lock, Minus, Package, Unlock, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { useI18n } from '../../domains/i18n/hooks/useI18n';
-import { useUIStore } from '../../domains/ui/store/useUIStore';
-import { getBoxDisplayTitle } from '../../domains/workspace/model/boxTitles';
+import type { ReactNode, RefObject } from 'react';
+import type { WorkspaceBox } from '../../domains/workspace/model/workspace';
 import { cn } from '../../lib/utils';
-import type { BoxData } from '../../types/box';
-import BoxThemePicker from './BoxThemePicker';
 
 interface BoxHeaderProps {
-  data: BoxData;
+  box: WorkspaceBox;
+  displayTitle: string;
+  draftTitle: string;
   isHovering: boolean;
-  showThemePicker: boolean;
-  setShowThemePicker: (show: boolean) => void;
-  onUpdate: (updates: Partial<BoxData>) => void;
+  isEditing: boolean;
+  isInteractionLocked: boolean;
+  inputRef: RefObject<HTMLInputElement | null>;
+  themePicker: ReactNode;
+  toggleLayoutLabel: string;
+  lockPositionLabel: string;
+  unlockPositionLabel: string;
+  minimizeLabel: string;
+  closeLabel: string;
+  onDragStart: (event: React.PointerEvent) => void;
+  onStartEdit: (event: React.MouseEvent<HTMLDivElement>) => void;
+  onTitleChange: (value: string) => void;
+  onFinishEditing: (shouldSave: boolean) => void;
+  onToggleLayout: () => void;
+  onToggleLock: () => void;
   onMinimize: () => void;
   onClose: () => void;
-  onDragStart: (event: React.PointerEvent) => void;
 }
 
 export default function BoxHeader({
-  data,
+  box,
+  displayTitle,
+  draftTitle,
   isHovering,
-  showThemePicker,
-  setShowThemePicker,
-  onUpdate,
+  isEditing,
+  isInteractionLocked,
+  inputRef,
+  themePicker,
+  toggleLayoutLabel,
+  lockPositionLabel,
+  unlockPositionLabel,
+  minimizeLabel,
+  closeLabel,
+  onDragStart,
+  onStartEdit,
+  onTitleChange,
+  onFinishEditing,
+  onToggleLayout,
+  onToggleLock,
   onMinimize,
   onClose,
-  onDragStart,
 }: BoxHeaderProps) {
-  const { t } = useI18n();
-  const editorId = `box:${data.id}:title`;
-  const editingSessionId = useUIStore((state) => state.editingSessionId);
-  const setEditingSessionId = useUIStore((state) => state.setEditingSessionId);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const displayTitle = getBoxDisplayTitle(data);
-  const [draftTitle, setDraftTitle] = useState(displayTitle);
-
-  const isEditing = editingSessionId === editorId;
-  const isInteractionLocked = Boolean(editingSessionId && editingSessionId !== editorId);
-
-  useEffect(() => {
-    if (!isEditing || !inputRef.current) {
-      return;
-    }
-
-    inputRef.current.focus();
-    inputRef.current.select();
-  }, [isEditing]);
-
-  useEffect(() => {
-    if (isEditing) {
-      return;
-    }
-
-    setDraftTitle(displayTitle);
-  }, [displayTitle, isEditing]);
-
-  useEffect(
-    () => () => {
-      const state = useUIStore.getState();
-
-      if (state.editingSessionId === editorId) {
-        state.setEditingSessionId(null);
-      }
-    },
-    [editorId],
-  );
-
-  const finishEditing = (shouldSave: boolean) => {
-    if (shouldSave) {
-      const nextTitle = draftTitle.trim();
-
-      if (nextTitle && nextTitle !== displayTitle) {
-        onUpdate({ title: nextTitle, titleKey: null });
-      }
-    } else {
-      setDraftTitle(displayTitle);
-    }
-
-    if (useUIStore.getState().editingSessionId === editorId) {
-      setEditingSessionId(null);
-    }
-  };
-
   return (
     <div
       className={cn(
@@ -91,36 +58,24 @@ export default function BoxHeader({
       )}
       onPointerDown={isEditing || isInteractionLocked ? undefined : onDragStart}
     >
-      <div
-        className="flex flex-1 items-center gap-2 overflow-hidden"
-        onDoubleClick={(event) => {
-          event.stopPropagation();
-
-          if (isInteractionLocked) {
-            return;
-          }
-
-          setDraftTitle(displayTitle);
-          setEditingSessionId(editorId);
-        }}
-      >
+      <div className="flex flex-1 items-center gap-2 overflow-hidden" onDoubleClick={onStartEdit}>
         <Package size={14} className="kb-box-muted shrink-0" />
         {isEditing ? (
           <input
             ref={inputRef}
             type="text"
             value={draftTitle}
-            onChange={(event) => setDraftTitle(event.target.value)}
-            onBlur={() => finishEditing(true)}
+            onChange={(event) => onTitleChange(event.target.value)}
+            onBlur={() => onFinishEditing(true)}
             onKeyDown={(event) => {
               event.stopPropagation();
 
               if (event.key === 'Enter') {
-                finishEditing(true);
+                onFinishEditing(true);
               }
 
               if (event.key === 'Escape') {
-                finishEditing(false);
+                onFinishEditing(false);
               }
             }}
             className="kb-box-input w-full truncate rounded-lg border px-2 py-1 text-sm font-medium outline-none transition-colors"
@@ -144,28 +99,24 @@ export default function BoxHeader({
           !isEditing && isHovering ? 'opacity-100' : !isEditing ? 'opacity-0' : '',
         )}
       >
-        <BoxThemePicker
-          showThemePicker={showThemePicker}
-          setShowThemePicker={setShowThemePicker}
-          onUpdate={(theme) => onUpdate({ theme })}
-        />
+        {themePicker}
 
         <button
-          onClick={() => onUpdate({ layout: data.layout === 'grid' ? 'list' : 'grid' })}
+          onClick={onToggleLayout}
           className="kb-icon-button rounded-md p-1.5 transition-colors"
-          title={t('box.toggleLayout')}
+          title={toggleLayoutLabel}
           onPointerDown={(event) => event.stopPropagation()}
         >
-          {data.layout === 'grid' ? <List size={14} /> : <LayoutGrid size={14} />}
+          {box.layout === 'grid' ? <List size={14} /> : <LayoutGrid size={14} />}
         </button>
 
         <button
-          onClick={() => onUpdate({ isLocked: !data.isLocked })}
+          onClick={onToggleLock}
           className="kb-icon-button rounded-md p-1.5 transition-colors"
-          title={data.isLocked ? t('box.unlockPosition') : t('box.lockPosition')}
+          title={box.isLocked ? unlockPositionLabel : lockPositionLabel}
           onPointerDown={(event) => event.stopPropagation()}
         >
-          {data.isLocked ? <Lock size={14} className="text-red-400" /> : <Unlock size={14} />}
+          {box.isLocked ? <Lock size={14} className="text-red-400" /> : <Unlock size={14} />}
         </button>
 
         <div className="kb-list-divider mx-1 h-4 w-px" />
@@ -173,7 +124,7 @@ export default function BoxHeader({
         <button
           onClick={onMinimize}
           className="kb-icon-button rounded-md p-1.5 transition-colors"
-          title={t('box.minimize')}
+          title={minimizeLabel}
           onPointerDown={(event) => event.stopPropagation()}
         >
           <Minus size={14} />
@@ -182,7 +133,7 @@ export default function BoxHeader({
         <button
           onClick={onClose}
           className="kb-icon-button kb-icon-button-danger rounded-md p-1.5 transition-colors"
-          title={t('box.close')}
+          title={closeLabel}
           onPointerDown={(event) => event.stopPropagation()}
         >
           <X size={14} />

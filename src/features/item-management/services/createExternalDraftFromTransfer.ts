@@ -1,11 +1,6 @@
-import type { ItemType } from '../../../types/item';
+import type { ItemDraft, ItemType } from '../../../domains/items/model/item';
 
-interface ExternalDraft {
-  type: Extract<ItemType, 'file' | 'folder'>;
-  title: string;
-}
-
-export function createExternalDraftFromTransfer(dataTransfer: DataTransfer): ExternalDraft | null {
+export function createExternalDraftFromTransfer(dataTransfer: DataTransfer): ItemDraft | null {
   for (const transferItem of Array.from(dataTransfer.items)) {
     if (transferItem.kind !== 'file') {
       continue;
@@ -17,6 +12,7 @@ export function createExternalDraftFromTransfer(dataTransfer: DataTransfer): Ext
       return {
         type: 'folder',
         title: entry.name,
+        content: '',
       };
     }
 
@@ -26,6 +22,7 @@ export function createExternalDraftFromTransfer(dataTransfer: DataTransfer): Ext
       return {
         type: 'file',
         title: file.name,
+        content: '',
       };
     }
   }

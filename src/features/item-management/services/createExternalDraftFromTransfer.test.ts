@@ -31,6 +31,7 @@ test('createExternalDraftFromTransfer creates folder drafts from directory drops
   assert.deepEqual(draft, {
     type: 'folder',
     title: 'ProjectAssets',
+    content: '',
   });
 });
 
@@ -42,5 +43,6 @@ test('createExternalDraftFromTransfer creates file drafts from file drops', () =
   assert.deepEqual(draft, {
     type: 'file',
     title: 'report.txt',
+    content: '',
   });
 });

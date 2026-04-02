@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import fs from 'node:fs';
 import path from 'node:path';
 import { defineConfig } from 'vite';
+import { EXTENSION_LOCALE_CODES, EXTENSION_LOCALE_MESSAGES } from './src/domains/i18n/model/messages';
 
 const EXTENSION_OUT_DIR = path.resolve(__dirname, 'artifacts/extension/unpacked');
 
@@ -33,7 +34,6 @@ function copyExtensionAssets() {
         : EXTENSION_OUT_DIR;
       const manifestSource = path.resolve(__dirname, 'assets/extension-shell/manifest.json');
       const iconsSource = path.resolve(__dirname, 'assets/extension-shell/icons');
-      const localesSource = path.resolve(__dirname, 'assets/extension-shell/_locales');
 
       fs.mkdirSync(outDir, { recursive: true });
       fs.copyFileSync(manifestSource, path.join(outDir, 'manifest.json'));
@@ -42,8 +42,14 @@ function copyExtensionAssets() {
         fs.cpSync(iconsSource, path.join(outDir, 'extension/icons'), { recursive: true });
       }
 
-      if (fs.existsSync(localesSource)) {
-        fs.cpSync(localesSource, path.join(outDir, '_locales'), { recursive: true });
+      for (const locale of Object.keys(EXTENSION_LOCALE_MESSAGES) as Array<keyof typeof EXTENSION_LOCALE_MESSAGES>) {
+        const localeDir = path.join(outDir, '_locales', EXTENSION_LOCALE_CODES[locale]);
+        fs.mkdirSync(localeDir, { recursive: true });
+        fs.writeFileSync(
+          path.join(localeDir, 'messages.json'),
+          `${JSON.stringify(EXTENSION_LOCALE_MESSAGES[locale], null, 2)}\n`,
+          'utf8',
+        );
       }
     },
     closeBundle() {

@@ -2,17 +2,57 @@ using System.Diagnostics;
 
 namespace KhaosBoxCompanion;
 
-internal static class LocalResourceOpener
+internal interface IFileSystemPort
 {
-  public static void Open(string targetPath)
+  bool DirectoryExists(string path);
+  bool FileExists(string path);
+  string GetDirectoryName(string path);
+}
+
+internal interface IProcessStarter
+{
+  Process? Start(ProcessStartInfo startInfo);
+}
+
+internal sealed class WindowsFileSystemPort : IFileSystemPort
+{
+  public bool DirectoryExists(string path) => Directory.Exists(path);
+
+  public bool FileExists(string path) => File.Exists(path);
+
+  public string GetDirectoryName(string path) => Path.GetDirectoryName(path) ?? string.Empty;
+}
+
+internal sealed class ShellProcessStarter : IProcessStarter
+{
+  public Process? Start(ProcessStartInfo startInfo) => Process.Start(startInfo);
+}
+
+internal sealed class LocalResourceOpener
+{
+  private readonly IFileSystemPort _fileSystem;
+  private readonly IProcessStarter _processStarter;
+
+  public LocalResourceOpener()
+    : this(new WindowsFileSystemPort(), new ShellProcessStarter())
   {
-    if (Directory.Exists(targetPath))
+  }
+
+  internal LocalResourceOpener(IFileSystemPort fileSystem, IProcessStarter processStarter)
+  {
+    _fileSystem = fileSystem;
+    _processStarter = processStarter;
+  }
+
+  public void Open(string targetPath)
+  {
+    if (_fileSystem.DirectoryExists(targetPath))
     {
       OpenFolder(targetPath);
       return;
     }
 
-    if (File.Exists(targetPath))
+    if (_fileSystem.FileExists(targetPath))
     {
       OpenFile(targetPath);
       return;
@@ -21,9 +61,9 @@ internal static class LocalResourceOpener
     throw new FileNotFoundException("The local resource does not exist.", targetPath);
   }
 
-  private static void OpenFolder(string targetPath)
+  private void OpenFolder(string targetPath)
   {
-    var process = Process.Start(new ProcessStartInfo
+    var process = _processStarter.Start(new ProcessStartInfo
     {
       FileName = "explorer.exe",
       Arguments = $"\"{targetPath}\"",
@@ -36,16 +76,14 @@ internal static class LocalResourceOpener
     }
   }
 
-  private static void OpenFile(string targetPath)
+  private void OpenFile(string targetPath)
   {
-    var startInfo = new ProcessStartInfo
+    var process = _processStarter.Start(new ProcessStartInfo
     {
       FileName = targetPath,
       UseShellExecute = true,
-      WorkingDirectory = Path.GetDirectoryName(targetPath) ?? string.Empty,
-    };
-
-    var process = Process.Start(startInfo);
+      WorkingDirectory = _fileSystem.GetDirectoryName(targetPath),
+    });
 
     if (process is null)
     {

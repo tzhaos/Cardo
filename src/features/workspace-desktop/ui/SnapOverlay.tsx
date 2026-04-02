@@ -1,8 +1,8 @@
-import { useUIStore } from '../../../domains/ui/store/useUIStore';
+import { useInteractionStore } from '../../../app/stores/useInteractionStore';
 import { cn } from '../../../lib/utils';
 
 export default function SnapOverlay() {
-  const snapPreview = useUIStore((state) => state.snapPreview);
+  const snapPreview = useInteractionStore((state) => state.snapPreview);
 
   if (!snapPreview) {
     return null;
