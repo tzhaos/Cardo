@@ -6,6 +6,7 @@ import { useVisibleBoxes } from '../../../app/stores/useWorkspaceSelectors';
 import Background from '../../../widgets/DesktopShell/Background';
 import BrandBadge from '../../../widgets/DesktopShell/BrandBadge';
 import ManagedBox from '../../box-management/ui/ManagedBox';
+import SettingsPanel from '../../settings/ui/SettingsPanel';
 import TrayDock from '../../tray/ui/TrayDock';
 import { useWorkspaceGlobalEvents } from '../hooks/useWorkspaceGlobalEvents';
 import SnapOverlay from './SnapOverlay';
@@ -32,6 +33,7 @@ export default function WorkspaceDesktop() {
       ))}
 
       <TrayDock />
+      <SettingsPanel />
     </div>
   );
 }

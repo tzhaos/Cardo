@@ -1,4 +1,4 @@
-import { Download, MoonStar, Plus, SunMedium, Upload } from 'lucide-react';
+import { Download, MoonStar, Plus, Settings, SunMedium, Upload } from 'lucide-react';
 import { useRef, type ChangeEvent } from 'react';
 import { toast } from 'sonner';
 import { useI18n } from '../../../app/hooks/useI18n';
@@ -10,6 +10,7 @@ import { toggleLocale } from '../../../app/use-cases/toggleLocale';
 import { toggleTheme } from '../../../app/use-cases/toggleTheme';
 import { useInteractionStore } from '../../../app/stores/useInteractionStore';
 import { usePreferencesStore } from '../../../app/stores/usePreferencesStore';
+import { useSettingsPanelStore } from '../../../app/stores/useSettingsPanelStore';
 import { useTrayBoxes, useWorkspaceDispatch } from '../../../app/stores/useWorkspaceSelectors';
 import { MAX_WORKSPACE_BOXES } from '../../../domains/workspace/model/workspace';
 import { cn } from '../../../lib/utils';
@@ -45,6 +46,7 @@ function LocaleToggleGlyph({ locale }: { locale: 'zh' | 'en' }) {
 export default function TrayDock() {
   const { locale, t } = useI18n();
   const theme = usePreferencesStore((state) => state.theme);
+  const openSettings = useSettingsPanelStore((state) => state.open);
   const boxes = useTrayBoxes();
   const dispatch = useWorkspaceDispatch();
   const setActiveBox = useInteractionStore((state) => state.setActiveBox);
@@ -168,6 +170,15 @@ export default function TrayDock() {
             className="kb-dock-action flex items-center justify-center rounded-xl p-2 transition-colors"
           >
             <LocaleToggleGlyph locale={locale} />
+          </button>
+
+          <button
+            onClick={openSettings}
+            title={t('settings.title')}
+            aria-label={t('settings.title')}
+            className="kb-dock-action rounded-xl p-2 transition-colors"
+          >
+            <Settings size={20} />
           </button>
 
           <input

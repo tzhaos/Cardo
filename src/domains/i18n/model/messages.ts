@@ -76,6 +76,16 @@ const EN_MESSAGES = {
   'dropZone.add': 'Drop to add',
   'dock.switchToLightTheme': 'Switch to light theme',
   'dock.switchToDarkTheme': 'Switch to dark theme',
+  'settings.title': 'Settings',
+  'settings.general': 'General',
+  'settings.theme': 'Theme',
+  'settings.sync': 'Sync',
+  'settings.about': 'About',
+  'settings.close': 'Close',
+  'settings.general.placeholder': 'General settings will be available soon.',
+  'settings.theme.placeholder': 'Theme settings will be available soon.',
+  'settings.sync.placeholder': 'Sync settings will be available soon.',
+  'settings.about.placeholder': 'About page will be available soon.',
 } as const;
 
 export type MessageKey = keyof typeof EN_MESSAGES;
@@ -159,6 +169,16 @@ export const MESSAGES: Record<AppLocale, MessageDictionary> = {
     'dropZone.add': '拖放添加',
     'dock.switchToLightTheme': '切换到亮色主题',
     'dock.switchToDarkTheme': '切换到暗色主题',
+    'settings.title': '设置',
+    'settings.general': '常规',
+    'settings.theme': '主题',
+    'settings.sync': '同步',
+    'settings.about': '关于',
+    'settings.close': '关闭',
+    'settings.general.placeholder': '常规设置即将推出。',
+    'settings.theme.placeholder': '主题设置即将推出。',
+    'settings.sync.placeholder': '同步设置即将推出。',
+    'settings.about.placeholder': '关于页面即将推出。',
   },
 };
 

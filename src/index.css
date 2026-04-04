@@ -383,6 +383,11 @@ body {
     background: var(--surface-hover-soft);
     color: var(--surface-text-strong);
   }
+
+  .kb-settings-card {
+    border-color: var(--surface-divider);
+    background: var(--surface-hover-soft);
+  }
 }
 
 @layer utilities {
