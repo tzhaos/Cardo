@@ -1,8 +1,23 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef, type ChangeEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Settings, Palette, Cloud, Info, X } from 'lucide-react';
+import {
+  Settings,
+  Palette,
+  Cloud,
+  Info,
+  X,
+  Download,
+  Upload,
+  MoonStar,
+  SunMedium,
+  Languages,
+} from 'lucide-react';
+import { toast } from 'sonner';
 import { useI18n } from '../../../app/hooks/useI18n';
+import { usePreferencesStore } from '../../../app/stores/usePreferencesStore';
 import { useSettingsPanelStore } from '../../../app/stores/useSettingsPanelStore';
+import { exportWorkspace } from '../../../app/use-cases/exportWorkspace';
+import { importWorkspace } from '../../../app/use-cases/importWorkspace';
 import { cn } from '../../../lib/utils';
 
 type SettingsTab = 'general' | 'theme' | 'sync' | 'about';
@@ -20,21 +35,175 @@ const categories: SettingsCategory[] = [
   { id: 'about', labelKey: 'settings.about', icon: <Info size={18} /> },
 ];
 
-function SettingsContent({ tab, t }: { tab: SettingsTab; t: (key: string, params?: Record<string, string>) => string }) {
-  const placeholders: Record<SettingsTab, string> = {
-    general: t('settings.general.placeholder'),
-    theme: t('settings.theme.placeholder'),
-    sync: t('settings.sync.placeholder'),
-    about: t('settings.about.placeholder'),
+const ZH_GLYPH = '\u6587';
+
+function LocaleToggleGlyph({ locale }: { locale: 'zh' | 'en' }) {
+  const isZhActive = locale === 'zh';
+  return (
+    <span className="relative block h-5 w-5" aria-hidden="true">
+      <span
+        className={cn(
+          'absolute left-[1px] top-0 font-sans font-semibold leading-none transition-all',
+          isZhActive ? 'text-[13px] opacity-100' : 'text-[9px] opacity-70',
+        )}
+      >
+        {ZH_GLYPH}
+      </span>
+      <span
+        className={cn(
+          'absolute bottom-0 right-0 font-sans font-semibold leading-none transition-all',
+          isZhActive ? 'text-[9px] opacity-70' : 'text-[13px] opacity-100',
+        )}
+      >
+        A
+      </span>
+    </span>
+  );
+}
+
+function GeneralSettings({ t }: { t: (key: string, params?: Record<string, string>) => string }) {
+  const theme = usePreferencesStore((state) => state.theme);
+  const toggleTheme = usePreferencesStore((state) => state.toggleTheme);
+  const { locale, toggleLocale } = useI18n();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleExport = () => {
+    exportWorkspace(t('dock.exportFilePrefix'));
+    toast.success(t('toast.dataExported'));
   };
 
+  const handleImport = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      await importWorkspace(file);
+      toast.success(t('toast.dataImported'));
+    } catch {
+      toast.error(t('toast.importFailed'));
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const themeLabel =
+    theme === 'dark' ? t('dock.switchToLightTheme') : t('dock.switchToDarkTheme');
+
   return (
-    <div className="flex flex-col gap-6">
-      <div className="kb-settings-card rounded-xl border p-6">
-        <p className="text-sm text-[var(--surface-text-muted)]">{placeholders[tab]}</p>
+    <div className="flex flex-col gap-5">
+      {/* Theme Toggle */}
+      <div className="kb-settings-card rounded-xl border p-5">
+        <div className="mb-3 flex items-center gap-2">
+          {theme === 'dark' ? <MoonStar size={16} /> : <SunMedium size={16} />}
+          <span className="text-sm font-medium text-[var(--surface-text-strong)]">
+            {t('settings.theme')}
+          </span>
+        </div>
+        <button
+          onClick={toggleTheme}
+          className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-[var(--surface-hover-soft)]"
+        >
+          {theme === 'dark' ? <SunMedium size={18} /> : <MoonStar size={18} />}
+          <span className="text-[var(--surface-text)]">{themeLabel}</span>
+        </button>
+      </div>
+
+      {/* Language Toggle */}
+      <div className="kb-settings-card rounded-xl border p-5">
+        <div className="mb-3 flex items-center gap-2">
+          <Languages size={16} />
+          <span className="text-sm font-medium text-[var(--surface-text-strong)]">
+            {t(locale === 'zh' ? 'dock.switchToEnglish' : 'dock.switchToChinese')}
+          </span>
+        </div>
+        <button
+          onClick={toggleLocale}
+          className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-[var(--surface-hover-soft)]"
+        >
+          <LocaleToggleGlyph locale={locale} />
+          <span className="text-[var(--surface-text)]">
+            {locale === 'zh' ? 'English' : '中文'}
+          </span>
+        </button>
+      </div>
+
+      {/* Data Management */}
+      <div className="kb-settings-card rounded-xl border p-5">
+        <div className="mb-3 flex items-center gap-2">
+          <Upload size={16} />
+          <span className="text-sm font-medium text-[var(--surface-text-strong)]">
+            {t('settings.dataManagement')}
+          </span>
+        </div>
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-[var(--surface-hover-soft)]"
+          >
+            <Download size={18} />
+            <span className="text-[var(--surface-text)]">{t('dock.exportJson')}</span>
+          </button>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-[var(--surface-hover-soft)]"
+          >
+            <Upload size={18} />
+            <span className="text-[var(--surface-text)]">{t('dock.importJson')}</span>
+          </button>
+        </div>
+        <input
+          type="file"
+          accept=".json"
+          className="hidden"
+          ref={fileInputRef}
+          onChange={handleImport}
+        />
       </div>
     </div>
   );
+}
+
+function SettingsContent({
+  tab,
+  t,
+}: {
+  tab: SettingsTab;
+  t: (key: string, params?: Record<string, string>) => string;
+}) {
+  switch (tab) {
+    case 'general':
+      return <GeneralSettings t={t} />;
+    case 'theme':
+      return (
+        <div className="flex flex-col gap-6">
+          <div className="kb-settings-card rounded-xl border p-6">
+            <p className="text-sm text-[var(--surface-text-muted)]">
+              {t('settings.theme.placeholder')}
+            </p>
+          </div>
+        </div>
+      );
+    case 'sync':
+      return (
+        <div className="flex flex-col gap-6">
+          <div className="kb-settings-card rounded-xl border p-6">
+            <p className="text-sm text-[var(--surface-text-muted)]">
+              {t('settings.sync.placeholder')}
+            </p>
+          </div>
+        </div>
+      );
+    case 'about':
+      return (
+        <div className="flex flex-col gap-6">
+          <div className="kb-settings-card rounded-xl border p-6">
+            <p className="text-sm text-[var(--surface-text-muted)]">
+              {t('settings.about.placeholder')}
+            </p>
+          </div>
+        </div>
+      );
+  }
 }
 
 export default function SettingsPanel() {
@@ -128,7 +297,7 @@ export default function SettingsPanel() {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-6">
+              <div className="custom-scrollbar flex-1 overflow-y-auto p-6">
                 <SettingsContent tab={activeTab} t={t} />
               </div>
             </div>
