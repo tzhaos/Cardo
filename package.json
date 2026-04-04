@@ -14,7 +14,7 @@
     "companion:windows:uninstall": "powershell -ExecutionPolicy Bypass -File companion/windows/scripts/uninstall.ps1",
     "clean": "node -e \"const fs=require('node:fs'); ['artifacts','dist','companion/windows/src/bin','companion/windows/src/obj','companion/windows/tests/bin','companion/windows/tests/obj','companion/windows/packaging/msi/bin','companion/windows/packaging/msi/obj'].forEach((path)=>fs.rmSync(path,{recursive:true,force:true}))\"",
     "lint": "tsc --noEmit && tsx scripts/check-architecture.ts",
-    "test:ts": "tsx --test 'src/**/*.test.ts'",
+    "test:ts": "tsx --test src/domains/items/model/item.test.ts src/domains/items/services/createItem.test.ts src/domains/items/services/deriveItemTitle.test.ts src/domains/items/services/isUrlText.test.ts src/domains/workspace/model/workspaceModel.test.ts src/domains/workspace/model/boxTitles.test.ts src/domains/workspace/model/workspaceSelectors.test.ts src/domains/preferences/model/preferences.test.ts src/features/item-management/services/createExternalDraftFromTransfer.test.ts src/integrations/companion/createKbeUrl.test.ts src/app/migrations/workspaceMigration.test.ts",
     "migrate:workspace": "tsx scripts/migrate-workspace.ts",
     "test": "npm run test:ts && dotnet test companion/windows/tests/KhaosBoxCompanion.Tests.csproj"
   },
