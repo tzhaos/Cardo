@@ -1,6 +1,5 @@
 import { MESSAGES } from '../../domains/i18n/model/messages';
 import { deriveItemTitle } from '../../domains/items/services/deriveItemTitle';
-import { resolveBoxTheme } from '../../domains/workspace/model/boxThemes';
 import { createWorkspaceSnapshot } from '../../domains/workspace/model/createInitialWorkspaceSnapshot';
 import {
   WORKSPACE_EXPORT_VERSION,
@@ -113,7 +112,6 @@ function normalizeLegacyBox(input: unknown, index: number): WorkspaceBox | null 
       width: Math.max(200, asNumber(rawBounds.width ?? input.width, 320)),
       height: Math.max(150, asNumber(rawBounds.height ?? input.height, 400)),
     },
-    theme: resolveBoxTheme(asString(input.theme)?.trim() || null),
     isLocked: asBoolean(input.isLocked),
     isMinimized: asBoolean(input.isMinimized),
     layout: asString(input.layout) === 'grid' ? 'grid' : 'list',

@@ -1,7 +1,6 @@
 import { Package } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useI18n } from '../../../app/hooks/useI18n';
-import { getBoxThemeDockIconClass } from '../../../domains/workspace/model/boxThemes';
 import { getBoxDisplayTitle } from '../../../domains/workspace/model/boxTitles';
 import type { WorkspaceBox } from '../../../domains/workspace/model/workspace';
 import { cn } from '../../../lib/utils';
@@ -29,12 +28,7 @@ export default function TrayItemButton({ box, compact = false, onClick }: TrayIt
       title={displayTitle}
       aria-label={displayTitle}
     >
-      <div
-        className={cn(
-          'flex h-6 w-6 shrink-0 items-center justify-center rounded-md shadow-sm',
-          getBoxThemeDockIconClass(box.theme),
-        )}
-      >
+      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-500 shadow-sm">
         <Package size={14} className="text-white/90" />
       </div>
 
@@ -46,8 +40,7 @@ export default function TrayItemButton({ box, compact = false, onClick }: TrayIt
         <motion.div
           layoutId={`active-${box.id}`}
           className={cn(
-            'kb-dock-indicator absolute rounded-full ring-2 ring-black/10',
-            getBoxThemeDockIconClass(box.theme),
+            'kb-dock-indicator absolute rounded-full bg-slate-500 ring-2 ring-black/10',
             compact ? 'right-1 top-1 h-2.5 w-2.5' : 'right-1.5 top-1.5 h-2 w-2',
           )}
         />

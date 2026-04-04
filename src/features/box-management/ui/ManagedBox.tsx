@@ -6,12 +6,9 @@ import {
   useWorkspaceDispatch,
   useWorkspaceSnapshot,
 } from '../../../app/stores/useWorkspaceSelectors';
-import { usePreferencesStore } from '../../../app/stores/usePreferencesStore';
-import { getBoxThemeSurfaceClass } from '../../../domains/workspace/model/boxThemes';
 import { getBoxDisplayTitle } from '../../../domains/workspace/model/boxTitles';
 import BoxContainer from '../../../widgets/Box/BoxContainer';
 import BoxHeader from '../../../widgets/Box/BoxHeader';
-import BoxThemePicker from '../../../widgets/Box/BoxThemePicker';
 import ManagedBoxContent from '../../item-management/ui/ManagedBoxContent';
 import { useBoxDrag } from '../hooks/useBoxDrag';
 import { useBoxResize } from '../hooks/useBoxResize';
@@ -29,10 +26,8 @@ export default function ManagedBox({ boxId }: ManagedBoxProps) {
   const editingSessionId = useInteractionStore((state) => state.editingSessionId);
   const setActiveBox = useInteractionStore((state) => state.setActiveBox);
   const setEditingSessionId = useInteractionStore((state) => state.setEditingSessionId);
-  const appTheme = usePreferencesStore((state) => state.theme);
   const [isHovering, setIsHovering] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [showThemePicker, setShowThemePicker] = useState(false);
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [draftTitle, setDraftTitle] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -47,7 +42,6 @@ export default function ManagedBox({ boxId }: ManagedBoxProps) {
   const isInteractionLocked = Boolean(editingSessionId && editingSessionId !== editorId);
   const displayTitle = getBoxDisplayTitle(box, t);
   const fallbackTitle = t(box.role === 'folders' ? 'box.folders' : box.role === 'links' ? 'box.links' : box.role === 'notes' ? 'box.notes' : 'box.new');
-  const surfaceClassName = getBoxThemeSurfaceClass(box.theme, appTheme);
 
   useEffect(() => {
     if (isActive) {
@@ -55,7 +49,6 @@ export default function ManagedBox({ boxId }: ManagedBoxProps) {
     }
 
     setShowAddMenu(false);
-    setShowThemePicker(false);
   }, [isActive]);
 
   useEffect(() => {
@@ -88,7 +81,7 @@ export default function ManagedBox({ boxId }: ManagedBoxProps) {
     setActiveBox(box.id);
   };
 
-  const onUpdateBox = (updates: { bounds?: Partial<typeof box.bounds>; customTitle?: string | null; theme?: typeof box.theme; isLocked?: boolean; layout?: typeof box.layout; isMinimized?: boolean }) => {
+  const onUpdateBox = (updates: { bounds?: Partial<typeof box.bounds>; customTitle?: string | null; isLocked?: boolean; layout?: typeof box.layout; isMinimized?: boolean }) => {
     dispatch({
       type: 'box.update',
       boxId: box.id,
@@ -117,13 +110,11 @@ export default function ManagedBox({ boxId }: ManagedBoxProps) {
       box={box}
       isActive={isActive}
       isDragging={isDragging}
-      surfaceClassName={surfaceClassName}
       editingSessionId={editingSessionId}
       onFocus={focusBox}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => {
         setIsHovering(false);
-        setShowThemePicker(false);
       }}
       onResizeStart={handleResize}
       header={
@@ -135,16 +126,6 @@ export default function ManagedBox({ boxId }: ManagedBoxProps) {
           isEditing={isEditing}
           isInteractionLocked={isInteractionLocked}
           inputRef={inputRef}
-          themePicker={
-            <BoxThemePicker
-              appTheme={appTheme}
-              showThemePicker={showThemePicker}
-              setShowThemePicker={setShowThemePicker}
-              buttonLabel={t('box.theme')}
-              onUpdate={(theme) => onUpdateBox({ theme })}
-              getThemeLabel={(key) => t(key)}
-            />
-          }
           toggleLayoutLabel={t('box.toggleLayout')}
           lockPositionLabel={t('box.lockPosition')}
           unlockPositionLabel={t('box.unlockPosition')}

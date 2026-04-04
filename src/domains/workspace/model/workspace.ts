@@ -2,19 +2,6 @@ import type { WorkspaceItem, WorkspaceItemUpdate } from '../../items/model/item'
 
 export type WorkspaceBoxRole = 'folders' | 'links' | 'notes';
 export type BoxLayout = 'grid' | 'list';
-export type BoxThemeId =
-  | 'dark'
-  | 'blue'
-  | 'emerald'
-  | 'rose'
-  | 'amber'
-  | 'purple'
-  | 'cyan'
-  | 'fuchsia'
-  | 'grad-dark'
-  | 'grad-cosmic'
-  | 'grad-sunset'
-  | 'grad-ocean';
 
 export interface WorkspaceBoxBounds {
   x: number;
@@ -28,7 +15,6 @@ export interface WorkspaceBox {
   role: WorkspaceBoxRole | null;
   customTitle: string | null;
   bounds: WorkspaceBoxBounds;
-  theme: BoxThemeId;
   isLocked: boolean;
   isMinimized: boolean;
   layout: BoxLayout;
@@ -52,7 +38,6 @@ export interface WorkspaceBoxUpdate {
   role?: WorkspaceBoxRole | null;
   customTitle?: string | null;
   bounds?: Partial<WorkspaceBoxBounds>;
-  theme?: BoxThemeId;
   isLocked?: boolean;
   isMinimized?: boolean;
   layout?: BoxLayout;

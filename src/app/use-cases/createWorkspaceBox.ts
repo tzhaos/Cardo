@@ -1,4 +1,3 @@
-import { DEFAULT_BOX_THEME } from '../../domains/workspace/model/boxThemes';
 import {
   MAX_WORKSPACE_BOXES,
   type WorkspaceBox,
@@ -30,7 +29,6 @@ export function createWorkspaceBox(viewport: { width: number; height: number }) 
       width: 320,
       height: 400,
     },
-    theme: DEFAULT_BOX_THEME,
     isLocked: false,
     isMinimized: false,
     layout: 'list',

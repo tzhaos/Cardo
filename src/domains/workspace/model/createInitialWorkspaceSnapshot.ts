@@ -1,4 +1,3 @@
-import { DEFAULT_BOX_THEME } from './boxThemes';
 import {
   WORKSPACE_SCHEMA_VERSION,
   type WorkspaceBox,
@@ -23,7 +22,6 @@ function createSystemBox(
       width: 320,
       height: 400,
     },
-    theme: DEFAULT_BOX_THEME,
     isLocked: false,
     isMinimized: false,
     layout,
