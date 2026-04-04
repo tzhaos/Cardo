@@ -18,7 +18,7 @@ test('deriveItemTitle returns link fallback for URL without domain', () => {
 
 test('deriveItemTitle truncates note content to 20 chars', () => {
   assert.equal(deriveItemTitle('note', 'Short note'), 'Short note');
-  assert.equal(deriveItemTitle('note', 'This is a very long note content'), 'This is a very long no...');
+  assert.equal(deriveItemTitle('note', 'This is a very long note content'), 'This is a very long ...');
 });
 
 test('deriveItemTitle extracts filename from path', () => {
