@@ -1,5 +1,4 @@
 import { createWorkspaceSnapshot } from './createInitialWorkspaceSnapshot';
-import { resolveBoxTheme } from './boxThemes';
 import type { WorkspaceItem } from '../../items/model/item';
 import {
   WORKSPACE_EXPORT_VERSION,
@@ -84,7 +83,6 @@ function normalizeBox(input: unknown, index: number): WorkspaceBox | null {
       width: Math.max(MIN_BOX_WIDTH, asNumber(rawBounds.width, 320)),
       height: Math.max(MIN_BOX_HEIGHT, asNumber(rawBounds.height, 400)),
     },
-    theme: resolveBoxTheme(asString(input.theme)?.trim() || null),
     isLocked: asBoolean(input.isLocked),
     isMinimized: asBoolean(input.isMinimized),
     layout: asString(input.layout) === 'grid' ? 'grid' : 'list',

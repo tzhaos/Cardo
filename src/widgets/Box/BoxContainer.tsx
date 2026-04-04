@@ -7,7 +7,6 @@ interface BoxContainerProps {
   box: WorkspaceBox;
   isActive: boolean;
   isDragging: boolean;
-  surfaceClassName: string;
   editingSessionId: string | null;
   onFocus: () => void;
   onMouseEnter: () => void;
@@ -21,7 +20,6 @@ export default function BoxContainer({
   box,
   isActive,
   isDragging,
-  surfaceClassName,
   editingSessionId,
   onFocus,
   onMouseEnter,
@@ -53,8 +51,7 @@ export default function BoxContainer({
             : 'none',
       }}
       className={cn(
-        'kb-box absolute flex flex-col overflow-hidden rounded-xl border backdrop-blur-md transition-[background-color,border-color,color] duration-300',
-        surfaceClassName,
+        'kb-box absolute flex flex-col overflow-hidden rounded-xl border border-white/10 bg-zinc-900/90 backdrop-blur-md transition-[background-color,border-color,color] duration-300',
         box.isLocked ? 'ring-1 ring-red-500/50' : '',
       )}
       onMouseEnter={onMouseEnter}

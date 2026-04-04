@@ -1,5 +1,5 @@
 import { LayoutGrid, List, Lock, Minus, Package, Unlock, X } from 'lucide-react';
-import type { ReactNode, RefObject } from 'react';
+import type { RefObject } from 'react';
 import type { WorkspaceBox } from '../../domains/workspace/model/workspace';
 import { cn } from '../../lib/utils';
 
@@ -11,7 +11,6 @@ interface BoxHeaderProps {
   isEditing: boolean;
   isInteractionLocked: boolean;
   inputRef: RefObject<HTMLInputElement | null>;
-  themePicker: ReactNode;
   toggleLayoutLabel: string;
   lockPositionLabel: string;
   unlockPositionLabel: string;
@@ -35,7 +34,6 @@ export default function BoxHeader({
   isEditing,
   isInteractionLocked,
   inputRef,
-  themePicker,
   toggleLayoutLabel,
   lockPositionLabel,
   unlockPositionLabel,
@@ -99,8 +97,6 @@ export default function BoxHeader({
           !isEditing && isHovering ? 'opacity-100' : !isEditing ? 'opacity-0' : '',
         )}
       >
-        {themePicker}
-
         <button
           onClick={onToggleLayout}
           className="kb-icon-button rounded-md p-1.5 transition-colors"
