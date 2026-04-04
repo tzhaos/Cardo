@@ -11,7 +11,6 @@ test('migration converts legacy workspace arrays into export document v2', () =>
       y: 48,
       width: 180,
       height: 120,
-      theme: '',
       isLocked: false,
       isMinimized: false,
       layout: 'list',
@@ -55,4 +54,6 @@ test('migration converts legacy normalized snapshots into schema version 3 snaps
   assert.equal(snapshot.boxesById.clipboard.role, 'notes');
   assert.equal(snapshot.boxesById.clipboard.customTitle, null);
   assert.equal(snapshot.maxZIndex, 9);
+  // Verify legacy theme field is not present in migrated box
+  assert.equal('theme' in snapshot.boxesById.clipboard, false);
 });
