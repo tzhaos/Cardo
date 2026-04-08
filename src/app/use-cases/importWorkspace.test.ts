@@ -1,0 +1,56 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { importWorkspace } from './importWorkspace';
+import { fileImportPort, workspaceStoragePort } from '../ports/defaultPorts';
+
+const VALID_EXPORT = JSON.stringify({
+  version: 2,
+  boxes: [
+    {
+      id: 'b1',
+      role: null,
+      customTitle: 'Test Box',
+      bounds: { x: 100, y: 100, width: 320, height: 400 },
+      isLocked: false,
+      isMinimized: false,
+      layout: 'list',
+      zIndex: 1,
+      items: [
+        {
+          id: 'i1',
+          type: 'url',
+          title: 'Example',
+          content: 'https://example.com',
+          isPinned: false,
+        },
+      ],
+    },
+  ],
+});
+
+test('importWorkspace parses valid export and returns document', async (t) => {
+  t.mock.method(fileImportPort, 'readText', async () => VALID_EXPORT);
+  t.mock.method(workspaceStoragePort, 'setItem', async () => {});
+  const file = new File([''], 'backup.json');
+  const result = await importWorkspace(file);
+
+  assert.equal(result.version, 2);
+  assert.equal(result.boxes.length, 1);
+  assert.equal(result.boxes[0].items.length, 1);
+});
+
+test('importWorkspace throws on invalid JSON', async (t) => {
+  t.mock.method(fileImportPort, 'readText', async () => 'not json');
+  const file = new File([''], 'bad.json');
+
+  await assert.rejects(() => importWorkspace(file));
+});
+
+test('importWorkspace throws on wrong export version', async (t) => {
+  t.mock.method(fileImportPort, 'readText', async () => JSON.stringify({ version: 99, boxes: [] }));
+  const file = new File([''], 'wrong.json');
+
+  await assert.rejects(() => importWorkspace(file), {
+    message: 'Invalid workspace export document',
+  });
+});

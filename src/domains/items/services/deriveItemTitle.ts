@@ -1,5 +1,5 @@
 import { ITEM_TYPE_LABEL_KEYS, MESSAGES } from '../../i18n/model/messages';
-import type { ItemType } from '../model/item';
+import type { ItemType } from '../model/itemType';
 
 const DEFAULT_MESSAGES = MESSAGES.en;
 

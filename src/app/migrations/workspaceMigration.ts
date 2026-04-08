@@ -2,6 +2,8 @@ import { MESSAGES } from '../../domains/i18n/model/messages';
 import { deriveItemTitle } from '../../domains/items/services/deriveItemTitle';
 import { createWorkspaceSnapshot } from '../../domains/workspace/model/createInitialWorkspaceSnapshot';
 import {
+  BOX_MIN_HEIGHT,
+  BOX_MIN_WIDTH,
   WORKSPACE_EXPORT_VERSION,
   type WorkspaceBox,
   type WorkspaceBoxRole,
@@ -111,8 +113,8 @@ function normalizeLegacyBox(input: unknown, index: number): WorkspaceBox | null 
     bounds: {
       x: asNumber(rawBounds.x ?? input.x, 100 + index * 40),
       y: asNumber(rawBounds.y ?? input.y, 100 + index * 40),
-      width: Math.max(200, asNumber(rawBounds.width ?? input.width, 320)),
-      height: Math.max(150, asNumber(rawBounds.height ?? input.height, 400)),
+      width: Math.max(BOX_MIN_WIDTH, asNumber(rawBounds.width ?? input.width, 320)),
+      height: Math.max(BOX_MIN_HEIGHT, asNumber(rawBounds.height ?? input.height, 400)),
     },
     isLocked: asBoolean(input.isLocked),
     isMinimized: asBoolean(input.isMinimized),

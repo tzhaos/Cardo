@@ -9,7 +9,14 @@ import {
   PinOff,
   X,
 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type SyntheticEvent,
+} from 'react';
 import { useI18n } from '../../../app/hooks/useI18n';
 import { deriveItemTitle } from '../../../domains/items/services/deriveItemTitle';
 import { useInteractionStore } from '../../../app/stores/useInteractionStore';
@@ -72,7 +79,7 @@ export default function ManagedItemCard({
   }, [editorId, setEditingSessionId]);
 
   const handleCancel = useCallback(
-    (event?: React.SyntheticEvent) => {
+    (event?: SyntheticEvent) => {
       event?.stopPropagation();
       setEditTitle(item.title);
       setEditContent(item.content);
@@ -82,7 +89,7 @@ export default function ManagedItemCard({
   );
 
   const handleSave = useCallback(
-    (event?: React.SyntheticEvent) => {
+    (event?: SyntheticEvent) => {
       event?.stopPropagation();
 
       const nextContent = editContent.trim();
@@ -152,9 +159,7 @@ export default function ManagedItemCard({
     [editorId],
   );
 
-  const handleEditorKeyDown = (
-    event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
+  const handleEditorKeyDown = (event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     event.stopPropagation();
 
     if (event.key === 'Escape') {
@@ -209,7 +214,7 @@ export default function ManagedItemCard({
 
       void openItem(item);
     },
-    onStartEdit: (event: React.SyntheticEvent) => {
+    onStartEdit: (event: SyntheticEvent) => {
       event.stopPropagation();
 
       if (isInteractionLocked) {
@@ -225,11 +230,11 @@ export default function ManagedItemCard({
     onEditorKeyDown: handleEditorKeyDown,
     onSave: handleSave,
     onCancel: handleCancel,
-    onTogglePinned: (event: React.SyntheticEvent) => {
+    onTogglePinned: (event: SyntheticEvent) => {
       event.stopPropagation();
       onSetPinned(!item.isPinned);
     },
-    onDeleteClick: (event: React.SyntheticEvent) => {
+    onDeleteClick: (event: SyntheticEvent) => {
       event.stopPropagation();
       onDelete();
     },

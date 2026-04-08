@@ -1,5 +1,5 @@
 import { LayoutGrid, List, Lock, Minus, Package, Unlock, X } from 'lucide-react';
-import type { RefObject } from 'react';
+import type { MouseEvent, PointerEvent, RefObject } from 'react';
 import type { WorkspaceBox } from '../../domains/workspace/model/workspace';
 import { cn } from '../../lib/utils';
 
@@ -16,8 +16,8 @@ interface BoxHeaderProps {
   unlockPositionLabel: string;
   minimizeLabel: string;
   closeLabel: string;
-  onDragStart: (event: React.PointerEvent) => void;
-  onStartEdit: (event: React.MouseEvent<HTMLDivElement>) => void;
+  onDragStart: (event: PointerEvent) => void;
+  onStartEdit: (event: MouseEvent<HTMLDivElement>) => void;
   onTitleChange: (value: string) => void;
   onFinishEditing: (shouldSave: boolean) => void;
   onToggleLayout: () => void;

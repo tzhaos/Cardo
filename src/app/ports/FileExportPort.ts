@@ -1,3 +1,4 @@
+/** Port for exporting workspace data as downloadable files. */
 export interface FileExportPort {
   downloadJson(filename: string, payload: string): void;
 }

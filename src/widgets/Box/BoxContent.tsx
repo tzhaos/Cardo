@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { DragEvent, PointerEvent, ReactNode } from 'react';
 import type { WorkspaceBox } from '../../domains/workspace/model/workspace';
 import { cn } from '../../lib/utils';
 
@@ -8,11 +8,11 @@ interface BoxContentProps {
   items: ReactNode;
   addPanel: ReactNode;
   overlay?: ReactNode;
-  onPointerDown: (event: React.PointerEvent<HTMLDivElement>) => void;
-  onDragEnter: (event: React.DragEvent<HTMLDivElement>) => void;
-  onDragLeave: (event: React.DragEvent<HTMLDivElement>) => void;
-  onDragOver: (event: React.DragEvent<HTMLDivElement>) => void;
-  onDrop: (event: React.DragEvent<HTMLDivElement>) => void;
+  onPointerDown: (event: PointerEvent<HTMLDivElement>) => void;
+  onDragEnter: (event: DragEvent<HTMLDivElement>) => void;
+  onDragLeave: (event: DragEvent<HTMLDivElement>) => void;
+  onDragOver: (event: DragEvent<HTMLDivElement>) => void;
+  onDrop: (event: DragEvent<HTMLDivElement>) => void;
 }
 
 export default function BoxContent({

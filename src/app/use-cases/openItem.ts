@@ -1,3 +1,4 @@
+import { log } from '../../lib/log';
 import { clipboardPort, localResourcePort, tabsPort } from '../ports/defaultPorts';
 import type { WorkspaceItem } from '../../domains/items/model/item';
 
@@ -25,6 +26,7 @@ export async function openItem(item: WorkspaceItem): Promise<OpenItemResult> {
       ? { status: 'requested-local-resource' }
       : { status: 'failed', errorMessage: result.errorMessage };
   } catch (error) {
+    log.error('Failed to open item', item.type, item.id, error);
     return {
       status: 'failed',
       errorMessage: error instanceof Error ? error.message : 'Unexpected error',

@@ -8,6 +8,7 @@ import {
   type AppLocale,
   type AppTheme,
 } from '../../domains/preferences/model/preferences';
+import { log } from '../../lib/log';
 import type { WorkspaceStoragePort } from '../ports/WorkspaceStoragePort';
 import { workspaceStoragePort } from '../ports/defaultPorts';
 
@@ -38,6 +39,11 @@ export function createPreferencesStore(storage: WorkspaceStoragePort) {
           persistedState as Pick<PreferencesStoreState, 'theme' | 'locale'>,
         storage: createJSONStorage(() => storage),
         partialize: ({ theme, locale }) => ({ theme, locale }),
+        onRehydrateStorage: () => (_state, error) => {
+          if (error) {
+            log.error('Preferences store rehydration failed', error);
+          }
+        },
       },
     ),
   );

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, type ChangeEvent } from 'react';
+import { useState, useEffect, useCallback, useRef, type ChangeEvent, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Settings,
@@ -27,7 +27,7 @@ type SettingsTab = 'general' | 'theme' | 'sync' | 'about';
 interface SettingsCategory {
   id: SettingsTab;
   labelKey: 'settings.general' | 'settings.theme' | 'settings.sync' | 'settings.about';
-  icon: React.ReactNode;
+  icon: ReactNode;
 }
 
 const categories: SettingsCategory[] = [

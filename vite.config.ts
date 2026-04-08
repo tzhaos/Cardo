@@ -64,11 +64,6 @@ function copyExtensionAssets() {
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss(), copyExtensionAssets()],
-    resolve: {
-      alias: {
-        '@': path.resolve(__dirname, '.'),
-      },
-    },
     build: {
       outDir: EXTENSION_OUT_DIR,
       rollupOptions: {

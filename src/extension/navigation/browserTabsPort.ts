@@ -1,4 +1,5 @@
 import type { TabsPort } from '../../app/ports/TabsPort';
+import { log } from '../../lib/log';
 import { getChromeLikeRuntime } from '../runtime/chrome';
 
 export const browserTabsPort: TabsPort = {
@@ -9,6 +10,8 @@ export const browserTabsPort: TabsPort = {
       throw new Error('Chrome tabs API is unavailable in the extension runtime.');
     }
 
-    void chromeLike.tabs.create({ url });
+    Promise.resolve(chromeLike.tabs.create({ url })).catch((error) => {
+      log.error('Failed to open tab', error);
+    });
   },
 };

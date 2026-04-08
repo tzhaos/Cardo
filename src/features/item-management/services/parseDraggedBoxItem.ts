@@ -4,6 +4,8 @@ export interface DraggedBoxItemPayload {
   sourceBoxId: string;
 }
 
+import { log } from '../../../lib/log';
+
 export function parseDraggedBoxItem(dataTransfer: DataTransfer) {
   try {
     const jsonData = dataTransfer.getData('application/json');
@@ -19,7 +21,8 @@ export function parseDraggedBoxItem(dataTransfer: DataTransfer) {
     }
 
     return parsed as DraggedBoxItemPayload;
-  } catch {
+  } catch (error) {
+    log.debug('Failed to parse dragged box item payload', error);
     return null;
   }
 }

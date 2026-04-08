@@ -6,7 +6,9 @@ export type PrepareAddItemTypeResult =
   | { outcome: 'clipboard'; item: ItemDraft; toast: ToastSpec }
   | { outcome: 'compose'; type: ItemType };
 
-export async function prepareAddItemTypeSelection(type: ItemType): Promise<PrepareAddItemTypeResult> {
+export async function prepareAddItemTypeSelection(
+  type: ItemType,
+): Promise<PrepareAddItemTypeResult> {
   if (type === 'note') {
     const clipboardItem = await readClipboardItem();
 

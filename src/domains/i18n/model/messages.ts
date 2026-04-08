@@ -1,4 +1,4 @@
-import type { ItemType } from '../../items/model/item';
+import type { ItemType } from '../../items/model/itemType';
 import type { AppLocale } from '../../preferences/model/preferences';
 
 const EN_MESSAGES = {

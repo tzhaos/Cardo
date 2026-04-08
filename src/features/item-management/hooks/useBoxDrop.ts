@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type DragEvent } from 'react';
 import { presentToastSpec } from '../../../app/presentation/toastSpec';
 import { useI18n } from '../../../app/hooks/useI18n';
 import { addDroppedDataTransferTextToBox } from '../../../app/use-cases/addDroppedDataTransferTextToBox';
@@ -48,7 +48,7 @@ export function useBoxDrop({ box, onOpenExternalDraft }: UseBoxDropOptions) {
     setDropIndicator(null);
   };
 
-  const handleContainerDragEnter = (event: React.DragEvent) => {
+  const handleContainerDragEnter = (event: DragEvent) => {
     if (editingSessionId) {
       return;
     }
@@ -62,7 +62,7 @@ export function useBoxDrop({ box, onOpenExternalDraft }: UseBoxDropOptions) {
     }
   };
 
-  const handleContainerDragLeave = (event: React.DragEvent) => {
+  const handleContainerDragLeave = (event: DragEvent) => {
     if (editingSessionId) {
       clearDropState();
       return;
@@ -77,7 +77,7 @@ export function useBoxDrop({ box, onOpenExternalDraft }: UseBoxDropOptions) {
     }
   };
 
-  const handleContainerDragOver = (event: React.DragEvent) => {
+  const handleContainerDragOver = (event: DragEvent) => {
     if (editingSessionId) {
       clearDropState();
       return;
@@ -112,7 +112,7 @@ export function useBoxDrop({ box, onOpenExternalDraft }: UseBoxDropOptions) {
     }
   };
 
-  const handleContainerDrop = (event: React.DragEvent) => {
+  const handleContainerDrop = (event: DragEvent) => {
     if (editingSessionId) {
       clearDropState();
       return;
@@ -153,7 +153,7 @@ export function useBoxDrop({ box, onOpenExternalDraft }: UseBoxDropOptions) {
     }
   };
 
-  const handleItemDragStart = (event: React.DragEvent, itemId: string) => {
+  const handleItemDragStart = (event: DragEvent, itemId: string) => {
     if (editingSessionId || isFormControlElement(event.target)) {
       event.preventDefault();
       return;
@@ -173,7 +173,7 @@ export function useBoxDrop({ box, onOpenExternalDraft }: UseBoxDropOptions) {
     );
   };
 
-  const handleItemDragOver = (event: React.DragEvent, itemId: string) => {
+  const handleItemDragOver = (event: DragEvent, itemId: string) => {
     if (editingSessionId) {
       setDropIndicator(null);
       return;
@@ -210,7 +210,7 @@ export function useBoxDrop({ box, onOpenExternalDraft }: UseBoxDropOptions) {
     });
   };
 
-  const handleItemDrop = (event: React.DragEvent, itemId: string) => {
+  const handleItemDrop = (event: DragEvent, itemId: string) => {
     if (editingSessionId) {
       setDropIndicator(null);
       return;

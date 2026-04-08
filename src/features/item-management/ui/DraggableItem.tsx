@@ -1,3 +1,4 @@
+import type { DragEvent, ReactNode } from 'react';
 import { useInteractionStore } from '../../../app/stores/useInteractionStore';
 import { cn } from '../../../lib/utils';
 import type { WorkspaceItem } from '../../../domains/items/model/item';
@@ -8,11 +9,11 @@ interface DraggableItemProps {
   layout: WorkspaceBox['layout'];
   isBeingDragged: boolean;
   dropIndicator: { id: string; position: 'before' | 'after' } | null;
-  onDragStart: (event: React.DragEvent, itemId: string) => void;
-  onDragOver: (event: React.DragEvent, itemId: string) => void;
-  onDrop: (event: React.DragEvent, itemId: string) => void;
+  onDragStart: (event: DragEvent, itemId: string) => void;
+  onDragOver: (event: DragEvent, itemId: string) => void;
+  onDrop: (event: DragEvent, itemId: string) => void;
   onDragEnd: () => void;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export default function DraggableItem({

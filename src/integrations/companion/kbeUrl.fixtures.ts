@@ -11,3 +11,17 @@ export const CREATE_KBE_URL_CASES: ReadonlyArray<{ readonly path: string; readon
   },
   { path: 'file:///C:/Work/Specs.pdf', url: 'kbe:file:///C:/Work/Specs.pdf' },
 ];
+
+/**
+ * Additional URLs the companion parser handles but that are NOT produced by
+ * `createKbeUrl`. These cover legacy or alternate encodings that the C# parser
+ * accepts for robustness. Keep aligned with the `[InlineData]` entries in
+ * `KbeRequestParserTests.cs` that have no matching `CREATE_KBE_URL_CASES` entry.
+ */
+export const COMPANION_EXTRA_PARSE_CASES: ReadonlyArray<{
+  readonly url: string;
+  readonly expectedWindowsPath: string;
+}> = [
+  { url: 'kbe://server/share/Docs', expectedWindowsPath: '\\\\server\\share\\Docs' },
+  { url: 'kbe:file://server/share/Docs', expectedWindowsPath: '\\\\server\\share\\Docs' },
+];

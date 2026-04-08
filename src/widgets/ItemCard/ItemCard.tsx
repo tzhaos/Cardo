@@ -1,16 +1,17 @@
+import type { KeyboardEvent, ReactNode, RefObject, SyntheticEvent } from 'react';
 import { cn } from '../../lib/utils';
 import type { WorkspaceItem } from '../../domains/items/model/item';
 
 export interface ItemCardProps {
   item: WorkspaceItem;
   layout: 'grid' | 'list';
-  icon: React.ReactNode;
+  icon: ReactNode;
   isEditing: boolean;
   isInteractionLocked: boolean;
   editTitle: string;
   editContent: string;
-  editorRootRef?: React.RefObject<HTMLDivElement | null>;
-  titleInputRef: React.RefObject<HTMLInputElement | null>;
+  editorRootRef?: RefObject<HTMLDivElement | null>;
+  titleInputRef: RefObject<HTMLInputElement | null>;
   contentLabel: string;
   titlePlaceholder: string;
   saveLabel: string;
@@ -20,21 +21,21 @@ export interface ItemCardProps {
   unpinLabel: string;
   editLabel: string;
   deleteLabel: string;
-  saveIcon: React.ReactNode;
-  cancelIcon: React.ReactNode;
-  editIcon: React.ReactNode;
-  pinIcon: React.ReactNode;
-  unpinIcon: React.ReactNode;
-  deleteIcon: React.ReactNode;
+  saveIcon: ReactNode;
+  cancelIcon: ReactNode;
+  editIcon: ReactNode;
+  pinIcon: ReactNode;
+  unpinIcon: ReactNode;
+  deleteIcon: ReactNode;
   onCardClick: () => void;
-  onStartEdit: (event: React.SyntheticEvent) => void;
+  onStartEdit: (event: SyntheticEvent) => void;
   onEditTitleChange: (value: string) => void;
   onEditContentChange: (value: string) => void;
-  onEditorKeyDown: (event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  onSave: (event?: React.SyntheticEvent) => void;
-  onCancel: (event?: React.SyntheticEvent) => void;
-  onTogglePinned: (event: React.SyntheticEvent) => void;
-  onDeleteClick: (event: React.SyntheticEvent) => void;
+  onEditorKeyDown: (event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onSave: (event?: SyntheticEvent) => void;
+  onCancel: (event?: SyntheticEvent) => void;
+  onTogglePinned: (event: SyntheticEvent) => void;
+  onDeleteClick: (event: SyntheticEvent) => void;
 }
 
 export default function ItemCard({
@@ -76,7 +77,7 @@ export default function ItemCard({
   const textInputClassName =
     'kb-item-input w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition-colors';
 
-  const stopInteraction = (event: React.SyntheticEvent) => {
+  const stopInteraction = (event: SyntheticEvent) => {
     event.stopPropagation();
   };
 

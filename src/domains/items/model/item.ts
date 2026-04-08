@@ -1,6 +1,7 @@
 import { deriveItemTitle } from '../services/deriveItemTitle';
+import type { ItemType } from './itemType';
 
-export type ItemType = 'file' | 'folder' | 'url' | 'note';
+export type { ItemType } from './itemType';
 
 export interface ItemDraft {
   type: ItemType;

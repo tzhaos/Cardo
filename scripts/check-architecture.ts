@@ -1,3 +1,14 @@
+/**
+ * Architecture guard — enforces layer boundaries defined in docs/architecture.md.
+ *
+ * Rules checked:
+ * - domains/ must not import React, Zustand, or use browser globals (tests exempted).
+ * - widgets/ must not import stores, toast libraries, or extension/integration adapters.
+ * - app/ and features/ must import sibling features through their barrel index.ts.
+ * - src/types/ must not exist (legacy directory).
+ *
+ * Run via: npm run lint (after tsc --noEmit).
+ */
 import fs from 'node:fs';
 import path from 'node:path';
 

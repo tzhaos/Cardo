@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import type { ReactNode } from 'react';
+import type { MouseEvent, ReactNode } from 'react';
 import type { WorkspaceBox } from '../../domains/workspace/model/workspace';
 import { cn } from '../../lib/utils';
 
@@ -11,7 +11,7 @@ interface BoxContainerProps {
   onFocus: () => void;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
-  onResizeStart: (event: React.MouseEvent) => void;
+  onResizeStart: (event: MouseEvent) => void;
   header: ReactNode;
   content: ReactNode;
 }

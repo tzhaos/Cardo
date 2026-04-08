@@ -1,6 +1,8 @@
 import { createWorkspaceSnapshot } from './createInitialWorkspaceSnapshot';
 import type { WorkspaceItem } from '../../items/model/item';
 import {
+  BOX_MIN_HEIGHT,
+  BOX_MIN_WIDTH,
   WORKSPACE_EXPORT_VERSION,
   WORKSPACE_SCHEMA_VERSION,
   isWorkspaceBoxRole,
@@ -8,9 +10,6 @@ import {
   type WorkspaceExportDocumentV2,
   type WorkspaceSnapshotV3,
 } from './workspace';
-
-const MIN_BOX_WIDTH = 200;
-const MIN_BOX_HEIGHT = 150;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -55,6 +54,7 @@ function normalizeItem(input: unknown): WorkspaceItem | null {
   };
 }
 
+/** Normalizes a raw box record, applying default bounds when values are missing or invalid. */
 function normalizeBox(input: unknown, index: number): WorkspaceBox | null {
   if (!isRecord(input)) {
     return null;
@@ -79,8 +79,8 @@ function normalizeBox(input: unknown, index: number): WorkspaceBox | null {
     bounds: {
       x: asNumber(rawBounds.x, 100 + index * 40),
       y: asNumber(rawBounds.y, 100 + index * 40),
-      width: Math.max(MIN_BOX_WIDTH, asNumber(rawBounds.width, 320)),
-      height: Math.max(MIN_BOX_HEIGHT, asNumber(rawBounds.height, 400)),
+      width: Math.max(BOX_MIN_WIDTH, asNumber(rawBounds.width, 320)),
+      height: Math.max(BOX_MIN_HEIGHT, asNumber(rawBounds.height, 400)),
     },
     isLocked: asBoolean(input.isLocked),
     isMinimized: asBoolean(input.isMinimized),

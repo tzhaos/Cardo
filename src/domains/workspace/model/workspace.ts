@@ -68,6 +68,10 @@ export const WORKSPACE_EXPORT_VERSION = 2 as const;
 export const SYSTEM_BOX_ROLES: WorkspaceBoxRole[] = ['folders', 'links', 'notes'];
 export const MAX_WORKSPACE_BOXES = 12;
 
+/** Minimum visual dimensions for workspace boxes, shared across codec, resize, and migration. */
+export const BOX_MIN_WIDTH = 200;
+export const BOX_MIN_HEIGHT = 150;
+
 export function isWorkspaceBoxRole(value: unknown): value is WorkspaceBoxRole {
   return typeof value === 'string' && SYSTEM_BOX_ROLES.includes(value as WorkspaceBoxRole);
 }
