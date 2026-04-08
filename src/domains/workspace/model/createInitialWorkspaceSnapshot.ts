@@ -1,8 +1,4 @@
-import {
-  WORKSPACE_SCHEMA_VERSION,
-  type WorkspaceBox,
-  type WorkspaceSnapshotV3,
-} from './workspace';
+import { WORKSPACE_SCHEMA_VERSION, type WorkspaceBox, type WorkspaceSnapshotV3 } from './workspace';
 
 function createSystemBox(
   id: string,

@@ -110,19 +110,41 @@ npm run companion:windows:msi
 
 ## 常用脚本
 
-| 命令 | 说明 |
-| --- | --- |
-| `npm run dev` | 持续构建插件到 `artifacts/extension/unpacked` |
-| `npm run build` | 构建浏览器插件到 `artifacts/extension/unpacked` |
-| `npm run companion:windows:build` | 构建 Windows Companion |
-| `npm run companion:windows:publish` | 发布 Windows Companion 到 `artifacts/companion/windows/publish/win-x64` |
-| `npm run companion:windows:install` | 为当前用户发布并注册 Windows Companion |
-| `npm run companion:windows:uninstall` | 删除 Windows Companion 的注册和安装文件 |
-| `npm run companion:windows:msi` | 构建 Windows Companion 的 MSI 安装包 |
-| `npm run clean` | 删除所有生成产物和遗留的本地构建目录 |
-| `npm run lint` | 执行 TypeScript 类型检查 |
-| `npm run test:ts` | 执行 TypeScript 测试 |
-| `npm test` | 执行 TypeScript 与 Windows Companion 测试 |
+| 命令                                  | 说明                                                                    |
+| ------------------------------------- | ----------------------------------------------------------------------- |
+| `npm run dev`                         | 持续构建插件到 `artifacts/extension/unpacked`                           |
+| `npm run build`                       | 构建浏览器插件到 `artifacts/extension/unpacked`                         |
+| `npm run companion:windows:build`     | 构建 Windows Companion                                                  |
+| `npm run companion:windows:publish`   | 发布 Windows Companion 到 `artifacts/companion/windows/publish/win-x64` |
+| `npm run companion:windows:install`   | 为当前用户发布并注册 Windows Companion                                  |
+| `npm run companion:windows:uninstall` | 删除 Windows Companion 的注册和安装文件                                 |
+| `npm run companion:windows:msi`       | 构建 Windows Companion 的 MSI 安装包                                    |
+| `npm run clean`                       | 删除所有生成产物和遗留的本地构建目录                                    |
+| `npm run lint`                        | 执行 `tsc --noEmit` 与架构依赖守卫                                      |
+| `npm run lint:eslint`                 | 执行 ESLint（类型感知规则，需先 `npm install`）                         |
+| `npm run format`                      | 使用 Prettier 格式化 `src/`、`scripts/`、`docs/` 等                     |
+| `npm run format:check`                | 检查 Prettier 格式（CI 使用）                                           |
+| `npm run check`                       | `lint` + `lint:eslint` + `test:ts`                                      |
+| `npm run test:ts`                     | 执行 TypeScript 测试                                                    |
+| `npm test`                            | 执行 TypeScript 与 Windows Companion 测试                               |
+
+根目录 **`build.ps1 -RunChecks`** 会执行 **`npm run check`**，并在未跳过 Companion 时执行 **`dotnet test`**。GitHub 工作流见 `.github/workflows/ci.yml`。
+
+### npm install / ESLint 报错
+
+若 `npm install` 立刻失败，或 `npm run lint:eslint` 提示未安装 ESLint：说明依赖未装全。
+
+**先确认是不是连不上 registry**：在项目根执行 `npm run doctor:registry`（会用当前 `npm config get registry` 测一次 `@eslint/js` 的包元数据请求）。若这里就报错，属于 **网络 / 代理 / TLS / 公司防火墙** 问题，需要先让本机能稳定访问 registry，而不是改业务代码。
+
+打开 npm 写的日志（路径会在失败提示里给出），在 PowerShell 里可用：
+
+```powershell
+Get-ChildItem "$env:LOCALAPPDATA\npm-cache\_logs" | Sort-Object LastWriteTime -Descending | Select-Object -First 1 | ForEach-Object { Get-Content $_.FullName }
+```
+
+若日志里在 `fetch manifest` / `cache-miss` 之后立刻 `exit 1`，与「装到一半报错」不同，多半是 **registry 请求失败**（控制台有时不打印细节）。可尝试：`npm cache clean --force`；检查 `npm config get proxy` / `https-proxy`；必要时换镜像（例如 `npm config set registry https://registry.npmmirror.com`）后再 `npm install`。Node 24 + npm 11 若在个别环境异常，可换 **Node 22 LTS** 再试。
+
+若 `package.json` 已增加新开发依赖而 `package-lock.json` 仍是旧版本，可在 **registry 已能访问** 的前提下删除 `node_modules` 与 `package-lock.json` 后重新 `npm install` 生成新锁文件（提交前请审查 `.lock` 差异）。
 
 ## 项目结构
 
@@ -133,9 +155,11 @@ npm run companion:windows:msi
 |   |-- brand/            # Logo 与品牌资源
 |   `-- extension-shell/  # Manifest、语言包、图标和扩展入口
 |-- companion/            # Windows Companion 的源码、脚本、打包文件和文档
+|-- docs/                 # 架构与工程设计文档（如 `architecture.md`）
+|-- scripts/              # 架构检查、迁移等仓库级脚本
 |-- src/
-|   |-- app/              # 应用启动和用例层
-|   |-- domains/          # 核心模型、服务与 Zustand store
+|   |-- app/              # 应用启动、Store、端口与用例层
+|   |-- domains/          # 纯领域模型与无 UI 业务逻辑
 |   |-- extension/        # 浏览器扩展宿主能力
 |   |-- features/         # 拖拽、托盘等用户功能
 |   |-- integrations/     # 外部集成，如 Windows Companion
@@ -145,7 +169,9 @@ npm run companion:windows:msi
 
 ## 架构说明
 
-- `src/domains` 负责工作区数据、条目创建、布局逻辑、导入导出和持久化状态。
+分层、端口与质量门禁的说明见 [`docs/architecture.md`](./docs/architecture.md)（英文）。
+
+- `src/domains` 负责工作区数据、条目创建、布局逻辑、导入导出等纯逻辑与编解码。
 - `assets/extension-shell` 负责浏览器插件壳层输入文件，并在构建时复制到 unpacked extension。
 - `assets/brand` 负责可复用的品牌资源，与插件壳层输入分开管理。
 - `src/extension` 负责浏览器扩展宿主能力，例如 tabs 和 storage。

@@ -83,7 +83,9 @@ function normalizeLegacyItem(input: unknown, index: number, boxIndex: number) {
   return {
     id: asString(input.id)?.trim() || `migrated-item-${boxIndex}-${index}`,
     type: type as 'file' | 'folder' | 'url' | 'note',
-    title: asString(input.title)?.trim() || deriveItemTitle(type as 'file' | 'folder' | 'url' | 'note', content),
+    title:
+      asString(input.title)?.trim() ||
+      deriveItemTitle(type as 'file' | 'folder' | 'url' | 'note', content),
     content,
     isPinned: asBoolean(input.isPinned),
   };
@@ -120,7 +122,7 @@ function normalizeLegacyBox(input: unknown, index: number): WorkspaceBox | null 
   };
 }
 
-function extractLegacyBoxes(input: unknown) {
+function extractLegacyBoxes(input: unknown): unknown[] {
   if (Array.isArray(input)) {
     return input;
   }
@@ -130,10 +132,11 @@ function extractLegacyBoxes(input: unknown) {
   }
 
   if (isRecord(input) && isRecord(input.boxesById) && Array.isArray(input.boxOrder)) {
+    const boxesById = input.boxesById;
     return input.boxOrder
       .map((boxId) => {
         const normalizedId = asString(boxId)?.trim();
-        return normalizedId ? input.boxesById[normalizedId] : null;
+        return normalizedId ? boxesById[normalizedId] : null;
       })
       .filter((box): box is unknown => box !== null);
   }

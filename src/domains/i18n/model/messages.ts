@@ -227,4 +227,3 @@ export const ITEM_TYPE_PLURAL_KEYS = {
   url: 'itemType.urlPlural',
   note: 'itemType.notePlural',
 } as const satisfies Record<ItemType, MessageKey>;
-

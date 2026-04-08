@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { migrateLegacyWorkspaceDocument, migrateLegacyWorkspaceSnapshot } from './workspaceMigration';
+import {
+  migrateLegacyWorkspaceDocument,
+  migrateLegacyWorkspaceSnapshot,
+} from './workspaceMigration';
 
 test('migration converts legacy workspace arrays into export document v2', () => {
   const document = migrateLegacyWorkspaceDocument([

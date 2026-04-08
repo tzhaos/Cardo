@@ -1,5 +1,15 @@
-import { Check, ClipboardPaste, File, Folder, Link as LinkIcon, Pencil, Pin, PinOff, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import {
+  Check,
+  ClipboardPaste,
+  File,
+  Folder,
+  Link as LinkIcon,
+  Pencil,
+  Pin,
+  PinOff,
+  X,
+} from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useI18n } from '../../../app/hooks/useI18n';
 import { deriveItemTitle } from '../../../domains/items/services/deriveItemTitle';
 import { useInteractionStore } from '../../../app/stores/useInteractionStore';
@@ -19,7 +29,9 @@ function getItemIcon(item: WorkspaceItem, layout: 'grid' | 'list') {
   const iconSize = layout === 'grid' ? 24 : 16;
 
   if (item.type === 'folder') {
-    return <Folder size={iconSize} className="text-amber-400" fill="currentColor" fillOpacity={0.2} />;
+    return (
+      <Folder size={iconSize} className="text-amber-400" fill="currentColor" fillOpacity={0.2} />
+    );
   }
 
   if (item.type === 'file') {
@@ -52,6 +64,41 @@ export default function ManagedItemCard({
 
   const isEditing = editingSessionId === editorId;
   const isInteractionLocked = Boolean(editingSessionId && editingSessionId !== editorId);
+
+  const closeEditor = useCallback(() => {
+    if (useInteractionStore.getState().editingSessionId === editorId) {
+      setEditingSessionId(null);
+    }
+  }, [editorId, setEditingSessionId]);
+
+  const handleCancel = useCallback(
+    (event?: React.SyntheticEvent) => {
+      event?.stopPropagation();
+      setEditTitle(item.title);
+      setEditContent(item.content);
+      closeEditor();
+    },
+    [item.title, item.content, closeEditor],
+  );
+
+  const handleSave = useCallback(
+    (event?: React.SyntheticEvent) => {
+      event?.stopPropagation();
+
+      const nextContent = editContent.trim();
+
+      if (!nextContent) {
+        return;
+      }
+
+      onUpdate({
+        title: editTitle.trim() || deriveItemTitle(item.type, nextContent),
+        content: nextContent,
+      });
+      closeEditor();
+    },
+    [closeEditor, editContent, editTitle, item.type, onUpdate],
+  );
 
   useEffect(() => {
     if (!isEditing) {
@@ -92,7 +139,7 @@ export default function ManagedItemCard({
     return () => {
       document.removeEventListener('pointerdown', handlePointerDownOutside, true);
     };
-  }, [isEditing, editTitle, editContent, item.type, onUpdate]);
+  }, [isEditing, handleSave]);
 
   useEffect(
     () => () => {
@@ -104,35 +151,6 @@ export default function ManagedItemCard({
     },
     [editorId],
   );
-
-  const closeEditor = () => {
-    if (useInteractionStore.getState().editingSessionId === editorId) {
-      setEditingSessionId(null);
-    }
-  };
-
-  const handleCancel = (event?: React.SyntheticEvent) => {
-    event?.stopPropagation();
-    setEditTitle(item.title);
-    setEditContent(item.content);
-    closeEditor();
-  };
-
-  const handleSave = (event?: React.SyntheticEvent) => {
-    event?.stopPropagation();
-
-    const nextContent = editContent.trim();
-
-    if (!nextContent) {
-      return;
-    }
-
-    onUpdate({
-      title: editTitle.trim() || deriveItemTitle(item.type, nextContent),
-      content: nextContent,
-    });
-    closeEditor();
-  };
 
   const handleEditorKeyDown = (
     event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -165,7 +183,11 @@ export default function ManagedItemCard({
     editorRootRef,
     titleInputRef,
     contentLabel:
-      item.type === 'note' ? t('item.content') : item.type === 'url' ? t('item.address') : t('item.path'),
+      item.type === 'note'
+        ? t('item.content')
+        : item.type === 'url'
+          ? t('item.address')
+          : t('item.path'),
     titlePlaceholder: t('item.title'),
     saveLabel: t('item.saveChanges'),
     cancelLabel: t('item.cancelEditing'),

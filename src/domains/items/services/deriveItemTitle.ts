@@ -11,7 +11,10 @@ export function deriveItemTitle(type: ItemType, content: string) {
   }
 
   if (type === 'url') {
-    return normalizedContent.replace(/^https?:\/\//i, '').split('/')[0] || DEFAULT_MESSAGES['item.linkFallback'];
+    return (
+      normalizedContent.replace(/^https?:\/\//i, '').split('/')[0] ||
+      DEFAULT_MESSAGES['item.linkFallback']
+    );
   }
 
   if (type === 'note') {

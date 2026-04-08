@@ -18,13 +18,16 @@ test('deriveItemTitle returns link fallback for URL without domain', () => {
 
 test('deriveItemTitle truncates note content to 20 chars', () => {
   assert.equal(deriveItemTitle('note', 'Short note'), 'Short note');
-  assert.equal(deriveItemTitle('note', 'This is a very long note content'), 'This is a very long ...');
+  assert.equal(
+    deriveItemTitle('note', 'This is a very long note content'),
+    'This is a very long ...',
+  );
 });
 
 test('deriveItemTitle extracts filename from path', () => {
   assert.equal(deriveItemTitle('file', 'C:\\Users\\doc\\file.pdf'), 'file.pdf');
   assert.equal(deriveItemTitle('folder', '/home/user/projects/myapp'), 'myapp');
-  assert.equal(deriveItemTitle('file', 'document.txt'), 'document.txt');
+  assert.equal(deriveItemTitle('file', 'notes.txt'), 'notes.txt');
 });
 
 test('deriveItemTitle handles UNC paths correctly', () => {

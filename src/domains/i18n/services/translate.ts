@@ -16,11 +16,7 @@ function formatMessage(template: string, params?: TranslationParams) {
   });
 }
 
-export function translateForLocale(
-  locale: AppLocale,
-  key: MessageKey,
-  params?: TranslationParams,
-) {
+export function translateForLocale(locale: AppLocale, key: MessageKey, params?: TranslationParams) {
   const template = MESSAGES[locale][key] ?? MESSAGES[DEFAULT_LOCALE][key] ?? key;
   return formatMessage(template, params);
 }

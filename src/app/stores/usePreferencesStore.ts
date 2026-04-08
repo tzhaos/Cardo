@@ -8,6 +8,7 @@ import {
   type AppLocale,
   type AppTheme,
 } from '../../domains/preferences/model/preferences';
+import type { WorkspaceStoragePort } from '../ports/WorkspaceStoragePort';
 import { workspaceStoragePort } from '../ports/defaultPorts';
 
 interface PreferencesStoreState {
@@ -19,20 +20,27 @@ interface PreferencesStoreState {
   setLocale: (locale: AppLocale) => void;
 }
 
-export const usePreferencesStore = create<PreferencesStoreState>()(
-  persist(
-    (set, get) => ({
-      ...DEFAULT_PREFERENCES,
-      locale: detectPreferredLocale(typeof navigator === 'undefined' ? '' : navigator.language),
-      toggleTheme: () => set({ theme: getAlternateAppTheme(get().theme) }),
-      setTheme: (theme) => set({ theme }),
-      toggleLocale: () => set({ locale: getAlternateLocale(get().locale) }),
-      setLocale: (locale) => set({ locale }),
-    }),
-    {
-      name: 'khaosbox-preferences',
-      storage: createJSONStorage(() => workspaceStoragePort),
-      partialize: ({ theme, locale }) => ({ theme, locale }),
-    },
-  ),
-);
+export function createPreferencesStore(storage: WorkspaceStoragePort) {
+  return create<PreferencesStoreState>()(
+    persist(
+      (set, get) => ({
+        ...DEFAULT_PREFERENCES,
+        locale: detectPreferredLocale(typeof navigator === 'undefined' ? '' : navigator.language),
+        toggleTheme: () => set({ theme: getAlternateAppTheme(get().theme) }),
+        setTheme: (theme) => set({ theme }),
+        toggleLocale: () => set({ locale: getAlternateLocale(get().locale) }),
+        setLocale: (locale) => set({ locale }),
+      }),
+      {
+        name: 'khaosbox-preferences',
+        version: 1,
+        migrate: (persistedState) =>
+          persistedState as Pick<PreferencesStoreState, 'theme' | 'locale'>,
+        storage: createJSONStorage(() => storage),
+        partialize: ({ theme, locale }) => ({ theme, locale }),
+      },
+    ),
+  );
+}
+
+export const usePreferencesStore = createPreferencesStore(workspaceStoragePort);

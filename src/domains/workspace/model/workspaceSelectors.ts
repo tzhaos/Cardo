@@ -14,10 +14,7 @@ export function getVisibleBoxIds(snapshot: Pick<WorkspaceSnapshotV3, 'boxesById'
   return getVisibleBoxes(snapshot).map((box) => box.id);
 }
 
-export function getWorkspaceBox(
-  snapshot: Pick<WorkspaceSnapshotV3, 'boxesById'>,
-  boxId: string,
-) {
+export function getWorkspaceBox(snapshot: Pick<WorkspaceSnapshotV3, 'boxesById'>, boxId: string) {
   return snapshot.boxesById[boxId] ?? null;
 }
 
@@ -28,6 +25,8 @@ export function findBoxByRole(
   return getOrderedBoxes(snapshot).find((box) => box.role === role) ?? null;
 }
 
-export function areAllBoxesMinimized(snapshot: Pick<WorkspaceSnapshotV3, 'boxesById' | 'boxOrder'>) {
+export function areAllBoxesMinimized(
+  snapshot: Pick<WorkspaceSnapshotV3, 'boxesById' | 'boxOrder'>,
+) {
   return getOrderedBoxes(snapshot).every((box) => box.isMinimized);
 }

@@ -5,18 +5,15 @@ import type { LocalResourcePort } from './LocalResourcePort';
 import type { RuntimeDocumentPort } from './RuntimeDocumentPort';
 import type { TabsPort } from './TabsPort';
 import type { WorkspaceStoragePort } from './WorkspaceStoragePort';
-import { browserClipboardPort } from '../../extension/clipboard/browserClipboardPort';
-import { browserFileExportPort } from '../../extension/files/browserFileExportPort';
-import { browserFileImportPort } from '../../extension/files/browserFileImportPort';
-import { browserTabsPort } from '../../extension/navigation/browserTabsPort';
-import { browserRuntimeDocumentPort } from '../../extension/runtime/browserRuntimeDocumentPort';
-import { chromeWorkspaceStoragePort } from '../../extension/storage/chromeWorkspaceStoragePort';
-import { companionLocalResourcePort } from '../../integrations/companion/companionLocalResourcePort';
+import { createBrowserExtensionPorts } from './createBrowserExtensionPorts';
 
-export const workspaceStoragePort: WorkspaceStoragePort = chromeWorkspaceStoragePort;
-export const clipboardPort: ClipboardPort = browserClipboardPort;
-export const fileExportPort: FileExportPort = browserFileExportPort;
-export const fileImportPort: FileImportPort = browserFileImportPort;
-export const tabsPort: TabsPort = browserTabsPort;
-export const runtimeDocumentPort: RuntimeDocumentPort = browserRuntimeDocumentPort;
-export const localResourcePort: LocalResourcePort = companionLocalResourcePort;
+/** Production singleton; tests may import {@link createBrowserExtensionPorts} instead. */
+export const appPorts = createBrowserExtensionPorts();
+
+export const workspaceStoragePort: WorkspaceStoragePort = appPorts.workspaceStorage;
+export const clipboardPort: ClipboardPort = appPorts.clipboard;
+export const fileExportPort: FileExportPort = appPorts.fileExport;
+export const fileImportPort: FileImportPort = appPorts.fileImport;
+export const tabsPort: TabsPort = appPorts.tabs;
+export const runtimeDocumentPort: RuntimeDocumentPort = appPorts.runtimeDocument;
+export const localResourcePort: LocalResourcePort = appPorts.localResource;

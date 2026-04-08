@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createExternalDraftFromTransfer } from './createExternalDraftFromTransfer';
+import { createExternalDraftFromDataTransfer } from './createExternalDraftFromDataTransfer';
 
 function createTransferForEntry(
   entry:
@@ -23,8 +23,8 @@ function createTransferForEntry(
   } as unknown as DataTransfer;
 }
 
-test('createExternalDraftFromTransfer creates folder drafts from directory drops', () => {
-  const draft = createExternalDraftFromTransfer(
+test('createExternalDraftFromDataTransfer creates folder drafts from directory drops', () => {
+  const draft = createExternalDraftFromDataTransfer(
     createTransferForEntry({ isDirectory: true, name: 'ProjectAssets' }),
   );
 
@@ -35,8 +35,8 @@ test('createExternalDraftFromTransfer creates folder drafts from directory drops
   });
 });
 
-test('createExternalDraftFromTransfer creates file drafts from file drops', () => {
-  const draft = createExternalDraftFromTransfer(
+test('createExternalDraftFromDataTransfer creates file drafts from file drops', () => {
+  const draft = createExternalDraftFromDataTransfer(
     createTransferForEntry({ isDirectory: false, name: 'report.txt', fileName: 'report.txt' }),
   );
 

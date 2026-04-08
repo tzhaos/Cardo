@@ -7,10 +7,7 @@ type ChromeStorageArea = {
     keys: string,
     callback?: (items: Record<string, string | undefined>) => void,
   ) => Promise<Record<string, string | undefined>> | void;
-  set?: (
-    items: Record<string, string>,
-    callback?: () => void,
-  ) => Promise<void> | void;
+  set?: (items: Record<string, string>, callback?: () => void) => Promise<void> | void;
   remove?: (keys: string, callback?: () => void) => Promise<void> | void;
 };
 

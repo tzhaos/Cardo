@@ -66,12 +66,11 @@ function normalizeBox(input: unknown, index: number): WorkspaceBox | null {
     return null;
   }
 
-  const role = input.role === null || input.role === undefined ? null : asString(input.role)?.trim();
+  const role =
+    input.role === null || input.role === undefined ? null : asString(input.role)?.trim();
   const rawBounds = isRecord(input.bounds) ? input.bounds : {};
   const rawItems = Array.isArray(input.items) ? input.items : [];
-  const items = rawItems
-    .map(normalizeItem)
-    .filter((item): item is WorkspaceItem => item !== null);
+  const items = rawItems.map(normalizeItem).filter((item): item is WorkspaceItem => item !== null);
 
   return {
     id,
@@ -102,8 +101,13 @@ export function createWorkspaceExportDocument(
   };
 }
 
+/** Validates and normalizes a JSON export file (version 2). */
 export function parseWorkspaceExportDocument(input: unknown) {
-  if (!isRecord(input) || input.version !== WORKSPACE_EXPORT_VERSION || !Array.isArray(input.boxes)) {
+  if (
+    !isRecord(input) ||
+    input.version !== WORKSPACE_EXPORT_VERSION ||
+    !Array.isArray(input.boxes)
+  ) {
     throw new Error('Invalid workspace export document');
   }
 
@@ -121,6 +125,7 @@ export function parseWorkspaceExportDocument(input: unknown) {
   } satisfies WorkspaceExportDocumentV2;
 }
 
+/** Accepts persisted storage state for the workspace store (schema version 3 only). */
 export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshotV3 | null {
   if (!isRecord(input) || input.schemaVersion !== WORKSPACE_SCHEMA_VERSION) {
     return null;

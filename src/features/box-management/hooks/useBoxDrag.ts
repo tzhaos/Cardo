@@ -1,6 +1,6 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { useRef } from 'react';
-import { calculateSnap } from '../../../domains/layout/services/calculateSnap';
+import { computeBoxDragFrame } from '../../../domains/layout/services/computeBoxDragFrame';
 import type { WorkspaceBox } from '../../../domains/workspace/model/workspace';
 import { useInteractionStore } from '../../../app/stores/useInteractionStore';
 
@@ -26,24 +26,15 @@ export function useBoxDrag({ box, allBoxes, onFocus, onUpdate, setIsDragging }: 
     setIsDragging(true);
     onFocus();
 
-    const startX = event.clientX;
-    const startY = event.clientY;
-    const initialBoxX = box.bounds.x;
-    const initialBoxY = box.bounds.y;
+    const dragStart = {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      initialBoxX: box.bounds.x,
+      initialBoxY: box.bounds.y,
+    };
 
     const onPointerMove = (moveEvent: PointerEvent) => {
-      const offsetX = moveEvent.clientX - startX;
-      const offsetY = moveEvent.clientY - startY;
-      const newX = initialBoxX + offsetX;
-      const newY = initialBoxY + offsetY;
-      const snap = calculateSnap(
-        newX,
-        newY,
-        box.bounds.width,
-        box.bounds.height,
-        allBoxes,
-        box.id,
-      );
+      const { newX, newY, snap } = computeBoxDragFrame(moveEvent, dragStart, box, allBoxes);
 
       onUpdate({ bounds: { x: newX, y: newY } });
 

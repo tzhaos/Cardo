@@ -1,8 +1,14 @@
 import type { StateStorage } from 'zustand/middleware';
 import { getChromeStorageArea } from '../runtime/chrome';
 
-function isPromiseLike<T>(value: Promise<T> | void): value is Promise<T> {
-  return Boolean(value && typeof (value as Promise<T>).then === 'function');
+function isPromiseLike(value: unknown): value is Promise<unknown> {
+  return (
+    Boolean(value) &&
+    typeof value === 'object' &&
+    value !== null &&
+    'then' in value &&
+    typeof (value as { then: unknown }).then === 'function'
+  );
 }
 
 function readFromChromeStorage(name: string) {
@@ -19,10 +25,17 @@ function readFromChromeStorage(name: string) {
       });
 
       if (isPromiseLike(maybePromise)) {
-        maybePromise.then((items) => resolve(items[name] ?? null)).catch(reject);
+        maybePromise
+          .then((items: unknown) => {
+            const record = items as Record<string, string | null | undefined>;
+            resolve(record[name] ?? null);
+          })
+          .catch((err: unknown) => {
+            reject(err instanceof Error ? err : new Error(String(err)));
+          });
       }
     } catch (error) {
-      reject(error);
+      reject(error instanceof Error ? error : new Error(String(error)));
     }
   });
 }
@@ -39,10 +52,14 @@ function writeToChromeStorage(name: string, value: string) {
       const maybePromise = storageArea.set?.({ [name]: value }, () => resolve());
 
       if (isPromiseLike(maybePromise)) {
-        maybePromise.then(() => resolve()).catch(reject);
+        maybePromise
+          .then(() => resolve())
+          .catch((err: unknown) => {
+            reject(err instanceof Error ? err : new Error(String(err)));
+          });
       }
     } catch (error) {
-      reject(error);
+      reject(error instanceof Error ? error : new Error(String(error)));
     }
   });
 }
@@ -59,10 +76,14 @@ function removeFromChromeStorage(name: string) {
       const maybePromise = storageArea.remove?.(name, () => resolve());
 
       if (isPromiseLike(maybePromise)) {
-        maybePromise.then(() => resolve()).catch(reject);
+        maybePromise
+          .then(() => resolve())
+          .catch((err: unknown) => {
+            reject(err instanceof Error ? err : new Error(String(err)));
+          });
       }
     } catch (error) {
-      reject(error);
+      reject(error instanceof Error ? error : new Error(String(error)));
     }
   });
 }

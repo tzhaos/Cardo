@@ -1,14 +1,12 @@
 import { useEffect, useEffectEvent } from 'react';
-import { toast } from 'sonner';
+import { presentToastSpec } from '../../../app/presentation/toastSpec';
 import { useI18n } from '../../../app/hooks/useI18n';
 import { runtimeDocumentPort } from '../../../app/ports/defaultPorts';
+import { describePasteToWorkspaceToastSpec } from '../../../app/use-cases/describePasteToWorkspaceToast';
 import { pasteTextItem } from '../../../app/use-cases/pasteTextItem';
-import { toggleAllBoxesMinimized } from '../../../app/use-cases/toggleAllBoxesMinimized';
+import { performToggleAllBoxesHotkey } from '../../../app/use-cases/performToggleAllBoxesHotkey';
 import { useInteractionStore } from '../../../app/stores/useInteractionStore';
 import { useWorkspaceStore } from '../../../app/stores/useWorkspaceStore';
-import { ITEM_TYPE_LABEL_KEYS } from '../../../domains/i18n/model/messages';
-import { getBoxDisplayTitle } from '../../../domains/workspace/model/boxTitles';
-import { getWorkspaceBox } from '../../../domains/workspace/model/workspaceSelectors';
 import { isEditableElement } from '../../../lib/dom';
 
 export function useWorkspaceGlobalEvents() {
@@ -22,8 +20,7 @@ export function useWorkspaceGlobalEvents() {
     }
 
     if (event.ctrlKey && event.key === '`') {
-      const areBoxesMinimized = toggleAllBoxesMinimized();
-      toast(areBoxesMinimized ? t('workspace.hideAllBoxes') : t('workspace.showAllBoxes'));
+      presentToastSpec(t, performToggleAllBoxesHotkey());
     }
   });
 
@@ -46,22 +43,9 @@ export function useWorkspaceGlobalEvents() {
       return;
     }
 
-    const targetBox = getWorkspaceBox(useWorkspaceStore.getState().snapshot, pastedResult.boxId);
-
-    if (!targetBox) {
-      return;
-    }
-
-    toast.success(
-      t('workspace.pastedTypeToBox', {
-        itemType:
-          pastedResult.item.type === 'url'
-            ? t('workspace.pastedUrl')
-            : pastedResult.item.type === 'note'
-              ? t('workspace.pastedText')
-              : t(ITEM_TYPE_LABEL_KEYS[pastedResult.item.type]),
-        boxTitle: getBoxDisplayTitle(targetBox, t),
-      }),
+    presentToastSpec(
+      t,
+      describePasteToWorkspaceToastSpec(useWorkspaceStore.getState().snapshot, pastedResult, t),
     );
   });
 

@@ -94,9 +94,7 @@ function fromFileUri(value: string) {
     const decodedPathname = decodeURIComponent(parsedUrl.pathname || '');
 
     if (parsedUrl.host) {
-      return trimTrailingSeparators(
-        `\\\\${parsedUrl.host}${decodedPathname.replace(/\//g, '\\')}`,
-      );
+      return trimTrailingSeparators(`\\\\${parsedUrl.host}${decodedPathname.replace(/\//g, '\\')}`);
     }
 
     const drivePath = decodedPathname.replace(/^\/([A-Za-z]:)/, '$1').replace(/\//g, '\\');

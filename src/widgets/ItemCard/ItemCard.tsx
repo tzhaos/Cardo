@@ -185,7 +185,9 @@ export default function ItemCard({
         <div
           className={cn(
             'kb-item-icon-chip relative rounded-xl shadow-inner transition-transform duration-300',
-            layout === 'grid' ? 'p-2 group-hover:scale-110' : 'shrink-0 rounded-lg p-1.5 group-hover:scale-105',
+            layout === 'grid'
+              ? 'p-2 group-hover:scale-110'
+              : 'shrink-0 rounded-lg p-1.5 group-hover:scale-105',
           )}
         >
           {icon}
@@ -219,7 +221,9 @@ export default function ItemCard({
           layout === 'grid'
             ? 'absolute right-1 top-1 z-10 flex flex-col gap-1'
             : 'ml-3 flex shrink-0 items-center gap-1',
-          isInteractionLocked ? 'pointer-events-none opacity-0' : 'opacity-0 group-hover:opacity-100',
+          isInteractionLocked
+            ? 'pointer-events-none opacity-0'
+            : 'opacity-0 group-hover:opacity-100',
         )}
       >
         <button

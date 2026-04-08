@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createInitialWorkspaceSnapshot, createWorkspaceSnapshot } from './createInitialWorkspaceSnapshot';
+import {
+  createInitialWorkspaceSnapshot,
+  createWorkspaceSnapshot,
+} from './createInitialWorkspaceSnapshot';
 import {
   getOrderedBoxes,
   getVisibleBoxes,
@@ -10,7 +13,11 @@ import {
   areAllBoxesMinimized,
 } from './workspaceSelectors';
 
-function createTestBox(id: string, role: 'folders' | 'links' | 'notes' | null, isMinimized = false) {
+function createTestBox(
+  id: string,
+  role: 'folders' | 'links' | 'notes' | null,
+  isMinimized = false,
+) {
   return {
     id,
     role,

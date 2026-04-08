@@ -14,13 +14,17 @@
     "companion:windows:uninstall": "powershell -ExecutionPolicy Bypass -File companion/windows/scripts/uninstall.ps1",
     "clean": "node -e \"const fs=require('node:fs'); ['artifacts','dist','companion/windows/src/bin','companion/windows/src/obj','companion/windows/tests/bin','companion/windows/tests/obj','companion/windows/packaging/msi/bin','companion/windows/packaging/msi/obj'].forEach((path)=>fs.rmSync(path,{recursive:true,force:true}))\"",
     "lint": "tsc --noEmit && tsx scripts/check-architecture.ts",
-    "test:ts": "tsx --test src/domains/items/model/item.test.ts src/domains/items/services/createItem.test.ts src/domains/items/services/deriveItemTitle.test.ts src/domains/items/services/isUrlText.test.ts src/domains/workspace/model/workspaceModel.test.ts src/domains/workspace/model/boxTitles.test.ts src/domains/workspace/model/workspaceSelectors.test.ts src/domains/preferences/model/preferences.test.ts src/features/item-management/services/createExternalDraftFromTransfer.test.ts src/integrations/companion/createKbeUrl.test.ts src/app/migrations/workspaceMigration.test.ts",
+    "lint:eslint": "node scripts/run-eslint.mjs .",
+    "lint:fix": "node scripts/run-eslint.mjs . --fix",
+    "check": "npm run lint && npm run lint:eslint && npm run test:ts",
+    "format": "node scripts/run-prettier.mjs --write \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.ts\" \"docs/**/*.md\" \"README.md\" \"README_zh.md\" \"vite.config.ts\" \"eslint.config.js\"",
+    "format:check": "node scripts/run-prettier.mjs --check \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.ts\" \"docs/**/*.md\" \"README.md\" \"README_zh.md\" \"vite.config.ts\"",
+    "test:ts": "tsx --test \"src/**/*.test.ts\"",
+    "doctor:registry": "node scripts/check-npm-registry.mjs",
     "migrate:workspace": "tsx scripts/migrate-workspace.ts",
     "test": "npm run test:ts && dotnet test companion/windows/tests/KhaosBoxCompanion.Tests.csproj"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.1.14",
-    "@vitejs/plugin-react": "^5.0.4",
     "clsx": "^2.1.1",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
@@ -28,17 +32,25 @@
     "react-dom": "^19.0.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
-    "vite": "^6.2.0",
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@eslint/js": "^9.23.0",
+    "@tailwindcss/vite": "^4.1.14",
     "@types/node": "^22.14.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.0.4",
     "autoprefixer": "^10.4.21",
+    "eslint": "^9.23.0",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "prettier": "^3.5.3",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
+    "typescript-eslint": "^8.29.0",
     "vite": "^6.2.0"
   }
 }

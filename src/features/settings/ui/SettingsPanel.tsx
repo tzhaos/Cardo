@@ -12,12 +12,14 @@ import {
   SunMedium,
   Languages,
 } from 'lucide-react';
-import { toast } from 'sonner';
-import { useI18n } from '../../../app/hooks/useI18n';
+import { useI18n, type TranslateFn } from '../../../app/hooks/useI18n';
+import { presentToastSpec } from '../../../app/presentation/toastSpec';
 import { usePreferencesStore } from '../../../app/stores/usePreferencesStore';
 import { useSettingsPanelStore } from '../../../app/stores/useSettingsPanelStore';
-import { exportWorkspace } from '../../../app/use-cases/exportWorkspace';
-import { importWorkspace } from '../../../app/use-cases/importWorkspace';
+import {
+  runExportWorkspaceForUi,
+  runImportWorkspaceForUi,
+} from '../../../app/use-cases/runWorkspaceBackupFlow';
 import { cn } from '../../../lib/utils';
 
 type SettingsTab = 'general' | 'theme' | 'sync' | 'about';
@@ -61,33 +63,26 @@ function LocaleToggleGlyph({ locale }: { locale: 'zh' | 'en' }) {
   );
 }
 
-function GeneralSettings({ t }: { t: (key: string, params?: Record<string, string>) => string }) {
+function GeneralSettings({ t }: { t: TranslateFn }) {
   const theme = usePreferencesStore((state) => state.theme);
   const toggleTheme = usePreferencesStore((state) => state.toggleTheme);
   const { locale, toggleLocale } = useI18n();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleExport = () => {
-    exportWorkspace(t('dock.exportFilePrefix'));
-    toast.success(t('toast.dataExported'));
+    presentToastSpec(t, runExportWorkspaceForUi(t));
   };
 
   const handleImport = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    try {
-      await importWorkspace(file);
-      toast.success(t('toast.dataImported'));
-    } catch {
-      toast.error(t('toast.importFailed'));
-    }
+    presentToastSpec(t, await runImportWorkspaceForUi(file));
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  const themeLabel =
-    theme === 'dark' ? t('dock.switchToLightTheme') : t('dock.switchToDarkTheme');
+  const themeLabel = theme === 'dark' ? t('dock.switchToLightTheme') : t('dock.switchToDarkTheme');
 
   return (
     <div className="flex flex-col gap-5">
@@ -121,9 +116,7 @@ function GeneralSettings({ t }: { t: (key: string, params?: Record<string, strin
           className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-[var(--surface-hover-soft)]"
         >
           <LocaleToggleGlyph locale={locale} />
-          <span className="text-[var(--surface-text)]">
-            {locale === 'zh' ? 'English' : '中文'}
-          </span>
+          <span className="text-[var(--surface-text)]">{locale === 'zh' ? 'English' : '中文'}</span>
         </button>
       </div>
 
@@ -163,13 +156,7 @@ function GeneralSettings({ t }: { t: (key: string, params?: Record<string, strin
   );
 }
 
-function SettingsContent({
-  tab,
-  t,
-}: {
-  tab: SettingsTab;
-  t: (key: string, params?: Record<string, string>) => string;
-}) {
+function SettingsContent({ tab, t }: { tab: SettingsTab; t: TranslateFn }) {
   switch (tab) {
     case 'general':
       return <GeneralSettings t={t} />;

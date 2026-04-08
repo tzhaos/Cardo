@@ -1,15 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
+import { presentToastSpec } from '../../../app/presentation/toastSpec';
 import { useI18n } from '../../../app/hooks/useI18n';
-import { addItemDraftToBox } from '../../../app/use-cases/addItemDraftToBox';
+import { addDroppedDataTransferTextToBox } from '../../../app/use-cases/addDroppedDataTransferTextToBox';
+import { moveItemToBox } from '../../../app/use-cases/moveItemToBox';
 import { useInteractionStore } from '../../../app/stores/useInteractionStore';
 import { useWorkspaceDispatch } from '../../../app/stores/useWorkspaceSelectors';
-import { ITEM_TYPE_LABEL_KEYS } from '../../../domains/i18n/model/messages';
 import { isFormControlElement } from '../../../lib/dom';
-import type { ItemDraft, ItemType } from '../../../domains/items/model/item';
+import type { ItemDraft } from '../../../domains/items/model/item';
 import type { WorkspaceBox } from '../../../domains/workspace/model/workspace';
-import { createExternalDraftFromTransfer } from '../services/createExternalDraftFromTransfer';
-import { createTextItemFromTransfer } from '../services/createExternalItemsFromTransfer';
+import { createExternalDraftFromDataTransfer } from '../../../domains/items/services/createExternalDraftFromDataTransfer';
 import { parseDraggedBoxItem } from '../services/parseDraggedBoxItem';
 
 interface DropIndicator {
@@ -124,7 +123,7 @@ export function useBoxDrop({ box, onOpenExternalDraft }: UseBoxDropOptions) {
     clearDropState();
 
     if (event.dataTransfer.types.includes('Files')) {
-      const externalDraft = createExternalDraftFromTransfer(event.dataTransfer);
+      const externalDraft = createExternalDraftFromDataTransfer(event.dataTransfer);
 
       if (externalDraft) {
         onOpenExternalDraft(externalDraft);
@@ -136,36 +135,21 @@ export function useBoxDrop({ box, onOpenExternalDraft }: UseBoxDropOptions) {
     const parsedDragPayload = parseDraggedBoxItem(event.dataTransfer);
 
     if (parsedDragPayload) {
-      dispatch({
-        type: 'item.move',
-        itemId: parsedDragPayload.itemId,
-        sourceBoxId: parsedDragPayload.sourceBoxId,
-        targetBoxId: box.id,
-      });
+      moveItemToBox(parsedDragPayload.itemId, parsedDragPayload.sourceBoxId, box.id);
       setDraggedItemInfo(null);
       return;
     }
 
     if (draggedItemInfo) {
-      dispatch({
-        type: 'item.move',
-        itemId: draggedItemInfo.itemId,
-        sourceBoxId: draggedItemInfo.sourceBoxId,
-        targetBoxId: box.id,
-      });
+      moveItemToBox(draggedItemInfo.itemId, draggedItemInfo.sourceBoxId, box.id);
       setDraggedItemInfo(null);
       return;
     }
 
-    const textItem = createTextItemFromTransfer(event.dataTransfer);
+    const textDrop = addDroppedDataTransferTextToBox(box.id, event.dataTransfer);
 
-    if (textItem) {
-      addItemDraftToBox(box.id, textItem);
-      toast.success(
-        t('toast.addedType', {
-          type: textItem.type === 'url' ? t('workspace.pastedUrl') : t(ITEM_TYPE_LABEL_KEYS[textItem.type]),
-        }),
-      );
+    if (textDrop.added) {
+      presentToastSpec(t, textDrop.toast);
     }
   };
 
@@ -251,13 +235,7 @@ export function useBoxDrop({ box, onOpenExternalDraft }: UseBoxDropOptions) {
       targetIndex += 1;
     }
 
-    dispatch({
-      type: 'item.move',
-      itemId: activeDrag.itemId,
-      sourceBoxId: activeDrag.sourceBoxId,
-      targetBoxId: box.id,
-      targetIndex,
-    });
+    moveItemToBox(activeDrag.itemId, activeDrag.sourceBoxId, box.id, targetIndex);
     setDraggedItemInfo(null);
   };
 

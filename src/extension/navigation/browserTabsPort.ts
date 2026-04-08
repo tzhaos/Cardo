@@ -9,6 +9,6 @@ export const browserTabsPort: TabsPort = {
       throw new Error('Chrome tabs API is unavailable in the extension runtime.');
     }
 
-    chromeLike.tabs.create({ url });
+    void chromeLike.tabs.create({ url });
   },
 };

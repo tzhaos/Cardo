@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { readClipboardItem } from '../../../app/use-cases/readClipboardItem';
+import { presentToastSpec } from '../../../app/presentation/toastSpec';
 import { useI18n } from '../../../app/hooks/useI18n';
-import { ITEM_TYPE_LABEL_KEYS } from '../../../domains/i18n/model/messages';
-import type { ItemType } from '../../../domains/items/model/item';
+import { describeManualItemAddToastSpec } from '../../../app/use-cases/describeManualItemAddToastSpec';
+import { prepareAddItemTypeSelection } from '../../../app/use-cases/prepareAddItemTypeSelection';
+import type { ItemDraft, ItemType } from '../../../domains/items/model/item';
 
 interface UseAddItemOptions {
   showAddMenu: boolean;
   onAddItem: (type: ItemType, title: string, content: string) => void;
-  onAddExistingItem: (item: NonNullable<Awaited<ReturnType<typeof readClipboardItem>>>) => void;
+  onAddExistingItem: (item: ItemDraft) => void;
   onClose: () => void;
   onOpen: () => void;
 }
@@ -49,18 +49,16 @@ export function useAddItem({
   };
 
   const handleAddItemType = async (type: ItemType) => {
-    if (type === 'note') {
-      const clipboardItem = await readClipboardItem();
+    const prepared = await prepareAddItemTypeSelection(type);
 
-      if (clipboardItem) {
-        onAddExistingItem(clipboardItem);
-        toast.success(t('toast.addedFromClipboard'));
-        closeComposer();
-        return;
-      }
+    if (prepared.outcome === 'clipboard') {
+      onAddExistingItem(prepared.item);
+      presentToastSpec(t, prepared.toast);
+      closeComposer();
+      return;
     }
 
-    setAddingType(type);
+    setAddingType(prepared.type);
     setNewItemTitle('');
     setNewItemContent('');
   };
@@ -78,11 +76,7 @@ export function useAddItem({
     }
 
     onAddItem(addingType, newItemTitle, newItemContent);
-    toast.success(
-      t('toast.addedNewType', {
-        type: t(ITEM_TYPE_LABEL_KEYS[addingType]),
-      }),
-    );
+    presentToastSpec(t, describeManualItemAddToastSpec(addingType));
     closeComposer();
   };
 

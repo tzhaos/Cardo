@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createWorkspaceItem } from '../../items/model/item';
-import { createInitialWorkspaceSnapshot, createWorkspaceSnapshot } from './createInitialWorkspaceSnapshot';
+import {
+  createInitialWorkspaceSnapshot,
+  createWorkspaceSnapshot,
+} from './createInitialWorkspaceSnapshot';
 import { reduceWorkspace } from './reduceWorkspace';
 import {
   createWorkspaceExportDocument,

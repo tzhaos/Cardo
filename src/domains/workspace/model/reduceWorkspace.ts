@@ -61,11 +61,16 @@ function moveWorkspaceItem(
 
   if (sourceBoxId === targetBoxId) {
     const adjustedIndex =
-      targetIndex === undefined ? sourceItems.length : targetIndex > itemIndex ? targetIndex - 1 : targetIndex;
+      targetIndex === undefined
+        ? sourceItems.length
+        : targetIndex > itemIndex
+          ? targetIndex - 1
+          : targetIndex;
     const referenceItem = sourceItems[adjustedIndex] ?? sourceItems[adjustedIndex - 1] ?? null;
     const movedItem = {
       ...removedItem,
-      isPinned: targetIndex === undefined ? false : referenceItem?.isPinned ?? removedItem.isPinned,
+      isPinned:
+        targetIndex === undefined ? false : (referenceItem?.isPinned ?? removedItem.isPinned),
     };
 
     sourceItems.splice(adjustedIndex, 0, movedItem);
@@ -76,10 +81,13 @@ function moveWorkspaceItem(
   } else {
     const targetItems = [...targetBox.items];
     const referenceItem =
-      targetIndex === undefined ? null : targetItems[targetIndex] ?? targetItems[targetIndex - 1] ?? null;
+      targetIndex === undefined
+        ? null
+        : (targetItems[targetIndex] ?? targetItems[targetIndex - 1] ?? null);
     const movedItem = {
       ...removedItem,
-      isPinned: targetIndex === undefined ? false : referenceItem?.isPinned ?? removedItem.isPinned,
+      isPinned:
+        targetIndex === undefined ? false : (referenceItem?.isPinned ?? removedItem.isPinned),
     };
 
     if (targetIndex === undefined) {
@@ -104,7 +112,10 @@ function moveWorkspaceItem(
   };
 }
 
-export function reduceWorkspace(snapshot: WorkspaceSnapshotV3, command: WorkspaceCommand): WorkspaceSnapshotV3 {
+export function reduceWorkspace(
+  snapshot: WorkspaceSnapshotV3,
+  command: WorkspaceCommand,
+): WorkspaceSnapshotV3 {
   switch (command.type) {
     case 'workspace.replaceBoxes':
       return createWorkspaceSnapshot(command.boxes);

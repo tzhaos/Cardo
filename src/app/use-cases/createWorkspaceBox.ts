@@ -1,7 +1,4 @@
-import {
-  MAX_WORKSPACE_BOXES,
-  type WorkspaceBox,
-} from '../../domains/workspace/model/workspace';
+import { MAX_WORKSPACE_BOXES, type WorkspaceBox } from '../../domains/workspace/model/workspace';
 import { useWorkspaceStore } from '../stores/useWorkspaceStore';
 import { createId } from './createId';
 

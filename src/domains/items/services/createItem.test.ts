@@ -56,7 +56,10 @@ test('parseTextToItemDraft preserves Chinese folder paths', () => {
 });
 
 test('parseTextToItemDraft treats dotted version folders as folders', () => {
-  const item = createWorkspaceItem('item-version-folder', parseTextToItemDraft('F:\\Tools\\pcnt_tools_v2.2.0'));
+  const item = createWorkspaceItem(
+    'item-version-folder',
+    parseTextToItemDraft('F:\\Tools\\pcnt_tools_v2.2.0'),
+  );
 
   assert.equal(item.type, 'folder');
   assert.equal(item.content, 'F:\\Tools\\pcnt_tools_v2.2.0');

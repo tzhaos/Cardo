@@ -8,10 +8,14 @@ export function pasteTextItem(text: string, activeBoxId: string | null) {
   const { snapshot, dispatch } = useWorkspaceStore.getState();
   const draft = parseTextToItemDraft(text);
   const targetRole =
-    draft.type === 'url' ? 'links' : draft.type === 'file' || draft.type === 'folder' ? 'folders' : 'notes';
+    draft.type === 'url'
+      ? 'links'
+      : draft.type === 'file' || draft.type === 'folder'
+        ? 'folders'
+        : 'notes';
 
   const targetBox =
-    (activeBoxId ? snapshot.boxesById[activeBoxId] ?? null : null) ??
+    (activeBoxId ? (snapshot.boxesById[activeBoxId] ?? null) : null) ??
     findBoxByRole(snapshot, targetRole) ??
     getOrderedBoxes(snapshot)[0] ??
     null;

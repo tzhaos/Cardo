@@ -10,12 +10,15 @@ interface CreateItemInput {
 }
 
 export function createItem({ type, content, title, isPinned = false }: CreateItemInput) {
-  return createWorkspaceItem(`legacy-item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, {
-    type,
-    content,
-    title,
-    isPinned,
-  });
+  return createWorkspaceItem(
+    `legacy-item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    {
+      type,
+      content,
+      title,
+      isPinned,
+    },
+  );
 }
 
 export function createItemFromText(text: string): ItemDraft {

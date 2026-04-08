@@ -5,7 +5,11 @@ import {
   migrateLegacyWorkspaceSnapshot,
 } from '../src/app/migrations/workspaceMigration';
 
-function resolveOutputPath(inputPath: string, outputPath: string | undefined, useSnapshot: boolean) {
+function resolveOutputPath(
+  inputPath: string,
+  outputPath: string | undefined,
+  useSnapshot: boolean,
+) {
   if (outputPath) {
     return path.resolve(outputPath);
   }

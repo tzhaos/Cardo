@@ -1,25 +1,5 @@
-import { parseTextToItemDraft } from '../../../domains/items/services/parseTextToItemDraft';
-
-function getUriListEntries(dataTransfer: DataTransfer) {
-  return dataTransfer
-    .getData('text/uri-list')
-    .split(/\r?\n/)
-    .map((entry) => entry.trim())
-    .filter((entry) => entry && !entry.startsWith('#'));
-}
+import { parseDataTransferToTextDraft } from '../../../domains/items/services/parseDataTransferToTextDraft';
 
 export function createTextItemFromTransfer(dataTransfer: DataTransfer) {
-  const urlData = getUriListEntries(dataTransfer)[0];
-
-  if (urlData) {
-    return parseTextToItemDraft(urlData);
-  }
-
-  const textData = dataTransfer.getData('text/plain') || dataTransfer.getData('text');
-
-  if (!textData) {
-    return null;
-  }
-
-  return parseTextToItemDraft(textData);
+  return parseDataTransferToTextDraft(dataTransfer);
 }

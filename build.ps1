@@ -54,12 +54,12 @@ try {
   }
 
   if ($RunChecks) {
-    Invoke-Step -Title 'Running lint' -Action { npm run lint }
+    Invoke-Step -Title 'Running checks (tsc, architecture, ESLint, TS tests)' -Action { npm run check }
 
-    if ($SkipCompanion) {
-      Invoke-Step -Title 'Running TypeScript tests' -Action { npm run test:ts }
-    } else {
-      Invoke-Step -Title 'Running full test suite' -Action { npm test }
+    if (-not $SkipCompanion) {
+      Invoke-Step -Title 'Running Windows companion tests' -Action {
+        dotnet test (Join-Path $PSScriptRoot 'companion/windows/tests/KhaosBoxCompanion.Tests.csproj')
+      }
     }
   }
 

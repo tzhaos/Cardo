@@ -1,5 +1,7 @@
 using Xunit;
 
+// Parse expectations here should match src/integrations/companion/kbeUrl.fixtures.ts (CREATE_KBE_URL_CASES).
+
 namespace KhaosBoxCompanion.Tests;
 
 public sealed class KbeRequestParserTests

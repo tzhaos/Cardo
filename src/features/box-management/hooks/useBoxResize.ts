@@ -1,6 +1,10 @@
 import type { MouseEvent as ReactMouseEvent } from 'react';
+import { computeResizedBoxDimensions } from '../../../domains/layout/services/computeResizedBoxDimensions';
 import type { WorkspaceBox } from '../../../domains/workspace/model/workspace';
 import { useInteractionStore } from '../../../app/stores/useInteractionStore';
+
+const RESIZE_MIN = { width: 200, height: 150 } as const;
+const RESIZE_GRID = 20;
 
 interface UseBoxResizeOptions {
   box: WorkspaceBox;
@@ -16,18 +20,20 @@ export function useBoxResize({ box, onUpdate }: UseBoxResizeOptions) {
       return;
     }
 
-    const startX = event.clientX;
-    const startY = event.clientY;
-    const startWidth = box.bounds.width;
-    const startHeight = box.bounds.height;
+    const resizeStart = {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      width: box.bounds.width,
+      height: box.bounds.height,
+    };
 
     const onMouseMove = (moveEvent: MouseEvent) => {
-      let newWidth = Math.max(200, startWidth + moveEvent.clientX - startX);
-      let newHeight = Math.max(150, startHeight + moveEvent.clientY - startY);
-
-      newWidth = Math.round(newWidth / 20) * 20;
-      newHeight = Math.round(newHeight / 20) * 20;
-      onUpdate({ bounds: { width: newWidth, height: newHeight } });
+      const { width, height } = computeResizedBoxDimensions(moveEvent, resizeStart, {
+        minWidth: RESIZE_MIN.width,
+        minHeight: RESIZE_MIN.height,
+        grid: RESIZE_GRID,
+      });
+      onUpdate({ bounds: { width, height } });
     };
 
     const onMouseUp = () => {

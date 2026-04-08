@@ -1,6 +1,6 @@
-import type { ItemDraft, ItemType } from '../../../domains/items/model/item';
+import type { ItemDraft } from '../model/item';
 
-export function createExternalDraftFromTransfer(dataTransfer: DataTransfer): ItemDraft | null {
+export function createExternalDraftFromDataTransfer(dataTransfer: DataTransfer): ItemDraft | null {
   for (const transferItem of Array.from(dataTransfer.items)) {
     if (transferItem.kind !== 'file') {
       continue;

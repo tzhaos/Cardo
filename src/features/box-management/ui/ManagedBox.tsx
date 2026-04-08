@@ -7,9 +7,10 @@ import {
   useWorkspaceSnapshot,
 } from '../../../app/stores/useWorkspaceSelectors';
 import { getBoxDisplayTitle } from '../../../domains/workspace/model/boxTitles';
+import type { WorkspaceBox } from '../../../domains/workspace/model/workspace';
 import BoxContainer from '../../../widgets/Box/BoxContainer';
 import BoxHeader from '../../../widgets/Box/BoxHeader';
-import ManagedBoxContent from '../../item-management/ui/ManagedBoxContent';
+import { ManagedBoxContent } from '../../item-management';
 import { useBoxDrag } from '../hooks/useBoxDrag';
 import { useBoxResize } from '../hooks/useBoxResize';
 
@@ -17,9 +18,12 @@ interface ManagedBoxProps {
   boxId: string;
 }
 
-export default function ManagedBox({ boxId }: ManagedBoxProps) {
+interface ManagedBoxViewProps {
+  box: WorkspaceBox;
+}
+
+function ManagedBoxView({ box }: ManagedBoxViewProps) {
   const { t } = useI18n();
-  const box = useWorkspaceBox(boxId);
   const snapshot = useWorkspaceSnapshot();
   const dispatch = useWorkspaceDispatch();
   const activeBoxId = useInteractionStore((state) => state.activeBoxId);
@@ -32,16 +36,20 @@ export default function ManagedBox({ boxId }: ManagedBoxProps) {
   const [draftTitle, setDraftTitle] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  if (!box) {
-    return null;
-  }
-
   const editorId = `box:${box.id}:title`;
   const isActive = activeBoxId === box.id;
   const isEditing = editingSessionId === editorId;
   const isInteractionLocked = Boolean(editingSessionId && editingSessionId !== editorId);
   const displayTitle = getBoxDisplayTitle(box, t);
-  const fallbackTitle = t(box.role === 'folders' ? 'box.folders' : box.role === 'links' ? 'box.links' : box.role === 'notes' ? 'box.notes' : 'box.new');
+  const fallbackTitle = t(
+    box.role === 'folders'
+      ? 'box.folders'
+      : box.role === 'links'
+        ? 'box.links'
+        : box.role === 'notes'
+          ? 'box.notes'
+          : 'box.new',
+  );
 
   useEffect(() => {
     if (isActive) {
@@ -70,18 +78,18 @@ export default function ManagedBox({ boxId }: ManagedBoxProps) {
     [editorId],
   );
 
-  const applyBoxUpdates = (updates: Parameters<typeof dispatch>[0] extends infer Command ? Command : never) => {
-    dispatch(updates as never);
-  };
-
-  const updateBox = (updates: Parameters<typeof dispatch>[0] extends infer Command ? never : never) => updates;
-
   const focusBox = () => {
     dispatch({ type: 'box.bringToFront', boxId: box.id });
     setActiveBox(box.id);
   };
 
-  const onUpdateBox = (updates: { bounds?: Partial<typeof box.bounds>; customTitle?: string | null; isLocked?: boolean; layout?: typeof box.layout; isMinimized?: boolean }) => {
+  const onUpdateBox = (updates: {
+    bounds?: Partial<WorkspaceBox['bounds']>;
+    customTitle?: string | null;
+    isLocked?: boolean;
+    layout?: WorkspaceBox['layout'];
+    isMinimized?: boolean;
+  }) => {
     dispatch({
       type: 'box.update',
       boxId: box.id,
@@ -159,17 +167,29 @@ export default function ManagedBox({ boxId }: ManagedBoxProps) {
           }}
           onToggleLayout={() => onUpdateBox({ layout: box.layout === 'grid' ? 'list' : 'grid' })}
           onToggleLock={() => onUpdateBox({ isLocked: !box.isLocked })}
-          onMinimize={() => dispatch({ type: 'box.update', boxId: box.id, updates: { isMinimized: !box.isMinimized } })}
+          onMinimize={() =>
+            dispatch({
+              type: 'box.update',
+              boxId: box.id,
+              updates: { isMinimized: !box.isMinimized },
+            })
+          }
           onClose={() => dispatch({ type: 'box.delete', boxId: box.id })}
         />
       }
       content={
-        <ManagedBoxContent
-          box={box}
-          showAddMenu={showAddMenu}
-          setShowAddMenu={setShowAddMenu}
-        />
+        <ManagedBoxContent box={box} showAddMenu={showAddMenu} setShowAddMenu={setShowAddMenu} />
       }
     />
   );
+}
+
+export default function ManagedBox({ boxId }: ManagedBoxProps) {
+  const box = useWorkspaceBox(boxId);
+
+  if (!box) {
+    return null;
+  }
+
+  return <ManagedBoxView box={box} />;
 }

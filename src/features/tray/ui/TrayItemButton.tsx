@@ -33,7 +33,9 @@ export default function TrayItemButton({ box, compact = false, onClick }: TrayIt
       </div>
 
       {!compact && (
-        <span className="kb-item-title max-w-[100px] truncate text-sm font-medium">{displayTitle}</span>
+        <span className="kb-item-title max-w-[100px] truncate text-sm font-medium">
+          {displayTitle}
+        </span>
       )}
 
       {isVisible && (
