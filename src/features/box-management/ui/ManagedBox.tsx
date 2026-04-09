@@ -23,7 +23,7 @@ interface ManagedBoxViewProps {
 }
 
 function ManagedBoxView({ box }: ManagedBoxViewProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const snapshot = useWorkspaceSnapshot();
   const dispatch = useWorkspaceDispatch();
   const activeBoxId = useInteractionStore((state) => state.activeBoxId);
@@ -175,7 +175,18 @@ function ManagedBoxView({ box }: ManagedBoxViewProps) {
               updates: { isMinimized: !box.isMinimized },
             })
           }
-          onClose={() => dispatch({ type: 'box.delete', boxId: box.id })}
+          onClose={() => {
+            const confirmMessage =
+              locale === 'zh'
+                ? `删除“${displayTitle}”？此操作无法撤销。`
+                : `Delete "${displayTitle}"? This action cannot be undone.`;
+
+            if (!window.confirm(confirmMessage)) {
+              return;
+            }
+
+            dispatch({ type: 'box.delete', boxId: box.id });
+          }}
         />
       }
       content={
