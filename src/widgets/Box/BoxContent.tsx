@@ -30,9 +30,9 @@ export default function BoxContent({
   return (
     <div
       className={cn(
-        'custom-scrollbar relative flex-1 overflow-y-auto p-3 transition-colors duration-200',
-        layout === 'grid' ? 'grid grid-cols-3 content-start gap-3' : 'flex flex-col gap-1',
-        isDragOver && 'bg-blue-500/10',
+        'custom-scrollbar relative flex-1 overflow-y-auto p-2 pt-0 transition-colors duration-200',
+        layout === 'grid' ? 'grid grid-cols-3 content-start gap-2' : 'flex flex-col gap-1',
+        isDragOver && 'bg-win-hover',
       )}
       onPointerDown={onPointerDown}
       onDragEnter={onDragEnter}

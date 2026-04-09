@@ -1,5 +1,6 @@
-export const APP_THEMES = ['dark', 'light'] as const;
+export const APP_THEMES = ['system', 'dark', 'light'] as const;
 export type AppTheme = (typeof APP_THEMES)[number];
+export type ResolvedAppTheme = Exclude<AppTheme, 'system'>;
 
 export const APP_LOCALES = ['zh', 'en'] as const;
 export type AppLocale = (typeof APP_LOCALES)[number];
@@ -9,7 +10,7 @@ export interface PreferencesState {
   locale: AppLocale;
 }
 
-export const DEFAULT_APP_THEME: AppTheme = 'dark';
+export const DEFAULT_APP_THEME: AppTheme = 'system';
 export const DEFAULT_LOCALE: AppLocale = 'en';
 
 export const DEFAULT_PREFERENCES: PreferencesState = {
@@ -27,4 +28,12 @@ export function getAlternateLocale(locale: AppLocale): AppLocale {
 
 export function detectPreferredLocale(language?: string | null) {
   return (language ?? '').toLowerCase().startsWith('zh') ? 'zh' : DEFAULT_LOCALE;
+}
+
+export function resolveAppTheme(theme: AppTheme, prefersDark: boolean): ResolvedAppTheme {
+  if (theme === 'system') {
+    return prefersDark ? 'dark' : 'light';
+  }
+
+  return theme;
 }

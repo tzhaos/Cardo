@@ -1,5 +1,5 @@
 import { Package } from 'lucide-react';
-import { motion } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useI18n } from '../../../app/hooks/useI18n';
 import { getBoxDisplayTitle } from '../../../domains/workspace/model/boxTitles';
 import type { WorkspaceBox } from '../../../domains/workspace/model/workspace';
@@ -20,33 +20,62 @@ export default function TrayItemButton({ box, compact = false, onClick }: TrayIt
     <button
       onClick={onClick}
       className={cn(
-        'kb-dock-item relative flex h-10 items-center gap-2 rounded-xl transition-all duration-200',
-        'hover:scale-105 active:scale-95',
-        compact ? 'w-10 justify-center px-0' : 'px-3',
-        isVisible ? 'kb-dock-item-active' : 'bg-transparent',
+        'kb-dock-item relative flex h-10 items-center gap-2 rounded-lg transition-all duration-200 active:scale-95',
+        compact ? 'w-10 justify-center px-0' : 'px-4',
+        isVisible ? 'kb-dock-item-active bg-win-hover' : 'hover:bg-win-hover',
       )}
       title={displayTitle}
       aria-label={displayTitle}
     >
-      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-500 shadow-sm">
-        <Package size={14} className="text-white/90" />
-      </div>
+      <Package
+        size={16}
+        strokeWidth={2}
+        className="text-win-text"
+      />
 
       {!compact && (
-        <span className="kb-item-title max-w-[100px] truncate text-sm font-medium">
+        <span
+          className={cn(
+            'max-w-[100px] truncate text-sm font-medium',
+            isVisible ? 'text-win-text' : 'text-win-text-secondary',
+          )}
+        >
           {displayTitle}
         </span>
       )}
 
-      {isVisible && (
-        <motion.div
-          layoutId={`active-${box.id}`}
-          className={cn(
-            'kb-dock-indicator absolute rounded-full bg-slate-500 ring-2 ring-black/10',
-            compact ? 'right-1 top-1 h-2.5 w-2.5' : 'right-1.5 top-1.5 h-2 w-2',
-          )}
-        />
-      )}
+      <AnimatePresence initial={false}>
+        {isVisible && (
+          <motion.div
+            layoutId={`dock-indicator-${box.id}`}
+            initial={{ opacity: 0, scaleX: 0.65, y: 2 }}
+            animate={{
+              opacity: 1,
+              scaleX: 1,
+              y: 0,
+              transition: {
+                type: 'spring',
+                stiffness: 520,
+                damping: 32,
+                mass: 0.7,
+              },
+            }}
+            exit={{
+              opacity: 0,
+              scaleX: 0.65,
+              y: 2,
+              transition: {
+                duration: 0.14,
+                ease: 'easeOut',
+              },
+            }}
+            className={cn(
+              'kb-dock-indicator absolute left-1/2 -translate-x-1/2 rounded-full bg-win-accent',
+              compact ? 'bottom-0 h-1 w-3.5' : 'bottom-0 h-1 w-4',
+            )}
+          />
+        )}
+      </AnimatePresence>
     </button>
   );
 }

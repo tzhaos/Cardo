@@ -47,7 +47,7 @@ export default function DraggableItem({
       {dropIndicator?.id === item.id && dropIndicator.position === 'before' && (
         <div
           className={cn(
-            'absolute z-50 rounded-full bg-blue-500',
+            'absolute z-50 rounded-full bg-win-accent',
             layout === 'grid' ? '-left-2 top-0 h-full w-1' : '-top-1 left-0 h-1 w-full',
           )}
         />
@@ -58,7 +58,7 @@ export default function DraggableItem({
       {dropIndicator?.id === item.id && dropIndicator.position === 'after' && (
         <div
           className={cn(
-            'absolute z-50 rounded-full bg-blue-500',
+            'absolute z-50 rounded-full bg-win-accent',
             layout === 'grid' ? '-right-2 top-0 h-full w-1' : '-bottom-1 left-0 h-1 w-full',
           )}
         />

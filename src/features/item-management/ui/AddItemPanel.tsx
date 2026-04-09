@@ -38,12 +38,12 @@ export default function AddItemPanel({
       <button
         onClick={onOpen}
         className={cn(
-          'kb-add-trigger flex items-center justify-center gap-2 rounded-lg border border-dashed transition-all',
-          layout === 'grid' ? 'aspect-square flex-col' : 'mt-2 h-10 w-full shrink-0',
+          'kb-add-trigger mt-2 flex items-center justify-center gap-2 rounded-md border border-dashed p-2 text-sm transition-colors',
+          layout === 'grid' ? 'aspect-square flex-col' : 'w-full shrink-0',
         )}
       >
         <Plus size={16} />
-        <span className="text-xs font-medium">{t('addItem.button')}</span>
+        <span>{t('addItem.button')}</span>
       </button>
     );
   }
@@ -51,7 +51,7 @@ export default function AddItemPanel({
   return (
     <div
       className={cn(
-        'kb-add-panel flex flex-col gap-1 rounded-lg border border-dashed p-2',
+        'kb-add-panel mt-2 flex flex-col gap-2 rounded-md border border-dashed p-2',
         layout === 'grid' ? 'col-span-3' : 'mt-2 w-full shrink-0',
       )}
     >
@@ -69,7 +69,7 @@ export default function AddItemPanel({
             value={newItemTitle}
             onChange={(event) => onTitleChange(event.target.value)}
             placeholder={t('addItem.titleOptional')}
-            className="kb-add-input w-full rounded px-2 py-1.5 text-xs outline-none"
+            className="kb-add-input w-full rounded-xl px-3 py-2 text-xs outline-none"
           />
 
           <input
@@ -91,20 +91,20 @@ export default function AddItemPanel({
                 onCancel();
               }
             }}
-            className="kb-add-input w-full rounded px-2 py-1.5 text-xs outline-none"
+            className="kb-add-input w-full rounded-xl px-3 py-2 text-xs outline-none"
           />
 
-          <div className="mt-1 flex justify-end gap-1">
+          <div className="mt-1 flex justify-end gap-2">
             <button
               onClick={onCancel}
-              className="kb-secondary-button rounded px-2 py-1 text-xs transition-colors"
+              className="kb-secondary-button rounded-lg px-3 py-1.5 text-xs transition-colors"
             >
               {t('common.cancel')}
             </button>
             <button
               onClick={onConfirm}
               disabled={!newItemContent.trim()}
-              className="kb-primary-button rounded px-2 py-1 text-xs transition-colors disabled:opacity-50"
+              className="kb-primary-button rounded-lg px-3 py-1.5 text-xs transition-colors disabled:opacity-50"
             >
               {t('common.add')}
             </button>
@@ -119,33 +119,33 @@ export default function AddItemPanel({
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-1">
+          <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => onStartAdd('file')}
-              className="kb-secondary-button flex items-center gap-2 rounded p-1.5 text-xs transition-colors"
+              className="kb-secondary-button flex items-center gap-2 rounded-xl p-2 text-xs transition-colors"
             >
-              <File size={12} className="text-blue-400" />
+              <File size={12} className="text-[var(--role-note-fg)]" />
               {t(ITEM_TYPE_PLURAL_KEYS.file)}
             </button>
             <button
               onClick={() => onStartAdd('folder')}
-              className="kb-secondary-button flex items-center gap-2 rounded p-1.5 text-xs transition-colors"
+              className="kb-secondary-button flex items-center gap-2 rounded-xl p-2 text-xs transition-colors"
             >
-              <Folder size={12} className="text-amber-400" />
+              <Folder size={12} className="text-[var(--role-folder-fg)]" />
               {t(ITEM_TYPE_PLURAL_KEYS.folder)}
             </button>
             <button
               onClick={() => onStartAdd('url')}
-              className="kb-secondary-button flex items-center gap-2 rounded p-1.5 text-xs transition-colors"
+              className="kb-secondary-button flex items-center gap-2 rounded-xl p-2 text-xs transition-colors"
             >
-              <LinkIcon size={12} className="text-emerald-400" />
+              <LinkIcon size={12} className="text-[var(--role-link-fg)]" />
               {t(ITEM_TYPE_PLURAL_KEYS.url)}
             </button>
             <button
               onClick={() => onStartAdd('note')}
-              className="kb-secondary-button flex items-center gap-2 rounded p-1.5 text-xs transition-colors"
+              className="kb-secondary-button flex items-center gap-2 rounded-xl p-2 text-xs transition-colors"
             >
-              <ClipboardPaste size={12} className="text-purple-400" />
+              <ClipboardPaste size={12} className="text-[var(--role-generic-fg)]" />
               {t(ITEM_TYPE_PLURAL_KEYS.note)}
             </button>
           </div>

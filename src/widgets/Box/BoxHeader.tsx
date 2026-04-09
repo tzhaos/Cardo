@@ -7,6 +7,7 @@ interface BoxHeaderProps {
   box: WorkspaceBox;
   displayTitle: string;
   draftTitle: string;
+  isActive: boolean;
   isHovering: boolean;
   isEditing: boolean;
   isInteractionLocked: boolean;
@@ -30,6 +31,7 @@ export default function BoxHeader({
   box,
   displayTitle,
   draftTitle,
+  isActive,
   isHovering,
   isEditing,
   isInteractionLocked,
@@ -51,13 +53,13 @@ export default function BoxHeader({
   return (
     <div
       className={cn(
-        'kb-box-header group flex h-10 shrink-0 select-none items-center justify-between border-b px-3',
+        'kb-box-header group flex shrink-0 select-none items-center justify-between p-3 pb-2',
         isEditing || isInteractionLocked ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
       )}
       onPointerDown={isEditing || isInteractionLocked ? undefined : onDragStart}
     >
       <div className="flex flex-1 items-center gap-2 overflow-hidden" onDoubleClick={onStartEdit}>
-        <Package size={14} className="kb-box-muted shrink-0" />
+        <Package size={16} className="shrink-0 text-win-text" strokeWidth={2} />
         {isEditing ? (
           <input
             ref={inputRef}
@@ -83,7 +85,7 @@ export default function BoxHeader({
             onDrop={(event) => event.stopPropagation()}
           />
         ) : (
-          <span className="kb-box-title pointer-events-none truncate px-1 text-sm font-medium">
+          <span className="kb-box-title pointer-events-none truncate text-sm font-semibold text-win-text">
             {displayTitle}
           </span>
         )}
@@ -94,7 +96,7 @@ export default function BoxHeader({
           'flex shrink-0 items-center gap-1 transition-opacity duration-200',
           isInteractionLocked ? 'pointer-events-none opacity-0' : '',
           isEditing ? 'pointer-events-none opacity-20' : '',
-          !isEditing && isHovering ? 'opacity-100' : !isEditing ? 'opacity-0' : '',
+          !isEditing && (isHovering || isActive) ? 'opacity-100' : !isEditing ? 'opacity-0' : '',
         )}
       >
         <button

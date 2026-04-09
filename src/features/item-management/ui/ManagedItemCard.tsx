@@ -37,19 +37,24 @@ function getItemIcon(item: WorkspaceItem, layout: 'grid' | 'list') {
 
   if (item.type === 'folder') {
     return (
-      <Folder size={iconSize} className="text-amber-400" fill="currentColor" fillOpacity={0.2} />
+      <Folder
+        size={iconSize}
+        className="text-folder-text fill-folder-fill"
+        fill="currentColor"
+        fillOpacity={1}
+      />
     );
   }
 
   if (item.type === 'file') {
-    return <File size={iconSize} className="text-blue-400" />;
+    return <File size={iconSize} className="text-file-text" />;
   }
 
   if (item.type === 'url') {
-    return <LinkIcon size={iconSize} className="text-emerald-400" />;
+    return <LinkIcon size={iconSize} className="text-[var(--role-link-fg)]" />;
   }
 
-  return <ClipboardPaste size={iconSize} className="text-purple-400" />;
+  return <ClipboardPaste size={iconSize} className="text-file-text" />;
 }
 
 export default function ManagedItemCard({

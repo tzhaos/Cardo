@@ -130,6 +130,7 @@ function ManagedBoxView({ box }: ManagedBoxViewProps) {
           box={box}
           displayTitle={displayTitle}
           draftTitle={draftTitle}
+          isActive={isActive}
           isHovering={isHovering}
           isEditing={isEditing}
           isInteractionLocked={isInteractionLocked}

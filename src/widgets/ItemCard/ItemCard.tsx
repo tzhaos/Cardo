@@ -38,6 +38,17 @@ export interface ItemCardProps {
   onDeleteClick: (event: SyntheticEvent) => void;
 }
 
+function getIconChipClassName(item: WorkspaceItem, layout: 'grid' | 'list') {
+  if (item.type === 'folder') {
+    return cn(
+      'bg-folder-bg border border-folder-border',
+      layout === 'grid' ? 'rounded-md p-2' : 'rounded p-1.5',
+    );
+  }
+
+  return cn('bg-file-bg', layout === 'grid' ? 'rounded-md p-2' : 'rounded p-1.5');
+}
+
 export default function ItemCard({
   item,
   layout,
@@ -76,6 +87,16 @@ export default function ItemCard({
   const usesSingleLineContentEditor = item.type !== 'note';
   const textInputClassName =
     'kb-item-input w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition-colors';
+  const pinnedButtonClassName =
+    layout === 'grid'
+      ? cn(
+          'kb-item-grid-control rounded-md border p-1.5 shadow-sm backdrop-blur-sm',
+          item.isPinned ? 'bg-win-hover text-win-accent border-win-border-strong' : '',
+        )
+      : cn(
+          'kb-item-list-control rounded-md p-1.5 text-win-text-secondary hover:bg-win-hover hover:text-win-text',
+          item.isPinned ? 'bg-win-hover text-win-accent' : '',
+        );
 
   const stopInteraction = (event: SyntheticEvent) => {
     event.stopPropagation();
@@ -169,10 +190,10 @@ export default function ItemCard({
     <div
       onClick={onCardClick}
       className={cn(
-        'group rounded-xl border border-transparent transition-all duration-200',
+        'group transition-all duration-200',
         layout === 'grid'
-          ? 'kb-item-card-grid relative flex cursor-pointer flex-col items-center gap-2 p-3'
-          : 'kb-item-card-list flex shrink-0 cursor-pointer items-center justify-between p-2.5',
+          ? 'kb-item-card-grid relative flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-transparent p-3'
+          : 'flex shrink-0 cursor-pointer items-center justify-between gap-3 rounded-md p-2 hover:bg-win-hover active:bg-win-active',
         isInteractionLocked ? 'cursor-default opacity-55' : '',
       )}
     >
@@ -185,20 +206,21 @@ export default function ItemCard({
       >
         <div
           className={cn(
-            'kb-item-icon-chip relative rounded-xl shadow-inner transition-transform duration-300',
+            'relative transition-transform duration-300',
+            getIconChipClassName(item, layout),
             layout === 'grid'
-              ? 'p-2 group-hover:scale-110'
-              : 'shrink-0 rounded-lg p-1.5 group-hover:scale-105',
+              ? 'group-hover:scale-110'
+              : 'shrink-0 group-hover:scale-105',
           )}
         >
           {icon}
           {item.isPinned && (
             <div
               className={cn(
-                'absolute -right-1 -top-1 rounded-full border border-black/50 bg-rose-500',
+                'absolute -right-1 -top-1 rounded-full border bg-win-accent',
                 layout === 'grid'
-                  ? 'h-2.5 w-2.5 shadow-[0_0_8px_rgba(244,63,94,0.6)]'
-                  : 'h-2 w-2 shadow-[0_0_6px_rgba(244,63,94,0.6)]',
+                  ? 'h-2.5 w-2.5 border-win-card'
+                  : 'h-2 w-2 border-win-card',
               )}
             />
           )}
@@ -210,8 +232,8 @@ export default function ItemCard({
           </span>
         ) : (
           <div className="flex flex-col justify-center overflow-hidden">
-            <span className="kb-item-title truncate text-sm font-medium">{item.title}</span>
-            <span className="kb-item-content mt-0.5 truncate text-[11px]">{item.content}</span>
+            <span className="truncate text-sm text-win-text">{item.title}</span>
+            <span className="mt-0.5 truncate text-xs text-win-text-secondary">{item.content}</span>
           </div>
         )}
       </div>
@@ -221,7 +243,7 @@ export default function ItemCard({
           'transition-opacity duration-200',
           layout === 'grid'
             ? 'absolute right-1 top-1 z-10 flex flex-col gap-1'
-            : 'ml-3 flex shrink-0 items-center gap-1',
+            : 'ml-2 flex shrink-0 items-center gap-1',
           isInteractionLocked
             ? 'pointer-events-none opacity-0'
             : 'opacity-0 group-hover:opacity-100',
@@ -229,12 +251,7 @@ export default function ItemCard({
       >
         <button
           onClick={onTogglePinned}
-          className={cn(
-            'transition-colors',
-            layout === 'grid'
-              ? 'kb-item-grid-control rounded-md border p-1.5 shadow-sm backdrop-blur-sm'
-              : 'kb-item-list-control rounded-md p-1.5',
-          )}
+          className={cn('transition-colors', pinnedButtonClassName)}
           title={item.isPinned ? unpinLabel : layout === 'grid' ? pinLabel : pinToTopLabel}
         >
           {item.isPinned ? unpinIcon : pinIcon}
@@ -244,8 +261,8 @@ export default function ItemCard({
           className={cn(
             'transition-colors',
             layout === 'grid'
-              ? 'kb-item-grid-control rounded-md border p-1.5 shadow-sm backdrop-blur-sm hover:bg-blue-500/80 hover:text-white'
-              : 'kb-item-list-control rounded-md p-1.5 hover:bg-blue-500/20 hover:text-blue-400',
+              ? 'kb-item-grid-control rounded-md border p-1.5 shadow-sm backdrop-blur-sm hover:bg-win-accent hover:text-white'
+              : 'kb-item-list-control rounded-md p-1.5 text-win-text-secondary hover:bg-win-hover hover:text-win-text',
           )}
           title={editLabel}
         >
@@ -257,7 +274,7 @@ export default function ItemCard({
             'transition-colors',
             layout === 'grid'
               ? 'kb-item-grid-control rounded-md border p-1.5 shadow-sm backdrop-blur-sm hover:bg-red-500/80 hover:text-white'
-              : 'kb-item-list-control rounded-md p-1.5 hover:bg-red-500/20 hover:text-red-400',
+              : 'kb-item-list-control rounded-md p-1.5 text-win-text-secondary hover:bg-win-hover hover:text-win-text',
           )}
           title={deleteLabel}
         >

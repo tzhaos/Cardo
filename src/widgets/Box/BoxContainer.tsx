@@ -45,13 +45,13 @@ export default function BoxContainer({
         height: box.bounds.height,
         zIndex: box.zIndex,
         boxShadow: isDragging
-          ? 'var(--box-drag-shadow)'
+          ? 'var(--shadow-win-flyout)'
           : isActive && !box.isLocked
-            ? 'var(--box-active-shadow)'
-            : 'none',
+            ? 'var(--shadow-win-flyout)'
+            : 'var(--shadow-win-card)',
       }}
       className={cn(
-        'kb-box absolute flex flex-col overflow-hidden rounded-xl border border-white/10 bg-zinc-900/90 backdrop-blur-md transition-[background-color,border-color,color] duration-300',
+        'kb-box win-mica absolute flex flex-col overflow-hidden rounded-xl transition-[background-color,border-color,color,box-shadow] duration-300',
         box.isLocked ? 'ring-1 ring-red-500/50' : '',
       )}
       onMouseEnter={onMouseEnter}
