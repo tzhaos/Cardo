@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import {
   DEFAULT_PREFERENCES,
+  DEFAULT_WEBDAV_REMOTE_FILE_PATH,
   detectPreferredLocale,
   getAlternateAppTheme,
   getAlternateLocale,
@@ -21,6 +22,11 @@ interface PreferencesStoreState {
   accentColor: string;
   recentAccentColors: string[];
   transparencyEnabled: boolean;
+  webdavEndpoint: string;
+  webdavUsername: string;
+  webdavPassword: string;
+  webdavRemoteFilePath: string;
+  webdavLastSyncedAt: string | null;
   toggleTheme: () => void;
   setTheme: (theme: AppTheme) => void;
   toggleLocale: () => void;
@@ -28,6 +34,24 @@ interface PreferencesStoreState {
   setAccentMode: (accentMode: AccentMode) => void;
   setAccentColor: (accentColor: string) => void;
   setTransparencyEnabled: (transparencyEnabled: boolean) => void;
+  setWebDavEndpoint: (webdavEndpoint: string) => void;
+  setWebDavUsername: (webdavUsername: string) => void;
+  setWebDavPassword: (webdavPassword: string) => void;
+  setWebDavRemoteFilePath: (webdavRemoteFilePath: string) => void;
+  setWebDavLastSyncedAt: (webdavLastSyncedAt: string | null) => void;
+  replacePersistedPreferences: (
+    input: Partial<
+      Pick<
+        PreferencesStoreState,
+        | 'theme'
+        | 'locale'
+        | 'accentMode'
+        | 'accentColor'
+        | 'recentAccentColors'
+        | 'transparencyEnabled'
+      >
+    >,
+  ) => void;
 }
 
 export function createPreferencesStore(storage: WorkspaceStoragePort) {
@@ -47,14 +71,39 @@ export function createPreferencesStore(storage: WorkspaceStoragePort) {
             recentAccentColors: pushRecentAccentColor(state.recentAccentColors, accentColor),
           })),
         setTransparencyEnabled: (transparencyEnabled) => set({ transparencyEnabled }),
+        setWebDavEndpoint: (webdavEndpoint) => set({ webdavEndpoint }),
+        setWebDavUsername: (webdavUsername) => set({ webdavUsername }),
+        setWebDavPassword: (webdavPassword) => set({ webdavPassword }),
+        setWebDavRemoteFilePath: (webdavRemoteFilePath) => set({ webdavRemoteFilePath }),
+        setWebDavLastSyncedAt: (webdavLastSyncedAt) => set({ webdavLastSyncedAt }),
+        replacePersistedPreferences: (input) =>
+          set((state) => ({
+            theme: input.theme ?? state.theme,
+            locale: input.locale ?? state.locale,
+            accentMode: input.accentMode ?? state.accentMode,
+            accentColor: input.accentColor ?? state.accentColor,
+            recentAccentColors: input.recentAccentColors ?? state.recentAccentColors,
+            transparencyEnabled: input.transparencyEnabled ?? state.transparencyEnabled,
+          })),
       }),
       {
         name: 'khaosbox-preferences',
-        version: 2,
-        migrate: (persistedState) => ({
-          ...DEFAULT_PREFERENCES,
-          ...(persistedState as Partial<PreferencesStoreState>),
-        }),
+        version: 3,
+        migrate: (persistedState) => {
+          const migratedState = {
+            ...DEFAULT_PREFERENCES,
+            ...(persistedState as Partial<PreferencesStoreState>),
+          };
+
+          if (
+            !migratedState.webdavRemoteFilePath ||
+            migratedState.webdavRemoteFilePath === 'khaosbox-sync.json'
+          ) {
+            migratedState.webdavRemoteFilePath = DEFAULT_WEBDAV_REMOTE_FILE_PATH;
+          }
+
+          return migratedState;
+        },
         storage: createJSONStorage(() => storage),
         partialize: ({
           theme,
@@ -63,6 +112,11 @@ export function createPreferencesStore(storage: WorkspaceStoragePort) {
           accentColor,
           recentAccentColors,
           transparencyEnabled,
+          webdavEndpoint,
+          webdavUsername,
+          webdavPassword,
+          webdavRemoteFilePath,
+          webdavLastSyncedAt,
         }) => ({
           theme,
           locale,
@@ -70,6 +124,11 @@ export function createPreferencesStore(storage: WorkspaceStoragePort) {
           accentColor,
           recentAccentColors,
           transparencyEnabled,
+          webdavEndpoint,
+          webdavUsername,
+          webdavPassword,
+          webdavRemoteFilePath,
+          webdavLastSyncedAt,
         }),
         onRehydrateStorage: () => (_state, error) => {
           if (error) {

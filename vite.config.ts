@@ -34,10 +34,14 @@ function copyExtensionAssets() {
     writeBundle(options: { dir?: string }) {
       const outDir = options.dir ? path.resolve(options.dir) : EXTENSION_OUT_DIR;
       const manifestSource = path.resolve(__dirname, 'assets/extension-shell/manifest.json');
+      const backgroundSource = path.resolve(__dirname, 'assets/extension-shell/background.js');
       const iconsSource = path.resolve(__dirname, 'assets/extension-shell/icons');
 
       fs.mkdirSync(outDir, { recursive: true });
       fs.copyFileSync(manifestSource, path.join(outDir, 'manifest.json'));
+      if (fs.existsSync(backgroundSource)) {
+        fs.copyFileSync(backgroundSource, path.join(outDir, 'background.js'));
+      }
 
       if (fs.existsSync(iconsSource)) {
         fs.cpSync(iconsSource, path.join(outDir, 'extension/icons'), { recursive: true });

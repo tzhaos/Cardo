@@ -13,7 +13,15 @@ type ChromeStorageArea = {
 
 type ChromeLikeRuntime = {
   tabs?: ChromeTabsApi;
-  runtime?: object;
+  runtime?: {
+    lastError?: {
+      message?: string;
+    };
+    sendMessage?: (
+      message: unknown,
+      callback?: (response: unknown) => void,
+    ) => Promise<unknown> | void;
+  };
   storage?: {
     local?: ChromeStorageArea;
   };
@@ -25,4 +33,8 @@ export function getChromeLikeRuntime(): ChromeLikeRuntime | undefined {
 
 export function getChromeStorageArea() {
   return getChromeLikeRuntime()?.storage?.local;
+}
+
+export function getChromeRuntimeApi() {
+  return getChromeLikeRuntime()?.runtime;
 }

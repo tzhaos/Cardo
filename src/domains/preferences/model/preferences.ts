@@ -10,6 +10,8 @@ export const DEFAULT_LIGHT_ACCENT_COLOR = '#005fb8';
 export const DEFAULT_DARK_ACCENT_COLOR = '#a63a46';
 export const DEFAULT_MANUAL_ACCENT_COLOR = DEFAULT_DARK_ACCENT_COLOR;
 export const MAX_RECENT_ACCENT_COLORS = 5;
+export const DEFAULT_WEBDAV_ENDPOINT = 'https://dav.jianguoyun.com/dav/';
+export const DEFAULT_WEBDAV_REMOTE_FILE_PATH = 'KhaosBox/khaosbox-sync.json';
 
 export interface PreferencesState {
   theme: AppTheme;
@@ -18,6 +20,11 @@ export interface PreferencesState {
   accentColor: string;
   recentAccentColors: string[];
   transparencyEnabled: boolean;
+  webdavEndpoint: string;
+  webdavUsername: string;
+  webdavPassword: string;
+  webdavRemoteFilePath: string;
+  webdavLastSyncedAt: string | null;
 }
 
 export const DEFAULT_APP_THEME: AppTheme = 'system';
@@ -30,6 +37,11 @@ export const DEFAULT_PREFERENCES: PreferencesState = {
   accentColor: DEFAULT_MANUAL_ACCENT_COLOR,
   recentAccentColors: [DEFAULT_DARK_ACCENT_COLOR, DEFAULT_LIGHT_ACCENT_COLOR],
   transparencyEnabled: true,
+  webdavEndpoint: DEFAULT_WEBDAV_ENDPOINT,
+  webdavUsername: '',
+  webdavPassword: '',
+  webdavRemoteFilePath: DEFAULT_WEBDAV_REMOTE_FILE_PATH,
+  webdavLastSyncedAt: null,
 };
 
 export function getAlternateAppTheme(theme: AppTheme): AppTheme {

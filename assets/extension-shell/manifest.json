@@ -12,6 +12,10 @@
     "128": "extension/icons/icon-128.png"
   },
   "permissions": ["storage"],
+  "host_permissions": ["https://*/*", "http://*/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
   "chrome_url_overrides": {
     "newtab": "extension/pages/newtab.html"
   }

@@ -1,13 +1,16 @@
-import { useState, useRef, useEffect, type ChangeEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'react';
 import {
   Check,
   ChevronDown,
   ChevronRight,
+  Cloud,
+  CloudDownload,
+  CloudUpload,
+  Database,
   Download,
   Info,
   Languages,
   Palette,
-  RefreshCw,
   Settings,
   Sparkles,
   Upload,
@@ -19,8 +22,16 @@ import { toast } from 'sonner';
 import { useI18n } from '../../../app/hooks/useI18n';
 import { usePreferencesStore } from '../../../app/stores/usePreferencesStore';
 import { useSettingsPanelStore } from '../../../app/stores/useSettingsPanelStore';
+import { useWorkspaceSnapshot } from '../../../app/stores/useWorkspaceSelectors';
 import { exportWorkspace } from '../../../app/use-cases/exportWorkspace';
 import { importWorkspace } from '../../../app/use-cases/importWorkspace';
+import {
+  buildCurrentWebDavConfig,
+  downloadWorkspaceFromWebDav,
+  safeSyncErrorMessage,
+  testWebDavConnection,
+  uploadWorkspaceToWebDav,
+} from '../../../app/use-cases/syncWorkspaceWebDav';
 import {
   DEFAULT_DARK_ACCENT_COLOR,
   DEFAULT_LIGHT_ACCENT_COLOR,
@@ -29,9 +40,10 @@ import {
   type ResolvedAppTheme,
   resolveAppTheme,
 } from '../../../domains/preferences/model/preferences';
+import { MAX_WORKSPACE_BOXES, WORKSPACE_SCHEMA_VERSION } from '../../../domains/workspace/model/workspace';
 import { cn } from '../../../lib/utils';
 
-type SettingsTab = 'general' | 'theme' | 'sync' | 'about';
+type SettingsTab = 'general' | 'theme' | 'data' | 'about';
 type LocaleValue = 'en' | 'zh';
 
 interface SelectOption<Value extends string> {
@@ -121,7 +133,7 @@ function WinSelect<Value extends string>({
       </button>
 
       <AnimatePresence>
-        {isOpen && (
+        {isOpen ? (
           <motion.div
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
@@ -140,11 +152,11 @@ function WinSelect<Value extends string>({
                     onChange(option.value);
                     setIsOpen(false);
                   }}
-                  className="group relative flex w-full items-center justify-between px-3 py-1.5 text-left text-sm transition-colors hover:bg-win-hover"
+                  className="group relative flex w-full items-center px-3 py-1.5 text-left text-sm transition-colors hover:bg-win-hover"
                 >
-                  {isActive && (
+                  {isActive ? (
                     <div className="absolute left-0 top-1/2 h-3/5 w-1 -translate-y-1/2 rounded-r-full bg-win-accent" />
-                  )}
+                  ) : null}
                   <span
                     className={cn(
                       'pl-2',
@@ -159,7 +171,7 @@ function WinSelect<Value extends string>({
               );
             })}
           </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
     </div>
   );
@@ -200,23 +212,12 @@ function SegmentedControl<Value extends string>({
 function ToggleSwitch({
   checked,
   onChange,
-  checkedLabel,
-  uncheckedLabel,
 }: {
   checked: boolean;
   onChange: (checked: boolean) => void;
-  checkedLabel: string;
-  uncheckedLabel: string;
 }) {
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      onClick={() => onChange(!checked)}
-      className="flex items-center gap-3"
-    >
-      <span className="text-sm text-win-text-secondary">{checked ? checkedLabel : uncheckedLabel}</span>
+    <button type="button" role="switch" aria-checked={checked} onClick={() => onChange(!checked)}>
       <span
         className={cn(
           'relative flex h-6 w-11 items-center rounded-full transition-colors',
@@ -237,22 +238,17 @@ function ToggleSwitch({
 function SettingRow({
   icon,
   title,
-  description,
   action,
 }: {
   icon: ReactNode;
   title: string;
-  description: string;
   action: ReactNode;
 }) {
   return (
     <div className="flex items-center justify-between gap-4 rounded-lg border border-win-border bg-win-card p-4 shadow-sm">
       <div className="flex items-center gap-4">
         {icon}
-        <div className="flex flex-col">
-          <span className="text-sm font-medium text-win-text">{title}</span>
-          <span className="text-xs text-win-text-secondary">{description}</span>
-        </div>
+        <span className="text-sm font-medium text-win-text">{title}</span>
       </div>
       {action}
     </div>
@@ -262,13 +258,11 @@ function SettingRow({
 function ActionRow({
   icon,
   title,
-  description,
   onClick,
   roundedClassName,
 }: {
   icon: ReactNode;
   title: string;
-  description: string;
   onClick: () => void;
   roundedClassName: string;
 }) {
@@ -283,13 +277,28 @@ function ActionRow({
     >
       <div className="flex items-center gap-4">
         {icon}
-        <div className="flex flex-col">
-          <span className="text-sm font-medium text-win-text">{title}</span>
-          <span className="text-xs text-win-text-secondary">{description}</span>
-        </div>
+        <span className="text-sm font-medium text-win-text">{title}</span>
       </div>
       <ChevronRight className="h-5 w-5 text-win-text-secondary" />
     </button>
+  );
+}
+
+function StatCard({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-lg border border-win-border bg-win-card p-4 shadow-sm">
+      <div className="mb-3 flex items-center gap-2 text-win-text-secondary">{icon}</div>
+      <div className="text-xs uppercase tracking-[0.18em] text-win-text-secondary">{label}</div>
+      <div className="mt-2 text-2xl font-semibold text-win-text">{value}</div>
+    </div>
   );
 }
 
@@ -305,7 +314,7 @@ function ThemePreviewCard({
       <div
         className={cn(
           'relative overflow-hidden rounded-[20px] border border-black/50 bg-[#0b0b0b] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]',
-          resolvedTheme === 'light' ? 'bg-[#dfe8f3] border-slate-300/70' : '',
+          resolvedTheme === 'light' ? 'border-slate-300/70 bg-[#dfe8f3]' : '',
         )}
       >
         <div
@@ -412,45 +421,31 @@ function ThemePanel() {
   const copy =
     locale === 'zh'
       ? {
-          previewTitle: '实时预览',
-          previewDescription: '在不离开设置的情况下，预览盒子、Dock 和面板的当前主题效果。',
-          modeTitle: '模式',
-          modeDescription: '决定应用整体使用浅色、深色还是跟随系统。',
-          transparencyTitle: '透明效果',
-          transparencyDescription: '控制面板与 Dock 是否保留半透明材质。',
-          accentModeTitle: '强调色来源',
-          accentModeDescription: '自动使用系统风格颜色，或手动指定状态色。',
-          recentColorsTitle: '最近使用的颜色',
-          paletteTitle: '强调色色板',
-          customColorTitle: '自定义颜色',
-          manualHint: '强调色只影响指示器、选中态、焦点和拖拽反馈，不影响语义图标颜色。',
+          previewTitle: '\u9884\u89c8',
+          modeTitle: '\u6a21\u5f0f',
+          transparencyTitle: '\u900f\u660e',
+          accentModeTitle: '\u5f3a\u8c03\u8272',
+          recentColorsTitle: '\u6700\u8fd1\u4f7f\u7528',
+          paletteTitle: '\u989c\u8272\u677f',
+          customColorTitle: '\u81ea\u5b9a\u4e49',
           modeOptions: [
-            { label: '浅色', value: 'light' },
-            { label: '深色', value: 'dark' },
-            { label: '跟随系统', value: 'system' },
+            { label: '\u6d45\u8272', value: 'light' },
+            { label: '\u6df1\u8272', value: 'dark' },
+            { label: '\u8ddf\u968f\u7cfb\u7edf', value: 'system' },
           ] as const satisfies SegmentedOption<AppTheme>[],
           accentModeOptions: [
-            { label: '自动', value: 'auto' },
-            { label: '手动', value: 'manual' },
+            { label: '\u81ea\u52a8', value: 'auto' },
+            { label: '\u624b\u52a8', value: 'manual' },
           ] as const satisfies SegmentedOption<AccentMode>[],
-          onLabel: '开',
-          offLabel: '关',
         }
       : {
-          previewTitle: 'Live preview',
-          previewDescription:
-            'Preview how boxes, the dock, and panels respond before leaving settings.',
+          previewTitle: 'Preview',
           modeTitle: 'Mode',
-          modeDescription: 'Choose whether the app uses a light, dark, or system appearance.',
-          transparencyTitle: 'Transparency effects',
-          transparencyDescription: 'Keep panels and the dock translucent, or switch to solid surfaces.',
-          accentModeTitle: 'Accent source',
-          accentModeDescription: 'Use the default system-style accent or choose one manually.',
-          recentColorsTitle: 'Recent colors',
-          paletteTitle: 'Accent palette',
-          customColorTitle: 'Custom color',
-          manualHint:
-            'Accent colors only affect indicators, selection, focus, and drag feedback. Semantic icons keep their own colors.',
+          transparencyTitle: 'Transparency',
+          accentModeTitle: 'Accent',
+          recentColorsTitle: 'Recent',
+          paletteTitle: 'Palette',
+          customColorTitle: 'Custom',
           modeOptions: [
             { label: 'Light', value: 'light' },
             { label: 'Dark', value: 'dark' },
@@ -460,8 +455,6 @@ function ThemePanel() {
             { label: 'Auto', value: 'auto' },
             { label: 'Manual', value: 'manual' },
           ] as const satisfies SegmentedOption<AccentMode>[],
-          onLabel: 'On',
-          offLabel: 'Off',
         };
 
   const recentColors = Array.from(
@@ -475,50 +468,29 @@ function ThemePanel() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <div className="px-1">
-          <h3 className="text-sm font-semibold text-win-text">{copy.previewTitle}</h3>
-          <p className="mt-1 text-xs leading-relaxed text-win-text-secondary">
-            {copy.previewDescription}
-          </p>
-        </div>
-        <ThemePreviewCard
-          resolvedTheme={resolvedTheme}
-          transparencyEnabled={transparencyEnabled}
-        />
-      </div>
+      <div className="px-1 text-sm font-semibold text-win-text">{copy.previewTitle}</div>
+      <ThemePreviewCard
+        resolvedTheme={resolvedTheme}
+        transparencyEnabled={transparencyEnabled}
+      />
 
       <SettingRow
         icon={<Palette className="h-5 w-5 text-win-text-secondary" />}
         title={copy.modeTitle}
-        description={copy.modeDescription}
         action={
-          <SegmentedControl<AppTheme>
-            value={theme}
-            options={copy.modeOptions}
-            onChange={setTheme}
-          />
+          <SegmentedControl<AppTheme> value={theme} options={copy.modeOptions} onChange={setTheme} />
         }
       />
 
       <SettingRow
         icon={<Sparkles className="h-5 w-5 text-win-text-secondary" />}
         title={copy.transparencyTitle}
-        description={copy.transparencyDescription}
-        action={
-          <ToggleSwitch
-            checked={transparencyEnabled}
-            onChange={setTransparencyEnabled}
-            checkedLabel={copy.onLabel}
-            uncheckedLabel={copy.offLabel}
-          />
-        }
+        action={<ToggleSwitch checked={transparencyEnabled} onChange={setTransparencyEnabled} />}
       />
 
       <SettingRow
         icon={<Wand2 className="h-5 w-5 text-win-text-secondary" />}
         title={copy.accentModeTitle}
-        description={copy.accentModeDescription}
         action={
           <SegmentedControl<AccentMode>
             value={accentMode}
@@ -529,15 +501,10 @@ function ThemePanel() {
       />
 
       <div className="rounded-lg border border-win-border bg-win-card p-4 shadow-sm">
-        <div className="mb-4">
-          <div className="text-sm font-medium text-win-text">{copy.recentColorsTitle}</div>
-          <div className="mt-1 text-xs leading-relaxed text-win-text-secondary">
-            {copy.manualHint}
-          </div>
-        </div>
+        <div className="mb-4 text-sm font-medium text-win-text">{copy.recentColorsTitle}</div>
         <AccentPalette colors={recentColors} value={accentColor} onChange={setAccentColor} />
 
-        {accentMode === 'manual' && (
+        {accentMode === 'manual' ? (
           <div className="mt-5 border-t border-win-border pt-4">
             <div className="mb-3 text-sm font-medium text-win-text">{copy.paletteTitle}</div>
             <AccentPalette colors={ACCENT_SWATCHES} value={accentColor} onChange={setAccentColor} />
@@ -559,27 +526,18 @@ function ThemePanel() {
               onChange={(event) => setAccentColor(event.target.value)}
             />
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
 }
 
 function GeneralPanel() {
-  const { t, locale, setLocale } = useI18n();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { locale, setLocale } = useI18n();
   const copy =
     locale === 'zh'
       ? {
           languageTitle: '\u8bed\u8a00',
-          languageDescription: '\u5207\u6362\u5e94\u7528\u663e\u793a\u8bed\u8a00',
-          dataManagement: '\u6570\u636e\u7ba1\u7406',
-          exportTitle: '\u5bfc\u51fa\u5de5\u4f5c\u533a',
-          exportDescription:
-            '\u5c06\u5f53\u524d\u5e03\u5c40\u548c\u5185\u5bb9\u4fdd\u5b58\u4e3a JSON \u6587\u4ef6',
-          importTitle: '\u5bfc\u5165\u5de5\u4f5c\u533a',
-          importDescription:
-            '\u4ece JSON \u6587\u4ef6\u6062\u590d\u4f60\u7684\u5e03\u5c40\u548c\u5185\u5bb9',
           languageOptions: [
             { label: 'English', value: 'en' },
             { label: '\u4e2d\u6587', value: 'zh' },
@@ -587,16 +545,108 @@ function GeneralPanel() {
         }
       : {
           languageTitle: 'Language',
-          languageDescription: 'Windows display language',
-          dataManagement: 'Data Management',
-          exportTitle: 'Export workspace',
-          exportDescription: 'Save your current layout and content to a JSON file',
-          importTitle: 'Import workspace',
-          importDescription: 'Restore your layout and content from a JSON file',
           languageOptions: [
             { label: 'English', value: 'en' },
             { label: 'Chinese', value: 'zh' },
           ] as const satisfies SelectOption<LocaleValue>[],
+        };
+
+  return (
+    <div className="flex flex-col gap-2">
+      <SettingRow
+        icon={<Languages className="h-5 w-5 text-win-text-secondary" />}
+        title={copy.languageTitle}
+        action={
+          <WinSelect<LocaleValue>
+            value={locale}
+            options={copy.languageOptions}
+            onChange={setLocale}
+          />
+        }
+      />
+    </div>
+  );
+}
+
+function DataPanel() {
+  const { t, locale } = useI18n();
+  const snapshot = useWorkspaceSnapshot();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [syncAction, setSyncAction] = useState<'idle' | 'testing' | 'uploading' | 'downloading'>(
+    'idle',
+  );
+  const boxes = snapshot.boxOrder.map((boxId) => snapshot.boxesById[boxId]).filter(Boolean);
+  const totalItems = boxes.reduce((count, box) => count + box.items.length, 0);
+  const pinnedItems = boxes.reduce(
+    (count, box) => count + box.items.filter((item) => item.isPinned).length,
+    0,
+  );
+
+  const webdavEndpoint = usePreferencesStore((state) => state.webdavEndpoint);
+  const setWebDavEndpoint = usePreferencesStore((state) => state.setWebDavEndpoint);
+  const webdavUsername = usePreferencesStore((state) => state.webdavUsername);
+  const setWebDavUsername = usePreferencesStore((state) => state.setWebDavUsername);
+  const webdavPassword = usePreferencesStore((state) => state.webdavPassword);
+  const setWebDavPassword = usePreferencesStore((state) => state.setWebDavPassword);
+  const webdavRemoteFilePath = usePreferencesStore((state) => state.webdavRemoteFilePath);
+  const setWebDavRemoteFilePath = usePreferencesStore((state) => state.setWebDavRemoteFilePath);
+  const webdavLastSyncedAt = usePreferencesStore((state) => state.webdavLastSyncedAt);
+
+  const copy =
+    locale === 'zh'
+      ? {
+          localTitle: '\u672c\u5730\u6570\u636e',
+          syncTitle: 'WebDAV',
+          endpointLabel: '\u5730\u5740',
+          usernameLabel: '\u8d26\u53f7',
+          passwordLabel: '\u5e94\u7528\u5bc6\u7801',
+          remoteFileLabel: '\u8fdc\u7a0b\u6587\u4ef6',
+          testConnection: '\u6d4b\u8bd5\u8fde\u63a5',
+          uploadNow: '\u4e0a\u4f20',
+          downloadNow: '\u4e0b\u8f7d',
+          syncIdle: '\u672a\u8fde\u63a5',
+          syncSuccess: '\u5df2\u5c31\u7eea',
+          syncTesting: '\u6d4b\u8bd5\u4e2d',
+          syncUploading: '\u4e0a\u4f20\u4e2d',
+          syncDownloading: '\u4e0b\u8f7d\u4e2d',
+          syncTestSuccess: 'WebDAV \u8fde\u63a5\u6210\u529f',
+          syncUploadSuccess: '\u5df2\u4e0a\u4f20\u5230 WebDAV',
+          syncDownloadSuccess: '\u5df2\u4ece WebDAV \u540c\u6b65',
+          lastSyncedLabel: '\u4e0a\u6b21\u540c\u6b65',
+          notSyncedYet: '\u5c1a\u672a\u540c\u6b65',
+          exportTitle: '\u5bfc\u51fa\u5de5\u4f5c\u533a',
+          importTitle: '\u5bfc\u5165\u5de5\u4f5c\u533a',
+          boxesLabel: '\u76d2\u5b50',
+          itemsLabel: '\u9879\u76ee',
+          pinnedLabel: '\u7f6e\u9876',
+          schemaLabel: '\u67b6\u6784',
+        }
+      : {
+          localTitle: 'Local data',
+          syncTitle: 'WebDAV',
+          endpointLabel: 'Endpoint',
+          usernameLabel: 'Username',
+          passwordLabel: 'App password',
+          remoteFileLabel: 'Remote file',
+          testConnection: 'Test',
+          uploadNow: 'Upload',
+          downloadNow: 'Download',
+          syncIdle: 'Idle',
+          syncSuccess: 'Ready',
+          syncTesting: 'Testing',
+          syncUploading: 'Uploading',
+          syncDownloading: 'Downloading',
+          syncTestSuccess: 'WebDAV connected',
+          syncUploadSuccess: 'Uploaded to WebDAV',
+          syncDownloadSuccess: 'Downloaded from WebDAV',
+          lastSyncedLabel: 'Last synced',
+          notSyncedYet: 'Not synced yet',
+          exportTitle: 'Export workspace',
+          importTitle: 'Import workspace',
+          boxesLabel: 'Boxes',
+          itemsLabel: 'Items',
+          pinnedLabel: 'Pinned',
+          schemaLabel: 'Schema',
         };
 
   const handleExport = () => {
@@ -623,40 +673,174 @@ function GeneralPanel() {
     }
   };
 
-  return (
-    <div className="flex flex-col gap-2">
-      <SettingRow
-        icon={<Languages className="h-5 w-5 text-win-text-secondary" />}
-        title={copy.languageTitle}
-        description={copy.languageDescription}
-        action={
-          <WinSelect<LocaleValue>
-            value={locale}
-            options={copy.languageOptions}
-            onChange={setLocale}
-          />
-        }
-      />
+  const runSyncAction = async (
+    nextAction: Exclude<typeof syncAction, 'idle'>,
+    runner: () => Promise<void>,
+    successMessage: string,
+  ) => {
+    setSyncAction(nextAction);
 
-      <h2 className="mb-3 mt-8 px-1 text-sm font-semibold text-win-text">
-        {copy.dataManagement}
-      </h2>
-      <div className="flex flex-col rounded-lg border border-win-border bg-win-card shadow-sm">
-        <ActionRow
-          icon={<Download className="h-5 w-5 text-win-text-secondary" />}
-          title={copy.exportTitle}
-          description={copy.exportDescription}
-          onClick={handleExport}
-          roundedClassName="rounded-t-lg"
+    try {
+      await runner();
+      toast.success(successMessage);
+    } catch (error) {
+      toast.error(safeSyncErrorMessage(error));
+    } finally {
+      setSyncAction('idle');
+    }
+  };
+
+  const currentSyncStatus =
+    syncAction === 'testing'
+      ? copy.syncTesting
+      : syncAction === 'uploading'
+        ? copy.syncUploading
+        : syncAction === 'downloading'
+          ? copy.syncDownloading
+          : webdavLastSyncedAt
+            ? copy.syncSuccess
+            : copy.syncIdle;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-2 gap-3">
+        <StatCard icon={<Database className="h-4 w-4" />} label={copy.boxesLabel} value={String(boxes.length)} />
+        <StatCard icon={<Cloud className="h-4 w-4" />} label={copy.itemsLabel} value={String(totalItems)} />
+        <StatCard icon={<Check className="h-4 w-4" />} label={copy.pinnedLabel} value={String(pinnedItems)} />
+        <StatCard
+          icon={<Info className="h-4 w-4" />}
+          label={copy.schemaLabel}
+          value={`v${WORKSPACE_SCHEMA_VERSION}/${MAX_WORKSPACE_BOXES}`}
         />
-        <div className="mx-4 h-px bg-win-border" />
-        <ActionRow
-          icon={<Upload className="h-5 w-5 text-win-text-secondary" />}
-          title={copy.importTitle}
-          description={copy.importDescription}
-          onClick={() => fileInputRef.current?.click()}
-          roundedClassName="rounded-b-lg"
-        />
+      </div>
+
+      <div className="rounded-lg border border-win-border bg-win-card p-5 shadow-sm">
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Cloud className="h-5 w-5 text-win-text-secondary" />
+            <h3 className="text-sm font-medium text-win-text">{copy.syncTitle}</h3>
+          </div>
+          <div className="rounded-full bg-win-bg-secondary px-3 py-1 text-xs text-win-text-secondary">
+            {currentSyncStatus}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs text-win-text-secondary">{copy.endpointLabel}</span>
+            <input
+              value={webdavEndpoint}
+              onChange={(event) => setWebDavEndpoint(event.target.value)}
+              className="kb-add-input rounded-lg px-3 py-2 text-sm outline-none"
+              placeholder="https://dav.jianguoyun.com/dav/"
+            />
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs text-win-text-secondary">{copy.remoteFileLabel}</span>
+            <input
+              value={webdavRemoteFilePath}
+              onChange={(event) => setWebDavRemoteFilePath(event.target.value)}
+              className="kb-add-input rounded-lg px-3 py-2 text-sm outline-none"
+              placeholder="KhaosBox/khaosbox-sync.json"
+            />
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs text-win-text-secondary">{copy.usernameLabel}</span>
+            <input
+              value={webdavUsername}
+              onChange={(event) => setWebDavUsername(event.target.value)}
+              className="kb-add-input rounded-lg px-3 py-2 text-sm outline-none"
+              placeholder="user@example.com"
+            />
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs text-win-text-secondary">{copy.passwordLabel}</span>
+            <input
+              type="password"
+              value={webdavPassword}
+              onChange={(event) => setWebDavPassword(event.target.value)}
+              className="kb-add-input rounded-lg px-3 py-2 text-sm outline-none"
+              placeholder="******"
+            />
+          </label>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() =>
+              void runSyncAction(
+                'testing',
+                async () => {
+                  await testWebDavConnection(buildCurrentWebDavConfig());
+                },
+                copy.syncTestSuccess,
+              )
+            }
+            className="kb-secondary-button rounded-lg border border-win-border px-3 py-2 text-sm transition-colors"
+          >
+            {copy.testConnection}
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              void runSyncAction(
+                'uploading',
+                async () => {
+                  await uploadWorkspaceToWebDav(buildCurrentWebDavConfig());
+                },
+                copy.syncUploadSuccess,
+              )
+            }
+            className="kb-primary-button rounded-lg px-3 py-2 text-sm transition-colors"
+          >
+            <span className="inline-flex items-center gap-2">
+              <CloudUpload className="h-4 w-4" />
+              {copy.uploadNow}
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              void runSyncAction(
+                'downloading',
+                async () => {
+                  await downloadWorkspaceFromWebDav(buildCurrentWebDavConfig());
+                },
+                copy.syncDownloadSuccess,
+              )
+            }
+            className="kb-secondary-button rounded-lg border border-win-border px-3 py-2 text-sm transition-colors"
+          >
+            <span className="inline-flex items-center gap-2">
+              <CloudDownload className="h-4 w-4" />
+              {copy.downloadNow}
+            </span>
+          </button>
+        </div>
+
+        <div className="mt-4 text-xs text-win-text-secondary">
+          {copy.lastSyncedLabel}: {webdavLastSyncedAt ?? copy.notSyncedYet}
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-win-border bg-win-card p-5 shadow-sm">
+        <div className="mb-4 text-sm font-medium text-win-text">{copy.localTitle}</div>
+        <div className="flex flex-col rounded-lg border border-win-border bg-win-card shadow-sm">
+          <ActionRow
+            icon={<Download className="h-5 w-5 text-win-text-secondary" />}
+            title={copy.exportTitle}
+            onClick={handleExport}
+            roundedClassName="rounded-t-lg"
+          />
+          <div className="mx-4 h-px bg-win-border" />
+          <ActionRow
+            icon={<Upload className="h-5 w-5 text-win-text-secondary" />}
+            title={copy.importTitle}
+            onClick={() => fileInputRef.current?.click()}
+            roundedClassName="rounded-b-lg"
+          />
+        </div>
       </div>
 
       <input
@@ -670,12 +854,10 @@ function GeneralPanel() {
   );
 }
 
-function PlaceholderPanel({ message }: { message: string }) {
+function PlaceholderPanel() {
   return (
     <div className="flex flex-col gap-6">
-      <div className="rounded-lg border border-win-border bg-win-card p-6 shadow-sm">
-        <p className="text-sm text-win-text-secondary">{message}</p>
-      </div>
+      <div className="min-h-[140px] rounded-lg border border-win-border bg-win-card shadow-sm" />
     </div>
   );
 }
@@ -691,24 +873,24 @@ function SettingsContent({ activeTab }: { activeTab: SettingsTab }) {
     return <ThemePanel />;
   }
 
-  if (activeTab === 'sync') {
-    return <PlaceholderPanel message={t('settings.sync.placeholder')} />;
+  if (activeTab === 'data') {
+    return <DataPanel />;
   }
 
-  return <PlaceholderPanel message={t('settings.about.placeholder')} />;
+  return <PlaceholderPanel />;
 }
 
 export default function SettingsPanel() {
   const isOpen = useSettingsPanelStore((state) => state.isOpen);
   const close = useSettingsPanelStore((state) => state.close);
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
 
-  const tabs: Array<{ id: SettingsTab; label: string; icon: typeof Settings }> = [
-    { id: 'general', label: t('settings.general'), icon: Settings },
-    { id: 'theme', label: t('settings.theme'), icon: Palette },
-    { id: 'sync', label: t('settings.sync'), icon: RefreshCw },
-    { id: 'about', label: t('settings.about'), icon: Info },
+  const tabs = [
+    { id: 'general' as const, label: t('settings.general'), icon: Settings },
+    { id: 'theme' as const, label: t('settings.theme'), icon: Palette },
+    { id: 'data' as const, label: locale === 'zh' ? '\u6570\u636e' : 'Data', icon: Database },
+    { id: 'about' as const, label: t('settings.about'), icon: Info },
   ];
 
   useEffect(() => {
@@ -736,7 +918,7 @@ export default function SettingsPanel() {
 
   return (
     <AnimatePresence>
-      {isOpen && (
+      {isOpen ? (
         <>
           <motion.div
             initial={{ opacity: 0 }}
@@ -775,12 +957,12 @@ export default function SettingsPanel() {
                           isActive ? 'bg-win-active' : 'hover:bg-win-hover',
                         )}
                       >
-                        {isActive && (
+                        {isActive ? (
                           <motion.div
                             layoutId="settings-active-tab"
                             className="absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full bg-win-accent"
                           />
-                        )}
+                        ) : null}
                         <Icon
                           className={cn(
                             'h-4 w-4',
@@ -820,7 +1002,7 @@ export default function SettingsPanel() {
             </div>
           </motion.div>
         </>
-      )}
+      ) : null}
     </AnimatePresence>
   );
 }
