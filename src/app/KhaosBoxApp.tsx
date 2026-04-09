@@ -1,16 +1,32 @@
 import { useEffect } from 'react';
-import { resolveAppTheme } from '../domains/preferences/model/preferences';
+import {
+  getMicaColor,
+  resolveAccentColor,
+  resolveAppTheme,
+} from '../domains/preferences/model/preferences';
 import { runtimeDocumentPort } from './ports/defaultPorts';
 import { usePreferencesStore } from './stores/usePreferencesStore';
 import WorkspaceDesktop from '../features/workspace-desktop';
 
 export default function KhaosBoxApp() {
   const theme = usePreferencesStore((state) => state.theme);
+  const accentMode = usePreferencesStore((state) => state.accentMode);
+  const accentColor = usePreferencesStore((state) => state.accentColor);
+  const transparencyEnabled = usePreferencesStore((state) => state.transparencyEnabled);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const applyTheme = () => {
-      runtimeDocumentPort.setTheme(resolveAppTheme(theme, mediaQuery.matches));
+      const resolvedTheme = resolveAppTheme(theme, mediaQuery.matches);
+      runtimeDocumentPort.setTheme(resolvedTheme);
+      document.documentElement.style.setProperty(
+        '--color-win-accent',
+        resolveAccentColor(resolvedTheme, accentMode, accentColor),
+      );
+      document.documentElement.style.setProperty(
+        '--color-win-mica',
+        getMicaColor(resolvedTheme, transparencyEnabled),
+      );
     };
 
     applyTheme();
@@ -21,7 +37,7 @@ export default function KhaosBoxApp() {
 
     mediaQuery.addEventListener('change', applyTheme);
     return () => mediaQuery.removeEventListener('change', applyTheme);
-  }, [theme]);
+  }, [accentColor, accentMode, theme, transparencyEnabled]);
 
   return <WorkspaceDesktop />;
 }
