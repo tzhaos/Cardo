@@ -1,5 +1,7 @@
 import {
   ACCENT_MODES,
+  APP_FONT_FAMILIES,
+  APP_FONT_SIZES,
   APP_LOCALES,
   APP_THEMES,
   DEFAULT_PREFERENCES,
@@ -28,7 +30,14 @@ interface WorkspaceSyncDocumentV1 {
   workspace: ReturnType<typeof createWorkspaceExportDocument>;
   preferences: Pick<
     PreferencesState,
-    'theme' | 'locale' | 'accentMode' | 'accentColor' | 'recentAccentColors' | 'transparencyEnabled'
+    | 'theme'
+    | 'locale'
+    | 'fontFamily'
+    | 'fontSize'
+    | 'accentMode'
+    | 'accentColor'
+    | 'recentAccentColors'
+    | 'transparencyEnabled'
   >;
 }
 
@@ -88,7 +97,10 @@ function buildRemoteDirectoryUrls(config: WebDavSyncConfig) {
     .slice(0, -1);
 
   return segments.map((_, index) => {
-    const partialPath = segments.slice(0, index + 1).map((segment) => encodeURIComponent(segment)).join('/');
+    const partialPath = segments
+      .slice(0, index + 1)
+      .map((segment) => encodeURIComponent(segment))
+      .join('/');
     return `${endpoint}/${partialPath}`;
   });
 }
@@ -176,6 +188,8 @@ function createSyncDocument(): WorkspaceSyncDocumentV1 {
   const {
     theme,
     locale,
+    fontFamily,
+    fontSize,
     accentMode,
     accentColor,
     recentAccentColors,
@@ -189,6 +203,8 @@ function createSyncDocument(): WorkspaceSyncDocumentV1 {
     preferences: {
       theme,
       locale,
+      fontFamily,
+      fontSize,
       accentMode,
       accentColor,
       recentAccentColors,
@@ -205,16 +221,32 @@ function sanitizeSyncedPreferences(
   input: unknown,
 ): Pick<
   PreferencesState,
-  'theme' | 'locale' | 'accentMode' | 'accentColor' | 'recentAccentColors' | 'transparencyEnabled'
+  | 'theme'
+  | 'locale'
+  | 'fontFamily'
+  | 'fontSize'
+  | 'accentMode'
+  | 'accentColor'
+  | 'recentAccentColors'
+  | 'transparencyEnabled'
 > {
   const record = isRecord(input) ? input : {};
-  const theme = typeof record.theme === 'string' && APP_THEMES.includes(record.theme as never)
-    ? (record.theme as PreferencesState['theme'])
-    : DEFAULT_PREFERENCES.theme;
+  const theme =
+    typeof record.theme === 'string' && APP_THEMES.includes(record.theme as never)
+      ? (record.theme as PreferencesState['theme'])
+      : DEFAULT_PREFERENCES.theme;
   const locale =
     typeof record.locale === 'string' && APP_LOCALES.includes(record.locale as never)
       ? (record.locale as PreferencesState['locale'])
       : DEFAULT_PREFERENCES.locale;
+  const fontFamily =
+    typeof record.fontFamily === 'string' && APP_FONT_FAMILIES.includes(record.fontFamily as never)
+      ? (record.fontFamily as PreferencesState['fontFamily'])
+      : DEFAULT_PREFERENCES.fontFamily;
+  const fontSize =
+    typeof record.fontSize === 'string' && APP_FONT_SIZES.includes(record.fontSize as never)
+      ? (record.fontSize as PreferencesState['fontSize'])
+      : DEFAULT_PREFERENCES.fontSize;
   const accentMode =
     typeof record.accentMode === 'string' && ACCENT_MODES.includes(record.accentMode as never)
       ? (record.accentMode as PreferencesState['accentMode'])
@@ -236,6 +268,8 @@ function sanitizeSyncedPreferences(
   return {
     theme,
     locale,
+    fontFamily,
+    fontSize,
     accentMode,
     accentColor,
     recentAccentColors: pushRecentAccentColor(recentAccentColors, accentColor),
@@ -288,7 +322,9 @@ export async function testWebDavConnection(config: WebDavSyncConfig) {
 
   if (!response.ok) {
     if (response.status === 401 || response.status === 403) {
-      throw new Error('WebDAV authentication failed. For Nutstore, use the third-party app password instead of your login password.');
+      throw new Error(
+        'WebDAV authentication failed. For Nutstore, use the third-party app password instead of your login password.',
+      );
     }
 
     throw new Error(`WebDAV connection failed (${response.status})`);
@@ -383,12 +419,8 @@ export async function downloadWorkspaceFromWebDav(config: WebDavSyncConfig) {
 }
 
 export function buildCurrentWebDavConfig(): WebDavSyncConfig {
-  const {
-    webdavEndpoint,
-    webdavUsername,
-    webdavPassword,
-    webdavRemoteFilePath,
-  } = usePreferencesStore.getState();
+  const { webdavEndpoint, webdavUsername, webdavPassword, webdavRemoteFilePath } =
+    usePreferencesStore.getState();
 
   return {
     endpoint: webdavEndpoint,

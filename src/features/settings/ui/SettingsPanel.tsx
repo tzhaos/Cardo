@@ -13,6 +13,7 @@ import {
   Palette,
   Settings,
   Sparkles,
+  Type,
   Upload,
   Wand2,
   X,
@@ -22,7 +23,6 @@ import { toast } from 'sonner';
 import { useI18n } from '../../../app/hooks/useI18n';
 import { usePreferencesStore } from '../../../app/stores/usePreferencesStore';
 import { useSettingsPanelStore } from '../../../app/stores/useSettingsPanelStore';
-import { useWorkspaceSnapshot } from '../../../app/stores/useWorkspaceSelectors';
 import { exportWorkspace } from '../../../app/use-cases/exportWorkspace';
 import { importWorkspace } from '../../../app/use-cases/importWorkspace';
 import {
@@ -33,14 +33,17 @@ import {
   uploadWorkspaceToWebDav,
 } from '../../../app/use-cases/syncWorkspaceWebDav';
 import {
+  APP_FONT_SIZES,
   DEFAULT_DARK_ACCENT_COLOR,
   DEFAULT_LIGHT_ACCENT_COLOR,
   type AccentMode,
+  type AppFontFamily,
+  type AppFontSize,
   type AppTheme,
   type ResolvedAppTheme,
   resolveAppTheme,
 } from '../../../domains/preferences/model/preferences';
-import { MAX_WORKSPACE_BOXES, WORKSPACE_SCHEMA_VERSION } from '../../../domains/workspace/model/workspace';
+import { WORKSPACE_SCHEMA_VERSION } from '../../../domains/workspace/model/workspace';
 import { cn } from '../../../lib/utils';
 
 type SettingsTab = 'general' | 'theme' | 'data' | 'about';
@@ -76,8 +79,9 @@ const ACCENT_SWATCHES = [
 ];
 
 function useResolvedTheme(theme: AppTheme) {
-  const [prefersDark, setPrefersDark] = useState(() =>
-    typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches,
+  const [prefersDark, setPrefersDark] = useState(
+    () =>
+      typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches,
   );
 
   useEffect(() => {
@@ -198,7 +202,9 @@ function SegmentedControl<Value extends string>({
             onClick={() => onChange(option.value)}
             className={cn(
               'rounded-md px-3 py-1.5 text-sm transition-colors',
-              isActive ? 'bg-win-active text-win-text' : 'text-win-text-secondary hover:bg-win-hover',
+              isActive
+                ? 'bg-win-active text-win-text'
+                : 'text-win-text-secondary hover:bg-win-hover',
             )}
           >
             {option.label}
@@ -281,24 +287,6 @@ function ActionRow({
       </div>
       <ChevronRight className="h-5 w-5 text-win-text-secondary" />
     </button>
-  );
-}
-
-function StatCard({
-  icon,
-  label,
-  value,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-lg border border-win-border bg-win-card p-4 shadow-sm">
-      <div className="mb-3 flex items-center gap-2 text-win-text-secondary">{icon}</div>
-      <div className="text-xs uppercase tracking-[0.18em] text-win-text-secondary">{label}</div>
-      <div className="mt-2 text-2xl font-semibold text-win-text">{value}</div>
-    </div>
   );
 }
 
@@ -469,16 +457,17 @@ function ThemePanel() {
   return (
     <div className="flex flex-col gap-4">
       <div className="px-1 text-sm font-semibold text-win-text">{copy.previewTitle}</div>
-      <ThemePreviewCard
-        resolvedTheme={resolvedTheme}
-        transparencyEnabled={transparencyEnabled}
-      />
+      <ThemePreviewCard resolvedTheme={resolvedTheme} transparencyEnabled={transparencyEnabled} />
 
       <SettingRow
         icon={<Palette className="h-5 w-5 text-win-text-secondary" />}
         title={copy.modeTitle}
         action={
-          <SegmentedControl<AppTheme> value={theme} options={copy.modeOptions} onChange={setTheme} />
+          <SegmentedControl<AppTheme>
+            value={theme}
+            options={copy.modeOptions}
+            onChange={setTheme}
+          />
         }
       />
 
@@ -534,22 +523,44 @@ function ThemePanel() {
 
 function GeneralPanel() {
   const { locale, setLocale } = useI18n();
+  const fontFamily = usePreferencesStore((state) => state.fontFamily);
+  const setFontFamily = usePreferencesStore((state) => state.setFontFamily);
+  const fontSize = usePreferencesStore((state) => state.fontSize);
+  const setFontSize = usePreferencesStore((state) => state.setFontSize);
   const copy =
     locale === 'zh'
       ? {
           languageTitle: '\u8bed\u8a00',
+          fontTitle: '\u5b57\u4f53',
+          fontSizeTitle: '\u5b57\u53f7',
           languageOptions: [
             { label: 'English', value: 'en' },
             { label: '\u4e2d\u6587', value: 'zh' },
           ] as const satisfies SelectOption<LocaleValue>[],
+          fontOptions: [
+            { label: '\u9ed8\u8ba4', value: 'system' },
+            { label: 'Segoe UI', value: 'segoe' },
+            { label: 'Noto Sans SC', value: 'noto' },
+          ] as const satisfies SelectOption<AppFontFamily>[],
         }
       : {
           languageTitle: 'Language',
+          fontTitle: 'Font',
+          fontSizeTitle: 'Size',
           languageOptions: [
             { label: 'English', value: 'en' },
             { label: 'Chinese', value: 'zh' },
           ] as const satisfies SelectOption<LocaleValue>[],
+          fontOptions: [
+            { label: 'Default', value: 'system' },
+            { label: 'Segoe UI', value: 'segoe' },
+            { label: 'Noto Sans SC', value: 'noto' },
+          ] as const satisfies SelectOption<AppFontFamily>[],
         };
+  const fontSizeOptions = APP_FONT_SIZES.map((value) => ({
+    label: `${value}px`,
+    value,
+  })) as SelectOption<AppFontSize>[];
 
   return (
     <div className="flex flex-col gap-2">
@@ -564,22 +575,37 @@ function GeneralPanel() {
           />
         }
       />
+      <SettingRow
+        icon={<Type className="h-5 w-5 text-win-text-secondary" />}
+        title={copy.fontTitle}
+        action={
+          <WinSelect<AppFontFamily>
+            value={fontFamily}
+            options={copy.fontOptions}
+            onChange={setFontFamily}
+          />
+        }
+      />
+      <SettingRow
+        icon={<Type className="h-5 w-5 text-win-text-secondary" />}
+        title={copy.fontSizeTitle}
+        action={
+          <WinSelect<AppFontSize>
+            value={fontSize}
+            options={fontSizeOptions}
+            onChange={setFontSize}
+          />
+        }
+      />
     </div>
   );
 }
 
 function DataPanel() {
   const { t, locale } = useI18n();
-  const snapshot = useWorkspaceSnapshot();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [syncAction, setSyncAction] = useState<'idle' | 'testing' | 'uploading' | 'downloading'>(
     'idle',
-  );
-  const boxes = snapshot.boxOrder.map((boxId) => snapshot.boxesById[boxId]).filter(Boolean);
-  const totalItems = boxes.reduce((count, box) => count + box.items.length, 0);
-  const pinnedItems = boxes.reduce(
-    (count, box) => count + box.items.filter((item) => item.isPinned).length,
-    0,
   );
 
   const webdavEndpoint = usePreferencesStore((state) => state.webdavEndpoint);
@@ -616,10 +642,6 @@ function DataPanel() {
           notSyncedYet: '\u5c1a\u672a\u540c\u6b65',
           exportTitle: '\u5bfc\u51fa\u5de5\u4f5c\u533a',
           importTitle: '\u5bfc\u5165\u5de5\u4f5c\u533a',
-          boxesLabel: '\u76d2\u5b50',
-          itemsLabel: '\u9879\u76ee',
-          pinnedLabel: '\u7f6e\u9876',
-          schemaLabel: '\u67b6\u6784',
         }
       : {
           localTitle: 'Local data',
@@ -643,10 +665,6 @@ function DataPanel() {
           notSyncedYet: 'Not synced yet',
           exportTitle: 'Export workspace',
           importTitle: 'Import workspace',
-          boxesLabel: 'Boxes',
-          itemsLabel: 'Items',
-          pinnedLabel: 'Pinned',
-          schemaLabel: 'Schema',
         };
 
   const handleExport = () => {
@@ -703,17 +721,6 @@ function DataPanel() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-3">
-        <StatCard icon={<Database className="h-4 w-4" />} label={copy.boxesLabel} value={String(boxes.length)} />
-        <StatCard icon={<Cloud className="h-4 w-4" />} label={copy.itemsLabel} value={String(totalItems)} />
-        <StatCard icon={<Check className="h-4 w-4" />} label={copy.pinnedLabel} value={String(pinnedItems)} />
-        <StatCard
-          icon={<Info className="h-4 w-4" />}
-          label={copy.schemaLabel}
-          value={`v${WORKSPACE_SCHEMA_VERSION}/${MAX_WORKSPACE_BOXES}`}
-        />
-      </div>
-
       <div className="rounded-lg border border-win-border bg-win-card p-5 shadow-sm">
         <div className="mb-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -862,9 +869,86 @@ function PlaceholderPanel() {
   );
 }
 
-function SettingsContent({ activeTab }: { activeTab: SettingsTab }) {
-  const { t } = useI18n();
+function AboutStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-win-border bg-win-bg-secondary px-4 py-3">
+      <div className="text-xs uppercase tracking-[0.14em] text-win-text-secondary">{label}</div>
+      <div className="mt-2 text-lg font-semibold text-win-text">{value}</div>
+    </div>
+  );
+}
 
+function AboutPanel() {
+  const { locale, t } = useI18n();
+  const currentTheme = usePreferencesStore((state) => state.theme);
+  const currentFontFamily = usePreferencesStore((state) => state.fontFamily);
+  const currentFontSize = usePreferencesStore((state) => state.fontSize);
+
+  const copy =
+    locale === 'zh'
+      ? {
+          versionLabel: '\u7248\u672c',
+          licenseLabel: '\u8bb8\u53ef',
+          schemaLabel: '\u67b6\u6784',
+          fontLabel: '\u5b57\u4f53',
+          sizeLabel: '\u5b57\u53f7',
+          themeLabel: '\u4e3b\u9898',
+          themeValues: {
+            system: '\u8ddf\u968f\u7cfb\u7edf',
+            dark: '\u6df1\u8272',
+            light: '\u6d45\u8272',
+          } as const,
+          fontValues: {
+            system: '\u9ed8\u8ba4',
+            segoe: 'Segoe UI',
+            noto: 'Noto Sans SC',
+          } as const,
+        }
+      : {
+          versionLabel: 'Version',
+          licenseLabel: 'License',
+          schemaLabel: 'Schema',
+          fontLabel: 'Font',
+          sizeLabel: 'Size',
+          themeLabel: 'Theme',
+          themeValues: {
+            system: 'System',
+            dark: 'Dark',
+            light: 'Light',
+          } as const,
+          fontValues: {
+            system: 'Default',
+            segoe: 'Segoe UI',
+            noto: 'Noto Sans SC',
+          } as const,
+        };
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="rounded-2xl border border-win-border bg-win-card p-6 shadow-sm">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <div className="text-2xl font-semibold text-win-text">{t('app.brand')}</div>
+          </div>
+          <div className="rounded-full border border-win-border bg-win-bg-secondary px-3 py-1 text-sm font-medium text-win-text">
+            v{__APP_VERSION__}
+          </div>
+        </div>
+
+        <div className="mt-5 grid grid-cols-2 gap-3">
+          <AboutStat label={copy.versionLabel} value={`v${__APP_VERSION__}`} />
+          <AboutStat label={copy.licenseLabel} value={__APP_LICENSE__} />
+          <AboutStat label={copy.schemaLabel} value={`v${WORKSPACE_SCHEMA_VERSION}`} />
+          <AboutStat label={copy.themeLabel} value={copy.themeValues[currentTheme]} />
+          <AboutStat label={copy.fontLabel} value={copy.fontValues[currentFontFamily]} />
+          <AboutStat label={copy.sizeLabel} value={`${currentFontSize}px`} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SettingsContent({ activeTab }: { activeTab: SettingsTab }) {
   if (activeTab === 'general') {
     return <GeneralPanel />;
   }
@@ -875,6 +959,10 @@ function SettingsContent({ activeTab }: { activeTab: SettingsTab }) {
 
   if (activeTab === 'data') {
     return <DataPanel />;
+  }
+
+  if (activeTab === 'about') {
+    return <AboutPanel />;
   }
 
   return <PlaceholderPanel />;
@@ -939,7 +1027,9 @@ export default function SettingsPanel() {
             <div className="win-mica flex h-full w-full overflow-hidden rounded-xl">
               <div className="relative flex w-72 flex-col px-3 pb-4 pt-10">
                 <div className="mb-6 px-3">
-                  <h2 className="mb-1 text-2xl font-semibold text-win-text">{t('settings.title')}</h2>
+                  <h2 className="mb-1 text-2xl font-semibold text-win-text">
+                    {t('settings.title')}
+                  </h2>
                 </div>
 
                 <div className="flex flex-col gap-1">

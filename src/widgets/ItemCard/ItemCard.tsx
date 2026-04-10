@@ -141,7 +141,7 @@ export default function ItemCard({
                   onPaste={stopInteraction}
                   onDragStart={stopInteraction}
                   onDrop={stopInteraction}
-                  className={cn(textInputClassName, 'h-9 font-mono text-[12px]')}
+                  className={cn(textInputClassName, 'h-9 text-[12px]')}
                   placeholder={contentLabel}
                   aria-label={contentLabel}
                 />

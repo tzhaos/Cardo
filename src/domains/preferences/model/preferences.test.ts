@@ -5,8 +5,12 @@ import {
   getAlternateLocale,
   detectPreferredLocale,
   DEFAULT_APP_THEME,
+  DEFAULT_FONT_FAMILY,
+  DEFAULT_FONT_SIZE,
   DEFAULT_LOCALE,
   DEFAULT_PREFERENCES,
+  resolveFontFamily,
+  resolveFontSize,
 } from './preferences';
 
 test('getAlternateAppTheme toggles between dark and light', () => {
@@ -42,4 +46,17 @@ test('detectPreferredLocale returns default for null or empty input', () => {
 test('DEFAULT_PREFERENCES uses expected defaults', () => {
   assert.equal(DEFAULT_PREFERENCES.theme, DEFAULT_APP_THEME);
   assert.equal(DEFAULT_PREFERENCES.locale, DEFAULT_LOCALE);
+  assert.equal(DEFAULT_PREFERENCES.fontFamily, DEFAULT_FONT_FAMILY);
+  assert.equal(DEFAULT_PREFERENCES.fontSize, DEFAULT_FONT_SIZE);
+});
+
+test('resolveFontFamily returns configured stacks', () => {
+  assert.match(resolveFontFamily('system'), /font-sans/);
+  assert.match(resolveFontFamily('segoe'), /Segoe UI/);
+  assert.match(resolveFontFamily('noto'), /Noto Sans SC/);
+});
+
+test('resolveFontSize returns px values', () => {
+  assert.equal(resolveFontSize('13'), '13px');
+  assert.equal(resolveFontSize('16'), '16px');
 });

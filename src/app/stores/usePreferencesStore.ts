@@ -8,6 +8,8 @@ import {
   getAlternateLocale,
   pushRecentAccentColor,
   type AccentMode,
+  type AppFontFamily,
+  type AppFontSize,
   type AppLocale,
   type AppTheme,
 } from '../../domains/preferences/model/preferences';
@@ -18,6 +20,8 @@ import { workspaceStoragePort } from '../ports/defaultPorts';
 interface PreferencesStoreState {
   theme: AppTheme;
   locale: AppLocale;
+  fontFamily: AppFontFamily;
+  fontSize: AppFontSize;
   accentMode: AccentMode;
   accentColor: string;
   recentAccentColors: string[];
@@ -31,6 +35,8 @@ interface PreferencesStoreState {
   setTheme: (theme: AppTheme) => void;
   toggleLocale: () => void;
   setLocale: (locale: AppLocale) => void;
+  setFontFamily: (fontFamily: AppFontFamily) => void;
+  setFontSize: (fontSize: AppFontSize) => void;
   setAccentMode: (accentMode: AccentMode) => void;
   setAccentColor: (accentColor: string) => void;
   setTransparencyEnabled: (transparencyEnabled: boolean) => void;
@@ -45,6 +51,8 @@ interface PreferencesStoreState {
         PreferencesStoreState,
         | 'theme'
         | 'locale'
+        | 'fontFamily'
+        | 'fontSize'
         | 'accentMode'
         | 'accentColor'
         | 'recentAccentColors'
@@ -64,6 +72,8 @@ export function createPreferencesStore(storage: WorkspaceStoragePort) {
         setTheme: (theme) => set({ theme }),
         toggleLocale: () => set({ locale: getAlternateLocale(get().locale) }),
         setLocale: (locale) => set({ locale }),
+        setFontFamily: (fontFamily) => set({ fontFamily }),
+        setFontSize: (fontSize) => set({ fontSize }),
         setAccentMode: (accentMode) => set({ accentMode }),
         setAccentColor: (accentColor) =>
           set((state) => ({
@@ -80,6 +90,8 @@ export function createPreferencesStore(storage: WorkspaceStoragePort) {
           set((state) => ({
             theme: input.theme ?? state.theme,
             locale: input.locale ?? state.locale,
+            fontFamily: input.fontFamily ?? state.fontFamily,
+            fontSize: input.fontSize ?? state.fontSize,
             accentMode: input.accentMode ?? state.accentMode,
             accentColor: input.accentColor ?? state.accentColor,
             recentAccentColors: input.recentAccentColors ?? state.recentAccentColors,
@@ -88,7 +100,7 @@ export function createPreferencesStore(storage: WorkspaceStoragePort) {
       }),
       {
         name: 'khaosbox-preferences',
-        version: 3,
+        version: 4,
         migrate: (persistedState) => {
           const migratedState = {
             ...DEFAULT_PREFERENCES,
@@ -108,6 +120,8 @@ export function createPreferencesStore(storage: WorkspaceStoragePort) {
         partialize: ({
           theme,
           locale,
+          fontFamily,
+          fontSize,
           accentMode,
           accentColor,
           recentAccentColors,
@@ -120,6 +134,8 @@ export function createPreferencesStore(storage: WorkspaceStoragePort) {
         }) => ({
           theme,
           locale,
+          fontFamily,
+          fontSize,
           accentMode,
           accentColor,
           recentAccentColors,

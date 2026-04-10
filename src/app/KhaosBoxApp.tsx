@@ -3,6 +3,8 @@ import {
   getMicaColor,
   resolveAccentColor,
   resolveAppTheme,
+  resolveFontFamily,
+  resolveFontSize,
 } from '../domains/preferences/model/preferences';
 import { runtimeDocumentPort } from './ports/defaultPorts';
 import { usePreferencesStore } from './stores/usePreferencesStore';
@@ -10,6 +12,8 @@ import WorkspaceDesktop from '../features/workspace-desktop';
 
 export default function KhaosBoxApp() {
   const theme = usePreferencesStore((state) => state.theme);
+  const fontFamily = usePreferencesStore((state) => state.fontFamily);
+  const fontSize = usePreferencesStore((state) => state.fontSize);
   const accentMode = usePreferencesStore((state) => state.accentMode);
   const accentColor = usePreferencesStore((state) => state.accentColor);
   const transparencyEnabled = usePreferencesStore((state) => state.transparencyEnabled);
@@ -27,6 +31,8 @@ export default function KhaosBoxApp() {
         '--color-win-mica',
         getMicaColor(resolvedTheme, transparencyEnabled),
       );
+      document.documentElement.style.setProperty('--kb-font-family', resolveFontFamily(fontFamily));
+      document.documentElement.style.setProperty('--kb-font-size', resolveFontSize(fontSize));
     };
 
     applyTheme();
@@ -37,7 +43,7 @@ export default function KhaosBoxApp() {
 
     mediaQuery.addEventListener('change', applyTheme);
     return () => mediaQuery.removeEventListener('change', applyTheme);
-  }, [accentColor, accentMode, theme, transparencyEnabled]);
+  }, [accentColor, accentMode, fontFamily, fontSize, theme, transparencyEnabled]);
 
   return <WorkspaceDesktop />;
 }

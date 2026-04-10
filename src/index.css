@@ -3,8 +3,8 @@
 
 @theme {
   --font-sans:
-    'Segoe UI Variable', 'Segoe UI', 'Segoe UI Web Regular', 'Segoe UI Symbol',
-    'Helvetica Neue', 'Noto Sans SC', 'Microsoft YaHei UI', Arial, sans-serif;
+    'Segoe UI Variable', 'Segoe UI', 'Segoe UI Web Regular', 'Segoe UI Symbol', 'Helvetica Neue',
+    'Noto Sans SC', 'Microsoft YaHei UI', Arial, sans-serif;
 
   --color-win-bg: #f3f3f3;
   --color-win-bg-secondary: #fafafa;
@@ -26,9 +26,9 @@
 
   --shadow-win-card: 0 2px 4px rgba(0, 0, 0, 0.04), 0 0 2px rgba(0, 0, 0, 0.06);
   --shadow-win-flyout: 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12);
-  --shadow-win-button:
-    0 1px 2px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  --shadow-win-button: 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  --kb-font-family: var(--font-sans);
+  --kb-font-size: 14px;
 }
 
 :root,
@@ -63,9 +63,7 @@
 
   --shadow-win-card: 0 4px 8px rgba(0, 0, 0, 0.2), 0 0 2px rgba(0, 0, 0, 0.3);
   --shadow-win-flyout: 0 12px 24px rgba(0, 0, 0, 0.4), 0 0 2px rgba(0, 0, 0, 0.4);
-  --shadow-win-button:
-    0 1px 2px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --shadow-win-button: 0 1px 2px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 
   --role-folder-fg: #ffd764;
   --role-link-fg: #6ee7ff;
@@ -104,9 +102,7 @@
 
   --shadow-win-card: 0 2px 4px rgba(0, 0, 0, 0.04), 0 0 2px rgba(0, 0, 0, 0.06);
   --shadow-win-flyout: 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12);
-  --shadow-win-button:
-    0 1px 2px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  --shadow-win-button: 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.5);
 
   --role-folder-fg: #e8b024;
   --role-link-fg: #0284c7;
@@ -121,14 +117,15 @@ body,
 }
 
 html {
-  font-family: var(--font-sans);
+  font-family: var(--kb-font-family);
+  font-size: var(--kb-font-size);
 }
 
 body {
   margin: 0;
   background: var(--app-bg);
   color: var(--color-win-text);
-  font-family: var(--font-sans);
+  font-family: var(--kb-font-family);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;

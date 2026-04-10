@@ -9,6 +9,12 @@ import {
 } from './src/domains/i18n/model/messages';
 
 const EXTENSION_OUT_DIR = path.resolve(__dirname, 'artifacts/extension/unpacked');
+const PACKAGE_JSON = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, 'package.json'), 'utf8'),
+) as {
+  version?: string;
+  license?: string;
+};
 
 function relocateBuiltNewtab(outDir: string) {
   const builtNewtabSource = path.join(outDir, 'assets/extension-shell/pages/newtab.html');
@@ -67,6 +73,10 @@ function copyExtensionAssets() {
 
 export default defineConfig(() => {
   return {
+    define: {
+      __APP_VERSION__: JSON.stringify(PACKAGE_JSON.version ?? '0.0.0'),
+      __APP_LICENSE__: JSON.stringify(PACKAGE_JSON.license ?? 'MIT'),
+    },
     plugins: [react(), tailwindcss(), copyExtensionAssets()],
     build: {
       outDir: EXTENSION_OUT_DIR,
