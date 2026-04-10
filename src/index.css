@@ -318,30 +318,6 @@ select {
     background: var(--color-win-border);
   }
 
-  .kb-item-editor {
-    border-color: var(--color-win-border);
-    background: var(--color-win-mica);
-    box-shadow: var(--shadow-win-flyout);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-  }
-
-  .kb-item-input {
-    border-color: var(--color-win-border-strong);
-    background: var(--color-win-bg-secondary);
-    color: var(--color-win-text);
-  }
-
-  .kb-item-input::placeholder {
-    color: var(--color-win-text-secondary);
-  }
-
-  .kb-item-input:focus {
-    outline: none;
-    border-color: var(--color-win-accent);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-win-accent) 18%, transparent);
-  }
-
   .kb-item-card-grid:hover {
     border-color: var(--color-win-border-strong);
     background: var(--color-win-hover);
@@ -382,6 +358,15 @@ select {
   .win-acrylic {
     background-color: var(--color-win-card);
     @apply border border-win-border backdrop-blur-3xl transition-colors duration-300;
+  }
+
+  .kb-scroll-hidden {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .kb-scroll-hidden::-webkit-scrollbar {
+    display: none;
   }
 
   .custom-scrollbar::-webkit-scrollbar {

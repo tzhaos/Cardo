@@ -1,3 +1,4 @@
+import { AnimatePresence } from 'motion/react';
 import { Toaster } from 'sonner';
 import { useI18n } from '../../../app/hooks/useI18n';
 import { useInteractionStore } from '../../../app/stores/useInteractionStore';
@@ -28,9 +29,11 @@ export default function WorkspaceDesktop() {
       <Toaster theme={theme} position="bottom-right" />
       <SnapOverlay />
 
-      {visibleBoxes.map((box) => (
-        <ManagedBox key={box.id} boxId={box.id} />
-      ))}
+      <AnimatePresence initial={false}>
+        {visibleBoxes.map((box) => (
+          <ManagedBox key={box.id} boxId={box.id} />
+        ))}
+      </AnimatePresence>
 
       <TrayDock />
       <SettingsPanel />

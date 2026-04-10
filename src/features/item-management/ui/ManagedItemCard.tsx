@@ -1,5 +1,4 @@
 import {
-  Check,
   ClipboardPaste,
   File,
   Folder,
@@ -192,13 +191,21 @@ export default function ManagedItemCard({
     editContent,
     editorRootRef,
     titleInputRef,
+    editorLabel:
+      item.type === 'folder'
+        ? t('item.folderEditor')
+        : item.type === 'file'
+          ? t('item.fileEditor')
+          : item.type === 'url'
+            ? t('item.linkEditor')
+            : t('item.noteEditor'),
     contentLabel:
-      item.type === 'note'
-        ? t('item.content')
-        : item.type === 'url'
-          ? t('item.address')
-          : t('item.path'),
-    titlePlaceholder: t('item.title'),
+      item.type === 'url'
+        ? t('addItem.urlPlaceholder')
+        : item.type === 'file' || item.type === 'folder'
+          ? t('addItem.pathPlaceholder')
+          : t('addItem.contentPlaceholder'),
+    titlePlaceholder: t('addItem.titleOptional'),
     saveLabel: t('item.saveChanges'),
     cancelLabel: t('item.cancelEditing'),
     pinLabel: t('item.pin'),
@@ -206,8 +213,6 @@ export default function ManagedItemCard({
     unpinLabel: t('item.unpin'),
     editLabel: t('item.edit'),
     deleteLabel: t('item.delete'),
-    saveIcon: <Check size={18} />,
-    cancelIcon: <X size={18} />,
     editIcon: <Pencil size={layout === 'grid' ? 12 : 14} />,
     pinIcon: <Pin size={layout === 'grid' ? 12 : 14} />,
     unpinIcon: <PinOff size={layout === 'grid' ? 12 : 14} />,

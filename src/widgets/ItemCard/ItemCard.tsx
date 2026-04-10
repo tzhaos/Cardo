@@ -1,3 +1,4 @@
+import { X } from 'lucide-react';
 import type { KeyboardEvent, ReactNode, RefObject, SyntheticEvent } from 'react';
 import { cn } from '../../lib/utils';
 import type { WorkspaceItem } from '../../domains/items/model/item';
@@ -12,6 +13,7 @@ export interface ItemCardProps {
   editContent: string;
   editorRootRef?: RefObject<HTMLDivElement | null>;
   titleInputRef: RefObject<HTMLInputElement | null>;
+  editorLabel: string;
   contentLabel: string;
   titlePlaceholder: string;
   saveLabel: string;
@@ -21,8 +23,6 @@ export interface ItemCardProps {
   unpinLabel: string;
   editLabel: string;
   deleteLabel: string;
-  saveIcon: ReactNode;
-  cancelIcon: ReactNode;
   editIcon: ReactNode;
   pinIcon: ReactNode;
   unpinIcon: ReactNode;
@@ -59,6 +59,7 @@ export default function ItemCard({
   editContent,
   editorRootRef,
   titleInputRef,
+  editorLabel,
   contentLabel,
   titlePlaceholder,
   saveLabel,
@@ -68,8 +69,6 @@ export default function ItemCard({
   unpinLabel,
   editLabel,
   deleteLabel,
-  saveIcon,
-  cancelIcon,
   editIcon,
   pinIcon,
   unpinIcon,
@@ -85,8 +84,7 @@ export default function ItemCard({
   onDeleteClick,
 }: ItemCardProps) {
   const usesSingleLineContentEditor = item.type !== 'note';
-  const textInputClassName =
-    'kb-item-input w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition-colors';
+  const textInputClassName = 'kb-add-input w-full rounded-xl px-3 py-2 text-xs outline-none';
   const pinnedButtonClassName =
     layout === 'grid'
       ? cn(
@@ -107,80 +105,77 @@ export default function ItemCard({
       <div
         ref={editorRootRef}
         className={cn(
-          'kb-item-editor relative overflow-hidden rounded-2xl border backdrop-blur-xl',
-          layout === 'grid' ? 'min-h-[210px]' : '',
+          'kb-add-panel relative flex flex-col gap-2 rounded-md border p-2',
+          layout === 'grid' ? 'min-h-[160px]' : 'w-full shrink-0',
         )}
         onClick={stopInteraction}
         onPointerDown={stopInteraction}
       >
-        <div className="flex items-start gap-3 p-3">
-          <div className="flex min-w-0 flex-1 flex-col gap-2.5">
-            <label className="block">
-              <input
-                ref={titleInputRef}
-                value={editTitle}
-                onChange={(event) => onEditTitleChange(event.target.value)}
-                onKeyDown={onEditorKeyDown}
-                onPointerDown={stopInteraction}
-                onPaste={stopInteraction}
-                onDragStart={stopInteraction}
-                onDrop={stopInteraction}
-                className={cn(textInputClassName, 'h-11 text-lg font-semibold')}
-                placeholder={titlePlaceholder}
-                aria-label={titlePlaceholder}
-              />
-            </label>
+        <div className="kb-subtle-text flex items-center justify-between px-1 text-xs">
+          <span>{editorLabel}</span>
+          <button onClick={onCancel} className="kb-secondary-button transition-colors">
+            <X size={12} />
+          </button>
+        </div>
 
-            <label className="block flex-1">
-              {usesSingleLineContentEditor ? (
-                <input
-                  value={editContent}
-                  onChange={(event) => onEditContentChange(event.target.value)}
-                  onKeyDown={onEditorKeyDown}
-                  onPointerDown={stopInteraction}
-                  onPaste={stopInteraction}
-                  onDragStart={stopInteraction}
-                  onDrop={stopInteraction}
-                  className={cn(textInputClassName, 'h-9 text-[12px]')}
-                  placeholder={contentLabel}
-                  aria-label={contentLabel}
-                />
-              ) : (
-                <textarea
-                  value={editContent}
-                  onChange={(event) => onEditContentChange(event.target.value)}
-                  onKeyDown={onEditorKeyDown}
-                  onPointerDown={stopInteraction}
-                  onPaste={stopInteraction}
-                  onDragStart={stopInteraction}
-                  onDrop={stopInteraction}
-                  className={cn(textInputClassName, 'min-h-[96px] resize-none')}
-                  placeholder={contentLabel}
-                  aria-label={contentLabel}
-                />
-              )}
-            </label>
-          </div>
+        <input
+          ref={titleInputRef}
+          value={editTitle}
+          onChange={(event) => onEditTitleChange(event.target.value)}
+          onKeyDown={onEditorKeyDown}
+          onPointerDown={stopInteraction}
+          onPaste={stopInteraction}
+          onDragStart={stopInteraction}
+          onDrop={stopInteraction}
+          className={textInputClassName}
+          placeholder={titlePlaceholder}
+          aria-label={titlePlaceholder}
+        />
 
-          <div className="flex shrink-0 items-start gap-2 pt-1">
-            <button
-              onClick={onSave}
-              disabled={!editContent.trim()}
-              className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-[0_12px_24px_rgba(16,185,129,0.22)] transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-35"
-              title={saveLabel}
-              aria-label={saveLabel}
-            >
-              {saveIcon}
-            </button>
-            <button
-              onClick={onCancel}
-              className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-500 text-white shadow-[0_12px_24px_rgba(239,68,68,0.2)] transition-colors hover:bg-red-400"
-              title={cancelLabel}
-              aria-label={cancelLabel}
-            >
-              {cancelIcon}
-            </button>
-          </div>
+        <label className="block flex-1">
+          {usesSingleLineContentEditor ? (
+            <input
+              value={editContent}
+              onChange={(event) => onEditContentChange(event.target.value)}
+              onKeyDown={onEditorKeyDown}
+              onPointerDown={stopInteraction}
+              onPaste={stopInteraction}
+              onDragStart={stopInteraction}
+              onDrop={stopInteraction}
+              className={textInputClassName}
+              placeholder={contentLabel}
+              aria-label={contentLabel}
+            />
+          ) : (
+            <textarea
+              value={editContent}
+              onChange={(event) => onEditContentChange(event.target.value)}
+              onKeyDown={onEditorKeyDown}
+              onPointerDown={stopInteraction}
+              onPaste={stopInteraction}
+              onDragStart={stopInteraction}
+              onDrop={stopInteraction}
+              className={cn(textInputClassName, 'min-h-[96px] resize-none')}
+              placeholder={contentLabel}
+              aria-label={contentLabel}
+            />
+          )}
+        </label>
+
+        <div className="mt-1 flex justify-end gap-2">
+          <button
+            onClick={onCancel}
+            className="kb-secondary-button rounded-lg px-3 py-1.5 text-xs transition-colors"
+          >
+            {cancelLabel}
+          </button>
+          <button
+            onClick={onSave}
+            disabled={!editContent.trim()}
+            className="kb-primary-button rounded-lg px-3 py-1.5 text-xs transition-colors disabled:opacity-50"
+          >
+            {saveLabel}
+          </button>
         </div>
       </div>
     );
@@ -208,9 +203,7 @@ export default function ItemCard({
           className={cn(
             'relative transition-transform duration-300',
             getIconChipClassName(item, layout),
-            layout === 'grid'
-              ? 'group-hover:scale-110'
-              : 'shrink-0 group-hover:scale-105',
+            layout === 'grid' ? 'group-hover:scale-110' : 'shrink-0 group-hover:scale-105',
           )}
         >
           {icon}
@@ -218,9 +211,7 @@ export default function ItemCard({
             <div
               className={cn(
                 'absolute -right-1 -top-1 rounded-full border bg-win-accent',
-                layout === 'grid'
-                  ? 'h-2.5 w-2.5 border-win-card'
-                  : 'h-2 w-2 border-win-card',
+                layout === 'grid' ? 'h-2.5 w-2.5 border-win-card' : 'h-2 w-2 border-win-card',
               )}
             />
           )}

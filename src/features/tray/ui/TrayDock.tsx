@@ -14,8 +14,26 @@ export default function TrayDock() {
   const boxes = useTrayBoxes();
   const dispatch = useWorkspaceDispatch();
   const setActiveBox = useInteractionStore((state) => state.setActiveBox);
+  const setBoxTransition = useInteractionStore((state) => state.setBoxTransition);
   const isCompact = boxes.length >= 7;
   const hasReachedBoxLimit = boxes.length >= MAX_WORKSPACE_BOXES;
+
+  const getDockTransitionRect = (boxId: string) => {
+    const dockItem = document.getElementById(`dock-box-${boxId}`);
+
+    if (!dockItem) {
+      return null;
+    }
+
+    const rect = dockItem.getBoundingClientRect();
+
+    return {
+      x: rect.left,
+      y: rect.top,
+      width: rect.width,
+      height: rect.height,
+    };
+  };
 
   const handleCreateBox = () => {
     const result = createWorkspaceBox(runtimeDocumentPort.getViewport());
@@ -39,10 +57,30 @@ export default function TrayDock() {
                   box={box}
                   compact={isCompact}
                   onClick={() => {
+                    const nextIsMinimized = !box.isMinimized;
+
+                    if (!nextIsMinimized) {
+                      dispatch({ type: 'box.bringToFront', boxId: box.id });
+                      setActiveBox(box.id);
+                      setBoxTransition({
+                        boxId: box.id,
+                        kind: 'restore',
+                        dockRect: getDockTransitionRect(box.id),
+                      });
+
+                      window.setTimeout(() => {
+                        const currentTransition = useInteractionStore.getState().boxTransition;
+
+                        if (currentTransition?.boxId === box.id) {
+                          useInteractionStore.getState().setBoxTransition(null);
+                        }
+                      }, 420);
+                    }
+
                     dispatch({
                       type: 'box.update',
                       boxId: box.id,
-                      updates: { isMinimized: !box.isMinimized },
+                      updates: { isMinimized: nextIsMinimized },
                     });
                   }}
                 />

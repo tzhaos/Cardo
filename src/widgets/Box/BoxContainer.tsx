@@ -1,12 +1,24 @@
-import { motion } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import type { MouseEvent, ReactNode } from 'react';
-import type { WorkspaceBox } from '../../domains/workspace/model/workspace';
+import {
+  getRenderedBoxBounds,
+  type BoxLayout,
+  type WorkspaceBoxBounds,
+} from '../../domains/workspace/model/workspace';
 import { cn } from '../../lib/utils';
 
 interface BoxContainerProps {
-  box: WorkspaceBox;
+  box: {
+    bounds: WorkspaceBoxBounds;
+    isCollapsed: boolean;
+    isLocked: boolean;
+    zIndex: number;
+    layout: BoxLayout;
+  };
   isActive: boolean;
   isDragging: boolean;
+  transitionKind?: 'minimize' | 'restore' | null;
+  transitionDockRect?: WorkspaceBoxBounds | null;
   editingSessionId: string | null;
   onFocus: () => void;
   onMouseEnter: () => void;
@@ -20,6 +32,8 @@ export default function BoxContainer({
   box,
   isActive,
   isDragging,
+  transitionKind = null,
+  transitionDockRect = null,
   editingSessionId,
   onFocus,
   onMouseEnter,
@@ -28,21 +42,47 @@ export default function BoxContainer({
   header,
   content,
 }: BoxContainerProps) {
+  const renderedBounds = getRenderedBoxBounds(box);
+  const isMinimizing = transitionKind === 'minimize';
+  const isRestoring = transitionKind === 'restore';
+  const transitionBounds = transitionDockRect;
+  const initialBounds = isRestoring && transitionBounds ? transitionBounds : renderedBounds;
+  const animateBounds = isMinimizing && transitionBounds ? transitionBounds : renderedBounds;
+  const transitionEase: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
   return (
     <motion.div
       onMouseDown={onFocus}
-      initial={{ x: box.bounds.x, y: box.bounds.y, opacity: 0, scale: 0.95 }}
+      initial={{
+        x: initialBounds.x,
+        y: initialBounds.y,
+        width: initialBounds.width,
+        height: initialBounds.height,
+        opacity: isRestoring && transitionBounds ? 0.94 : 0,
+        borderRadius: isRestoring && transitionBounds ? 18 : 12,
+        scale: isRestoring && transitionBounds ? 1 : 0.97,
+      }}
       animate={{
-        x: box.bounds.x,
-        y: box.bounds.y,
-        opacity: 1,
+        x: animateBounds.x,
+        y: animateBounds.y,
+        width: animateBounds.width,
+        height: animateBounds.height,
+        opacity: isMinimizing && transitionBounds ? 0.9 : 1,
+        borderRadius: isMinimizing && transitionBounds ? 18 : 12,
         scale: isDragging ? 1.02 : 1,
       }}
       exit={{ opacity: 0, scale: 0.95 }}
-      transition={isDragging ? { duration: 0 } : { type: 'spring', stiffness: 350, damping: 25 }}
+      transition={
+        isDragging
+          ? { duration: 0 }
+          : isMinimizing
+            ? { duration: 0.28, ease: transitionEase }
+            : {
+                duration: isRestoring && transitionBounds ? 0.34 : 0.22,
+                ease: transitionEase,
+              }
+      }
       style={{
-        width: box.bounds.width,
-        height: box.bounds.height,
         zIndex: box.zIndex,
         boxShadow: isDragging
           ? 'var(--shadow-win-flyout)'
@@ -58,27 +98,47 @@ export default function BoxContainer({
       onMouseLeave={onMouseLeave}
     >
       {header}
-      {content}
-
-      {!box.isLocked && (
-        <div
-          className={cn(
-            'absolute bottom-0 right-0 h-4 w-4',
-            editingSessionId ? 'cursor-not-allowed opacity-20' : 'cursor-se-resize',
-          )}
-          onMouseDown={onResizeStart}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            className="kb-resize-handle h-full w-full"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
+      <AnimatePresence initial={false}>
+        {!box.isCollapsed ? (
+          <motion.div
+            key="box-content"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+            className="flex min-h-0 flex-1 overflow-hidden"
           >
-            <path d="M21 15L15 21M21 8L8 21" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
-      )}
+            {content}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+
+      <AnimatePresence initial={false}>
+        {!box.isLocked && !box.isCollapsed ? (
+          <motion.div
+            key="resize-handle"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.14, ease: 'easeOut' }}
+            className={cn(
+              'absolute bottom-0 right-0 h-4 w-4',
+              editingSessionId ? 'cursor-not-allowed opacity-20' : 'cursor-se-resize',
+            )}
+            onMouseDown={onResizeStart}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="kb-resize-handle h-full w-full"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M21 15L15 21M21 8L8 21" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </motion.div>
   );
 }

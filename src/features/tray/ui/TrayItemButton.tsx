@@ -1,6 +1,7 @@
 import { Package } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useI18n } from '../../../app/hooks/useI18n';
+import { useInteractionStore } from '../../../app/stores/useInteractionStore';
 import { getBoxDisplayTitle } from '../../../domains/workspace/model/boxTitles';
 import type { WorkspaceBox } from '../../../domains/workspace/model/workspace';
 import { cn } from '../../../lib/utils';
@@ -13,25 +14,44 @@ interface TrayItemButtonProps {
 
 export default function TrayItemButton({ box, compact = false, onClick }: TrayItemButtonProps) {
   const { t } = useI18n();
+  const boxTransition = useInteractionStore((state) => state.boxTransition);
   const displayTitle = getBoxDisplayTitle(box, t);
   const isVisible = !box.isMinimized;
+  const isTransitionTarget = boxTransition?.boxId === box.id;
+  const isReceivingBox = isTransitionTarget && boxTransition.kind === 'minimize';
+  const isLaunchingBox = isTransitionTarget && boxTransition.kind === 'restore';
 
   return (
-    <button
+    <motion.button
+      id={`dock-box-${box.id}`}
       onClick={onClick}
+      animate={{
+        scale: isReceivingBox ? [1, 1.02, 1] : isLaunchingBox ? [1, 0.98, 1] : 1,
+      }}
+      transition={{
+        duration: isReceivingBox ? 0.18 : isLaunchingBox ? 0.22 : 0.16,
+        ease: [0.22, 1, 0.36, 1],
+      }}
       className={cn(
         'kb-dock-item relative flex h-10 items-center gap-2 rounded-lg transition-all duration-200 active:scale-95',
         compact ? 'w-10 justify-center px-0' : 'px-4',
-        isVisible ? 'kb-dock-item-active bg-win-hover' : 'hover:bg-win-hover',
+        isVisible || isReceivingBox
+          ? 'kb-dock-item-active bg-win-hover'
+          : isLaunchingBox
+            ? 'bg-win-hover'
+            : 'hover:bg-win-hover',
       )}
       title={displayTitle}
       aria-label={displayTitle}
     >
-      <Package
-        size={16}
-        strokeWidth={2}
-        className="text-win-text"
-      />
+      <motion.div
+        animate={{
+          y: isReceivingBox ? [0, -0.5, 0] : isLaunchingBox ? [0, 1, 0] : 0,
+        }}
+        transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <Package size={16} strokeWidth={2} className="text-win-text" />
+      </motion.div>
 
       {!compact && (
         <span
@@ -76,6 +96,6 @@ export default function TrayItemButton({ box, compact = false, onClick }: TrayIt
           />
         )}
       </AnimatePresence>
-    </button>
+    </motion.button>
   );
 }
