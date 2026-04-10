@@ -1,7 +1,7 @@
-import { X } from 'lucide-react';
 import type { KeyboardEvent, ReactNode, RefObject, SyntheticEvent } from 'react';
 import { cn } from '../../lib/utils';
 import type { WorkspaceItem } from '../../domains/items/model/item';
+import ItemDraftForm from '../../features/item-management/ui/ItemDraftForm';
 
 export interface ItemCardProps {
   item: WorkspaceItem;
@@ -14,7 +14,7 @@ export interface ItemCardProps {
   editorRootRef?: RefObject<HTMLDivElement | null>;
   titleInputRef: RefObject<HTMLInputElement | null>;
   editorLabel: string;
-  contentLabel: string;
+  contentPlaceholder: string;
   titlePlaceholder: string;
   saveLabel: string;
   cancelLabel: string;
@@ -60,7 +60,7 @@ export default function ItemCard({
   editorRootRef,
   titleInputRef,
   editorLabel,
-  contentLabel,
+  contentPlaceholder,
   titlePlaceholder,
   saveLabel,
   cancelLabel,
@@ -84,7 +84,6 @@ export default function ItemCard({
   onDeleteClick,
 }: ItemCardProps) {
   const usesSingleLineContentEditor = item.type !== 'note';
-  const textInputClassName = 'kb-add-input w-full rounded-xl px-3 py-2 text-xs outline-none';
   const pinnedButtonClassName =
     layout === 'grid'
       ? cn(
@@ -96,88 +95,27 @@ export default function ItemCard({
           item.isPinned ? 'bg-win-hover text-win-accent' : '',
         );
 
-  const stopInteraction = (event: SyntheticEvent) => {
-    event.stopPropagation();
-  };
-
   if (isEditing) {
     return (
-      <div
-        ref={editorRootRef}
-        className={cn(
-          'kb-add-panel relative flex flex-col gap-2 rounded-md border p-2',
-          layout === 'grid' ? 'min-h-[160px]' : 'w-full shrink-0',
-        )}
-        onClick={stopInteraction}
-        onPointerDown={stopInteraction}
-      >
-        <div className="kb-subtle-text flex items-center justify-between px-1 text-xs">
-          <span>{editorLabel}</span>
-          <button onClick={onCancel} className="kb-secondary-button transition-colors">
-            <X size={12} />
-          </button>
-        </div>
-
-        <input
-          ref={titleInputRef}
-          value={editTitle}
-          onChange={(event) => onEditTitleChange(event.target.value)}
-          onKeyDown={onEditorKeyDown}
-          onPointerDown={stopInteraction}
-          onPaste={stopInteraction}
-          onDragStart={stopInteraction}
-          onDrop={stopInteraction}
-          className={textInputClassName}
-          placeholder={titlePlaceholder}
-          aria-label={titlePlaceholder}
-        />
-
-        <label className="block flex-1">
-          {usesSingleLineContentEditor ? (
-            <input
-              value={editContent}
-              onChange={(event) => onEditContentChange(event.target.value)}
-              onKeyDown={onEditorKeyDown}
-              onPointerDown={stopInteraction}
-              onPaste={stopInteraction}
-              onDragStart={stopInteraction}
-              onDrop={stopInteraction}
-              className={textInputClassName}
-              placeholder={contentLabel}
-              aria-label={contentLabel}
-            />
-          ) : (
-            <textarea
-              value={editContent}
-              onChange={(event) => onEditContentChange(event.target.value)}
-              onKeyDown={onEditorKeyDown}
-              onPointerDown={stopInteraction}
-              onPaste={stopInteraction}
-              onDragStart={stopInteraction}
-              onDrop={stopInteraction}
-              className={cn(textInputClassName, 'min-h-[96px] resize-none')}
-              placeholder={contentLabel}
-              aria-label={contentLabel}
-            />
-          )}
-        </label>
-
-        <div className="mt-1 flex justify-end gap-2">
-          <button
-            onClick={onCancel}
-            className="kb-secondary-button rounded-lg px-3 py-1.5 text-xs transition-colors"
-          >
-            {cancelLabel}
-          </button>
-          <button
-            onClick={onSave}
-            disabled={!editContent.trim()}
-            className="kb-primary-button rounded-lg px-3 py-1.5 text-xs transition-colors disabled:opacity-50"
-          >
-            {saveLabel}
-          </button>
-        </div>
-      </div>
+      <ItemDraftForm
+        rootRef={editorRootRef}
+        className={cn(layout === 'grid' ? 'min-h-[160px]' : 'w-full shrink-0')}
+        headerLabel={editorLabel}
+        titleInputRef={titleInputRef}
+        titleValue={editTitle}
+        titlePlaceholder={titlePlaceholder}
+        contentValue={editContent}
+        contentPlaceholder={contentPlaceholder}
+        contentAsTextarea={!usesSingleLineContentEditor}
+        submitLabel={saveLabel}
+        cancelLabel={cancelLabel}
+        saveDisabled={!editContent.trim()}
+        onTitleChange={onEditTitleChange}
+        onContentChange={onEditContentChange}
+        onEditorKeyDown={onEditorKeyDown}
+        onSave={onSave}
+        onCancel={onCancel}
+      />
     );
   }
 

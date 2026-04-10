@@ -191,15 +191,8 @@ export default function ManagedItemCard({
     editContent,
     editorRootRef,
     titleInputRef,
-    editorLabel:
-      item.type === 'folder'
-        ? t('item.folderEditor')
-        : item.type === 'file'
-          ? t('item.fileEditor')
-          : item.type === 'url'
-            ? t('item.linkEditor')
-            : t('item.noteEditor'),
-    contentLabel:
+    editorLabel: t('item.edit'),
+    contentPlaceholder:
       item.type === 'url'
         ? t('addItem.urlPlaceholder')
         : item.type === 'file' || item.type === 'folder'
@@ -207,7 +200,7 @@ export default function ManagedItemCard({
           : t('addItem.contentPlaceholder'),
     titlePlaceholder: t('addItem.titleOptional'),
     saveLabel: t('item.saveChanges'),
-    cancelLabel: t('item.cancelEditing'),
+    cancelLabel: t('common.cancel'),
     pinLabel: t('item.pin'),
     pinToTopLabel: t('item.pinToTop'),
     unpinLabel: t('item.unpin'),

@@ -1,8 +1,10 @@
 import { ClipboardPaste, File, Folder, Link as LinkIcon, Plus, X } from 'lucide-react';
+import type { KeyboardEvent } from 'react';
 import { useI18n } from '../../../app/hooks/useI18n';
 import { ITEM_TYPE_LABEL_KEYS, ITEM_TYPE_PLURAL_KEYS } from '../../../domains/i18n/model/messages';
 import { cn } from '../../../lib/utils';
 import type { ItemType } from '../../../domains/items/model/item';
+import ItemDraftForm from './ItemDraftForm';
 
 interface AddItemPanelProps {
   layout: 'grid' | 'list';
@@ -32,6 +34,28 @@ export default function AddItemPanel({
   showAddMenu,
 }: AddItemPanelProps) {
   const { t } = useI18n();
+  const contentPlaceholder =
+    addingType === 'url'
+      ? t('addItem.urlPlaceholder')
+      : addingType === 'file' || addingType === 'folder'
+        ? t('addItem.pathPlaceholder')
+        : t('addItem.contentPlaceholder');
+  const contentAsTextarea = addingType === 'note';
+  const handleEditorKeyDown = (event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      onCancel();
+      return;
+    }
+
+    if (
+      event.key === 'Enter' &&
+      (event.currentTarget.tagName === 'INPUT' || event.ctrlKey || event.metaKey)
+    ) {
+      event.preventDefault();
+      onConfirm();
+    }
+  };
 
   if (!showAddMenu) {
     return (
@@ -48,109 +72,76 @@ export default function AddItemPanel({
     );
   }
 
+  if (addingType) {
+    return (
+      <ItemDraftForm
+        className={cn(
+          'mt-2',
+          layout === 'grid' ? 'col-span-3' : 'w-full shrink-0',
+        )}
+        headerLabel={t('addItem.addType', { type: t(ITEM_TYPE_LABEL_KEYS[addingType]) })}
+        titleAutoFocus
+        titleValue={newItemTitle}
+        titlePlaceholder={t('addItem.titleOptional')}
+        contentValue={newItemContent}
+        contentPlaceholder={contentPlaceholder}
+        contentAsTextarea={contentAsTextarea}
+        submitLabel={t('common.add')}
+        cancelLabel={t('common.cancel')}
+        saveDisabled={!newItemContent.trim()}
+        onTitleChange={onTitleChange}
+        onContentChange={onContentChange}
+        onEditorKeyDown={handleEditorKeyDown}
+        onSave={onConfirm}
+        onCancel={onCancel}
+      />
+    );
+  }
+
   return (
     <div
       className={cn(
         'kb-add-panel mt-2 flex flex-col gap-2 rounded-md border border-dashed p-2',
-        layout === 'grid' ? 'col-span-3' : 'mt-2 w-full shrink-0',
+        layout === 'grid' ? 'col-span-3' : 'w-full shrink-0',
       )}
     >
-      {addingType ? (
-        <div className="flex flex-col gap-2">
-          <div className="kb-subtle-text flex items-center justify-between px-1 text-xs">
-            <span>{t('addItem.addType', { type: t(ITEM_TYPE_LABEL_KEYS[addingType]) })}</span>
-            <button onClick={onCancel} className="kb-secondary-button transition-colors">
-              <X size={12} />
-            </button>
-          </div>
+      <div className="kb-subtle-text flex items-center justify-between px-1 text-xs">
+        <span>{t('addItem.chooseType')}</span>
+        <button onClick={onCancel} className="kb-secondary-button transition-colors">
+          <X size={12} />
+        </button>
+      </div>
 
-          <input
-            autoFocus
-            value={newItemTitle}
-            onChange={(event) => onTitleChange(event.target.value)}
-            placeholder={t('addItem.titleOptional')}
-            className="kb-add-input w-full rounded-xl px-3 py-2 text-xs outline-none"
-          />
-
-          <input
-            value={newItemContent}
-            onChange={(event) => onContentChange(event.target.value)}
-            placeholder={
-              addingType === 'url'
-                ? t('addItem.urlPlaceholder')
-                : addingType === 'file' || addingType === 'folder'
-                  ? t('addItem.pathPlaceholder')
-                  : t('addItem.contentPlaceholder')
-            }
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                onConfirm();
-              }
-
-              if (event.key === 'Escape') {
-                onCancel();
-              }
-            }}
-            className="kb-add-input w-full rounded-xl px-3 py-2 text-xs outline-none"
-          />
-
-          <div className="mt-1 flex justify-end gap-2">
-            <button
-              onClick={onCancel}
-              className="kb-secondary-button rounded-lg px-3 py-1.5 text-xs transition-colors"
-            >
-              {t('common.cancel')}
-            </button>
-            <button
-              onClick={onConfirm}
-              disabled={!newItemContent.trim()}
-              className="kb-primary-button rounded-lg px-3 py-1.5 text-xs transition-colors disabled:opacity-50"
-            >
-              {t('common.add')}
-            </button>
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className="kb-subtle-text flex items-center justify-between px-1 text-xs">
-            <span>{t('addItem.chooseType')}</span>
-            <button onClick={onCancel} className="kb-secondary-button transition-colors">
-              <X size={12} />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => onStartAdd('file')}
-              className="kb-secondary-button flex items-center gap-2 rounded-xl p-2 text-xs transition-colors"
-            >
-              <File size={12} className="text-[var(--role-note-fg)]" />
-              {t(ITEM_TYPE_PLURAL_KEYS.file)}
-            </button>
-            <button
-              onClick={() => onStartAdd('folder')}
-              className="kb-secondary-button flex items-center gap-2 rounded-xl p-2 text-xs transition-colors"
-            >
-              <Folder size={12} className="text-[var(--role-folder-fg)]" />
-              {t(ITEM_TYPE_PLURAL_KEYS.folder)}
-            </button>
-            <button
-              onClick={() => onStartAdd('url')}
-              className="kb-secondary-button flex items-center gap-2 rounded-xl p-2 text-xs transition-colors"
-            >
-              <LinkIcon size={12} className="text-[var(--role-link-fg)]" />
-              {t(ITEM_TYPE_PLURAL_KEYS.url)}
-            </button>
-            <button
-              onClick={() => onStartAdd('note')}
-              className="kb-secondary-button flex items-center gap-2 rounded-xl p-2 text-xs transition-colors"
-            >
-              <ClipboardPaste size={12} className="text-[var(--role-generic-fg)]" />
-              {t(ITEM_TYPE_PLURAL_KEYS.note)}
-            </button>
-          </div>
-        </>
-      )}
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          onClick={() => onStartAdd('file')}
+          className="kb-secondary-button flex items-center gap-2 rounded-xl p-2 text-xs transition-colors"
+        >
+          <File size={12} className="text-[var(--role-note-fg)]" />
+          {t(ITEM_TYPE_PLURAL_KEYS.file)}
+        </button>
+        <button
+          onClick={() => onStartAdd('folder')}
+          className="kb-secondary-button flex items-center gap-2 rounded-xl p-2 text-xs transition-colors"
+        >
+          <Folder size={12} className="text-[var(--role-folder-fg)]" />
+          {t(ITEM_TYPE_PLURAL_KEYS.folder)}
+        </button>
+        <button
+          onClick={() => onStartAdd('url')}
+          className="kb-secondary-button flex items-center gap-2 rounded-xl p-2 text-xs transition-colors"
+        >
+          <LinkIcon size={12} className="text-[var(--role-link-fg)]" />
+          {t(ITEM_TYPE_PLURAL_KEYS.url)}
+        </button>
+        <button
+          onClick={() => onStartAdd('note')}
+          className="kb-secondary-button flex items-center gap-2 rounded-xl p-2 text-xs transition-colors"
+        >
+          <ClipboardPaste size={12} className="text-[var(--role-generic-fg)]" />
+          {t(ITEM_TYPE_PLURAL_KEYS.note)}
+        </button>
+      </div>
     </div>
   );
 }
