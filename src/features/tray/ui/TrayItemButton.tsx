@@ -20,17 +20,19 @@ export default function TrayItemButton({ box, compact = false, onClick }: TrayIt
   const isTransitionTarget = boxTransition?.boxId === box.id;
   const isReceivingBox = isTransitionTarget && boxTransition.kind === 'minimize';
   const isLaunchingBox = isTransitionTarget && boxTransition.kind === 'restore';
+  const isTransitioning = isReceivingBox || isLaunchingBox;
 
   return (
     <motion.button
       id={`dock-box-${box.id}`}
       onClick={onClick}
       animate={{
-        scale: isReceivingBox ? [1, 1.02, 1] : isLaunchingBox ? [1, 0.98, 1] : 1,
+        scale: isReceivingBox ? [1, 1.03, 1] : isLaunchingBox ? [1, 0.98, 1] : 1,
+        y: isReceivingBox ? [0, -1, 0] : isLaunchingBox ? [0, 1, 0] : 0,
       }}
       transition={{
-        duration: isReceivingBox ? 0.18 : isLaunchingBox ? 0.22 : 0.16,
-        ease: [0.22, 1, 0.36, 1],
+        duration: isReceivingBox ? 0.2 : isLaunchingBox ? 0.24 : 0.16,
+        ease: [0.16, 1, 0.3, 1],
       }}
       className={cn(
         'kb-dock-item relative flex h-10 items-center gap-2 rounded-lg transition-all duration-200 active:scale-95',
@@ -44,24 +46,50 @@ export default function TrayItemButton({ box, compact = false, onClick }: TrayIt
       title={displayTitle}
       aria-label={displayTitle}
     >
+      <AnimatePresence initial={false}>
+        {isTransitioning ? (
+          <motion.span
+            aria-hidden="true"
+            className="absolute inset-0 rounded-lg bg-white/5"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{
+              opacity: isReceivingBox ? [0, 0.18, 0] : [0, 0.12, 0],
+              scale: isReceivingBox ? [0.9, 1.02, 1.06] : [0.92, 1.03, 1.06],
+            }}
+            exit={{ opacity: 0 }}
+            transition={{
+              duration: isReceivingBox ? 0.24 : 0.26,
+              ease: [0.2, 1, 0.3, 1],
+            }}
+          />
+        ) : null}
+      </AnimatePresence>
+
       <motion.div
         animate={{
           y: isReceivingBox ? [0, -0.5, 0] : isLaunchingBox ? [0, 1, 0] : 0,
+          scale: isTransitioning ? 1.04 : 1,
         }}
-        transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: isTransitioning ? 0.2 : 0.18, ease: [0.16, 1, 0.3, 1] }}
       >
         <Package size={16} strokeWidth={2} className="text-win-text" />
       </motion.div>
 
       {!compact && (
-        <span
+        <motion.span
+          animate={{
+            opacity: isTransitioning ? 0 : isVisible ? 1 : 0.68,
+            x: isTransitioning ? -3 : 0,
+            scale: isTransitioning ? 0.96 : 1,
+          }}
+          transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
           className={cn(
             'max-w-[100px] truncate text-sm font-medium',
             isVisible ? 'text-win-text' : 'text-win-text-secondary',
           )}
         >
           {displayTitle}
-        </span>
+        </motion.span>
       )}
 
       <AnimatePresence initial={false}>
