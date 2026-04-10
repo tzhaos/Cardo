@@ -1,4 +1,4 @@
-import { LayoutGrid, List, Lock, Minus, Package, Unlock, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, LayoutGrid, List, Lock, Minus, Package, Unlock, X } from 'lucide-react';
 import type { MouseEvent, PointerEvent, RefObject } from 'react';
 import type { WorkspaceBox } from '../../domains/workspace/model/workspace';
 import { cn } from '../../lib/utils';
@@ -15,6 +15,8 @@ interface BoxHeaderProps {
   toggleLayoutLabel: string;
   lockPositionLabel: string;
   unlockPositionLabel: string;
+  collapseLabel: string;
+  expandLabel: string;
   minimizeLabel: string;
   closeLabel: string;
   onDragStart: (event: PointerEvent) => void;
@@ -23,6 +25,7 @@ interface BoxHeaderProps {
   onFinishEditing: (shouldSave: boolean) => void;
   onToggleLayout: () => void;
   onToggleLock: () => void;
+  onToggleCollapse: () => void;
   onMinimize: () => void;
   onClose: () => void;
 }
@@ -39,6 +42,8 @@ export default function BoxHeader({
   toggleLayoutLabel,
   lockPositionLabel,
   unlockPositionLabel,
+  collapseLabel,
+  expandLabel,
   minimizeLabel,
   closeLabel,
   onDragStart,
@@ -47,6 +52,7 @@ export default function BoxHeader({
   onFinishEditing,
   onToggleLayout,
   onToggleLock,
+  onToggleCollapse,
   onMinimize,
   onClose,
 }: BoxHeaderProps) {
@@ -118,6 +124,15 @@ export default function BoxHeader({
         </button>
 
         <div className="kb-list-divider mx-1 h-4 w-px" />
+
+        <button
+          onClick={onToggleCollapse}
+          className="kb-icon-button rounded-md p-1.5 transition-colors"
+          title={box.isCollapsed ? expandLabel : collapseLabel}
+          onPointerDown={(event) => event.stopPropagation()}
+        >
+          {box.isCollapsed ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+        </button>
 
         <button
           onClick={onMinimize}

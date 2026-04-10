@@ -117,6 +117,7 @@ function normalizeLegacyBox(input: unknown, index: number): WorkspaceBox | null 
       height: Math.max(BOX_MIN_HEIGHT, asNumber(rawBounds.height ?? input.height, 400)),
     },
     isLocked: asBoolean(input.isLocked),
+    isCollapsed: asBoolean(input.isCollapsed),
     isMinimized: asBoolean(input.isMinimized),
     layout: asString(input.layout) === 'grid' ? 'grid' : 'list',
     zIndex: Math.max(0, Math.round(asNumber(input.zIndex, index + 1))),

@@ -1,10 +1,10 @@
 import type { WorkspaceItem } from '../../items/model/item';
 import { createWorkspaceSnapshot } from './createInitialWorkspaceSnapshot';
 import { areAllBoxesMinimized } from './workspaceSelectors';
-import type { WorkspaceBox, WorkspaceCommand, WorkspaceSnapshotV3 } from './workspace';
+import type { WorkspaceBox, WorkspaceCommand, WorkspaceSnapshotV4 } from './workspace';
 
 function updateBox(
-  snapshot: WorkspaceSnapshotV3,
+  snapshot: WorkspaceSnapshotV4,
   boxId: string,
   updater: (box: WorkspaceBox) => WorkspaceBox,
 ) {
@@ -24,7 +24,7 @@ function updateBox(
 }
 
 function updateItem(
-  snapshot: WorkspaceSnapshotV3,
+  snapshot: WorkspaceSnapshotV4,
   boxId: string,
   itemId: string,
   updater: (item: WorkspaceItem) => WorkspaceItem,
@@ -36,7 +36,7 @@ function updateItem(
 }
 
 function moveWorkspaceItem(
-  snapshot: WorkspaceSnapshotV3,
+  snapshot: WorkspaceSnapshotV4,
   itemId: string,
   sourceBoxId: string,
   targetBoxId: string,
@@ -113,9 +113,9 @@ function moveWorkspaceItem(
 }
 
 export function reduceWorkspace(
-  snapshot: WorkspaceSnapshotV3,
+  snapshot: WorkspaceSnapshotV4,
   command: WorkspaceCommand,
-): WorkspaceSnapshotV3 {
+): WorkspaceSnapshotV4 {
   switch (command.type) {
     case 'workspace.replaceBoxes':
       return createWorkspaceSnapshot(command.boxes);

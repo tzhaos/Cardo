@@ -5,14 +5,14 @@ import { reduceWorkspace } from '../../domains/workspace/model/reduceWorkspace';
 import { parseWorkspaceSnapshot } from '../../domains/workspace/model/workspaceCodec';
 import type {
   WorkspaceCommand,
-  WorkspaceSnapshotV3,
+  WorkspaceSnapshotV4,
 } from '../../domains/workspace/model/workspace';
 import { log } from '../../lib/log';
 import type { WorkspaceStoragePort } from '../ports/WorkspaceStoragePort';
 import { workspaceStoragePort } from '../ports/defaultPorts';
 
 interface WorkspaceStoreState {
-  snapshot: WorkspaceSnapshotV3;
+  snapshot: WorkspaceSnapshotV4;
   dispatch: (command: WorkspaceCommand) => void;
 }
 
@@ -29,7 +29,7 @@ export function createWorkspaceStore(storage: WorkspaceStoragePort) {
       {
         name: 'khaosbox-workspace-v3',
         version: 1,
-        migrate: (persistedState) => persistedState as WorkspaceSnapshotV3,
+        migrate: (persistedState) => persistedState as WorkspaceSnapshotV4,
         storage: createJSONStorage(() => storage),
         partialize: ({ snapshot }) => snapshot,
         merge: (persistedState, currentState) => {

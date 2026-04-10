@@ -27,6 +27,7 @@ export function createWorkspaceBox(viewport: { width: number; height: number }) 
       height: 400,
     },
     isLocked: false,
+    isCollapsed: false,
     isMinimized: false,
     layout: 'list',
     zIndex: snapshot.maxZIndex + 1,

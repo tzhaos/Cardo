@@ -66,3 +66,27 @@ test('parseWorkspaceSnapshot returns null for non-object input', () => {
   assert.equal(parseWorkspaceSnapshot(null), null);
   assert.equal(parseWorkspaceSnapshot('state'), null);
 });
+
+test('parseWorkspaceSnapshot accepts legacy schema version 3 payloads', () => {
+  const parsed = parseWorkspaceSnapshot({
+    schemaVersion: 3,
+    boxesById: {
+      box1: {
+        id: 'box1',
+        role: null,
+        customTitle: null,
+        bounds: { x: 20, y: 40, width: 320, height: 400 },
+        isLocked: false,
+        isMinimized: false,
+        layout: 'list',
+        zIndex: 1,
+        items: [],
+      },
+    },
+    boxOrder: ['box1'],
+    maxZIndex: 1,
+  });
+
+  assert.equal(parsed?.schemaVersion, WORKSPACE_SCHEMA_VERSION);
+  assert.equal(parsed?.boxesById.box1.isCollapsed, false);
+});

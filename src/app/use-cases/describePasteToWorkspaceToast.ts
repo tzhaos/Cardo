@@ -1,7 +1,7 @@
 import { ITEM_TYPE_LABEL_KEYS } from '../../domains/i18n/model/messages';
 import type { WorkspaceItem } from '../../domains/items/model/item';
 import { getBoxDisplayTitle } from '../../domains/workspace/model/boxTitles';
-import type { WorkspaceSnapshotV3 } from '../../domains/workspace/model/workspace';
+import type { WorkspaceSnapshotV4 } from '../../domains/workspace/model/workspace';
 import { getWorkspaceBox } from '../../domains/workspace/model/workspaceSelectors';
 import type { ToastParamValue, ToastSpec } from '../presentation/toastSpec';
 import type { TranslateFn } from '../hooks/useI18n';
@@ -19,7 +19,7 @@ function itemTypeParam(pasted: WorkspaceItem): ToastParamValue {
 }
 
 export function describePasteToWorkspaceToastSpec(
-  snapshot: WorkspaceSnapshotV3,
+  snapshot: WorkspaceSnapshotV4,
   pasted: { boxId: string; item: WorkspaceItem },
   t: TranslateFn,
 ): ToastSpec | null {

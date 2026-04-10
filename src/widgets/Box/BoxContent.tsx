@@ -30,7 +30,7 @@ export default function BoxContent({
   return (
     <div
       className={cn(
-        'custom-scrollbar relative flex-1 overflow-y-auto p-2 pt-0 transition-colors duration-200',
+        'kb-scroll-hidden relative flex-1 overflow-y-auto p-2 pt-0 transition-colors duration-200',
         layout === 'grid' ? 'grid grid-cols-3 content-start gap-2' : 'flex flex-col gap-1',
         isDragOver && 'bg-win-hover',
       )}

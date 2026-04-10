@@ -12,6 +12,7 @@ const VALID_EXPORT = JSON.stringify({
       customTitle: 'Test Box',
       bounds: { x: 100, y: 100, width: 320, height: 400 },
       isLocked: false,
+      isCollapsed: false,
       isMinimized: false,
       layout: 'list',
       zIndex: 1,

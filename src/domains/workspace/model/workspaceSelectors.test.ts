@@ -24,6 +24,7 @@ function createTestBox(
     customTitle: null,
     bounds: { x: 0, y: 0, width: 320, height: 400 },
     isLocked: false,
+    isCollapsed: false,
     isMinimized,
     layout: 'list' as const,
     zIndex: 1,
@@ -69,6 +70,17 @@ test('getVisibleBoxes returns only non-minimized boxes', () => {
   assert.equal(visible.length, 2);
   assert.equal(visible[0].id, 'box-1');
   assert.equal(visible[1].id, 'box-3');
+});
+
+test('getVisibleBoxes keeps collapsed boxes on desktop', () => {
+  const snapshot = createWorkspaceSnapshot([
+    { ...createTestBox('box-1', null, false), isCollapsed: true },
+    createTestBox('box-2', null, false),
+  ]);
+
+  const visible = getVisibleBoxes(snapshot);
+  assert.equal(visible.length, 2);
+  assert.equal(visible[0].isCollapsed, true);
 });
 
 test('getVisibleBoxIds returns array of visible box ids', () => {

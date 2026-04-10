@@ -18,7 +18,7 @@ export function useBoxResize({ box, onUpdate }: UseBoxResizeOptions) {
     event.preventDefault();
     event.stopPropagation();
 
-    if (box.isLocked || useInteractionStore.getState().editingSessionId) {
+    if (box.isLocked || box.isCollapsed || useInteractionStore.getState().editingSessionId) {
       return;
     }
 

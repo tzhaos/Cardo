@@ -15,6 +15,7 @@ test('migration converts legacy workspace arrays into export document v2', () =>
       width: 180,
       height: 120,
       isLocked: false,
+      isCollapsed: false,
       isMinimized: false,
       layout: 'list',
       items: [],
@@ -29,7 +30,7 @@ test('migration converts legacy workspace arrays into export document v2', () =>
   assert.equal(document.boxes[0].bounds.height, 150);
 });
 
-test('migration converts legacy normalized snapshots into schema version 3 snapshots', () => {
+test('migration converts legacy normalized snapshots into schema version 4 snapshots', () => {
   const snapshot = migrateLegacyWorkspaceSnapshot({
     version: 2,
     boxesById: {
@@ -42,6 +43,7 @@ test('migration converts legacy normalized snapshots into schema version 3 snaps
         height: 400,
         theme: 'dark',
         isLocked: false,
+        isCollapsed: false,
         isMinimized: false,
         layout: 'list',
         items: [],
@@ -52,7 +54,7 @@ test('migration converts legacy normalized snapshots into schema version 3 snaps
     maxZIndex: 9,
   });
 
-  assert.equal(snapshot.schemaVersion, 3);
+  assert.equal(snapshot.schemaVersion, 4);
   assert.deepEqual(snapshot.boxOrder, ['clipboard']);
   assert.equal(snapshot.boxesById.clipboard.role, 'notes');
   assert.equal(snapshot.boxesById.clipboard.customTitle, null);

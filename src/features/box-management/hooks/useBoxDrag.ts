@@ -1,7 +1,7 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { useRef } from 'react';
 import { computeBoxDragFrame } from '../../../domains/layout/services/computeBoxDragFrame';
-import type { WorkspaceBox } from '../../../domains/workspace/model/workspace';
+import { getRenderedBoxBounds, type WorkspaceBox } from '../../../domains/workspace/model/workspace';
 import { useInteractionStore } from '../../../app/stores/useInteractionStore';
 
 interface UseBoxDragOptions {
@@ -25,6 +25,11 @@ export function useBoxDrag({ box, allBoxes, onFocus, onUpdate, setIsDragging }: 
 
     setIsDragging(true);
     onFocus();
+    const renderedBounds = getRenderedBoxBounds(box);
+    const draggableBox = {
+      ...box,
+      bounds: renderedBounds,
+    };
 
     const dragStart = {
       clientX: event.clientX,
@@ -34,7 +39,7 @@ export function useBoxDrag({ box, allBoxes, onFocus, onUpdate, setIsDragging }: 
     };
 
     const onPointerMove = (moveEvent: PointerEvent) => {
-      const { newX, newY, snap } = computeBoxDragFrame(moveEvent, dragStart, box, allBoxes);
+      const { newX, newY, snap } = computeBoxDragFrame(moveEvent, dragStart, draggableBox, allBoxes);
 
       onUpdate({ bounds: { x: newX, y: newY } });
 
@@ -48,8 +53,8 @@ export function useBoxDrag({ box, allBoxes, onFocus, onUpdate, setIsDragging }: 
       useInteractionStore.getState().setSnapPreview({
         x: snap.x,
         y: snap.y,
-        width: box.bounds.width,
-        height: box.bounds.height,
+        width: renderedBounds.width,
+        height: renderedBounds.height,
         guides: snap.guides,
       });
     };

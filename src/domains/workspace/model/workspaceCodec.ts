@@ -8,7 +8,7 @@ import {
   isWorkspaceBoxRole,
   type WorkspaceBox,
   type WorkspaceExportDocumentV2,
-  type WorkspaceSnapshotV3,
+  type WorkspaceSnapshotV4,
 } from './workspace';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -83,6 +83,7 @@ function normalizeBox(input: unknown, index: number): WorkspaceBox | null {
       height: Math.max(BOX_MIN_HEIGHT, asNumber(rawBounds.height, 400)),
     },
     isLocked: asBoolean(input.isLocked),
+    isCollapsed: asBoolean(input.isCollapsed),
     isMinimized: asBoolean(input.isMinimized),
     layout: asString(input.layout) === 'grid' ? 'grid' : 'list',
     zIndex: Math.max(0, Math.round(asNumber(input.zIndex, index + 1))),
@@ -91,7 +92,7 @@ function normalizeBox(input: unknown, index: number): WorkspaceBox | null {
 }
 
 export function createWorkspaceExportDocument(
-  snapshot: Pick<WorkspaceSnapshotV3, 'boxesById' | 'boxOrder'>,
+  snapshot: Pick<WorkspaceSnapshotV4, 'boxesById' | 'boxOrder'>,
 ): WorkspaceExportDocumentV2 {
   return {
     version: WORKSPACE_EXPORT_VERSION,
@@ -125,9 +126,12 @@ export function parseWorkspaceExportDocument(input: unknown) {
   } satisfies WorkspaceExportDocumentV2;
 }
 
-/** Accepts persisted storage state for the workspace store (schema version 3 only). */
-export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshotV3 | null {
-  if (!isRecord(input) || input.schemaVersion !== WORKSPACE_SCHEMA_VERSION) {
+/** Accepts persisted storage state for the workspace store (schema version 4, plus legacy v3). */
+export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshotV4 | null {
+  if (
+    !isRecord(input) ||
+    (input.schemaVersion !== WORKSPACE_SCHEMA_VERSION && input.schemaVersion !== 3)
+  ) {
     return null;
   }
 

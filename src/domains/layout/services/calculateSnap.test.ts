@@ -8,6 +8,7 @@ function box(partial: Partial<WorkspaceBox> & Pick<WorkspaceBox, 'id'>): Workspa
     role: null,
     customTitle: null,
     isLocked: false,
+    isCollapsed: false,
     isMinimized: false,
     layout: 'list',
     zIndex: 1,

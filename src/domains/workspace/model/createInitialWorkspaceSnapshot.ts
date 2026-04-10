@@ -1,4 +1,4 @@
-import { WORKSPACE_SCHEMA_VERSION, type WorkspaceBox, type WorkspaceSnapshotV3 } from './workspace';
+import { WORKSPACE_SCHEMA_VERSION, type WorkspaceBox, type WorkspaceSnapshotV4 } from './workspace';
 
 function createSystemBox(
   id: string,
@@ -19,6 +19,7 @@ function createSystemBox(
       height: 400,
     },
     isLocked: false,
+    isCollapsed: false,
     isMinimized: false,
     layout,
     zIndex,
@@ -26,7 +27,7 @@ function createSystemBox(
   };
 }
 
-export function createWorkspaceSnapshot(boxes: WorkspaceBox[]): WorkspaceSnapshotV3 {
+export function createWorkspaceSnapshot(boxes: WorkspaceBox[]): WorkspaceSnapshotV4 {
   const boxesById: Record<string, WorkspaceBox> = {};
   const boxOrder: string[] = [];
   let maxZIndex = 0;
@@ -49,7 +50,7 @@ export function createWorkspaceSnapshot(boxes: WorkspaceBox[]): WorkspaceSnapsho
   };
 }
 
-export function createInitialWorkspaceSnapshot(): WorkspaceSnapshotV3 {
+export function createInitialWorkspaceSnapshot(): WorkspaceSnapshotV4 {
   return createWorkspaceSnapshot([
     createSystemBox('system-folders', 'folders', 100, 100, 10, 'grid'),
     createSystemBox('system-links', 'links', 450, 100, 11, 'list'),

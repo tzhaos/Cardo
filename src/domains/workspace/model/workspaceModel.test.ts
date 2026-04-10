@@ -108,11 +108,11 @@ test('workspace export document round-trips with current schema', () => {
   assert.equal(parsed.boxes[1].role, 'links');
 });
 
-test('workspace snapshot parser accepts only schema version 3 payloads', () => {
+test('workspace snapshot parser accepts current schema payloads', () => {
   const snapshot = createInitialWorkspaceSnapshot();
   const parsed = parseWorkspaceSnapshot(snapshot);
 
   assert.ok(parsed);
-  assert.equal(parsed?.schemaVersion, 3);
+  assert.equal(parsed?.schemaVersion, 4);
   assert.equal(parseWorkspaceSnapshot({ version: 2, boxes: [] }), null);
 });
