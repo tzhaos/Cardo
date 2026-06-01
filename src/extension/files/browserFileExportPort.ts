@@ -1,5 +1,5 @@
-import type { FileExportPort } from '../../app/ports/FileExportPort';
-import { log } from '../../lib/log';
+import type { FileExportPort } from '../../core/ports/FileExportPort';
+import { log } from '../../core/log';
 
 export const browserFileExportPort: FileExportPort = {
   downloadJson(filename, payload) {

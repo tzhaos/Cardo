@@ -1,4 +1,4 @@
-import type { RuntimeDocumentPort } from '../../app/ports/RuntimeDocumentPort';
+import type { RuntimeDocumentPort } from '../../core/ports/RuntimeDocumentPort';
 
 export const browserRuntimeDocumentPort: RuntimeDocumentPort = {
   setDocumentTitle(title) {

@@ -1,58 +1,72 @@
 # KhaosBox architecture
 
-This document is the canonical map of how the browser extension is structured. The Windows Companion is a separate .NET program; integration happens only through the `kbe:` URL scheme and shared parsing assumptions (see tests on both sides).
+KhaosBox is now organized as a multi-host TypeScript codebase. The same core and React experience are shared by the browser extension, Electron desktop shell, and CLI.
 
 ## Layer model
 
-| Layer                 | Path                  | Rules                                                                                                                                                                                                                                                       |
-| --------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Domain**            | `src/domains/**`      | Pure TypeScript: no React, no Zustand, no `window` / `document` / `chrome` in production source (tests may use Node-only APIs; the architecture script skips `*.test.ts` for the global scan).                                                              |
-| **Application**       | `src/app/**`          | Composition: Zustand stores, use-cases, React hooks, **ports** (interfaces) and **default port wiring**.                                                                                                                                                    |
-| **Features**          | `src/features/**`     | Vertical slices (UI + feature hooks) that call use-cases and stores. Each feature has an **`index.ts`** barrel: import `../features/<name>` from app or sibling features—**not** `../features/<name>/ui/...` (enforced by `scripts/check-architecture.ts`). |
-| **Widgets**           | `src/widgets/**`      | Presentational components; must not import stores, toasts, or extension/companion adapters.                                                                                                                                                                 |
-| **Extension runtime** | `src/extension/**`    | Chrome APIs and DOM: storage, clipboard, tabs, files, theme.                                                                                                                                                                                                |
-| **Integrations**      | `src/integrations/**` | Companion and other bridges.                                                                                                                                                                                                                                |
+| Layer         | Path               | Responsibility                                                                  |
+| ------------- | ------------------ | ------------------------------------------------------------------------------- |
+| **Core**      | `src/core/**`      | Runtime-agnostic domain model, reducers, codecs, migrations, protocols, ports.  |
+| **Web**       | `src/web/**`       | React UI, Zustand stores, feature hooks, use-cases, and presentation wiring.    |
+| **Extension** | `src/extension/**` | Manifest V3 shell, Chrome adapters, extension bootstrap, and background bridge. |
+| **Desktop**   | `src/desktop/**`   | Electron main/preload/renderer host and desktop adapters.                       |
+| **CLI**       | `src/cli/**`       | Node command line entry points built on core.                                   |
 
-Dependency direction: **domains ← app ← features/widgets**, with **extension** and **integrations** consumed from **app** (via ports), not from domains.
+Dependency direction:
 
-## Hooks and use-cases
+```text
+core <- web <- extension/bootstrap
+core <- extension/adapters
+core <- desktop/renderer <- web
+core <- desktop/main,preload,adapters
+core <- cli
+```
 
-- **Use-cases** (`src/app/use-cases/`) orchestrate ports, stores, and domain services. User-visible outcomes are described as **`ToastSpec`** (message key, optional params, and a level such as success / message / error / plain). Nested i18n uses `{ i18nKey: MessageKey }` inside `params`; resolution happens in one place.
-- **Presentation** (`src/app/presentation/`) maps specs to the actual toast library via **`presentToastSpec(t, spec, sink?)`**. Production passes the default **Sonner** sink; tests can stub `sink` or test **`resolveToastParamValues`** without the DOM.
-- **Feature hooks** keep **UI wiring only**: React state, DOM/React events, store subscriptions, and **`presentToastSpec(t, …)`** after calling use-cases. UI components (including settings) do not construct ad-hoc success/error branches around `toast.*`—they run a flow use-case and present the returned `ToastSpec`.
+`web` must not import `extension`, `desktop`, or `cli`. `desktop/renderer.tsx` is the only desktop module that may host the web app. CLI code depends on core only. Host-specific capabilities are injected through `AppPorts`.
 
-## Ports and dependency injection
+## Ports
 
-- **`AppPorts`** (`src/app/ports/createBrowserExtensionPorts.ts`) is the typed bundle of all side-effect adapters.
-- **`createBrowserExtensionPorts()`** builds the production implementation (Chrome + companion).
-- **`appPorts`** / **`defaultPorts.ts`** exports the extension singleton plus flat `*Port` exports for existing call sites.
-- **Tests** can call `createBrowserExtensionPorts()` and stub individual surfaces without touching globals, or mock modules that read `defaultPorts`.
+- Port interfaces live in `src/core/ports`.
+- `src/web/app/ports/defaultPorts.ts` exposes stable proxy objects and `configureAppPorts(...)`.
+- `src/extension/ports/createExtensionPorts.ts` wires Chrome storage, tabs, clipboard, file import/export, and `kbe:` local resource requests.
+- `src/desktop/ports/createDesktopPorts.ts` wires Electron preload bridge capabilities.
+- WebDAV is a host capability. The web layer calls `WebDavPort`; extension and desktop provide their own transport adapters.
 
-## State and persistence
+## Core Services
 
-- **`createWorkspaceStore(storage)`** / **`createPreferencesStore(storage)`** build Zustand stores with an injectable **`WorkspaceStoragePort`**; production uses **`useWorkspaceStore`** / **`usePreferencesStore`** from **`defaultPorts`**. Tests can construct an isolated store with a fake `StateStorage`.
-- **Workspace** persists a `WorkspaceSnapshotV3` partial via `zustand/persist`. Persist middleware **version `1`** is reserved for future envelope migrations; **`migrate`** currently passes the partial through (the workspace schema itself uses `schemaVersion: 3` inside the snapshot).
-- **Preferences** uses the same `chrome.storage.local` adapter with a separate persist key and persist **version `1`**.
-- Invalid or legacy JSON is handled in **`merge`** / `parseWorkspaceSnapshot`; see **`src/app/migrations/workspaceMigration.ts`** for file import paths.
+Pure application operations live in `src/core/services`. These services accept explicit dependencies such as snapshots, dispatch functions, id factories, and ports. They do not read Zustand stores or platform singletons.
 
-## TypeScript config
+The web layer may expose compatibility wrappers for UI call sites, but business decisions such as item opening, workspace export/import, paste target selection, and box creation belong in core services.
 
-- **`tsconfig.base.json`** holds shared compiler options; **`tsconfig.json`** extends it and includes **`src`**, **`vite.config.ts`**, and **`scripts/**/\*.ts`** for a single `tsc --noEmit` used by **`npm run lint`\*\*.
+## Web feature boundaries
+
+Feature UI modules under `src/web/features/*/ui` are layout and control surfaces. They should consume local feature hooks/controllers for state and actions. Direct imports from app stores, app use-cases, or `sonner` belong in feature hooks/controllers or app presentation modules, not in UI components. App ports stay behind app controllers or app use-cases; feature modules do not import `src/web/app/ports` directly.
+
+Web app use-cases are host-agnostic orchestration wrappers around core services, Zustand stores, and injected app ports. Pure document building, parsing, validation, and migration logic belongs in `src/core`.
+
+## Local resources
+
+KBE URL creation and parsing live in `src/core/protocols/kbeUrl.ts`.
+
+- The extension opens `kbe:` URLs for local files and folders.
+- Electron registers itself as the `kbe:` protocol handler and opens the decoded path with `shell.openPath`.
+- The previous C# companion has been removed.
+
+## Entry points
+
+- Extension new tab: `src/extension/bootstrap/newtab.tsx`
+- Electron renderer: `src/desktop/renderer.tsx`
+- Electron main: `src/desktop/main.ts`
+- Electron preload: `src/desktop/preload.ts`
+- CLI: `src/cli/main.ts`
 
 ## Quality gates
 
-- **`npm run lint`**: `tsc --noEmit` + `scripts/check-architecture.ts`.
-- **`npm run lint:eslint`**: ESLint (type-checked rules); run after `npm install`.
-- **`npm run format:check`**: Prettier.
-- **`npm run check`**: lint + ESLint + `npm run test:ts`.
-- **`npm run test`**: TypeScript tests + .NET companion tests.
-- **GitHub Actions** (`.github/workflows/ci.yml`): `npm ci`, `format:check`, `check`, and `dotnet test` on the companion project.
-- **PowerShell**: `build.ps1 -RunChecks` / `package.ps1 -RunChecks` run `npm run check` then companion **`dotnet test`** (when the companion is not skipped).
+- `npm run lint`: `tsc --noEmit` plus `scripts/check-architecture.ts`
+- `npm run lint:eslint`: ESLint
+- `npm run test:ts`: TypeScript tests
+- `npm run check`: lint, ESLint, and tests
+- `npm run build`: browser extension build
+- `npm run desktop:build`: Electron renderer/main/preload build
 
-## Adding a new capability
-
-1. Define a **port interface** under `src/app/ports/`.
-2. Implement it under `src/extension/**` or `src/integrations/**`.
-3. Add the implementation to **`createBrowserExtensionPorts`** and **`AppPorts`**.
-4. Call it from a **use-case** in `src/app/use-cases/`, not from a domain module.
-5. Add unit tests in **domains** (pure logic) or beside the adapter (integration-style).
+The architecture guard enforces the core/web/host boundaries for static and dynamic imports, blocks feature-level direct toast calls, keeps the settings shell thin, and blocks legacy top-level `src/app`, `src/domains`, `src/features`, `src/widgets`, `src/lib`, and `src/integrations` directories. It also blocks restoring the previous `companion/windows` implementation.

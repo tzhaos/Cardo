@@ -3,7 +3,7 @@ import path from 'node:path';
 import {
   migrateLegacyWorkspaceDocument,
   migrateLegacyWorkspaceSnapshot,
-} from '../src/app/migrations/workspaceMigration';
+} from '../src/core/migrations/workspaceMigration';
 
 function resolveOutputPath(
   inputPath: string,
@@ -14,7 +14,7 @@ function resolveOutputPath(
     return path.resolve(outputPath);
   }
 
-  const extension = useSnapshot ? '.snapshot-v3.json' : '.export-v2.json';
+  const extension = useSnapshot ? '.snapshot-v5.json' : '.export-v3.json';
   return `${inputPath}${extension}`;
 }
 

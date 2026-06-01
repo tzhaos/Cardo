@@ -1,5 +1,5 @@
-import type { TabsPort } from '../../app/ports/TabsPort';
-import { log } from '../../lib/log';
+import type { TabsPort } from '../../core/ports/TabsPort';
+import { log } from '../../core/log';
 import { getChromeLikeRuntime } from '../runtime/chrome';
 
 export const browserTabsPort: TabsPort = {

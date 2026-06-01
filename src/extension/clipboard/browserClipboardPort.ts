@@ -1,4 +1,4 @@
-import type { ClipboardPort } from '../../app/ports/ClipboardPort';
+import type { ClipboardPort } from '../../core/ports/ClipboardPort';
 
 export const browserClipboardPort: ClipboardPort = {
   readText: () => navigator.clipboard.readText(),

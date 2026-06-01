@@ -2,73 +2,35 @@
 param(
   [switch]$Clean,
   [switch]$RunChecks,
-  [switch]$SkipExtension
+  [switch]$SkipExtension,
+  [switch]$SkipDesktop
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-function Assert-CommandAvailable {
-  param(
-    [Parameter(Mandatory = $true)]
-    [string]$CommandName,
-    [Parameter(Mandatory = $true)]
-    [string]$InstallHint
-  )
+$buildScriptPath = Join-Path $PSScriptRoot 'build.ps1'
 
-  if (-not (Get-Command $CommandName -ErrorAction SilentlyContinue)) {
-    throw "Required command '$CommandName' was not found. $InstallHint"
-  }
+if (-not (Test-Path -LiteralPath $buildScriptPath)) {
+  throw "Unable to find build.ps1 at $buildScriptPath"
 }
 
-function Invoke-Step {
-  param(
-    [Parameter(Mandatory = $true)]
-    [string]$Title,
-    [Parameter(Mandatory = $true)]
-    [scriptblock]$Action
-  )
+$forwardedParameters = @{}
 
-  Write-Host ""
-  Write-Host "==> $Title" -ForegroundColor Cyan
-  & $Action
-
-  if ($LASTEXITCODE -ne 0) {
-    throw "Step failed: $Title"
-  }
+if ($Clean) {
+  $forwardedParameters.Clean = $true
 }
 
-Push-Location $PSScriptRoot
-
-try {
-  Assert-CommandAvailable -CommandName 'npm' -InstallHint 'Install Node.js and npm first.'
-  Assert-CommandAvailable -CommandName 'dotnet' -InstallHint 'Install the .NET SDK 9.x first.'
-
-  if ($Clean) {
-    Invoke-Step -Title 'Cleaning generated output' -Action { npm run clean }
-  }
-
-  if ($RunChecks) {
-    Invoke-Step -Title 'Running checks (tsc, architecture, ESLint, TS tests)' -Action { npm run check }
-    Invoke-Step -Title 'Running Windows companion tests' -Action {
-      dotnet test (Join-Path $PSScriptRoot 'companion/windows/tests/KhaosBoxCompanion.Tests.csproj')
-    }
-  }
-
-  if (-not $SkipExtension) {
-    Invoke-Step -Title 'Building browser extension' -Action { npm run build }
-  }
-
-  Invoke-Step -Title 'Packaging Windows companion MSI' -Action { npm run companion:windows:msi }
-
-  Write-Host ""
-  Write-Host "Package completed successfully." -ForegroundColor Green
-
-  if (-not $SkipExtension) {
-    Write-Host "Extension output: artifacts/extension/unpacked"
-  }
-
-  Write-Host "MSI output: artifacts/companion/windows/packages/KhaosBoxCompanion-win-x64.msi"
-} finally {
-  Pop-Location
+if ($RunChecks) {
+  $forwardedParameters.RunChecks = $true
 }
+
+if ($SkipExtension) {
+  $forwardedParameters.SkipExtension = $true
+}
+
+if ($SkipDesktop) {
+  $forwardedParameters.SkipDesktop = $true
+}
+
+& $buildScriptPath @forwardedParameters

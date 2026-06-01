@@ -1,0 +1,126 @@
+import { useRef, useState, type ChangeEvent } from 'react';
+import type { TranslateFn } from '../../../app/hooks/useI18n';
+import { presentToastSpec, presentToastText } from '../../../app/presentation/toastSpec';
+import { usePreferencesStore } from '../../../app/stores/usePreferencesStore';
+import {
+  runExportWorkspaceForUi,
+  runImportWorkspaceForUi,
+} from '../../../app/use-cases/runWorkspaceBackupFlow';
+import {
+  buildCurrentWebDavConfig,
+  downloadWorkspaceFromWebDav,
+  safeSyncErrorMessage,
+  testWebDavConnection,
+  uploadWorkspaceToWebDav,
+} from '../../../app/use-cases/syncWorkspaceWebDav';
+
+type SyncAction = 'idle' | 'testing' | 'uploading' | 'downloading';
+
+export interface DataSettingsCopy {
+  syncIdle: string;
+  syncSuccess: string;
+  syncTesting: string;
+  syncUploading: string;
+  syncDownloading: string;
+  syncTestSuccess: string;
+  syncUploadSuccess: string;
+  syncDownloadSuccess: string;
+}
+
+export function useDataSettingsActions(t: TranslateFn, copy: DataSettingsCopy) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [syncAction, setSyncAction] = useState<SyncAction>('idle');
+
+  const webdavEndpoint = usePreferencesStore((state) => state.webdavEndpoint);
+  const setWebDavEndpoint = usePreferencesStore((state) => state.setWebDavEndpoint);
+  const webdavUsername = usePreferencesStore((state) => state.webdavUsername);
+  const setWebDavUsername = usePreferencesStore((state) => state.setWebDavUsername);
+  const webdavPassword = usePreferencesStore((state) => state.webdavPassword);
+  const setWebDavPassword = usePreferencesStore((state) => state.setWebDavPassword);
+  const webdavRemoteFilePath = usePreferencesStore((state) => state.webdavRemoteFilePath);
+  const setWebDavRemoteFilePath = usePreferencesStore((state) => state.setWebDavRemoteFilePath);
+  const webdavLastSyncedAt = usePreferencesStore((state) => state.webdavLastSyncedAt);
+
+  const runSyncAction = async (
+    nextAction: Exclude<SyncAction, 'idle'>,
+    runner: () => Promise<void>,
+    successMessage: string,
+  ) => {
+    setSyncAction(nextAction);
+
+    try {
+      await runner();
+      presentToastText('success', successMessage);
+    } catch (error) {
+      presentToastText('error', safeSyncErrorMessage(error));
+    } finally {
+      setSyncAction('idle');
+    }
+  };
+
+  const currentSyncStatus =
+    syncAction === 'testing'
+      ? copy.syncTesting
+      : syncAction === 'uploading'
+        ? copy.syncUploading
+        : syncAction === 'downloading'
+          ? copy.syncDownloading
+          : webdavLastSyncedAt
+            ? copy.syncSuccess
+            : copy.syncIdle;
+
+  return {
+    fileInputRef,
+    syncAction,
+    currentSyncStatus,
+    webdavEndpoint,
+    setWebDavEndpoint,
+    webdavUsername,
+    setWebDavUsername,
+    webdavPassword,
+    setWebDavPassword,
+    webdavRemoteFilePath,
+    setWebDavRemoteFilePath,
+    webdavLastSyncedAt,
+    handleExport: () => {
+      presentToastSpec(t, runExportWorkspaceForUi(t));
+    },
+    handleImport: async (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+
+      if (!file) {
+        return;
+      }
+
+      presentToastSpec(t, await runImportWorkspaceForUi(file));
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    },
+    testConnection: () =>
+      runSyncAction(
+        'testing',
+        async () => {
+          await testWebDavConnection(buildCurrentWebDavConfig());
+        },
+        copy.syncTestSuccess,
+      ),
+    uploadNow: () =>
+      runSyncAction(
+        'uploading',
+        async () => {
+          await uploadWorkspaceToWebDav(buildCurrentWebDavConfig());
+        },
+        copy.syncUploadSuccess,
+      ),
+    downloadNow: () =>
+      runSyncAction(
+        'downloading',
+        async () => {
+          await downloadWorkspaceFromWebDav(buildCurrentWebDavConfig());
+        },
+        copy.syncDownloadSuccess,
+      ),
+  };
+}

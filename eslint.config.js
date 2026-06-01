@@ -15,16 +15,19 @@ const typeCheckedTsOnly = tseslint.configs.recommendedTypeChecked.map((config) =
 
 export default tseslint.config(
   {
-    ignores: [
-      'artifacts/**',
-      'dist/**',
-      'node_modules/**',
-      'companion/**',
-      'eslint.config.js',
-      'scripts/**/*.mjs',
-    ],
+    ignores: ['artifacts/**', 'dist/**', 'node_modules/**', 'eslint.config.js', 'scripts/**/*.mjs'],
   },
   eslint.configs.recommended,
+  {
+    files: ['assets/extension-shell/background.js'],
+    languageOptions: {
+      globals: {
+        btoa: 'readonly',
+        chrome: 'readonly',
+        fetch: 'readonly',
+      },
+    },
+  },
   ...typeCheckedTsOnly,
   {
     files: ['**/*.test.ts', '**/*.test.tsx'],

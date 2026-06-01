@@ -3,7 +3,7 @@ param(
   [switch]$Clean,
   [switch]$RunChecks,
   [switch]$SkipExtension,
-  [switch]$SkipCompanion
+  [switch]$SkipDesktop
 )
 
 $ErrorActionPreference = 'Stop'
@@ -15,9 +15,7 @@ if (-not (Test-Path -LiteralPath $buildScriptPath)) {
   throw "Unable to find build.ps1 at $buildScriptPath"
 }
 
-$forwardedParameters = @{
-  PublishCompanion = $true
-}
+$forwardedParameters = @{}
 
 if ($Clean) {
   $forwardedParameters.Clean = $true
@@ -31,8 +29,8 @@ if ($SkipExtension) {
   $forwardedParameters.SkipExtension = $true
 }
 
-if ($SkipCompanion) {
-  $forwardedParameters.SkipCompanion = $true
+if ($SkipDesktop) {
+  $forwardedParameters.SkipDesktop = $true
 }
 
 & $buildScriptPath @forwardedParameters

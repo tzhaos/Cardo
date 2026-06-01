@@ -21,8 +21,4 @@ jobs:
 
       - run: npm run check
 
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '9.0.x'
-
-      - run: dotnet test companion/windows/tests/KhaosBoxCompanion.Tests.csproj
+      - run: npm run desktop:build
