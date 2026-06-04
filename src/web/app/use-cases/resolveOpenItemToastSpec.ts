@@ -22,7 +22,7 @@ export function resolveOpenItemToastSpec(
     return {
       level: 'error',
       messageKey: 'toast.unableToOpen',
-      params: { title: item.title },
+      params: { title: item.title, reason: result.errorMessage },
     };
   }
 

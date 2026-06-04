@@ -56,7 +56,7 @@ export function WinSelect<Value extends string>({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
             transition={{ duration: 0.1 }}
-            className="absolute right-0 top-full z-50 mt-1 min-w-[140px] rounded-md border border-win-border bg-win-mica py-1 shadow-win-flyout backdrop-blur-xl"
+            className="absolute right-0 top-full z-50 mt-1 min-w-[140px] rounded-md border border-win-border bg-win-mica py-1 shadow-win-flyout"
           >
             {options.map((option) => {
               const isActive = option.value === value;

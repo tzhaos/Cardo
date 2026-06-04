@@ -14,9 +14,9 @@
   --color-win-text: #1a1a1a;
   --color-win-text-secondary: #5c5c5c;
   --color-win-accent: #005fb8;
-  --color-win-hover: rgba(0, 0, 0, 0.04);
-  --color-win-active: rgba(0, 0, 0, 0.08);
-  --color-win-mica: rgba(243, 243, 243, 0.85);
+  --color-win-hover: #eeeeee;
+  --color-win-active: #e6e6e6;
+  --color-win-mica: #f3f3f3;
   --color-folder-bg: #fff7e0;
   --color-folder-border: #f2e4c3;
   --color-folder-text: #e8b024;
@@ -37,7 +37,7 @@
   --app-bg: #0a0a0a;
   --desktop-grid: rgba(255, 255, 255, 0.05);
   --desktop-glow: rgba(120, 119, 198, 0.18);
-  --shell-surface: rgba(255, 255, 255, 0.08);
+  --shell-surface: #202020;
   --shell-border: rgba(255, 255, 255, 0.18);
   --shell-muted: rgba(255, 255, 255, 0.72);
   --shell-strong: #ffffff;
@@ -51,14 +51,14 @@
   --color-win-text: #ffffff;
   --color-win-text-secondary: #a0a0a0;
   --color-win-accent: #a63a46;
-  --color-win-hover: rgba(255, 255, 255, 0.06);
-  --color-win-active: rgba(255, 255, 255, 0.09);
-  --color-win-mica: rgba(32, 32, 32, 0.85);
-  --color-folder-bg: rgba(255, 215, 100, 0.06);
-  --color-folder-border: rgba(255, 215, 100, 0.12);
+  --color-win-hover: #272727;
+  --color-win-active: #303030;
+  --color-win-mica: #202020;
+  --color-folder-bg: #3a321c;
+  --color-folder-border: #5d4b1d;
   --color-folder-text: #ffd764;
   --color-folder-fill: #e5b52b;
-  --color-file-bg: rgba(255, 255, 255, 0.03);
+  --color-file-bg: #242424;
   --color-file-text: #9e9e9e;
 
   --shadow-win-card: 0 4px 8px rgba(0, 0, 0, 0.2), 0 0 2px rgba(0, 0, 0, 0.3);
@@ -76,7 +76,7 @@
   --app-bg: #edf3fb;
   --desktop-grid: rgba(71, 85, 105, 0.1);
   --desktop-glow: rgba(56, 189, 248, 0.18);
-  --shell-surface: rgba(255, 255, 255, 0.62);
+  --shell-surface: #ffffff;
   --shell-border: rgba(148, 163, 184, 0.3);
   --shell-muted: rgba(15, 23, 42, 0.72);
   --shell-strong: #0f172a;
@@ -90,9 +90,9 @@
   --color-win-text: #1a1a1a;
   --color-win-text-secondary: #5c5c5c;
   --color-win-accent: #005fb8;
-  --color-win-hover: rgba(0, 0, 0, 0.04);
-  --color-win-active: rgba(0, 0, 0, 0.08);
-  --color-win-mica: rgba(243, 243, 243, 0.85);
+  --color-win-hover: #eeeeee;
+  --color-win-active: #e6e6e6;
+  --color-win-mica: #f3f3f3;
   --color-folder-bg: #fff7e0;
   --color-folder-border: #f2e4c3;
   --color-folder-text: #e8b024;
@@ -200,8 +200,6 @@ select {
     border: 1px solid var(--color-win-border);
     background-color: var(--color-win-mica);
     box-shadow: var(--shadow-win-flyout);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
   }
 
   .kb-dock-action {
@@ -274,7 +272,7 @@ select {
 
   .kb-add-panel {
     border-color: var(--color-win-border-strong);
-    background: color-mix(in srgb, var(--color-win-card) 84%, transparent);
+    background: var(--color-win-card);
   }
 
   .kb-subtle-text {
@@ -347,17 +345,22 @@ select {
     background: var(--color-win-hover);
     color: var(--color-win-text);
   }
+
+  .kb-settings-surface {
+    border: 1px solid var(--color-win-border);
+    background-color: var(--color-win-mica);
+  }
 }
 
 @layer utilities {
   .win-mica {
     background-color: var(--color-win-mica);
-    @apply border border-win-border backdrop-blur-2xl transition-colors duration-300;
+    @apply border border-win-border transition-colors duration-300;
   }
 
   .win-acrylic {
     background-color: var(--color-win-card);
-    @apply border border-win-border backdrop-blur-3xl transition-colors duration-300;
+    @apply border border-win-border transition-colors duration-300;
   }
 
   .kb-scroll-hidden {

@@ -2,7 +2,7 @@ import type { AppPorts } from '../../core/ports/AppPorts';
 import { browserClipboardPort } from '../clipboard/browserClipboardPort';
 import { browserFileExportPort } from '../files/browserFileExportPort';
 import { browserFileImportPort } from '../files/browserFileImportPort';
-import { kbeLocalResourcePort } from '../local-resource/kbeLocalResourcePort';
+import { nativeMessagingLocalResourcePort } from '../local-resource/nativeMessagingLocalResourcePort';
 import { browserTabsPort } from '../navigation/browserTabsPort';
 import { browserRuntimeDocumentPort } from '../runtime/browserRuntimeDocumentPort';
 import { extensionStateStorage } from '../storage/stateStorage';
@@ -19,7 +19,7 @@ export function createExtensionPorts(): AppPorts {
     fileImport: browserFileImportPort,
     tabs: browserTabsPort,
     runtimeDocument: browserRuntimeDocumentPort,
-    localResource: kbeLocalResourcePort,
+    localResource: nativeMessagingLocalResourcePort,
     webDav: extensionWebDavPort,
   };
 }

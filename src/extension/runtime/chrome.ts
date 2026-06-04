@@ -21,6 +21,11 @@ type ChromeLikeRuntime = {
       message: unknown,
       callback?: (response: unknown) => void,
     ) => Promise<unknown> | void;
+    sendNativeMessage?: (
+      application: string,
+      message: unknown,
+      callback?: (response: unknown) => void,
+    ) => Promise<unknown> | void;
   };
   storage?: {
     local?: ChromeStorageArea;

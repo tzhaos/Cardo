@@ -92,7 +92,7 @@ export default function ItemCard({
   const pinnedButtonClassName =
     layout === 'grid'
       ? cn(
-          'kb-item-grid-control rounded-md border p-1.5 shadow-sm backdrop-blur-sm',
+          'kb-item-grid-control rounded-md border p-1.5 shadow-sm',
           item.isPinned ? 'bg-win-hover text-win-accent border-win-border-strong' : '',
         )
       : cn(
@@ -195,7 +195,7 @@ export default function ItemCard({
           className={cn(
             'transition-colors',
             layout === 'grid'
-              ? 'kb-item-grid-control rounded-md border p-1.5 shadow-sm backdrop-blur-sm hover:bg-win-accent hover:text-white'
+              ? 'kb-item-grid-control rounded-md border p-1.5 shadow-sm hover:bg-win-accent hover:text-white'
               : 'kb-item-list-control rounded-md p-1.5 text-win-text-secondary hover:bg-win-hover hover:text-win-text',
           )}
           title={editLabel}
@@ -207,7 +207,7 @@ export default function ItemCard({
           className={cn(
             'transition-colors',
             layout === 'grid'
-              ? 'kb-item-grid-control rounded-md border p-1.5 shadow-sm backdrop-blur-sm hover:bg-red-500/80 hover:text-white'
+              ? 'kb-item-grid-control rounded-md border p-1.5 shadow-sm hover:bg-red-500 hover:text-white'
               : 'kb-item-list-control rounded-md p-1.5 text-win-text-secondary hover:bg-win-hover hover:text-win-text',
           )}
           title={deleteLabel}

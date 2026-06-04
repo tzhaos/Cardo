@@ -6,6 +6,7 @@
  * - web/ owns React UI and may import core, but must not import extension, desktop, or cli.
  * - extension/ adapters may import core; only extension/bootstrap may import web.
  * - desktop/renderer may host web; other desktop modules must not import web, extension, or cli.
+ * - native-host/ is a Node stdio bridge over core and must not import web, extension, desktop, or cli.
  * - cli/ is a Node adapter over core and must not import web, extension, or desktop.
  * - web/widgets/ must stay presentational and must not import stores, toast libraries, or host adapters.
  * - web features must not import app ports directly; feature UI must not import app stores, app use-cases, or sonner directly.
@@ -82,6 +83,10 @@ for (const filePath of walk(ROOT)) {
   const content = fs.readFileSync(filePath, 'utf8');
   const imports = readImports(content);
   const localImportTargets = imports.map((specifier) => resolveLocalImport(filePath, specifier));
+
+  if (!isTestFile(relativePath) && /\bkbe:|KBE|createKbeUrl|parseKbeUrl/.test(content)) {
+    issues.push(`${relativePath}: kbe protocol compatibility has been removed`);
+  }
 
   if (relativePath.startsWith('src/core/')) {
     if (imports.some((specifier) => specifier === 'react' || specifier.startsWith('react/'))) {
@@ -170,6 +175,17 @@ for (const filePath of walk(ROOT)) {
       importTargets(localImportTargets, 'src/web')
     ) {
       issues.push(`${relativePath}: only desktop renderer may import the web app`);
+    }
+  }
+
+  if (relativePath.startsWith('src/native-host/')) {
+    if (
+      importTargets(localImportTargets, 'src/web') ||
+      importTargets(localImportTargets, 'src/extension') ||
+      importTargets(localImportTargets, 'src/desktop') ||
+      importTargets(localImportTargets, 'src/cli')
+    ) {
+      issues.push(`${relativePath}: native-host must depend on core, not UI or host layers`);
     }
   }
 

@@ -5,6 +5,7 @@
     "vite.config.ts",
     "vite.desktop.config.ts",
     "vite.desktop-main.config.ts",
+    "vite.native-host.config.ts",
     "scripts/**/*.ts",
     "eslint.config.js"
   ]

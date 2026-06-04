@@ -40,6 +40,6 @@ test('resolveOpenItemToastSpec maps failed', () => {
   assert.deepEqual(resolveOpenItemToastSpec(result, item), {
     level: 'error',
     messageKey: 'toast.unableToOpen',
-    params: { title: 'X' },
+    params: { title: 'X', reason: 'x' },
   });
 });

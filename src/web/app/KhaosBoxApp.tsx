@@ -16,7 +16,6 @@ export default function KhaosBoxApp() {
   const fontSize = usePreferencesStore((state) => state.fontSize);
   const accentMode = usePreferencesStore((state) => state.accentMode);
   const accentColor = usePreferencesStore((state) => state.accentColor);
-  const transparencyEnabled = usePreferencesStore((state) => state.transparencyEnabled);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -29,7 +28,7 @@ export default function KhaosBoxApp() {
       );
       document.documentElement.style.setProperty(
         '--color-win-mica',
-        getMicaColor(resolvedTheme, transparencyEnabled),
+        getMicaColor(resolvedTheme, false),
       );
       document.documentElement.style.setProperty('--kb-font-family', resolveFontFamily(fontFamily));
       document.documentElement.style.setProperty('--kb-font-size', resolveFontSize(fontSize));
@@ -43,7 +42,7 @@ export default function KhaosBoxApp() {
 
     mediaQuery.addEventListener('change', applyTheme);
     return () => mediaQuery.removeEventListener('change', applyTheme);
-  }, [accentColor, accentMode, fontFamily, fontSize, theme, transparencyEnabled]);
+  }, [accentColor, accentMode, fontFamily, fontSize, theme]);
 
   return <WorkspaceDesktop />;
 }

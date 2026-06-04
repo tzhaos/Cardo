@@ -51,9 +51,11 @@ export function createDesktopPorts(): AppPorts {
       }),
     },
     localResource: {
-      requestOpen: (resourcePath) => {
-        void getDesktopBridge().openLocalResource(resourcePath);
-        return { status: 'requested' };
+      requestOpen: async (resourcePath) => {
+        const result = await getDesktopBridge().openLocalResource(resourcePath);
+        return result.ok
+          ? { status: 'requested' }
+          : { status: 'failed', errorMessage: result.error };
       },
     },
     webDav: fetchWebDavPort,

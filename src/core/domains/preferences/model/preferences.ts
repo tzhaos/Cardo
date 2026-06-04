@@ -45,7 +45,7 @@ export const DEFAULT_PREFERENCES: PreferencesState = {
   accentMode: 'auto',
   accentColor: DEFAULT_MANUAL_ACCENT_COLOR,
   recentAccentColors: [DEFAULT_DARK_ACCENT_COLOR, DEFAULT_LIGHT_ACCENT_COLOR],
-  transparencyEnabled: true,
+  transparencyEnabled: false,
   webdavEndpoint: DEFAULT_WEBDAV_ENDPOINT,
   webdavUsername: '',
   webdavPassword: '',
@@ -101,12 +101,8 @@ export function resolveAccentColor(
   return accentMode === 'manual' ? accentColor : getDefaultAccentColor(theme);
 }
 
-export function getMicaColor(theme: ResolvedAppTheme, transparencyEnabled: boolean) {
-  if (theme === 'dark') {
-    return transparencyEnabled ? 'rgba(32, 32, 32, 0.85)' : '#202020';
-  }
-
-  return transparencyEnabled ? 'rgba(243, 243, 243, 0.85)' : '#f3f3f3';
+export function getMicaColor(theme: ResolvedAppTheme, _transparencyEnabled: boolean) {
+  return theme === 'dark' ? '#202020' : '#f3f3f3';
 }
 
 export function pushRecentAccentColor(recentAccentColors: string[], accentColor: string) {

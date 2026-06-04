@@ -1,8 +1,10 @@
-/** Port for requesting the Companion to open local files/folders via the kbe: protocol. */
+/** Port for requesting a host runtime to open local files/folders. */
 export type LocalResourceRequestResult =
   | { status: 'requested' }
   | { status: 'failed'; errorMessage: string };
 
 export interface LocalResourcePort {
-  requestOpen(resourcePath: string): LocalResourceRequestResult;
+  requestOpen(
+    resourcePath: string,
+  ): LocalResourceRequestResult | Promise<LocalResourceRequestResult>;
 }

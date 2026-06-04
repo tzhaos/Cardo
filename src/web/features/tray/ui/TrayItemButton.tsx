@@ -42,7 +42,7 @@ export default function TrayItemButton({ box, compact = false, onClick }: TrayIt
         {isTransitioning ? (
           <motion.span
             aria-hidden="true"
-            className="absolute inset-0 rounded-lg bg-white/5"
+            className="absolute inset-0 rounded-lg bg-win-active"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{
               opacity: isReceivingBox ? [0, 0.18, 0] : [0, 0.12, 0],

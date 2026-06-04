@@ -60,8 +60,6 @@ export function useThemeSettings() {
   const accentColor = usePreferencesStore((state) => state.accentColor);
   const setAccentColor = usePreferencesStore((state) => state.setAccentColor);
   const recentAccentColors = usePreferencesStore((state) => state.recentAccentColors);
-  const transparencyEnabled = usePreferencesStore((state) => state.transparencyEnabled);
-  const setTransparencyEnabled = usePreferencesStore((state) => state.setTransparencyEnabled);
   const resolvedTheme = useResolvedTheme(theme);
   const colorInputRef = useRef<HTMLInputElement>(null);
 
@@ -70,7 +68,6 @@ export function useThemeSettings() {
       ? {
           previewTitle: '\u9884\u89c8',
           modeTitle: '\u6a21\u5f0f',
-          transparencyTitle: '\u900f\u660e',
           accentModeTitle: '\u5f3a\u8c03\u8272',
           recentColorsTitle: '\u6700\u8fd1\u4f7f\u7528',
           paletteTitle: '\u989c\u8272\u677f',
@@ -88,7 +85,6 @@ export function useThemeSettings() {
       : {
           previewTitle: 'Preview',
           modeTitle: 'Mode',
-          transparencyTitle: 'Transparency',
           accentModeTitle: 'Accent',
           recentColorsTitle: 'Recent',
           paletteTitle: 'Palette',
@@ -112,8 +108,6 @@ export function useThemeSettings() {
     setAccentMode,
     accentColor,
     setAccentColor,
-    transparencyEnabled,
-    setTransparencyEnabled,
     resolvedTheme,
     colorInputRef,
     accentSwatches: ACCENT_SWATCHES,

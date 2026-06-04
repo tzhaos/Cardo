@@ -2,12 +2,10 @@ import { app, BrowserWindow, clipboard, dialog, ipcMain, shell } from 'electron'
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseKbeUrl } from '../core/protocols/kbeUrl';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rendererIndex = path.resolve(__dirname, '../renderer/index.html');
 const preloadScript = path.resolve(__dirname, 'preload.js');
-const protocolScheme = 'kbe';
 
 async function readStateFile() {
   const statePath = path.join(app.getPath('userData'), 'state.json');
@@ -65,20 +63,6 @@ function registerIpcHandlers() {
   });
 }
 
-function findProtocolUrl(argv: string[]) {
-  return argv.find((argument) => argument.startsWith(`${protocolScheme}:`)) ?? null;
-}
-
-async function openKbeUrl(input: string) {
-  const resourcePath = parseKbeUrl(input);
-
-  if (!resourcePath) {
-    return;
-  }
-
-  await shell.openPath(resourcePath);
-}
-
 async function createWindow() {
   const win = new BrowserWindow({
     width: 1280,
@@ -106,16 +90,9 @@ const singleInstanceLock = app.requestSingleInstanceLock();
 if (!singleInstanceLock) {
   app.quit();
 } else {
-  app.setAsDefaultProtocolClient(protocolScheme);
   registerIpcHandlers();
 
-  app.on('second-instance', (_event, argv) => {
-    const protocolUrl = findProtocolUrl(argv);
-
-    if (protocolUrl) {
-      void openKbeUrl(protocolUrl);
-    }
-
+  app.on('second-instance', () => {
     const [win] = BrowserWindow.getAllWindows();
     if (win) {
       if (win.isMinimized()) {
@@ -125,20 +102,9 @@ if (!singleInstanceLock) {
     }
   });
 
-  app.on('open-url', (event, url) => {
-    event.preventDefault();
-    void openKbeUrl(url);
-  });
-
   void app
     .whenReady()
     .then(async () => {
-      const startupProtocolUrl = findProtocolUrl(process.argv);
-
-      if (startupProtocolUrl) {
-        void openKbeUrl(startupProtocolUrl);
-      }
-
       await createWindow();
 
       app.on('activate', () => {

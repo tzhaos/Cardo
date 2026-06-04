@@ -63,7 +63,7 @@ export async function openWorkspaceItem(
       return { status: 'copied-note' };
     }
 
-    const result = ports.requestOpen(getWorkspaceItemContent(item));
+    const result = await ports.requestOpen(getWorkspaceItemContent(item));
 
     return result.status === 'requested'
       ? { status: 'requested-local-resource' }
