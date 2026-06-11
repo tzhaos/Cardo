@@ -6,4 +6,3 @@ coverage/
 *.crx
 *.pem
 .env*
-!.env.example

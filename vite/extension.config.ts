@@ -6,11 +6,11 @@ import { defineConfig } from 'vite';
 import {
   EXTENSION_LOCALE_CODES,
   EXTENSION_LOCALE_MESSAGES,
-} from './src/core/domains/i18n/model/messages';
+} from '../src/core/domains/i18n/model/messages';
 
-const EXTENSION_OUT_DIR = path.resolve(__dirname, 'artifacts/extension/unpacked');
+const EXTENSION_OUT_DIR = path.resolve(__dirname, '../artifacts/extension/unpacked');
 const PACKAGE_JSON = JSON.parse(
-  fs.readFileSync(path.resolve(__dirname, 'package.json'), 'utf8'),
+  fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8'),
 ) as {
   version?: string;
   license?: string;
@@ -39,9 +39,9 @@ function copyExtensionAssets() {
     name: 'copy-extension-assets',
     writeBundle(options: { dir?: string }) {
       const outDir = options.dir ? path.resolve(options.dir) : EXTENSION_OUT_DIR;
-      const manifestSource = path.resolve(__dirname, 'assets/extension-shell/manifest.json');
-      const backgroundSource = path.resolve(__dirname, 'assets/extension-shell/background.js');
-      const iconsSource = path.resolve(__dirname, 'assets/extension-shell/icons');
+      const manifestSource = path.resolve(__dirname, '../assets/extension-shell/manifest.json');
+      const backgroundSource = path.resolve(__dirname, '../assets/extension-shell/background.js');
+      const iconsSource = path.resolve(__dirname, '../assets/extension-shell/icons');
 
       fs.mkdirSync(outDir, { recursive: true });
       fs.copyFileSync(manifestSource, path.join(outDir, 'manifest.json'));
@@ -82,7 +82,7 @@ export default defineConfig(() => {
       outDir: EXTENSION_OUT_DIR,
       rollupOptions: {
         input: {
-          newtab: path.resolve(__dirname, 'assets/extension-shell/pages/newtab.html'),
+          newtab: path.resolve(__dirname, '../assets/extension-shell/pages/newtab.html'),
         },
       },
     },

@@ -3,12 +3,12 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   build: {
-    outDir: path.resolve(__dirname, 'artifacts/desktop/main'),
+    outDir: path.resolve(__dirname, '../artifacts/desktop/main'),
     emptyOutDir: true,
     lib: {
       entry: {
-        main: path.resolve(__dirname, 'src/desktop/main.ts'),
-        preload: path.resolve(__dirname, 'src/desktop/preload.ts'),
+        main: path.resolve(__dirname, '../src/desktop/main.ts'),
+        preload: path.resolve(__dirname, '../src/desktop/preload.ts'),
       },
       formats: ['es'],
     },

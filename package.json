@@ -1,14 +1,17 @@
 {
   "name": "khaosbox",
+  "productName": "KhaosBox",
   "private": true,
   "version": "0.0.0",
+  "description": "A spatial workspace for your browser",
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "vite build --watch",
-    "build": "vite build",
-    "desktop:build": "vite build --config vite.desktop.config.ts && vite build --config vite.desktop-main.config.ts",
-    "native-host:build": "vite build --config vite.native-host.config.ts && tsx scripts/package-native-host.ts",
+    "dev": "vite build --watch --config vite/extension.config.ts",
+    "build": "vite build --config vite/extension.config.ts",
+    "desktop:build": "vite build --config vite/desktop-renderer.config.ts && vite build --config vite/desktop-main.config.ts",
+    "desktop:package": "npm run desktop:build && node -e \"const p=require('./package.json');const fs=require('node:fs');fs.writeFileSync('artifacts/desktop/package.json',JSON.stringify({name:p.name,productName:'KhaosBox',description:p.description,version:p.version,main:'main/main.js',type:'module'},null,2)+'\\n')\" && electron-builder --win",
+    "native-host:build": "vite build --config vite/native-host.config.ts && tsx scripts/package-native-host.ts",
     "native-host:install": "npm run native-host:build && tsx scripts/install-native-host.ts",
     "native-host:uninstall": "tsx scripts/uninstall-native-host.ts",
     "desktop:start": "npm run desktop:build && electron artifacts/desktop/main/main.js",
@@ -18,8 +21,8 @@
     "lint:eslint": "node scripts/run-eslint.mjs .",
     "lint:fix": "node scripts/run-eslint.mjs . --fix",
     "check": "npm run lint && npm run lint:eslint && npm run test:ts",
-    "format": "node scripts/run-prettier.mjs --write \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.ts\" \"README.md\" \"README_zh.md\" \"vite.config.ts\" \"vite.desktop.config.ts\" \"vite.desktop-main.config.ts\" \"vite.native-host.config.ts\" \"eslint.config.js\"",
-    "format:check": "node scripts/run-prettier.mjs --check \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.ts\" \"README.md\" \"README_zh.md\" \"vite.config.ts\" \"vite.desktop.config.ts\" \"vite.desktop-main.config.ts\" \"vite.native-host.config.ts\"",
+    "format": "node scripts/run-prettier.mjs --write \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.ts\" \"README.md\" \"README_zh.md\" \"vite/*.ts\" \"eslint.config.js\"",
+    "format:check": "node scripts/run-prettier.mjs --check \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.ts\" \"README.md\" \"README_zh.md\" \"vite/*.ts\" \"eslint.config.js\"",
     "test:ts": "tsx --test \"src/**/*.test.ts\"",
     "test": "npm run test:ts"
   },
@@ -41,7 +44,8 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.0.4",
     "autoprefixer": "^10.4.21",
-    "electron": "^42.3.0",
+    "electron": "^42.4.0",
+    "electron-builder": "^26.15.2",
     "eslint": "^9.23.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-react": "^7.37.4",
@@ -53,5 +57,49 @@
     "typescript": "~5.8.2",
     "typescript-eslint": "^8.29.0",
     "vite": "^6.2.0"
+  },
+  "build": {
+    "electronVersion": "42.3.0",
+    "electronDownload": {
+      "mirror": "https://npmmirror.com/mirrors/electron/"
+    },
+    "directories": {
+      "app": "artifacts/desktop",
+      "output": "artifacts/desktop-dist"
+    },
+    "files": [
+      "main/**",
+      "renderer/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }

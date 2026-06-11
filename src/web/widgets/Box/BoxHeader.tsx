@@ -9,7 +9,7 @@ import {
   Unlock,
   X,
 } from 'lucide-react';
-import type { MouseEvent, PointerEvent, RefObject } from 'react';
+import type { MouseEvent, RefObject } from 'react';
 import type { WorkspaceBox } from '../../../core/domains/workspace/model/workspace';
 import { cn } from '../../lib/utils';
 
@@ -29,7 +29,7 @@ interface BoxHeaderProps {
   expandLabel: string;
   minimizeLabel: string;
   closeLabel: string;
-  onDragStart: (event: PointerEvent) => void;
+  onDragStart: (event: MouseEvent<HTMLDivElement>) => void;
   onStartEdit: (event: MouseEvent<HTMLDivElement>) => void;
   onTitleChange: (value: string) => void;
   onFinishEditing: (shouldSave: boolean) => void;
@@ -72,7 +72,7 @@ export default function BoxHeader({
         'kb-box-header group flex shrink-0 select-none items-center justify-between p-3 pb-2',
         isEditing || isInteractionLocked ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
       )}
-      onPointerDown={isEditing || isInteractionLocked ? undefined : onDragStart}
+      onMouseDown={isEditing || isInteractionLocked ? undefined : onDragStart}
     >
       <div className="flex flex-1 items-center gap-2 overflow-hidden" onDoubleClick={onStartEdit}>
         <Package size={16} className="shrink-0 text-win-text" strokeWidth={2} />

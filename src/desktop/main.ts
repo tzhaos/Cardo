@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const rendererIndex = path.resolve(__dirname, '../renderer/index.html');
+const rendererIndex = path.resolve(__dirname, '../renderer/assets/desktop-shell/index.html');
 const preloadScript = path.resolve(__dirname, 'preload.js');
 
 async function readStateFile() {

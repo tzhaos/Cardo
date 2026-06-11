@@ -1,4 +1,4 @@
-import type { PointerEvent as ReactPointerEvent } from 'react';
+import type { MouseEvent as ReactMouseEvent } from 'react';
 import { useRef } from 'react';
 import { computeBoxDragFrame } from '../../../../core/domains/layout/services/computeBoxDragFrame';
 import {
@@ -7,7 +7,6 @@ import {
 } from '../../../../core/domains/workspace/model/workspace';
 import { hasEditingSession, setSnapPreview } from '../../../app/controllers/interactionController';
 import { useCanvasStore } from '../../../app/stores/useCanvasStore';
-import { startDocumentPointerGesture } from '../../workspace-desktop/services/pointerGesture';
 
 interface UseBoxDragOptions {
   box: WorkspaceBox;
@@ -21,11 +20,11 @@ export function useBoxDrag({ box, allBoxes, onFocus, onUpdate, setIsDragging }: 
   const lastSnapRef = useRef<string | null>(null);
   const setInteractionMode = useCanvasStore((state) => state.setInteractionMode);
 
-  const handleDragStart = (event: ReactPointerEvent) => {
+  const handleDragStart = (event: ReactMouseEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.stopPropagation();
 
-    if (box.isLocked || hasEditingSession()) {
+    if (event.button !== 0 || box.isLocked || hasEditingSession()) {
       return;
     }
 
@@ -45,7 +44,7 @@ export function useBoxDrag({ box, allBoxes, onFocus, onUpdate, setIsDragging }: 
       initialBoxY: box.bounds.y,
     };
 
-    const onPointerMove = (moveEvent: PointerEvent) => {
+    const handleMouseMove = (moveEvent: MouseEvent) => {
       const { newX, newY, snap } = computeBoxDragFrame(
         moveEvent,
         dragStart,
@@ -74,6 +73,8 @@ export function useBoxDrag({ box, allBoxes, onFocus, onUpdate, setIsDragging }: 
     const finishDrag = () => {
       setIsDragging(false);
       setInteractionMode('idle');
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', finishDrag);
 
       if (lastSnapRef.current) {
         const [snappedX, snappedY] = lastSnapRef.current.split(',').map(Number);
@@ -84,10 +85,8 @@ export function useBoxDrag({ box, allBoxes, onFocus, onUpdate, setIsDragging }: 
       setSnapPreview(null);
     };
 
-    startDocumentPointerGesture({
-      onMove: onPointerMove,
-      onEnd: finishDrag,
-    });
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', finishDrag);
   };
 
   return { handleDragStart };

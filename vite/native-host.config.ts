@@ -3,9 +3,9 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   build: {
-    outDir: path.resolve(__dirname, 'artifacts/native-host'),
+    outDir: path.resolve(__dirname, '../artifacts/native-host'),
     emptyOutDir: true,
-    ssr: path.resolve(__dirname, 'src/native-host/main.ts'),
+    ssr: path.resolve(__dirname, '../src/native-host/main.ts'),
     target: 'node22',
     rollupOptions: {
       external: ['node:child_process', 'node:fs', 'node:path', 'node:url'],

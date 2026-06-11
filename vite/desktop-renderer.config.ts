@@ -5,11 +5,12 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  base: './',
   build: {
-    outDir: path.resolve(__dirname, 'artifacts/desktop/renderer'),
+    outDir: path.resolve(__dirname, '../artifacts/desktop/renderer'),
     rollupOptions: {
       input: {
-        index: path.resolve(__dirname, 'assets/desktop-shell/index.html'),
+        index: path.resolve(__dirname, '../assets/desktop-shell/index.html'),
       },
     },
   },
