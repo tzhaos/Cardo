@@ -24,8 +24,7 @@ export default function WorkspaceDesktop() {
     interactionMode,
     theme,
     visibleBoxIds,
-  } =
-    useWorkspaceDesktopState();
+  } = useWorkspaceDesktopState();
   const { handleCanvasPointerDown } = useCanvasPan();
   const minimap = useCanvasMinimap();
 

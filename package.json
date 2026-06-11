@@ -21,7 +21,6 @@
     "format": "node scripts/run-prettier.mjs --write \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.ts\" \"docs/**/*.md\" \"README.md\" \"README_zh.md\" \"vite.config.ts\" \"vite.desktop.config.ts\" \"vite.desktop-main.config.ts\" \"vite.native-host.config.ts\" \"eslint.config.js\"",
     "format:check": "node scripts/run-prettier.mjs --check \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.ts\" \"docs/**/*.md\" \"README.md\" \"README_zh.md\" \"vite.config.ts\" \"vite.desktop.config.ts\" \"vite.desktop-main.config.ts\" \"vite.native-host.config.ts\"",
     "test:ts": "tsx --test \"src/**/*.test.ts\"",
-    "doctor:registry": "node scripts/check-npm-registry.mjs",
     "migrate:workspace": "tsx scripts/migrate-workspace.ts",
     "test": "npm run test:ts"
   },

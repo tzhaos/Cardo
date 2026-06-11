@@ -26,7 +26,7 @@ export const useCanvasStore = create<CanvasStoreState>((set) => ({
     set((state) => ({
       panX: state.panX + deltaX,
       panY: state.panY + deltaY,
-  })),
+    })),
   resetPan: () => set({ panX: 0, panY: 0 }),
   centerOn: (worldX, worldY, viewport) =>
     set({

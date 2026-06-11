@@ -1,8 +1,4 @@
-import type {
-  BoxItemPlacement,
-  WorkspaceBox,
-  WorkspaceSnapshotV5,
-} from './workspace';
+import type { BoxItemPlacement, WorkspaceBox, WorkspaceSnapshotV5 } from './workspace';
 import { mergeWorkspaceBox } from './createInitialWorkspaceSnapshot';
 import type { PlacedWorkspaceItem } from '../../items/model/item';
 

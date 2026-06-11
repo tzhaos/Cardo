@@ -1,4 +1,4 @@
-import { useMemo, useState, type MouseEvent } from 'react';
+import { useState, type MouseEvent } from 'react';
 import { getRuntimeViewport } from '../../../app/controllers/runtimeDocumentController';
 import { useI18n } from '../../../app/hooks/useI18n';
 import { useCanvasStore } from '../../../app/stores/useCanvasStore';
@@ -20,18 +20,15 @@ function computeWorldBounds(boxes: ReturnType<typeof useVisibleBoxes>, camera: V
     maxY: -camera.panY + viewport.height,
   };
 
-  return boxes.reduce(
-    (bounds, box) => {
-      const rendered = getRenderedBoxBounds(box);
-      return {
-        minX: Math.min(bounds.minX, rendered.x),
-        minY: Math.min(bounds.minY, rendered.y),
-        maxX: Math.max(bounds.maxX, rendered.x + rendered.width),
-        maxY: Math.max(bounds.maxY, rendered.y + rendered.height),
-      };
-    },
-    viewportBounds,
-  );
+  return boxes.reduce((bounds, box) => {
+    const rendered = getRenderedBoxBounds(box);
+    return {
+      minX: Math.min(bounds.minX, rendered.x),
+      minY: Math.min(bounds.minY, rendered.y),
+      maxX: Math.max(bounds.maxX, rendered.x + rendered.width),
+      maxY: Math.max(bounds.maxY, rendered.y + rendered.height),
+    };
+  }, viewportBounds);
 }
 
 export function useCanvasMinimap() {
@@ -60,14 +57,10 @@ export function useCanvasMinimap() {
     height: Math.max(2, rect.height * scale),
   });
 
-  const boxRects = useMemo(
-    () =>
-      boxes.map((box) => ({
-        id: box.id,
-        rect: toMinimapRect(getRenderedBoxBounds(box)),
-      })),
-    [boxes, offsetX, offsetY, scale, worldBounds.minX, worldBounds.minY],
-  );
+  const boxRects = boxes.map((box) => ({
+    id: box.id,
+    rect: toMinimapRect(getRenderedBoxBounds(box)),
+  }));
 
   const viewportRect = toMinimapRect({
     x: -camera.panX,
