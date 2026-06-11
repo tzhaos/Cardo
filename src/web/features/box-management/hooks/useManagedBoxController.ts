@@ -5,6 +5,8 @@ import {
   clearEditingSessionIfActive,
 } from '../../../app/controllers/interactionController';
 import { useInteractionStore } from '../../../app/stores/useInteractionStore';
+import { useCanvasStore } from '../../../app/stores/useCanvasStore';
+import { useViewportCamera } from '../../workspace-desktop';
 import {
   useWorkspaceBox,
   useWorkspaceDispatch,
@@ -49,6 +51,9 @@ export function useManagedBoxController(box: WorkspaceBox) {
   const activeBoxId = useInteractionStore((state) => state.activeBoxId);
   const boxTransition = useInteractionStore((state) => state.boxTransition);
   const editingSessionId = useInteractionStore((state) => state.editingSessionId);
+  const camera = useViewportCamera();
+  const interactionMode = useCanvasStore((state) => state.interactionMode);
+  const isPanModifierActive = useCanvasStore((state) => state.isPanModifierActive);
   const setActiveBox = useInteractionStore((state) => state.setActiveBox);
   const setBoxTransition = useInteractionStore((state) => state.setBoxTransition);
   const setEditingSessionId = useInteractionStore((state) => state.setEditingSessionId);
@@ -66,15 +71,7 @@ export function useManagedBoxController(box: WorkspaceBox) {
   const isInteractionLocked = Boolean(editingSessionId && editingSessionId !== editorId);
   const currentBoxTransition = boxTransition?.boxId === box.id ? boxTransition : null;
   const displayTitle = getBoxDisplayTitle(box, t);
-  const fallbackTitle = t(
-    box.role === 'folders'
-      ? 'box.folders'
-      : box.role === 'links'
-        ? 'box.links'
-        : box.role === 'notes'
-          ? 'box.notes'
-          : 'box.new',
-  );
+  const fallbackTitle = t('box.new');
 
   useEffect(() => {
     if (isActive) {
@@ -197,6 +194,9 @@ export function useManagedBoxController(box: WorkspaceBox) {
     handleMouseLeave: () => setIsHovering(false),
     handleDragStart,
     handleResize,
+    isCanvasTransforming: interactionMode === 'panning' || interactionMode === 'box-dragging',
+    isPanModifierActive,
+    camera,
     startTitleEdit: () => {
       if (isInteractionLocked) {
         return;

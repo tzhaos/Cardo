@@ -4,7 +4,6 @@ import type {
   WorkspaceItemUpdate,
 } from '../../items/model/item';
 
-export type WorkspaceBoxRole = 'folders' | 'links' | 'notes';
 export type BoxLayout = 'grid' | 'list';
 
 export interface WorkspaceBoxBounds {
@@ -16,7 +15,6 @@ export interface WorkspaceBoxBounds {
 
 export interface WorkspaceBoxEntity {
   id: string;
-  role: WorkspaceBoxRole | null;
   customTitle: string | null;
 }
 
@@ -66,7 +64,6 @@ export interface WorkspaceExportDocumentV3 {
 }
 
 export interface WorkspaceBoxUpdate {
-  role?: WorkspaceBoxRole | null;
   customTitle?: string | null;
   bounds?: Partial<WorkspaceBoxBounds>;
   isLocked?: boolean;
@@ -98,7 +95,6 @@ export type WorkspaceCommand =
 
 export const WORKSPACE_SCHEMA_VERSION = 5 as const;
 export const WORKSPACE_EXPORT_VERSION = 3 as const;
-export const SYSTEM_BOX_ROLES: WorkspaceBoxRole[] = ['folders', 'links', 'notes'];
 export const MAX_WORKSPACE_BOXES = 12;
 
 /** Minimum visual dimensions for workspace boxes, shared across codec, resize, and migration. */
@@ -117,8 +113,4 @@ export function getRenderedBoxBounds(
     ...box.bounds,
     height: BOX_COLLAPSED_HEIGHT,
   };
-}
-
-export function isWorkspaceBoxRole(value: unknown): value is WorkspaceBoxRole {
-  return typeof value === 'string' && SYSTEM_BOX_ROLES.includes(value as WorkspaceBoxRole);
 }

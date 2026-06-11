@@ -4,27 +4,34 @@ import { importWorkspace } from './importWorkspace';
 import { fileImportPort, workspaceStoragePort } from '../ports/defaultPorts';
 
 const VALID_EXPORT = JSON.stringify({
-  version: 2,
+  version: 3,
   boxes: [
     {
       id: 'b1',
-      role: null,
       customTitle: 'Test Box',
+      itemIds: ['i1'],
+    },
+  ],
+  items: [
+    {
+      id: 'i1',
+      type: 'url',
+      title: 'Example',
+      url: 'https://example.com',
+    },
+  ],
+  itemPlacementsByBoxId: {
+    b1: [{ itemId: 'i1', isPinned: false }],
+  },
+  boxViewStates: [
+    {
+      boxId: 'b1',
       bounds: { x: 100, y: 100, width: 320, height: 400 },
       isLocked: false,
       isCollapsed: false,
       isMinimized: false,
       layout: 'list',
       zIndex: 1,
-      items: [
-        {
-          id: 'i1',
-          type: 'url',
-          title: 'Example',
-          content: 'https://example.com',
-          isPinned: false,
-        },
-      ],
     },
   ],
 });

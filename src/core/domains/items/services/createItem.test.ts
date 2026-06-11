@@ -65,3 +65,20 @@ test('parseTextToItemDraft treats dotted version folders as folders', () => {
   assert.equal(item.path, 'F:\\Tools\\pcnt_tools_v2.2.0');
   assert.equal(item.title, 'pcnt_tools_v2.2.0');
 });
+
+test('parseTextToItemDraft turns executable paths into shortcut drafts', () => {
+  const item = createWorkspaceItem('item-shortcut', parseTextToItemDraft('C:\\Tools\\app.exe'));
+
+  assert.equal(item.type, 'shortcut');
+  assert.equal(item.path, 'C:\\Tools\\app.exe');
+  assert.equal(item.title, 'app.exe');
+});
+
+test('parseLocalPathText recognizes lnk shortcuts', () => {
+  const parsed = parseLocalPathText('C:\\Users\\Public\\Desktop\\App.lnk');
+
+  assert.deepEqual(parsed, {
+    normalizedPath: 'C:\\Users\\Public\\Desktop\\App.lnk',
+    type: 'shortcut',
+  });
+});

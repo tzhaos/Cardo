@@ -27,6 +27,9 @@ function ManagedBoxView({ box }: ManagedBoxViewProps) {
       onMouseEnter={controller.handleMouseEnter}
       onMouseLeave={controller.handleMouseLeave}
       onResizeStart={controller.handleResize}
+      isCanvasTransforming={controller.isCanvasTransforming}
+      isPanModifierActive={controller.isPanModifierActive}
+      camera={controller.camera}
       header={
         <BoxHeader
           box={box}

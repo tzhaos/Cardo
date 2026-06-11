@@ -1,14 +1,11 @@
 import { createWorkspaceItem, type WorkspaceItem } from '../../items/model/item';
-import { createWorkspaceSnapshot } from './createInitialWorkspaceSnapshot';
 import {
   BOX_MIN_HEIGHT,
   BOX_MIN_WIDTH,
   WORKSPACE_EXPORT_VERSION,
   WORKSPACE_SCHEMA_VERSION,
-  isWorkspaceBoxRole,
   type BoxDesktopViewState,
   type BoxItemPlacement,
-  type WorkspaceBox,
   type WorkspaceBoxEntity,
   type WorkspaceExportBoxV3,
   type WorkspaceExportDocumentV3,
@@ -40,7 +37,7 @@ function normalizeWorkspaceItem(input: unknown): WorkspaceItem | null {
   const id = asString(input.id)?.trim();
   const type = asString(input.type)?.trim();
 
-  if (!id || !type || !['file', 'folder', 'url', 'note'].includes(type)) {
+  if (!id || !type || !['file', 'folder', 'url', 'note', 'shortcut'].includes(type)) {
     return null;
   }
 
@@ -62,112 +59,19 @@ function normalizeWorkspaceItem(input: unknown): WorkspaceItem | null {
   });
 }
 
-function normalizePlacedItem(input: unknown): { item: WorkspaceItem; isPinned: boolean } | null {
-  const item = normalizeWorkspaceItem(input);
-
-  if (!item || !isRecord(input)) {
-    return null;
-  }
-
-  return {
-    item,
-    isPinned: asBoolean(input.isPinned),
-  };
-}
-
-function normalizeBoxCore(input: unknown, index: number): WorkspaceBox | null {
-  if (!isRecord(input)) {
-    return null;
-  }
-
-  const id = asString(input.id)?.trim();
-
-  if (!id) {
-    return null;
-  }
-
-  const role =
-    input.role === null || input.role === undefined ? null : asString(input.role)?.trim();
-  const rawBounds = isRecord(input.bounds) ? input.bounds : {};
-
-  return {
-    id,
-    role: role && isWorkspaceBoxRole(role) ? role : null,
-    customTitle: asString(input.customTitle)?.trim() || null,
-    bounds: {
-      x: asNumber(rawBounds.x, 100 + index * 40),
-      y: asNumber(rawBounds.y, 100 + index * 40),
-      width: Math.max(BOX_MIN_WIDTH, asNumber(rawBounds.width, 320)),
-      height: Math.max(BOX_MIN_HEIGHT, asNumber(rawBounds.height, 400)),
-    },
-    isLocked: asBoolean(input.isLocked),
-    isCollapsed: asBoolean(input.isCollapsed),
-    isMinimized: asBoolean(input.isMinimized),
-    layout: asString(input.layout) === 'grid' ? 'grid' : 'list',
-    zIndex: Math.max(0, Math.round(asNumber(input.zIndex, index + 1))),
-  };
-}
-
-function normalizeLegacyBoxesToSnapshot(rawBoxes: unknown[]): WorkspaceSnapshotV5 | null {
-  const boxes: WorkspaceBox[] = [];
-  const itemsById: Record<string, WorkspaceItem> = {};
-  const itemPlacementsByBoxId: Record<string, BoxItemPlacement[]> = {};
-
-  for (const [index, rawBox] of rawBoxes.entries()) {
-    const box = normalizeBoxCore(rawBox, index);
-
-    if (!box || !isRecord(rawBox)) {
-      return null;
-    }
-
-    boxes.push(box);
-    itemPlacementsByBoxId[box.id] = [];
-
-    const rawItems = Array.isArray(rawBox.items) ? rawBox.items : [];
-
-    for (const rawItem of rawItems) {
-      const placedItem = normalizePlacedItem(rawItem);
-
-      if (!placedItem) {
-        return null;
-      }
-
-      itemsById[placedItem.item.id] = placedItem.item;
-      itemPlacementsByBoxId[box.id].push({
-        itemId: placedItem.item.id,
-        isPinned: placedItem.isPinned,
-      });
-    }
-  }
-
-  const snapshot = createWorkspaceSnapshot(boxes);
-
-  return {
-    ...snapshot,
-    itemsById,
-    itemPlacementsByBoxId: {
-      ...snapshot.itemPlacementsByBoxId,
-      ...itemPlacementsByBoxId,
-    },
-  };
-}
-
 function normalizeBoxEntity(input: unknown): WorkspaceBoxEntity | null {
   if (!isRecord(input)) {
     return null;
   }
 
   const id = asString(input.id)?.trim();
-  const role =
-    input.role === null || input.role === undefined ? null : asString(input.role)?.trim();
 
-  if (!id) {
+  if (!id || 'role' in input) {
     return null;
   }
 
   return {
     id,
-    role: role && isWorkspaceBoxRole(role) ? role : null,
     customTitle: asString(input.customTitle)?.trim() || null,
   };
 }
@@ -325,18 +229,6 @@ function normalizeExportDocumentV3(
   };
 }
 
-function normalizeLegacyExportDocument(
-  input: Record<string, unknown>,
-): WorkspaceExportDocumentV3 | null {
-  if (!Array.isArray(input.boxes)) {
-    return null;
-  }
-
-  const snapshot = normalizeLegacyBoxesToSnapshot(input.boxes);
-
-  return snapshot ? createExportDocumentFromSnapshot(snapshot) : null;
-}
-
 /** Validates and normalizes a JSON export file. */
 export function parseWorkspaceExportDocument(input: unknown): WorkspaceExportDocumentV3 {
   if (!isRecord(input)) {
@@ -344,11 +236,7 @@ export function parseWorkspaceExportDocument(input: unknown): WorkspaceExportDoc
   }
 
   const exportDocument =
-    input.version === WORKSPACE_EXPORT_VERSION
-      ? normalizeExportDocumentV3(input)
-      : input.version === 2 || input.version === undefined
-        ? normalizeLegacyExportDocument(input)
-        : null;
+    input.version === WORKSPACE_EXPORT_VERSION ? normalizeExportDocumentV3(input) : null;
 
   if (!exportDocument) {
     throw new Error('Invalid workspace export document');
@@ -365,7 +253,6 @@ function snapshotFromExportDocument(
       box.id,
       {
         id: box.id,
-        role: box.role,
         customTitle: box.customTitle,
       },
     ]),
@@ -465,37 +352,9 @@ export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null
     return null;
   }
 
-  if (input.schemaVersion === WORKSPACE_SCHEMA_VERSION) {
-    return normalizePersistedSnapshotV5(input);
-  }
-
-  if (input.schemaVersion !== 4 && input.schemaVersion !== 3) {
-    return null;
-  }
-
-  const boxesById = isRecord(input.boxesById) ? input.boxesById : null;
-  const boxOrder = Array.isArray(input.boxOrder) ? input.boxOrder : null;
-
-  if (!boxesById || !boxOrder) {
-    return null;
-  }
-
-  const rawBoxes = boxOrder
-    .map((boxId) => {
-      const normalizedId = asString(boxId)?.trim();
-      return normalizedId ? boxesById[normalizedId] : null;
-    })
-    .filter((box): box is unknown => box !== null);
-  const snapshot = normalizeLegacyBoxesToSnapshot(rawBoxes);
-
-  if (!snapshot) {
-    return null;
-  }
-
-  return {
-    ...snapshot,
-    maxZIndex: Math.max(asNumber(input.maxZIndex, snapshot.maxZIndex), snapshot.maxZIndex),
-  };
+  return input.schemaVersion === WORKSPACE_SCHEMA_VERSION
+    ? normalizePersistedSnapshotV5(input)
+    : null;
 }
 
 export function createWorkspaceSnapshotFromExportDocument(

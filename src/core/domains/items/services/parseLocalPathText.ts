@@ -2,8 +2,10 @@ import type { ItemType } from '../model/item';
 
 interface ParsedLocalPath {
   normalizedPath: string;
-  type: Extract<ItemType, 'file' | 'folder'>;
+  type: Extract<ItemType, 'file' | 'folder' | 'shortcut'>;
 }
+
+const SHORTCUT_EXTENSIONS = new Set(['app', 'exe', 'lnk']);
 
 const COMMON_FILE_EXTENSIONS = new Set([
   '7z',
@@ -14,7 +16,6 @@ const COMMON_FILE_EXTENSIONS = new Set([
   'doc',
   'docx',
   'dll',
-  'exe',
   'gif',
   'iso',
   'jpeg',
@@ -65,23 +66,21 @@ function trimTrailingSeparators(path: string) {
   return path.replace(/[\\/]+$/, '');
 }
 
-function hasFileLikeExtension(path: string) {
+function getKnownPathExtension(path: string) {
   const lastSegment = path.split(/[/\\]/).pop() ?? '';
   const extensionMatch = lastSegment.match(/\.([^./\\\s]+)$/);
 
   if (!extensionMatch) {
-    return false;
+    return null;
   }
 
   const extension = extensionMatch[1]?.toLowerCase() ?? '';
 
   if (!extension || /^\d+$/.test(extension)) {
-    return false;
+    return null;
   }
 
-  // Be conservative for pasted local paths: versioned folders like "v2.2.0"
-  // are common, so we only treat known extensions as files.
-  return COMMON_FILE_EXTENSIONS.has(extension);
+  return extension;
 }
 
 function fromFileUri(value: string) {
@@ -135,8 +134,19 @@ export function parseLocalPathText(value: string): ParsedLocalPath | null {
     return null;
   }
 
+  const extension = getKnownPathExtension(normalizedPath);
+
+  if (extension && SHORTCUT_EXTENSIONS.has(extension)) {
+    return {
+      normalizedPath,
+      type: 'shortcut',
+    };
+  }
+
   return {
     normalizedPath,
-    type: hasFileLikeExtension(normalizedPath) ? 'file' : 'folder',
+    // Be conservative for pasted local paths: versioned folders like "v2.2.0"
+    // are common, so we only treat known extensions as files.
+    type: extension && COMMON_FILE_EXTENSIONS.has(extension) ? 'file' : 'folder',
   };
 }

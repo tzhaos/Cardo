@@ -19,7 +19,6 @@ function splitBox(box: WorkspaceBox): {
   return {
     entity: {
       id: box.id,
-      role: box.role,
       customTitle: box.customTitle,
     },
     viewState: {
@@ -238,7 +237,6 @@ export function reduceWorkspace(
           ...snapshot.boxesById,
           [command.boxId]: {
             ...entity,
-            role: command.updates.role ?? entity.role,
             customTitle:
               command.updates.customTitle === undefined
                 ? entity.customTitle

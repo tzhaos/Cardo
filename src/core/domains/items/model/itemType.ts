@@ -1,1 +1,1 @@
-export type ItemType = 'file' | 'folder' | 'url' | 'note';
+export type ItemType = 'file' | 'folder' | 'url' | 'note' | 'shortcut';

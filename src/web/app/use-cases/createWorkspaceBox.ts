@@ -10,9 +10,9 @@ export type CreateWorkspaceBoxResult =
   | { status: 'created'; box: WorkspaceBox }
   | { status: 'limit-reached'; limit: number };
 
-export function createWorkspaceBox(viewport: { width: number; height: number }) {
+export function createWorkspaceBox(placement: { centerX: number; centerY: number }) {
   const { snapshot, dispatch } = useWorkspaceStore.getState();
-  const result = createWorkspaceBoxCommand(snapshot, viewport, createId);
+  const result = createWorkspaceBoxCommand(snapshot, placement, createId);
 
   if (result.status === 'limit-reached') {
     return {

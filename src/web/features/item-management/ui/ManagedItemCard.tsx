@@ -6,6 +6,7 @@ import {
   Pencil,
   Pin,
   PinOff,
+  Rocket,
   X,
 } from 'lucide-react';
 import type {
@@ -44,6 +45,10 @@ function getItemIcon(item: WorkspaceItem, layout: 'grid' | 'list') {
 
   if (item.type === 'url') {
     return <LinkIcon size={iconSize} className="text-[var(--role-link-fg)]" />;
+  }
+
+  if (item.type === 'shortcut') {
+    return <Rocket size={iconSize} className="text-[var(--role-generic-fg)]" />;
   }
 
   return <ClipboardPaste size={iconSize} className="text-file-text" />;

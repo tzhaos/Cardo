@@ -41,7 +41,7 @@ export function useManagedBoxContent(
     onOpenExternalDraft: (draft) => {
       setShowAddMenu(true);
       addItem.openDraft(
-        draft.type as Extract<typeof draft.type, 'file' | 'folder'>,
+        draft.type as Extract<typeof draft.type, 'file' | 'folder' | 'shortcut'>,
         draft.title ?? '',
       );
     },

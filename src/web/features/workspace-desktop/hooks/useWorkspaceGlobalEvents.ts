@@ -11,11 +11,13 @@ import { describePasteToWorkspaceToastSpec } from '../../../app/use-cases/descri
 import { pasteTextItem } from '../../../app/use-cases/pasteTextItem';
 import { performToggleAllBoxesHotkey } from '../../../app/use-cases/performToggleAllBoxesHotkey';
 import { useWorkspaceSnapshot } from '../../../app/stores/useWorkspaceSelectors';
+import { useCanvasStore } from '../../../app/stores/useCanvasStore';
 import { isEditableElement } from '../../../lib/dom';
 
 export function useWorkspaceGlobalEvents() {
   const { t } = useI18n();
   const snapshot = useWorkspaceSnapshot();
+  const setPanModifierActive = useCanvasStore((state) => state.setPanModifierActive);
 
   const handleKeyDown = useEffectEvent((input: unknown) => {
     const event = input as KeyboardEvent;
@@ -25,8 +27,22 @@ export function useWorkspaceGlobalEvents() {
       return;
     }
 
+    if (event.code === 'Space') {
+      event.preventDefault();
+      setPanModifierActive(true);
+      return;
+    }
+
     if (event.ctrlKey && event.key === '`') {
       presentToastSpec(t, performToggleAllBoxesHotkey());
+    }
+  });
+
+  const handleKeyUp = useEffectEvent((input: unknown) => {
+    const event = input as KeyboardEvent;
+
+    if (event.code === 'Space') {
+      setPanModifierActive(false);
     }
   });
 
@@ -59,11 +75,13 @@ export function useWorkspaceGlobalEvents() {
 
   useEffect(() => {
     addRuntimeWindowListener('keydown', handleKeyDown);
+    addRuntimeWindowListener('keyup', handleKeyUp);
     addRuntimeWindowListener('paste', handlePaste);
 
     return () => {
       removeRuntimeWindowListener('keydown', handleKeyDown);
+      removeRuntimeWindowListener('keyup', handleKeyUp);
       removeRuntimeWindowListener('paste', handlePaste);
     };
-  }, [handleKeyDown, handlePaste]);
+  }, [handleKeyDown, handleKeyUp, handlePaste]);
 }

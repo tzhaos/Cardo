@@ -1,7 +1,9 @@
 import { useI18n } from '../../../app/hooks/useI18n';
 import { clearBoxTransitionIfActive } from '../../../app/controllers/interactionController';
 import { getRuntimeViewport } from '../../../app/controllers/runtimeDocumentController';
+import { screenToWorld } from '../../../../core/domains/layout/model/viewport';
 import { useInteractionStore } from '../../../app/stores/useInteractionStore';
+import { useCanvasStore } from '../../../app/stores/useCanvasStore';
 import { useSettingsPanelStore } from '../../../app/stores/useSettingsPanelStore';
 import { useTrayBoxes, useWorkspaceDispatch } from '../../../app/stores/useWorkspaceSelectors';
 import { createWorkspaceBox } from '../../../app/use-cases/createWorkspaceBox';
@@ -31,6 +33,8 @@ export function useTrayDock() {
   const dispatch = useWorkspaceDispatch();
   const setActiveBox = useInteractionStore((state) => state.setActiveBox);
   const setBoxTransition = useInteractionStore((state) => state.setBoxTransition);
+  const panX = useCanvasStore((state) => state.panX);
+  const panY = useCanvasStore((state) => state.panY);
   const isCompact = boxes.length >= 7;
   const hasReachedBoxLimit = boxes.length >= MAX_WORKSPACE_BOXES;
 
@@ -44,7 +48,15 @@ export function useTrayDock() {
     settingsLabel: t('settings.title'),
     openSettings,
     createBox: () => {
-      const result = createWorkspaceBox(getRuntimeViewport());
+      const viewport = getRuntimeViewport();
+      const center = screenToWorld(
+        { clientX: viewport.width / 2, clientY: viewport.height / 2 },
+        { panX, panY },
+      );
+      const result = createWorkspaceBox({
+        centerX: center.x,
+        centerY: center.y,
+      });
 
       if (result.status === 'limit-reached') {
         return;

@@ -9,18 +9,12 @@ import {
   getVisibleBoxes,
   getVisibleBoxIds,
   getWorkspaceBox,
-  findBoxByRole,
   areAllBoxesMinimized,
 } from './workspaceSelectors';
 
-function createTestBox(
-  id: string,
-  role: 'folders' | 'links' | 'notes' | null,
-  isMinimized = false,
-) {
+function createTestBox(id: string, isMinimized = false) {
   return {
     id,
-    role,
     customTitle: null,
     bounds: { x: 0, y: 0, width: 320, height: 400 },
     isLocked: false,
@@ -33,9 +27,9 @@ function createTestBox(
 
 test('getOrderedBoxes returns boxes in boxOrder sequence', () => {
   const snapshot = createWorkspaceSnapshot([
-    createTestBox('box-c', null),
-    createTestBox('box-a', null),
-    createTestBox('box-b', null),
+    createTestBox('box-c'),
+    createTestBox('box-a'),
+    createTestBox('box-b'),
   ]);
 
   const ordered = getOrderedBoxes(snapshot);
@@ -46,7 +40,7 @@ test('getOrderedBoxes returns boxes in boxOrder sequence', () => {
 });
 
 test('getOrderedBoxes filters out missing boxes', () => {
-  const snapshot = createWorkspaceSnapshot([createTestBox('box-a', null)]);
+  const snapshot = createWorkspaceSnapshot([createTestBox('box-a')]);
   snapshot.boxOrder = ['box-a', 'box-missing', 'box-b'];
 
   const ordered = getOrderedBoxes(snapshot);
@@ -56,9 +50,9 @@ test('getOrderedBoxes filters out missing boxes', () => {
 
 test('getVisibleBoxes returns only non-minimized boxes', () => {
   const snapshot = createWorkspaceSnapshot([
-    createTestBox('box-1', null, false),
-    createTestBox('box-2', null, true),
-    createTestBox('box-3', null, false),
+    createTestBox('box-1', false),
+    createTestBox('box-2', true),
+    createTestBox('box-3', false),
   ]);
 
   const visible = getVisibleBoxes(snapshot);
@@ -69,8 +63,8 @@ test('getVisibleBoxes returns only non-minimized boxes', () => {
 
 test('getVisibleBoxes keeps collapsed boxes on desktop', () => {
   const snapshot = createWorkspaceSnapshot([
-    { ...createTestBox('box-1', null, false), isCollapsed: true },
-    createTestBox('box-2', null, false),
+    { ...createTestBox('box-1', false), isCollapsed: true },
+    createTestBox('box-2', false),
   ]);
 
   const visible = getVisibleBoxes(snapshot);
@@ -80,9 +74,9 @@ test('getVisibleBoxes keeps collapsed boxes on desktop', () => {
 
 test('getVisibleBoxIds returns array of visible box ids', () => {
   const snapshot = createWorkspaceSnapshot([
-    createTestBox('box-1', null, false),
-    createTestBox('box-2', null, true),
-    createTestBox('box-3', null, false),
+    createTestBox('box-1', false),
+    createTestBox('box-2', true),
+    createTestBox('box-3', false),
   ]);
 
   const ids = getVisibleBoxIds(snapshot);
@@ -91,11 +85,10 @@ test('getVisibleBoxIds returns array of visible box ids', () => {
 
 test('getWorkspaceBox returns box by id', () => {
   const snapshot = createInitialWorkspaceSnapshot();
-  const box = getWorkspaceBox(snapshot, 'system-folders');
+  const box = getWorkspaceBox(snapshot, 'default-box');
 
   assert.notEqual(box, null);
-  assert.equal(box?.id, 'system-folders');
-  assert.equal(box?.role, 'folders');
+  assert.equal(box?.id, 'default-box');
 });
 
 test('getWorkspaceBox returns null for non-existent box', () => {
@@ -105,30 +98,10 @@ test('getWorkspaceBox returns null for non-existent box', () => {
   assert.equal(box, null);
 });
 
-test('findBoxByRole finds box by system role', () => {
-  const snapshot = createInitialWorkspaceSnapshot();
-
-  const foldersBox = findBoxByRole(snapshot, 'folders');
-  assert.equal(foldersBox?.role, 'folders');
-
-  const linksBox = findBoxByRole(snapshot, 'links');
-  assert.equal(linksBox?.role, 'links');
-
-  const notesBox = findBoxByRole(snapshot, 'notes');
-  assert.equal(notesBox?.role, 'notes');
-});
-
-test('findBoxByRole returns null when role not found', () => {
-  const snapshot = createWorkspaceSnapshot([createTestBox('box-1', null)]);
-  const result = findBoxByRole(snapshot, 'folders');
-
-  assert.equal(result, null);
-});
-
 test('areAllBoxesMinimized returns true when all boxes minimized', () => {
   const snapshot = createWorkspaceSnapshot([
-    createTestBox('box-1', null, true),
-    createTestBox('box-2', null, true),
+    createTestBox('box-1', true),
+    createTestBox('box-2', true),
   ]);
 
   assert.equal(areAllBoxesMinimized(snapshot), true);
@@ -136,8 +109,8 @@ test('areAllBoxesMinimized returns true when all boxes minimized', () => {
 
 test('areAllBoxesMinimized returns false when any box visible', () => {
   const snapshot = createWorkspaceSnapshot([
-    createTestBox('box-1', null, true),
-    createTestBox('box-2', null, false),
+    createTestBox('box-1', true),
+    createTestBox('box-2', false),
   ]);
 
   assert.equal(areAllBoxesMinimized(snapshot), false);

@@ -63,7 +63,7 @@ export function useAddItem({
     setNewItemContent('');
   };
 
-  const openDraft = (type: Extract<ItemType, 'file' | 'folder'>, title = '') => {
+  const openDraft = (type: Extract<ItemType, 'file' | 'folder' | 'shortcut'>, title = '') => {
     onOpen();
     setAddingType(type);
     setNewItemTitle(title);

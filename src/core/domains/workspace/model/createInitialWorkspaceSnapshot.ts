@@ -7,32 +7,6 @@ import {
   type WorkspaceSnapshotV5,
 } from './workspace';
 
-function createSystemBox(
-  id: string,
-  role: NonNullable<WorkspaceBox['role']>,
-  x: number,
-  y: number,
-  zIndex: number,
-  layout: WorkspaceBox['layout'],
-): WorkspaceBox {
-  return {
-    id,
-    role,
-    customTitle: null,
-    bounds: {
-      x,
-      y,
-      width: 320,
-      height: 400,
-    },
-    isLocked: false,
-    isCollapsed: false,
-    isMinimized: false,
-    layout,
-    zIndex,
-  };
-}
-
 function splitBox(box: WorkspaceBox): {
   entity: WorkspaceBoxEntity;
   viewState: BoxDesktopViewState;
@@ -41,7 +15,6 @@ function splitBox(box: WorkspaceBox): {
   return {
     entity: {
       id: box.id,
-      role: box.role,
       customTitle: box.customTitle,
     },
     viewState: {
@@ -90,9 +63,16 @@ export function createWorkspaceSnapshot(boxes: WorkspaceBox[]): WorkspaceSnapsho
 
 export function createInitialWorkspaceSnapshot(): WorkspaceSnapshotV5 {
   return createWorkspaceSnapshot([
-    createSystemBox('system-folders', 'folders', 100, 100, 10, 'grid'),
-    createSystemBox('system-links', 'links', 450, 100, 11, 'list'),
-    createSystemBox('system-notes', 'notes', 800, 100, 12, 'list'),
+    {
+      id: 'default-box',
+      customTitle: null,
+      bounds: { x: 100, y: 100, width: 320, height: 400 },
+      isLocked: false,
+      isCollapsed: false,
+      isMinimized: false,
+      layout: 'grid',
+      zIndex: 1,
+    },
   ]);
 }
 

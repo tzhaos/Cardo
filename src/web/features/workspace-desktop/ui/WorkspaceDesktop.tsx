@@ -7,18 +7,43 @@ import SettingsPanel from '../../settings';
 import TrayDock from '../../tray';
 import { useWorkspaceGlobalEvents } from '../hooks/useWorkspaceGlobalEvents';
 import { useWorkspaceDesktopState } from '../hooks/useWorkspaceDesktopState';
+import { useCanvasPan } from '../hooks/useCanvasPan';
+import CanvasControls from './CanvasControls';
+import CanvasMinimap from './CanvasMinimap';
 import SnapOverlay from './SnapOverlay';
 
 export default function WorkspaceDesktop() {
   useWorkspaceGlobalEvents();
-  const { brandLabel, clearActiveBox, theme, visibleBoxIds } = useWorkspaceDesktopState();
+  const {
+    brandLabel,
+    camera,
+    clearActiveBox,
+    isPanModifierActive,
+    isViewportLocked,
+    interactionMode,
+    theme,
+    visibleBoxIds,
+  } =
+    useWorkspaceDesktopState();
+  const { handleCanvasPointerDown } = useCanvasPan();
 
   return (
     <div
-      className="kb-desktop-root relative h-screen w-full overflow-hidden"
-      onPointerDown={clearActiveBox}
+      className={`kb-desktop-root relative h-screen w-full overflow-hidden ${
+        isViewportLocked
+          ? 'cursor-default'
+          : interactionMode === 'panning' || isPanModifierActive
+            ? 'cursor-grabbing'
+            : 'cursor-grab'
+      }`}
+      onPointerDown={(event) => {
+        if (event.currentTarget === event.target) {
+          clearActiveBox();
+        }
+        handleCanvasPointerDown(event);
+      }}
     >
-      <Background />
+      <Background camera={camera} />
       <BrandBadge label={brandLabel} />
       <ToastViewport theme={theme} />
       <SnapOverlay />
@@ -29,6 +54,8 @@ export default function WorkspaceDesktop() {
         ))}
       </AnimatePresence>
 
+      <CanvasControls />
+      <CanvasMinimap />
       <TrayDock />
       <SettingsPanel />
     </div>

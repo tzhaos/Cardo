@@ -1,6 +1,6 @@
 import type { AppTheme } from '../domains/preferences/model/preferences';
 
-export type RuntimeDocumentEventType = 'keydown' | 'paste' | 'resize';
+export type RuntimeDocumentEventType = 'keydown' | 'keyup' | 'paste' | 'resize';
 export type RuntimeDocumentEventListener = (event: unknown) => void;
 
 /** Port for DOM/window interactions: title, theme, event listeners, viewport. */

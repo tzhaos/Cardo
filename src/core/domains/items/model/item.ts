@@ -34,11 +34,17 @@ export interface FolderWorkspaceItem extends WorkspaceItemBase {
   path: string;
 }
 
+export interface ShortcutWorkspaceItem extends WorkspaceItemBase {
+  type: 'shortcut';
+  path: string;
+}
+
 export type WorkspaceItem =
   | UrlWorkspaceItem
   | NoteWorkspaceItem
   | FileWorkspaceItem
-  | FolderWorkspaceItem;
+  | FolderWorkspaceItem
+  | ShortcutWorkspaceItem;
 
 export interface WorkspaceItemUpdate {
   title?: string;
@@ -83,7 +89,11 @@ export function createWorkspaceItem(itemId: string, draft: ItemDraft): Workspace
     return { ...base, type: 'file', path: content };
   }
 
-  return { ...base, type: 'folder', path: content };
+  if (draft.type === 'folder') {
+    return { ...base, type: 'folder', path: content };
+  }
+
+  return { ...base, type: 'shortcut', path: content };
 }
 
 export function updateWorkspaceItem(item: WorkspaceItem, updates: WorkspaceItemUpdate) {

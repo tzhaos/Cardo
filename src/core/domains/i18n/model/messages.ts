@@ -15,6 +15,11 @@ const EN_MESSAGES = {
   'workspace.pastedTypeToBox': 'Pasted {itemType} to {boxTitle}',
   'workspace.pastedUrl': 'URL',
   'workspace.pastedText': 'text',
+  'canvas.resetViewport': 'Origin',
+  'canvas.lockViewport': 'Lock viewport',
+  'canvas.unlockViewport': 'Unlock viewport',
+  'canvas.showMinimap': 'Show minimap',
+  'canvas.hideMinimap': 'Hide minimap',
   'box.folders': 'Folders',
   'box.links': 'Links',
   'box.notes': 'Notes',
@@ -39,11 +44,13 @@ const EN_MESSAGES = {
   'itemType.folder': 'folder',
   'itemType.url': 'link',
   'itemType.note': 'note',
+  'itemType.shortcut': 'shortcut',
   'itemType.text': 'text',
   'itemType.filePlural': 'Files',
   'itemType.folderPlural': 'Folders',
   'itemType.urlPlural': 'Links',
   'itemType.notePlural': 'Notes',
+  'itemType.shortcutPlural': 'Shortcuts',
   'toast.copiedToClipboard': 'Copied to clipboard!',
   'toast.requestedLocalResource': 'Requested open for "{title}"',
   'toast.unableToOpen': 'Unable to open "{title}": {reason}',
@@ -111,6 +118,11 @@ export const MESSAGES: Record<AppLocale, MessageDictionary> = {
     'workspace.pastedTypeToBox': '已将{itemType}粘贴到{boxTitle}',
     'workspace.pastedUrl': 'URL',
     'workspace.pastedText': '文本',
+    'canvas.resetViewport': '原点',
+    'canvas.lockViewport': '锁定视口',
+    'canvas.unlockViewport': '解锁视口',
+    'canvas.showMinimap': '显示小地图',
+    'canvas.hideMinimap': '收起小地图',
     'box.folders': '文件夹',
     'box.links': '链接',
     'box.notes': '笔记',
@@ -135,11 +147,13 @@ export const MESSAGES: Record<AppLocale, MessageDictionary> = {
     'itemType.folder': '文件夹',
     'itemType.url': '链接',
     'itemType.note': '笔记',
+    'itemType.shortcut': '快捷方式',
     'itemType.text': '文本',
     'itemType.filePlural': '文件',
     'itemType.folderPlural': '文件夹',
     'itemType.urlPlural': '链接',
     'itemType.notePlural': '笔记',
+    'itemType.shortcutPlural': '快捷方式',
     'toast.copiedToClipboard': '已复制到剪贴板',
     'toast.requestedLocalResource': '已请求打开“{title}”',
     'toast.unableToOpen': '无法打开“{title}”：{reason}',
@@ -212,17 +226,12 @@ export const EXTENSION_LOCALE_MESSAGES: Record<AppLocale, Record<string, { messa
 
 export const NEW_BOX_TITLE_KEY: MessageKey = 'box.new';
 
-export const SYSTEM_BOX_TITLE_KEYS = {
-  folders: 'box.folders',
-  links: 'box.links',
-  notes: 'box.notes',
-} as const satisfies Record<string, MessageKey>;
-
 export const ITEM_TYPE_LABEL_KEYS = {
   file: 'itemType.file',
   folder: 'itemType.folder',
   url: 'itemType.url',
   note: 'itemType.note',
+  shortcut: 'itemType.shortcut',
 } as const satisfies Record<ItemType, MessageKey>;
 
 export const ITEM_TYPE_PLURAL_KEYS = {
@@ -230,4 +239,5 @@ export const ITEM_TYPE_PLURAL_KEYS = {
   folder: 'itemType.folderPlural',
   url: 'itemType.urlPlural',
   note: 'itemType.notePlural',
+  shortcut: 'itemType.shortcutPlural',
 } as const satisfies Record<ItemType, MessageKey>;

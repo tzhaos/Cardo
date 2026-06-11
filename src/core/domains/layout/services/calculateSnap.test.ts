@@ -5,7 +5,6 @@ import { calculateSnap } from './calculateSnap';
 
 function box(partial: Partial<WorkspaceBox> & Pick<WorkspaceBox, 'id'>): WorkspaceBox {
   return {
-    role: null,
     customTitle: null,
     isLocked: false,
     isCollapsed: false,

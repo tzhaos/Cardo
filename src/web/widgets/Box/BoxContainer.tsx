@@ -1,6 +1,10 @@
 import { AnimatePresence, motion } from 'motion/react';
 import type { MouseEvent, ReactNode } from 'react';
 import {
+  addCameraToBounds,
+  type ViewportCamera,
+} from '../../../core/domains/layout/model/viewport';
+import {
   type BoxLayout,
   type WorkspaceBoxBounds,
 } from '../../../core/domains/workspace/model/workspace';
@@ -16,9 +20,12 @@ interface BoxContainerProps {
   };
   isActive: boolean;
   isDragging: boolean;
+  isCanvasTransforming: boolean;
+  isPanModifierActive: boolean;
   transitionKind?: 'minimize' | 'restore' | null;
   transitionDockRect?: WorkspaceBoxBounds | null;
   editingSessionId: string | null;
+  camera: ViewportCamera;
   onFocus: () => void;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
@@ -33,9 +40,12 @@ export default function BoxContainer({
   box,
   isActive,
   isDragging,
+  isCanvasTransforming,
+  isPanModifierActive,
   transitionKind = null,
   transitionDockRect = null,
   editingSessionId,
+  camera,
   onFocus,
   onMouseEnter,
   onMouseLeave,
@@ -49,8 +59,9 @@ export default function BoxContainer({
   const isMinimizing = transitionKind === 'minimize';
   const isRestoring = transitionKind === 'restore';
   const transitionBounds = transitionDockRect;
-  const initialBounds = isRestoring && transitionBounds ? transitionBounds : renderedBounds;
-  const animateBounds = isMinimizing && transitionBounds ? transitionBounds : renderedBounds;
+  const renderedScreenBounds = addCameraToBounds(renderedBounds, camera);
+  const initialBounds = isRestoring && transitionBounds ? transitionBounds : renderedScreenBounds;
+  const animateBounds = isMinimizing && transitionBounds ? transitionBounds : renderedScreenBounds;
   const minimizeEase: [number, number, number, number] = [0.2, 0.9, 0.2, 1];
   const restoreEase: [number, number, number, number] = [0.16, 1, 0.3, 1];
   const isTransitioning = isMinimizing || isRestoring;
@@ -75,8 +86,8 @@ export default function BoxContainer({
     <motion.div
       onMouseDown={onFocus}
       initial={{
-        x: initialBounds.x,
-        y: initialBounds.y,
+        left: initialBounds.x,
+        top: initialBounds.y,
         width: initialBounds.width,
         height: initialBounds.height,
         opacity: isRestoring && transitionBounds ? 0.82 : 0,
@@ -84,8 +95,8 @@ export default function BoxContainer({
         scale: isRestoring && transitionBounds ? 0.84 : 0.97,
       }}
       animate={{
-        x: animateBounds.x,
-        y: animateBounds.y,
+        left: animateBounds.x,
+        top: animateBounds.y,
         width: animateBounds.width,
         height: animateBounds.height,
         opacity: isMinimizing && transitionBounds ? 0.8 : 1,
@@ -95,7 +106,7 @@ export default function BoxContainer({
       }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={
-        isDragging
+        isDragging || isCanvasTransforming
           ? { duration: 0 }
           : isMinimizing
             ? { duration: 0.28, ease: minimizeEase }
@@ -120,6 +131,7 @@ export default function BoxContainer({
       className={cn(
         'kb-box win-mica absolute flex flex-col overflow-hidden rounded-xl transition-[background-color,border-color,color,box-shadow] duration-300',
         box.isLocked ? 'ring-1 ring-red-500/50' : '',
+        isPanModifierActive ? 'pointer-events-none' : '',
       )}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}

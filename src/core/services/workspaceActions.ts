@@ -17,7 +17,6 @@ import {
 } from '../domains/workspace/model/workspaceCodec';
 import {
   areAllBoxesMinimized,
-  findBoxByRole,
   getWorkspaceBox,
   getOrderedBoxes,
 } from '../domains/workspace/model/workspaceSelectors';
@@ -143,16 +142,9 @@ export function createPasteTextCommand(
   createId: IdFactory,
 ): PastedWorkspaceItemResult | null {
   const draft = parseTextToItemDraft(text);
-  const targetRole =
-    draft.type === 'url'
-      ? 'links'
-      : draft.type === 'file' || draft.type === 'folder'
-        ? 'folders'
-        : 'notes';
 
   const targetBox =
     (activeBoxId ? getWorkspaceBox(snapshot, activeBoxId) : null) ??
-    findBoxByRole(snapshot, targetRole) ??
     getOrderedBoxes(snapshot)[0] ??
     null;
 
@@ -171,7 +163,7 @@ export function createPasteTextCommand(
 
 export function createWorkspaceBoxCommand(
   snapshot: WorkspaceSnapshot,
-  viewport: { width: number; height: number },
+  placement: { centerX: number; centerY: number },
   createId: IdFactory,
 ): CreateWorkspaceBoxResult {
   if (snapshot.boxOrder.length >= MAX_WORKSPACE_BOXES) {
@@ -183,11 +175,10 @@ export function createWorkspaceBoxCommand(
 
   const box: WorkspaceBox = {
     id: createId('box'),
-    role: null,
     customTitle: null,
     bounds: {
-      x: viewport.width / 2 - 160,
-      y: viewport.height / 2 - 200,
+      x: placement.centerX - 160,
+      y: placement.centerY - 200,
       width: 320,
       height: 400,
     },

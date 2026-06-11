@@ -6,6 +6,7 @@ import {
   type WorkspaceBox,
 } from '../../../../core/domains/workspace/model/workspace';
 import { hasEditingSession } from '../../../app/controllers/interactionController';
+import { useCanvasStore } from '../../../app/stores/useCanvasStore';
 const RESIZE_GRID = 20;
 
 interface UseBoxResizeOptions {
@@ -14,6 +15,8 @@ interface UseBoxResizeOptions {
 }
 
 export function useBoxResize({ box, onUpdate }: UseBoxResizeOptions) {
+  const setInteractionMode = useCanvasStore((state) => state.setInteractionMode);
+
   const handleResize = (event: ReactMouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
@@ -21,6 +24,8 @@ export function useBoxResize({ box, onUpdate }: UseBoxResizeOptions) {
     if (box.isLocked || box.isCollapsed || hasEditingSession()) {
       return;
     }
+
+    setInteractionMode('box-resizing');
 
     const resizeStart = {
       clientX: event.clientX,
@@ -39,6 +44,7 @@ export function useBoxResize({ box, onUpdate }: UseBoxResizeOptions) {
     };
 
     const onMouseUp = () => {
+      setInteractionMode('idle');
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };

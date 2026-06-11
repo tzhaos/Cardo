@@ -1,7 +1,6 @@
 import type {
   BoxItemPlacement,
   WorkspaceBox,
-  WorkspaceBoxRole,
   WorkspaceSnapshotV5,
 } from './workspace';
 import { mergeWorkspaceBox } from './createInitialWorkspaceSnapshot';
@@ -57,13 +56,6 @@ export function getBoxItems(
       return item ? { ...item, boxId, isPinned: placement.isPinned } : null;
     })
     .filter((item): item is PlacedWorkspaceItem => Boolean(item));
-}
-
-export function findBoxByRole(
-  snapshot: Pick<WorkspaceSnapshotV5, 'boxesById' | 'boxOrder' | 'boxViewStatesById'>,
-  role: WorkspaceBoxRole,
-) {
-  return getOrderedBoxes(snapshot).find((box) => box.role === role) ?? null;
 }
 
 export function areAllBoxesMinimized(

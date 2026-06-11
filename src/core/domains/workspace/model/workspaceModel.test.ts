@@ -25,16 +25,16 @@ test('workspace reducer keeps items global and pin state in placements', () => {
 
   const withItem = reduceWorkspace(snapshot, {
     type: 'item.add',
-    boxId: 'system-notes',
+    boxId: 'default-box',
     item: noteItem,
   });
   assert.equal(Object.keys(withItem.itemsById).length, 1);
-  assert.equal(getBoxItems(withItem, 'system-notes')[0].title, 'Scratch');
-  assert.equal(getBoxItems(withItem, 'system-notes')[0].isPinned, false);
+  assert.equal(getBoxItems(withItem, 'default-box')[0].title, 'Scratch');
+  assert.equal(getBoxItems(withItem, 'default-box')[0].isPinned, false);
 
   const withUpdatedItem = reduceWorkspace(withItem, {
     type: 'item.update',
-    boxId: 'system-notes',
+    boxId: 'default-box',
     itemId: noteItem.id,
     updates: {
       title: 'Updated scratch',
@@ -42,24 +42,24 @@ test('workspace reducer keeps items global and pin state in placements', () => {
     },
   });
   assert.equal(withUpdatedItem.itemsById[noteItem.id].title, 'Updated scratch');
-  const updatedPlacedItem = getBoxItems(withUpdatedItem, 'system-notes')[0];
+  const updatedPlacedItem = getBoxItems(withUpdatedItem, 'default-box')[0];
   assert.equal(updatedPlacedItem.type, 'note');
   assert.equal(updatedPlacedItem.type === 'note' ? updatedPlacedItem.text : null, 'Updated note');
 
   const withPinnedItem = reduceWorkspace(withUpdatedItem, {
     type: 'item.setPinned',
-    boxId: 'system-notes',
+    boxId: 'default-box',
     itemId: noteItem.id,
     isPinned: true,
   });
-  assert.equal(withPinnedItem.itemPlacementsByBoxId['system-notes'][0].isPinned, true);
+  assert.equal(withPinnedItem.itemPlacementsByBoxId['default-box'][0].isPinned, true);
 
   const withoutItem = reduceWorkspace(withPinnedItem, {
     type: 'item.delete',
-    boxId: 'system-notes',
+    boxId: 'default-box',
     itemId: noteItem.id,
   });
-  assert.equal(withoutItem.itemPlacementsByBoxId['system-notes'].length, 0);
+  assert.equal(withoutItem.itemPlacementsByBoxId['default-box'].length, 0);
   assert.equal(withoutItem.itemsById[noteItem.id], undefined);
 });
 
@@ -76,8 +76,7 @@ test('move item inherits placement pin state without mutating item entity', () =
   });
   const foldersBox = {
     id: 'system-folders',
-    role: 'folders',
-    customTitle: null,
+    customTitle: 'Folders',
     bounds: { x: 100, y: 100, width: 320, height: 400 },
     isLocked: false,
     isCollapsed: false,
@@ -88,8 +87,7 @@ test('move item inherits placement pin state without mutating item entity', () =
   } satisfies WorkspaceBoxWithItems;
   const linksBox = {
     id: 'system-links',
-    role: 'links',
-    customTitle: null,
+    customTitle: 'Links',
     bounds: { x: 450, y: 100, width: 320, height: 400 },
     isLocked: false,
     isCollapsed: false,
@@ -100,8 +98,7 @@ test('move item inherits placement pin state without mutating item entity', () =
   } satisfies WorkspaceBoxWithItems;
   const notesBox = {
     id: 'system-notes',
-    role: 'notes',
-    customTitle: null,
+    customTitle: 'Notes',
     bounds: { x: 800, y: 100, width: 320, height: 400 },
     isLocked: false,
     isCollapsed: false,
@@ -137,8 +134,8 @@ test('workspace export document round-trips with current schema', () => {
   const parsed = parseWorkspaceExportDocument(document);
 
   assert.equal(parsed.version, WORKSPACE_EXPORT_VERSION);
-  assert.equal(parsed.boxes.length, 3);
-  assert.equal(parsed.boxes[1].role, 'links');
+  assert.equal(parsed.boxes.length, 1);
+  assert.equal(parsed.boxes[0].customTitle, null);
 });
 
 test('workspace snapshot parser accepts current schema payloads', () => {

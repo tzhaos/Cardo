@@ -1,4 +1,4 @@
-import { ClipboardPaste, File, Folder, Link as LinkIcon, Plus, X } from 'lucide-react';
+import { ClipboardPaste, File, Folder, Link as LinkIcon, Plus, Rocket, X } from 'lucide-react';
 import type { KeyboardEvent } from 'react';
 import { useI18n } from '../../../app/hooks/useI18n';
 import {
@@ -40,7 +40,7 @@ export default function AddItemPanel({
   const contentPlaceholder =
     addingType === 'url'
       ? t('addItem.urlPlaceholder')
-      : addingType === 'file' || addingType === 'folder'
+      : addingType === 'file' || addingType === 'folder' || addingType === 'shortcut'
         ? t('addItem.pathPlaceholder')
         : t('addItem.contentPlaceholder');
   const contentAsTextarea = addingType === 'note';
@@ -133,6 +133,13 @@ export default function AddItemPanel({
         >
           <LinkIcon size={12} className="text-[var(--role-link-fg)]" />
           {t(ITEM_TYPE_PLURAL_KEYS.url)}
+        </button>
+        <button
+          onClick={() => onStartAdd('shortcut')}
+          className="kb-secondary-button flex items-center gap-2 rounded-xl p-2 text-xs transition-colors"
+        >
+          <Rocket size={12} className="text-[var(--role-generic-fg)]" />
+          {t(ITEM_TYPE_PLURAL_KEYS.shortcut)}
         </button>
         <button
           onClick={() => onStartAdd('note')}

@@ -11,7 +11,6 @@ import {
 
 const BOX: WorkspaceBox = {
   id: 'box-1',
-  role: 'notes',
   customTitle: null,
   bounds: { x: 10, y: 20, width: 320, height: 400 },
   isLocked: false,
@@ -39,7 +38,13 @@ test('parseWorkspaceSyncDocument normalizes invalid preferences', () => {
   const document = parseWorkspaceSyncDocument(
     {
       version: 1,
-      workspace: { version: 2, boxes: [{ ...BOX, items: [] }] },
+      workspace: {
+        version: 3,
+        boxes: [{ id: BOX.id, customTitle: BOX.customTitle, itemIds: [] }],
+        items: [],
+        itemPlacementsByBoxId: { [BOX.id]: [] },
+        boxViewStates: [{ boxId: BOX.id, ...BOX }],
+      },
       preferences: {
         theme: 'invalid',
         locale: 'zh',

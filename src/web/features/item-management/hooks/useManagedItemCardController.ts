@@ -157,7 +157,7 @@ export function useManagedItemCardController({
       contentPlaceholder:
         item.type === 'url'
           ? t('addItem.urlPlaceholder')
-          : item.type === 'file' || item.type === 'folder'
+          : item.type === 'file' || item.type === 'folder' || item.type === 'shortcut'
             ? t('addItem.pathPlaceholder')
             : t('addItem.contentPlaceholder'),
       titlePlaceholder: t('addItem.titleOptional'),

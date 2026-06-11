@@ -24,8 +24,8 @@ test('migration converts legacy workspace arrays into export document v3', () =>
   ]);
 
   assert.equal(document.version, 3);
-  assert.equal(document.boxes[0].role, 'links');
-  assert.equal(document.boxes[0].customTitle, null);
+  assert.equal('role' in document.boxes[0], false);
+  assert.equal(document.boxes[0].customTitle, 'Links');
   assert.equal(document.boxViewStates[0].bounds.width, 200);
   assert.equal(document.boxViewStates[0].bounds.height, 150);
 });
@@ -56,9 +56,52 @@ test('migration converts legacy normalized snapshots into schema version 5 snaps
 
   assert.equal(snapshot.schemaVersion, 5);
   assert.deepEqual(snapshot.boxOrder, ['clipboard']);
-  assert.equal(snapshot.boxesById.clipboard.role, 'notes');
-  assert.equal(snapshot.boxesById.clipboard.customTitle, null);
+  assert.equal('role' in snapshot.boxesById.clipboard, false);
+  assert.equal(snapshot.boxesById.clipboard.customTitle, 'Notes');
   assert.equal(snapshot.maxZIndex, 9);
   // Verify legacy theme field is not present in migrated box
   assert.equal('theme' in snapshot.boxesById.clipboard, false);
+});
+
+test('migration strips roles from export v3 documents without dropping items', () => {
+  const document = migrateLegacyWorkspaceDocument({
+    version: 3,
+    boxes: [
+      {
+        id: 'webpages',
+        role: 'links',
+        customTitle: null,
+        itemIds: ['item-1'],
+      },
+    ],
+    items: [
+      {
+        id: 'item-1',
+        type: 'url',
+        title: 'Example',
+        url: 'https://example.com',
+      },
+    ],
+    itemPlacementsByBoxId: {
+      webpages: [{ itemId: 'item-1', isPinned: true }],
+    },
+    boxViewStates: [
+      {
+        boxId: 'webpages',
+        bounds: { x: 10, y: 20, width: 320, height: 400 },
+        isLocked: false,
+        isCollapsed: false,
+        isMinimized: false,
+        layout: 'list',
+        zIndex: 2,
+      },
+    ],
+  });
+
+  assert.equal(document.version, 3);
+  assert.equal('role' in document.boxes[0], false);
+  assert.equal(document.boxes[0].customTitle, 'Links');
+  assert.equal(document.items.length, 1);
+  assert.equal(document.items[0].id, 'item-1');
+  assert.equal(document.itemPlacementsByBoxId.webpages[0].itemId, 'item-1');
 });

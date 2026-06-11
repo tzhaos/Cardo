@@ -6,6 +6,8 @@ import {
   type WorkspaceBox,
 } from '../../../../core/domains/workspace/model/workspace';
 import { hasEditingSession, setSnapPreview } from '../../../app/controllers/interactionController';
+import { useCanvasStore } from '../../../app/stores/useCanvasStore';
+import { startDocumentPointerGesture } from '../../workspace-desktop/services/pointerGesture';
 
 interface UseBoxDragOptions {
   box: WorkspaceBox;
@@ -17,6 +19,7 @@ interface UseBoxDragOptions {
 
 export function useBoxDrag({ box, allBoxes, onFocus, onUpdate, setIsDragging }: UseBoxDragOptions) {
   const lastSnapRef = useRef<string | null>(null);
+  const setInteractionMode = useCanvasStore((state) => state.setInteractionMode);
 
   const handleDragStart = (event: ReactPointerEvent) => {
     event.preventDefault();
@@ -27,6 +30,7 @@ export function useBoxDrag({ box, allBoxes, onFocus, onUpdate, setIsDragging }: 
     }
 
     setIsDragging(true);
+    setInteractionMode('box-dragging');
     onFocus();
     const renderedBounds = getRenderedBoxBounds(box);
     const draggableBox = {
@@ -67,8 +71,9 @@ export function useBoxDrag({ box, allBoxes, onFocus, onUpdate, setIsDragging }: 
       });
     };
 
-    const onPointerUp = () => {
+    const finishDrag = () => {
       setIsDragging(false);
+      setInteractionMode('idle');
 
       if (lastSnapRef.current) {
         const [snappedX, snappedY] = lastSnapRef.current.split(',').map(Number);
@@ -77,12 +82,12 @@ export function useBoxDrag({ box, allBoxes, onFocus, onUpdate, setIsDragging }: 
 
       lastSnapRef.current = null;
       setSnapPreview(null);
-      document.removeEventListener('pointermove', onPointerMove);
-      document.removeEventListener('pointerup', onPointerUp);
     };
 
-    document.addEventListener('pointermove', onPointerMove);
-    document.addEventListener('pointerup', onPointerUp);
+    startDocumentPointerGesture({
+      onMove: onPointerMove,
+      onEnd: finishDrag,
+    });
   };
 
   return { handleDragStart };

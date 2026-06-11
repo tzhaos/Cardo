@@ -58,6 +58,21 @@ test('openItem requests local resource open for folder', async (t) => {
   assert.equal(result.status, 'requested-local-resource');
 });
 
+test('openItem requests local resource open for shortcut', async (t) => {
+  const mock = t.mock.method(localResourcePort, 'requestOpen', () => ({
+    status: 'requested' as const,
+  }));
+  const result = await openItem({
+    id: 'test-shortcut',
+    type: 'shortcut',
+    title: 'Shortcut',
+    path: 'C:\\Tools\\app.exe',
+  });
+
+  assert.equal(result.status, 'requested-local-resource');
+  assert.equal(mock.mock.calls[0].arguments[0], 'C:\\Tools\\app.exe');
+});
+
 test('openItem returns failed when local resource port fails', async (t) => {
   t.mock.method(localResourcePort, 'requestOpen', () => ({
     status: 'failed' as const,
