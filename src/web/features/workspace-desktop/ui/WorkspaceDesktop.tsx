@@ -8,6 +8,7 @@ import TrayDock from '../../tray';
 import { useWorkspaceGlobalEvents } from '../hooks/useWorkspaceGlobalEvents';
 import { useWorkspaceDesktopState } from '../hooks/useWorkspaceDesktopState';
 import { useCanvasPan } from '../hooks/useCanvasPan';
+import { useCanvasMinimap } from '../hooks/useCanvasMinimap';
 import CanvasControls from './CanvasControls';
 import CanvasMinimap from './CanvasMinimap';
 import SnapOverlay from './SnapOverlay';
@@ -26,6 +27,7 @@ export default function WorkspaceDesktop() {
   } =
     useWorkspaceDesktopState();
   const { handleCanvasPointerDown } = useCanvasPan();
+  const minimap = useCanvasMinimap();
 
   return (
     <div
@@ -54,8 +56,12 @@ export default function WorkspaceDesktop() {
         ))}
       </AnimatePresence>
 
-      <CanvasControls />
-      <CanvasMinimap />
+      <CanvasControls
+        isMinimapOpen={minimap.isOpen}
+        minimapLabel={minimap.labels.toggle}
+        onToggleMinimap={minimap.toggle}
+      />
+      <CanvasMinimap minimap={minimap} />
       <TrayDock />
       <SettingsPanel />
     </div>

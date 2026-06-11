@@ -1,8 +1,18 @@
-import { LocateFixed, Lock, Unlock } from 'lucide-react';
+import { LocateFixed, Lock, Map, Unlock } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 import { useCanvasControls } from '../hooks/useCanvasControls';
 
-export default function CanvasControls() {
+interface CanvasControlsProps {
+  isMinimapOpen: boolean;
+  minimapLabel: string;
+  onToggleMinimap: () => void;
+}
+
+export default function CanvasControls({
+  isMinimapOpen,
+  minimapLabel,
+  onToggleMinimap,
+}: CanvasControlsProps) {
   const controls = useCanvasControls();
 
   return (
@@ -27,6 +37,18 @@ export default function CanvasControls() {
         )}
       >
         {controls.isLocked ? <Lock size={18} /> : <Unlock size={18} />}
+      </button>
+      <button
+        type="button"
+        onClick={onToggleMinimap}
+        title={minimapLabel}
+        aria-label={minimapLabel}
+        className={cn(
+          'kb-dock-action flex h-9 w-9 items-center justify-center rounded-lg transition-colors active:scale-95',
+          isMinimapOpen ? 'bg-win-hover text-win-accent' : '',
+        )}
+      >
+        <Map size={18} />
       </button>
     </div>
   );

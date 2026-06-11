@@ -99,3 +99,5 @@ export function useCanvasMinimap() {
     handleMapClick,
   };
 }
+
+export type CanvasMinimapState = ReturnType<typeof useCanvasMinimap>;
