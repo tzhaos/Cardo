@@ -1,17 +1,179 @@
-import { app, BrowserWindow, clipboard, dialog, ipcMain, shell } from 'electron';
-import fs from 'node:fs/promises';
+import {
+  app,
+  BrowserWindow,
+  clipboard,
+  dialog,
+  ipcMain,
+  shell,
+  type Event,
+  type WebContentsConsoleMessageEventParams,
+} from 'electron';
+import { spawn } from 'node:child_process';
+import fs from 'node:fs';
+import fsPromises from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+declare const __KHAOSBOX_DEBUG_PACKAGE__: boolean;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rendererIndex = path.resolve(__dirname, '../renderer/assets/desktop-shell/index.html');
 const preloadScript = path.resolve(__dirname, 'preload.js');
+const isDebugPackage = __KHAOSBOX_DEBUG_PACKAGE__ || process.env.KHAOSBOX_DEBUG_PACKAGE === '1';
+let debugLogPath: string | null = null;
+
+type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
+const originalConsole = {
+  debug: console.debug.bind(console),
+  error: console.error.bind(console),
+  info: console.info.bind(console),
+  log: console.log.bind(console),
+  warn: console.warn.bind(console),
+};
+
+function formatLogValue(value: unknown): string {
+  if (value instanceof Error) {
+    return `${value.stack ?? value.name}: ${value.message}`;
+  }
+
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  try {
+    return JSON.stringify(value) ?? String(value);
+  } catch {
+    return String(value);
+  }
+}
+
+function writeDebugLog(level: LogLevel, source: string, values: unknown[]) {
+  if (!debugLogPath) {
+    return;
+  }
+
+  const timestamp = new Date().toISOString();
+  const message = values.map(formatLogValue).join(' ');
+
+  try {
+    fs.appendFileSync(
+      debugLogPath,
+      `[${timestamp}] [${level.toUpperCase()}] [${source}] ${message}\n`,
+    );
+  } catch (error) {
+    originalConsole.error('Failed to write debug log', error);
+  }
+}
+
+function patchConsoleForDebugLog() {
+  console.debug = (...values: unknown[]) => {
+    writeDebugLog('debug', 'main', values);
+    originalConsole.debug(...values);
+  };
+  console.info = (...values: unknown[]) => {
+    writeDebugLog('info', 'main', values);
+    originalConsole.info(...values);
+  };
+  console.log = (...values: unknown[]) => {
+    writeDebugLog('info', 'main', values);
+    originalConsole.log(...values);
+  };
+  console.warn = (...values: unknown[]) => {
+    writeDebugLog('warn', 'main', values);
+    originalConsole.warn(...values);
+  };
+  console.error = (...values: unknown[]) => {
+    writeDebugLog('error', 'main', values);
+    originalConsole.error(...values);
+  };
+}
+
+function openDebugLogTerminal(logPath: string) {
+  if (process.platform !== 'win32') {
+    console.info(`Debug package log: ${logPath}`);
+    return;
+  }
+
+  const command = [
+    `$host.UI.RawUI.WindowTitle = 'KhaosBox Debug Log'`,
+    `Write-Host 'KhaosBox debug log:'`,
+    `Write-Host '${logPath.replaceAll("'", "''")}'`,
+    `Write-Host ''`,
+    `Get-Content -LiteralPath '${logPath.replaceAll("'", "''")}' -Wait`,
+  ].join('; ');
+
+  spawn('powershell.exe', ['-NoExit', '-ExecutionPolicy', 'Bypass', '-Command', command], {
+    detached: true,
+    stdio: 'ignore',
+    windowsHide: false,
+  }).unref();
+}
+
+function initializeDebugLogging() {
+  if (!isDebugPackage) {
+    return;
+  }
+
+  const logDirectory = path.join(app.getPath('userData'), 'logs');
+  fs.mkdirSync(logDirectory, { recursive: true });
+  debugLogPath = path.join(logDirectory, 'debug.log');
+  fs.writeFileSync(debugLogPath, `[${new Date().toISOString()}] [INFO] [main] Debug log started\n`);
+  patchConsoleForDebugLog();
+  openDebugLogTerminal(debugLogPath);
+}
+
+function registerDebugProcessHandlers() {
+  if (!isDebugPackage) {
+    return;
+  }
+
+  process.on('uncaughtExceptionMonitor', (error) => {
+    console.error('Uncaught exception', error);
+  });
+  process.on('unhandledRejection', (reason) => {
+    console.error('Unhandled rejection', reason);
+  });
+}
+
+function registerWindowDebugLogging(win: BrowserWindow) {
+  if (!isDebugPackage) {
+    return;
+  }
+
+  const consoleLevels: Record<number, LogLevel> = {
+    0: 'debug',
+    1: 'info',
+    2: 'warn',
+    3: 'error',
+  };
+
+  win.webContents.on('console-message', (event, level, message, line, sourceId) => {
+    const details = event as Event<WebContentsConsoleMessageEventParams>;
+    writeDebugLog(consoleLevels[level] ?? 'info', 'renderer', [
+      details.message || message,
+      `${details.sourceId || sourceId}:${details.lineNumber || line}`,
+    ]);
+  });
+  win.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
+    console.error('Renderer failed to load', { errorCode, errorDescription, validatedURL });
+  });
+  win.webContents.on('render-process-gone', (_event, details) => {
+    console.error('Renderer process gone', details);
+  });
+  win.on('unresponsive', () => {
+    console.warn('Renderer window became unresponsive');
+  });
+  win.on('responsive', () => {
+    console.info('Renderer window became responsive');
+  });
+}
 
 async function readStateFile() {
   const statePath = path.join(app.getPath('userData'), 'state.json');
 
   try {
-    return JSON.parse(await fs.readFile(statePath, 'utf8')) as Record<string, string>;
+    return JSON.parse(await fsPromises.readFile(statePath, 'utf8')) as Record<string, string>;
   } catch {
     return {};
   }
@@ -19,8 +181,8 @@ async function readStateFile() {
 
 async function writeStateFile(state: Record<string, string>) {
   const statePath = path.join(app.getPath('userData'), 'state.json');
-  await fs.mkdir(path.dirname(statePath), { recursive: true });
-  await fs.writeFile(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
+  await fsPromises.mkdir(path.dirname(statePath), { recursive: true });
+  await fsPromises.writeFile(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
 }
 
 function registerIpcHandlers() {
@@ -59,7 +221,7 @@ function registerIpcHandlers() {
       return;
     }
 
-    await fs.writeFile(result.filePath, payload, 'utf8');
+    await fsPromises.writeFile(result.filePath, payload, 'utf8');
   });
 }
 
@@ -76,6 +238,7 @@ async function createWindow() {
       preload: preloadScript,
     },
   });
+  registerWindowDebugLogging(win);
 
   if (process.env.KHAOSBOX_DESKTOP_DEV_SERVER_URL) {
     await win.loadURL(process.env.KHAOSBOX_DESKTOP_DEV_SERVER_URL);
@@ -105,6 +268,8 @@ if (!singleInstanceLock) {
   void app
     .whenReady()
     .then(async () => {
+      initializeDebugLogging();
+      registerDebugProcessHandlers();
       await createWindow();
 
       app.on('activate', () => {

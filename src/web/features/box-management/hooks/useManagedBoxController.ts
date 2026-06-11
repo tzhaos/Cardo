@@ -62,7 +62,6 @@ export function useManagedBoxController(box: WorkspaceBox) {
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [draftTitle, setDraftTitle] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
-  const minimizeTimerRef = useRef<number | null>(null);
   const transitionTimerRef = useRef<number | null>(null);
 
   const editorId = `box:${box.id}:title`;
@@ -93,10 +92,6 @@ export function useManagedBoxController(box: WorkspaceBox) {
 
   useEffect(
     () => () => {
-      if (minimizeTimerRef.current) {
-        window.clearTimeout(minimizeTimerRef.current);
-      }
-
       if (transitionTimerRef.current) {
         window.clearTimeout(transitionTimerRef.current);
       }
@@ -141,10 +136,7 @@ export function useManagedBoxController(box: WorkspaceBox) {
     });
     queueTransitionCleanup(box.id);
     setShowAddMenu(false);
-
-    minimizeTimerRef.current = window.setTimeout(() => {
-      updateBox({ isMinimized: true });
-    }, 280);
+    updateBox({ isMinimized: true });
   };
 
   const handleToggleCollapse = () => {
