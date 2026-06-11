@@ -6,13 +6,13 @@ KhaosBox 是一个多宿主 TypeScript 工作区应用，用可移动的 box 管
 
 - 浏览器扩展：Manifest V3 新标签页工作区。
 - 桌面端：复用同一套 React 体验的 Electron shell。
-- CLI：Node 命令行工作区迁移和检查工具。
+- CLI：Node 命令行工作区检查工具。
 
 ## 架构
 
 ```text
 src/
-|-- core/       # 运行时无关的领域模型、编解码、迁移、协议和端口
+|-- core/       # 运行时无关的领域模型、编解码、协议和端口
 |-- web/        # React UI、Zustand store、用例和功能控制器
 |-- extension/  # MV3 启动入口、Chrome 适配器和扩展宿主
 |-- desktop/    # Electron main、preload、renderer 和桌面适配器
@@ -51,7 +51,6 @@ npm install
 ## CLI
 
 ```bash
-npm run cli -- migrate workspace.json
 npm run cli -- inspect workspace.export-v3.json
 ```
 
@@ -70,7 +69,3 @@ npm run desktop:start
 ```
 
 构建产物位于 `artifacts/desktop`。
-
-## 文档
-
-见 [`docs/architecture.md`](./docs/architecture.md)。

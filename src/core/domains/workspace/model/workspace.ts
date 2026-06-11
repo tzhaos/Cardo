@@ -97,7 +97,7 @@ export const WORKSPACE_SCHEMA_VERSION = 5 as const;
 export const WORKSPACE_EXPORT_VERSION = 3 as const;
 export const MAX_WORKSPACE_BOXES = 12;
 
-/** Minimum visual dimensions for workspace boxes, shared across codec, resize, and migration. */
+/** Minimum visual dimensions for workspace boxes, shared across codec and resize logic. */
 export const BOX_MIN_WIDTH = 200;
 export const BOX_MIN_HEIGHT = 150;
 export const BOX_COLLAPSED_HEIGHT = 56;

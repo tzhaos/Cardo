@@ -6,13 +6,13 @@ KhaosBox is a multi-host TypeScript workspace app for organizing links, notes, f
 
 - Browser extension: Manifest V3 new tab workspace.
 - Desktop: Electron shell reusing the same React experience.
-- CLI: Node command line tools for workspace migration and inspection.
+- CLI: Node command line tools for workspace inspection.
 
 ## Architecture
 
 ```text
 src/
-|-- core/       # runtime-agnostic domain, codecs, migrations, protocols, ports
+|-- core/       # runtime-agnostic domain, codecs, protocols, ports
 |-- web/        # React UI, Zustand stores, use-cases, feature controllers
 |-- extension/  # MV3 bootstrap, Chrome adapters, background bridge
 |-- desktop/    # Electron main, preload, renderer, desktop adapters
@@ -51,7 +51,6 @@ npm install
 ## CLI
 
 ```bash
-npm run cli -- migrate workspace.json
 npm run cli -- inspect workspace.export-v3.json
 ```
 
@@ -70,7 +69,3 @@ npm run desktop:start
 ```
 
 Build output is written to `artifacts/desktop`.
-
-## Documentation
-
-See [`docs/architecture.md`](./docs/architecture.md).
