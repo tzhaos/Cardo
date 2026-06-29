@@ -18,6 +18,7 @@
     "vite/extension.config.ts",
     "vite/desktop-renderer.config.ts",
     "vite/desktop-main.config.ts",
+    "vite/desktop-preload.config.ts",
     "vite/native-host.config.ts",
     "scripts/**/*.ts",
     "eslint.config.js"

@@ -12,13 +12,10 @@ import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import fsPromises from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { normalizeLocalResourcePath } from '../core/services/localResourcePath';
 
 declare const __KHAOSBOX_DEBUG_PACKAGE__: boolean;
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const rendererIndex = path.resolve(__dirname, '../renderer/assets/desktop-shell/index.html');
-const preloadScript = path.resolve(__dirname, 'preload.js');
 const isDebugPackage = __KHAOSBOX_DEBUG_PACKAGE__ || process.env.KHAOSBOX_DEBUG_PACKAGE === '1';
 let debugLogPath: string | null = null;
 
@@ -31,6 +28,18 @@ const originalConsole = {
   log: console.log.bind(console),
   warn: console.warn.bind(console),
 };
+
+function getDesktopAppPath(...segments: string[]) {
+  return path.join(app.getAppPath(), ...segments);
+}
+
+function getRendererIndexPath() {
+  return getDesktopAppPath('renderer', 'assets', 'desktop-shell', 'index.html');
+}
+
+function getPreloadScriptPath() {
+  return getDesktopAppPath('main', 'preload.cjs');
+}
 
 function formatLogValue(value: unknown): string {
   if (value instanceof Error) {
@@ -207,7 +216,17 @@ function registerIpcHandlers() {
   ipcMain.handle('clipboard:write-text', (_event, text: string) => clipboard.writeText(text));
   ipcMain.handle('shell:open-external', (_event, url: string) => shell.openExternal(url));
   ipcMain.handle('shell:open-local-resource', async (_event, resourcePath: string) => {
-    const error = await shell.openPath(resourcePath);
+    const normalized = normalizeLocalResourcePath(resourcePath);
+
+    if (!normalized.ok) {
+      return { ok: false, error: normalized.errorMessage };
+    }
+
+    if (process.platform === 'win32' && !fs.existsSync(normalized.path)) {
+      return { ok: false, error: 'Local path does not exist.' };
+    }
+
+    const error = await shell.openPath(normalized.path);
     return error ? { ok: false, error } : { ok: true };
   });
 
@@ -226,6 +245,13 @@ function registerIpcHandlers() {
 }
 
 async function createWindow() {
+  const preloadScript = getPreloadScriptPath();
+  const rendererIndex = getRendererIndexPath();
+
+  if (!fs.existsSync(preloadScript)) {
+    console.error('Preload script is missing', preloadScript);
+  }
+
   const win = new BrowserWindow({
     width: 1280,
     height: 820,

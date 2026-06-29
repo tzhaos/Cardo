@@ -1,60 +1,12 @@
 import fs from 'node:fs';
 import { spawn, spawnSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
+import {
+  normalizeLocalResourcePath,
+  validateLocalResourcePath,
+} from '../core/services/localResourcePath';
 import { writeNativeHostDiagnostic } from './diagnostics';
 
-function trimWrappingQuotes(value: string) {
-  const trimmed = value.trim();
-
-  if (
-    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
-    (trimmed.startsWith("'") && trimmed.endsWith("'"))
-  ) {
-    return trimmed.slice(1, -1);
-  }
-
-  return trimmed;
-}
-
-export function normalizeLocalResourcePath(resourcePath: unknown) {
-  if (typeof resourcePath !== 'string' || resourcePath.trim().length === 0) {
-    return { ok: false as const, errorMessage: 'Resource path is empty.' };
-  }
-
-  if (resourcePath.includes('\0')) {
-    return {
-      ok: false as const,
-      errorMessage: 'Resource path contains an invalid character.',
-    };
-  }
-
-  const trimmedPath = trimWrappingQuotes(resourcePath);
-
-  if (/^file:/i.test(trimmedPath)) {
-    try {
-      return { ok: true as const, path: fileURLToPath(trimmedPath) };
-    } catch {
-      return { ok: false as const, errorMessage: 'File URL is invalid.' };
-    }
-  }
-
-  if (process.platform === 'win32') {
-    if (/^[A-Za-z]:[\\/]/.test(trimmedPath)) {
-      return { ok: true as const, path: trimmedPath.replace(/\//g, '\\') };
-    }
-
-    if (/^\\\\[^\\]+\\[^\\]+/.test(trimmedPath)) {
-      return { ok: true as const, path: trimmedPath.replace(/\//g, '\\') };
-    }
-  }
-
-  return { ok: true as const, path: trimmedPath };
-}
-
-export function validateLocalResourcePath(resourcePath: unknown) {
-  const normalized = normalizeLocalResourcePath(resourcePath);
-  return normalized.ok ? null : normalized.errorMessage;
-}
+export { normalizeLocalResourcePath, validateLocalResourcePath };
 
 function openWindowsPath(resourcePath: string) {
   const result = spawnSync('cmd.exe', ['/d', '/s', '/c', 'start', '""', resourcePath], {

@@ -7,7 +7,6 @@ import {
 } from '../../../../core/domains/workspace/model/workspace';
 import { hasEditingSession, setSnapPreview } from '../../../app/controllers/interactionController';
 import { useCanvasStore } from '../../../app/stores/useCanvasStore';
-import { startDocumentPointerGesture } from '../../workspace-desktop/services/pointerGesture';
 
 interface UseBoxDragOptions {
   box: WorkspaceBox;
@@ -25,7 +24,7 @@ export function useBoxDrag({ box, allBoxes, onFocus, onUpdate, setIsDragging }: 
     event.preventDefault();
     event.stopPropagation();
 
-    if (event.button !== 0 || box.isLocked || hasEditingSession()) {
+    if (event.button !== 0 || !event.isPrimary || box.isLocked || hasEditingSession()) {
       return;
     }
 
@@ -44,8 +43,9 @@ export function useBoxDrag({ box, allBoxes, onFocus, onUpdate, setIsDragging }: 
       initialBoxX: box.bounds.x,
       initialBoxY: box.bounds.y,
     };
+    let hasFinished = false;
 
-    const handlePointerMove = (moveEvent: PointerEvent) => {
+    const updateDragFrame = (moveEvent: { clientX: number; clientY: number }) => {
       const { newX, newY, snap } = computeBoxDragFrame(
         moveEvent,
         dragStart,
@@ -71,11 +71,38 @@ export function useBoxDrag({ box, allBoxes, onFocus, onUpdate, setIsDragging }: 
       });
     };
 
-    const finishDrag = () => {
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      if (moveEvent.pointerId !== event.pointerId) {
+        return;
+      }
+
+      updateDragFrame(moveEvent);
+    };
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      updateDragFrame(moveEvent);
+    };
+
+    const cleanupDragListeners = () => {
+      window.removeEventListener('pointermove', handlePointerMove, true);
+      window.removeEventListener('pointerup', finishDrag, true);
+      window.removeEventListener('pointercancel', cancelDrag, true);
+      window.removeEventListener('mousemove', handleMouseMove, true);
+      window.removeEventListener('mouseup', finishDragFromMouse, true);
+      window.removeEventListener('blur', cancelDrag);
+    };
+
+    const completeDrag = (shouldSnap: boolean) => {
+      if (hasFinished) {
+        return;
+      }
+
+      hasFinished = true;
+      cleanupDragListeners();
       setIsDragging(false);
       setInteractionMode('idle');
 
-      if (lastSnapRef.current) {
+      if (shouldSnap && lastSnapRef.current) {
         const [snappedX, snappedY] = lastSnapRef.current.split(',').map(Number);
         onUpdate({ bounds: { x: snappedX, y: snappedY } });
       }
@@ -84,10 +111,28 @@ export function useBoxDrag({ box, allBoxes, onFocus, onUpdate, setIsDragging }: 
       setSnapPreview(null);
     };
 
-    startDocumentPointerGesture({
-      onMove: handlePointerMove,
-      onEnd: finishDrag,
-    });
+    const finishDrag = (finishEvent: PointerEvent) => {
+      if (finishEvent.pointerId !== event.pointerId) {
+        return;
+      }
+
+      completeDrag(true);
+    };
+
+    const finishDragFromMouse = () => {
+      completeDrag(true);
+    };
+
+    const cancelDrag = () => {
+      completeDrag(false);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove, true);
+    window.addEventListener('pointerup', finishDrag, true);
+    window.addEventListener('pointercancel', cancelDrag, true);
+    window.addEventListener('mousemove', handleMouseMove, true);
+    window.addEventListener('mouseup', finishDragFromMouse, true);
+    window.addEventListener('blur', cancelDrag);
   };
 
   return { handleDragStart };

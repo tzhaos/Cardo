@@ -11,7 +11,6 @@ export default defineConfig({
     lib: {
       entry: {
         main: path.resolve(__dirname, '../src/desktop/main.ts'),
-        preload: path.resolve(__dirname, '../src/desktop/preload.ts'),
       },
       formats: ['es'],
     },
