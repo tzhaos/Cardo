@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { useState, type DragEvent } from 'react';
 import type { KanbanColumn } from '../../../../core/domains/workspace/model/workspace';
 import type {
@@ -38,6 +38,8 @@ interface KanbanColumnViewProps {
     deleteColumn: string;
     moveColumnLeft: string;
     moveColumnRight: string;
+    saveColumn: string;
+    cancelColumnEdit: string;
   };
   onColumnDragEnter: (columnId: string) => void;
   onColumnDragLeave: () => void;
@@ -122,24 +124,43 @@ function KanbanColumnView({
     >
       <div className="flex shrink-0 items-center justify-between gap-3 px-3 py-2">
         {isEditingTitle ? (
-          <input
-            value={draftColumnTitle}
-            onChange={(event) => onColumnTitleChange(event.target.value)}
-            onBlur={() => onFinishColumnEdit(true)}
-            onKeyDown={(event) => {
-              event.stopPropagation();
+          <div className="flex min-w-0 flex-1 items-center gap-1">
+            <input
+              value={draftColumnTitle}
+              onChange={(event) => onColumnTitleChange(event.target.value)}
+              onKeyDown={(event) => {
+                event.stopPropagation();
 
-              if (event.key === 'Enter') {
-                onFinishColumnEdit(true);
-              }
+                if (event.key === 'Enter') {
+                  onFinishColumnEdit(true);
+                }
 
-              if (event.key === 'Escape') {
-                onFinishColumnEdit(false);
-              }
-            }}
-            className="kb-box-input min-w-0 flex-1 rounded-md border px-2 py-1 text-sm font-semibold outline-none"
-            autoFocus
-          />
+                if (event.key === 'Escape') {
+                  onFinishColumnEdit(false);
+                }
+              }}
+              className="kb-box-input min-w-0 flex-1 rounded-md border px-2 py-1 text-sm font-semibold outline-none"
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={() => onFinishColumnEdit(true)}
+              title={labels.saveColumn}
+              aria-label={labels.saveColumn}
+              className="kb-icon-button rounded-md p-1 transition-colors"
+            >
+              <Check size={13} />
+            </button>
+            <button
+              type="button"
+              onClick={() => onFinishColumnEdit(false)}
+              title={labels.cancelColumnEdit}
+              aria-label={labels.cancelColumnEdit}
+              className="kb-icon-button rounded-md p-1 transition-colors"
+            >
+              <X size={13} />
+            </button>
+          </div>
         ) : (
           <button
             type="button"

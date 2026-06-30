@@ -52,9 +52,12 @@ export function useAddItem({
     const prepared = await prepareAddItemTypeSelection(type);
 
     if (prepared.outcome === 'clipboard') {
-      onAddExistingItem(prepared.item);
+      try {
+        onAddExistingItem(prepared.item);
+      } finally {
+        closeComposer();
+      }
       presentToastSpec(t, prepared.toast);
-      closeComposer();
       return;
     }
 
@@ -75,9 +78,13 @@ export function useAddItem({
       return;
     }
 
-    onAddItem(addingType, newItemTitle, newItemContent);
-    presentToastSpec(t, describeManualItemAddToastSpec(addingType));
-    closeComposer();
+    const confirmedType = addingType;
+    try {
+      onAddItem(confirmedType, newItemTitle, newItemContent);
+    } finally {
+      closeComposer();
+    }
+    presentToastSpec(t, describeManualItemAddToastSpec(confirmedType));
   };
 
   return {

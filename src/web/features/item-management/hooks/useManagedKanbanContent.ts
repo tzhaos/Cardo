@@ -186,17 +186,19 @@ export function useManagedKanbanContent(box: WorkspaceBox) {
   };
 
   const finishColumnEdit = (shouldSave: boolean) => {
-    if (shouldSave && editingColumnId) {
-      dispatch({
-        type: 'kanban.column.update',
-        boxId: box.id,
-        columnId: editingColumnId,
-        title: draftColumnTitle,
-      });
+    try {
+      if (shouldSave && editingColumnId) {
+        dispatch({
+          type: 'kanban.column.update',
+          boxId: box.id,
+          columnId: editingColumnId,
+          title: draftColumnTitle,
+        });
+      }
+    } finally {
+      setEditingColumnId(null);
+      setDraftColumnTitle('');
     }
-
-    setEditingColumnId(null);
-    setDraftColumnTitle('');
   };
 
   const deleteColumn = (columnId: string) => {
@@ -233,6 +235,8 @@ export function useManagedKanbanContent(box: WorkspaceBox) {
       deleteColumn: t('kanban.deleteColumn'),
       moveColumnLeft: t('kanban.moveColumnLeft'),
       moveColumnRight: t('kanban.moveColumnRight'),
+      saveColumn: t('kanban.saveColumn'),
+      cancelColumnEdit: t('kanban.cancelColumnEdit'),
     },
     addColumn,
     startColumnEdit,
