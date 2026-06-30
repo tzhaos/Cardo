@@ -22,7 +22,7 @@ export default function CanvasControls({
         onClick={controls.resetViewport}
         title={controls.resetViewportLabel}
         aria-label={controls.resetViewportLabel}
-        className="kb-dock-action flex h-9 w-9 items-center justify-center rounded-lg transition-colors active:scale-95"
+        className="kb-floating-action flex h-9 w-9 items-center justify-center rounded-lg transition-colors active:scale-95"
       >
         <LocateFixed size={18} />
       </button>
@@ -32,7 +32,7 @@ export default function CanvasControls({
         title={controls.lockViewportLabel}
         aria-label={controls.lockViewportLabel}
         className={cn(
-          'kb-dock-action flex h-9 w-9 items-center justify-center rounded-lg transition-colors active:scale-95',
+          'kb-floating-action flex h-9 w-9 items-center justify-center rounded-lg transition-colors active:scale-95',
           controls.isLocked ? 'bg-win-hover text-win-accent' : '',
         )}
       >
@@ -44,7 +44,7 @@ export default function CanvasControls({
         title={minimapLabel}
         aria-label={minimapLabel}
         className={cn(
-          'kb-dock-action flex h-9 w-9 items-center justify-center rounded-lg transition-colors active:scale-95',
+          'kb-floating-action flex h-9 w-9 items-center justify-center rounded-lg transition-colors active:scale-95',
           isMinimapOpen ? 'bg-win-hover text-win-accent' : '',
         )}
       >

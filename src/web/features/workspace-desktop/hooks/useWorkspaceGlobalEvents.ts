@@ -9,7 +9,6 @@ import {
 } from '../../../app/controllers/runtimeDocumentController';
 import { describePasteToWorkspaceToastSpec } from '../../../app/use-cases/describePasteToWorkspaceToast';
 import { pasteTextItem } from '../../../app/use-cases/pasteTextItem';
-import { performToggleAllBoxesHotkey } from '../../../app/use-cases/performToggleAllBoxesHotkey';
 import { useWorkspaceSnapshot } from '../../../app/stores/useWorkspaceSelectors';
 import { useCanvasStore } from '../../../app/stores/useCanvasStore';
 import { isEditableElement } from '../../../lib/dom';
@@ -31,10 +30,6 @@ export function useWorkspaceGlobalEvents() {
       event.preventDefault();
       setPanModifierActive(true);
       return;
-    }
-
-    if (event.ctrlKey && event.key === '`') {
-      presentToastSpec(t, performToggleAllBoxesHotkey());
     }
   });
 

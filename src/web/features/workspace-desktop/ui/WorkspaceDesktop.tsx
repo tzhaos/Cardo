@@ -4,7 +4,6 @@ import Background from '../../../widgets/DesktopShell/Background';
 import BrandBadge from '../../../widgets/DesktopShell/BrandBadge';
 import ManagedBox from '../../box-management';
 import SettingsPanel from '../../settings';
-import TrayDock from '../../tray';
 import { useWorkspaceGlobalEvents } from '../hooks/useWorkspaceGlobalEvents';
 import { useWorkspaceDesktopState } from '../hooks/useWorkspaceDesktopState';
 import { useCanvasPan } from '../hooks/useCanvasPan';
@@ -12,6 +11,7 @@ import { useCanvasMinimap } from '../hooks/useCanvasMinimap';
 import CanvasControls from './CanvasControls';
 import CanvasMinimap from './CanvasMinimap';
 import SnapOverlay from './SnapOverlay';
+import WorkspaceCommandCenter from './WorkspaceCommandCenter';
 
 export default function WorkspaceDesktop() {
   useWorkspaceGlobalEvents();
@@ -48,6 +48,7 @@ export default function WorkspaceDesktop() {
       <BrandBadge label={brandLabel} />
       <ToastViewport theme={theme} />
       <SnapOverlay />
+      <WorkspaceCommandCenter />
 
       <AnimatePresence initial={false}>
         {visibleBoxIds.map((boxId) => (
@@ -61,7 +62,6 @@ export default function WorkspaceDesktop() {
         onToggleMinimap={minimap.toggle}
       />
       <CanvasMinimap minimap={minimap} />
-      <TrayDock />
       <SettingsPanel />
     </div>
   );

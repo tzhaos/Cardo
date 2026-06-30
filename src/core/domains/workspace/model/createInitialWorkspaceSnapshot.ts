@@ -1,11 +1,21 @@
 import {
+  DEFAULT_BOX_TEMPLATE_ID,
+  DEFAULT_KANBAN_COLUMNS,
   WORKSPACE_SCHEMA_VERSION,
   type BoxDesktopViewState,
   type BoxItemPlacement,
+  type BoxTemplateId,
+  type WorkspaceBoxTemplateState,
   type WorkspaceBox,
   type WorkspaceBoxEntity,
-  type WorkspaceSnapshotV5,
+  type WorkspaceSnapshotV6,
 } from './workspace';
+
+export function createDefaultTemplateState(templateId: BoxTemplateId): WorkspaceBoxTemplateState {
+  return templateId === 'kanban'
+    ? { kanbanColumns: DEFAULT_KANBAN_COLUMNS.map((column) => ({ ...column })) }
+    : {};
+}
 
 function splitBox(box: WorkspaceBox): {
   entity: WorkspaceBoxEntity;
@@ -16,6 +26,8 @@ function splitBox(box: WorkspaceBox): {
     entity: {
       id: box.id,
       customTitle: box.customTitle,
+      templateId: box.templateId,
+      templateState: box.templateState,
     },
     viewState: {
       boxId: box.id,
@@ -30,7 +42,7 @@ function splitBox(box: WorkspaceBox): {
   };
 }
 
-export function createWorkspaceSnapshot(boxes: WorkspaceBox[]): WorkspaceSnapshotV5 {
+export function createWorkspaceSnapshot(boxes: WorkspaceBox[]): WorkspaceSnapshotV6 {
   const boxesById: Record<string, WorkspaceBoxEntity> = {};
   const boxViewStatesById: Record<string, BoxDesktopViewState> = {};
   const itemPlacementsByBoxId: Record<string, BoxItemPlacement[]> = {};
@@ -61,17 +73,43 @@ export function createWorkspaceSnapshot(boxes: WorkspaceBox[]): WorkspaceSnapsho
   };
 }
 
-export function createInitialWorkspaceSnapshot(): WorkspaceSnapshotV5 {
+export function createInitialWorkspaceSnapshot(): WorkspaceSnapshotV6 {
   return createWorkspaceSnapshot([
     {
-      id: 'default-box',
+      id: 'default-inbox',
       customTitle: null,
-      bounds: { x: 100, y: 100, width: 320, height: 400 },
+      templateId: 'inbox',
+      templateState: createDefaultTemplateState('inbox'),
+      bounds: { x: 80, y: 96, width: 340, height: 420 },
+      isLocked: false,
+      isCollapsed: false,
+      isMinimized: false,
+      layout: 'list',
+      zIndex: 1,
+    },
+    {
+      id: 'default-kanban',
+      customTitle: null,
+      templateId: 'kanban',
+      templateState: createDefaultTemplateState('kanban'),
+      bounds: { x: 460, y: 96, width: 680, height: 440 },
+      isLocked: false,
+      isCollapsed: false,
+      isMinimized: false,
+      layout: 'list',
+      zIndex: 2,
+    },
+    {
+      id: 'default-launcher',
+      customTitle: null,
+      templateId: 'launcher',
+      templateState: createDefaultTemplateState('launcher'),
+      bounds: { x: 80, y: 560, width: 340, height: 280 },
       isLocked: false,
       isCollapsed: false,
       isMinimized: false,
       layout: 'grid',
-      zIndex: 1,
+      zIndex: 3,
     },
   ]);
 }
@@ -82,6 +120,9 @@ export function mergeWorkspaceBox(
 ): WorkspaceBox {
   return {
     ...entity,
+    templateState:
+      entity.templateState ??
+      createDefaultTemplateState(entity.templateId ?? DEFAULT_BOX_TEMPLATE_ID),
     bounds: viewState.bounds,
     isLocked: viewState.isLocked,
     isCollapsed: viewState.isCollapsed,

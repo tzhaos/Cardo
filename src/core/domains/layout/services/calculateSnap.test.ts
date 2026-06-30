@@ -13,6 +13,8 @@ function box(partial: Partial<WorkspaceBox> & Pick<WorkspaceBox, 'id'>): Workspa
     zIndex: 1,
     bounds: { x: 0, y: 0, width: 200, height: 200 },
     ...partial,
+    templateId: partial.templateId ?? 'collection',
+    templateState: partial.templateState ?? {},
   };
 }
 
@@ -31,7 +33,7 @@ test('calculateSnap aligns to another box left and top edges', () => {
   assert.equal(result.isSnapped, true);
 });
 
-test('calculateSnap skips minimized boxes', () => {
+test('calculateSnap aligns to legacy minimized boxes after dock removal', () => {
   const others = [
     box({
       id: 'min',
@@ -41,8 +43,8 @@ test('calculateSnap skips minimized boxes', () => {
   ];
   const result = calculateSnap(4, 4, 100, 100, others, 'self');
   assert.equal(result.isSnapped, true);
-  assert.equal(result.x, 0);
-  assert.equal(result.y, 0);
+  assert.equal(result.x, 5);
+  assert.equal(result.y, 5);
 });
 
 test('calculateSnap rounds to grid when not edge-snapped', () => {

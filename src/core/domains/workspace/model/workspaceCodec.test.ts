@@ -43,6 +43,29 @@ test('parseWorkspaceExportDocument accepts empty box list', () => {
   assert.equal(doc.version, WORKSPACE_EXPORT_VERSION);
 });
 
+test('parseWorkspaceExportDocument accepts legacy exports with itemIds only', () => {
+  const doc = parseWorkspaceExportDocument({
+    version: 3,
+    boxes: [{ id: 'box-1', customTitle: null, itemIds: ['item-1'] }],
+    items: [{ id: 'item-1', type: 'note', title: 'Note', text: 'Hello' }],
+    boxViewStates: [
+      {
+        boxId: 'box-1',
+        bounds: { x: 10, y: 20, width: 320, height: 400 },
+        isLocked: false,
+        isCollapsed: false,
+        isMinimized: true,
+        layout: 'list',
+        zIndex: 1,
+      },
+    ],
+  });
+
+  assert.equal(doc.version, WORKSPACE_EXPORT_VERSION);
+  assert.equal(doc.boxes[0].templateId, 'collection');
+  assert.deepEqual(doc.itemPlacementsByBoxId['box-1'], [{ itemId: 'item-1', isPinned: false }]);
+});
+
 test('parseWorkspaceSnapshot returns null for wrong schema version', () => {
   assert.equal(
     parseWorkspaceSnapshot({

@@ -6,8 +6,9 @@ export function moveItemToBox(
   sourceBoxId: string,
   targetBoxId: string,
   targetIndex?: number,
+  targetColumnId?: string,
 ) {
   useWorkspaceStore
     .getState()
-    .dispatch(createMoveItemCommand(itemId, sourceBoxId, targetBoxId, targetIndex));
+    .dispatch(createMoveItemCommand(itemId, sourceBoxId, targetBoxId, targetIndex, targetColumnId));
 }

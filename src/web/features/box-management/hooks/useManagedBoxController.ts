@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useI18n } from '../../../app/hooks/useI18n';
-import {
-  clearBoxTransitionIfActive,
-  clearEditingSessionIfActive,
-} from '../../../app/controllers/interactionController';
+import { clearEditingSessionIfActive } from '../../../app/controllers/interactionController';
 import { useInteractionStore } from '../../../app/stores/useInteractionStore';
 import { useCanvasStore } from '../../../app/stores/useCanvasStore';
 import { useViewportCamera } from '../../workspace-desktop';
@@ -24,53 +21,31 @@ type BoxUpdates = {
   isLocked?: boolean;
   layout?: WorkspaceBox['layout'];
   isCollapsed?: boolean;
-  isMinimized?: boolean;
 };
-
-function getDockTransitionRect(boxId: string) {
-  const dockItem = document.getElementById(`dock-box-${boxId}`);
-
-  if (!dockItem) {
-    return null;
-  }
-
-  const rect = dockItem.getBoundingClientRect();
-
-  return {
-    x: rect.left,
-    y: rect.top,
-    width: rect.width,
-    height: rect.height,
-  };
-}
 
 export function useManagedBoxController(box: WorkspaceBox) {
   const { t, locale } = useI18n();
   const snapshot = useWorkspaceSnapshot();
   const dispatch = useWorkspaceDispatch();
   const activeBoxId = useInteractionStore((state) => state.activeBoxId);
-  const boxTransition = useInteractionStore((state) => state.boxTransition);
   const editingSessionId = useInteractionStore((state) => state.editingSessionId);
   const camera = useViewportCamera();
   const interactionMode = useCanvasStore((state) => state.interactionMode);
   const isPanModifierActive = useCanvasStore((state) => state.isPanModifierActive);
   const setActiveBox = useInteractionStore((state) => state.setActiveBox);
-  const setBoxTransition = useInteractionStore((state) => state.setBoxTransition);
   const setEditingSessionId = useInteractionStore((state) => state.setEditingSessionId);
   const [isHovering, setIsHovering] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [draftTitle, setDraftTitle] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
-  const transitionTimerRef = useRef<number | null>(null);
 
   const editorId = `box:${box.id}:title`;
   const isActive = activeBoxId === box.id;
   const isEditing = editingSessionId === editorId;
   const isInteractionLocked = Boolean(editingSessionId && editingSessionId !== editorId);
-  const currentBoxTransition = boxTransition?.boxId === box.id ? boxTransition : null;
   const displayTitle = getBoxDisplayTitle(box, t);
-  const fallbackTitle = t('box.new');
+  const fallbackTitle = getBoxDisplayTitle({ ...box, customTitle: null }, t);
 
   useEffect(() => {
     if (isActive) {
@@ -92,10 +67,6 @@ export function useManagedBoxController(box: WorkspaceBox) {
 
   useEffect(
     () => () => {
-      if (transitionTimerRef.current) {
-        window.clearTimeout(transitionTimerRef.current);
-      }
-
       clearEditingSessionIfActive(editorId);
     },
     [editorId],
@@ -112,31 +83,6 @@ export function useManagedBoxController(box: WorkspaceBox) {
       boxId: box.id,
       updates,
     });
-  };
-
-  const queueTransitionCleanup = (boxId: string) => {
-    if (transitionTimerRef.current) {
-      window.clearTimeout(transitionTimerRef.current);
-    }
-
-    transitionTimerRef.current = window.setTimeout(() => {
-      clearBoxTransitionIfActive(boxId);
-    }, 420);
-  };
-
-  const handleMinimize = () => {
-    if (box.isMinimized || currentBoxTransition?.kind === 'minimize') {
-      return;
-    }
-
-    setBoxTransition({
-      boxId: box.id,
-      kind: 'minimize',
-      dockRect: getDockTransitionRect(box.id),
-    });
-    queueTransitionCleanup(box.id);
-    setShowAddMenu(false);
-    updateBox({ isMinimized: true });
   };
 
   const handleToggleCollapse = () => {
@@ -170,15 +116,12 @@ export function useManagedBoxController(box: WorkspaceBox) {
     setShowAddMenu,
     draftTitle,
     displayTitle,
-    transitionKind: currentBoxTransition?.kind ?? null,
-    transitionDockRect: currentBoxTransition?.dockRect ?? null,
     labels: {
       toggleLayout: t('box.toggleLayout'),
       lockPosition: t('box.lockPosition'),
       unlockPosition: t('box.unlockPosition'),
       collapse: t('box.collapse'),
       expand: t('box.expand'),
-      minimize: t('box.minimize'),
       close: t('box.close'),
     },
     focusBox,
@@ -213,7 +156,6 @@ export function useManagedBoxController(box: WorkspaceBox) {
     toggleLayout: () => updateBox({ layout: box.layout === 'grid' ? 'list' : 'grid' }),
     toggleLock: () => updateBox({ isLocked: !box.isLocked }),
     toggleCollapse: handleToggleCollapse,
-    minimize: handleMinimize,
     close: () => {
       const confirmMessage =
         locale === 'zh'

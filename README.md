@@ -1,6 +1,6 @@
 # KhaosBox
 
-KhaosBox is a multi-host TypeScript workspace app for organizing links, notes, files, and folders in movable boxes.
+KhaosBox is a multi-host TypeScript spatial workbench for organizing links, notes, files, folders, and lightweight workflows in template boxes such as collections, launchers, inboxes, and kanban boards.
 
 ## Hosts
 
@@ -51,7 +51,7 @@ npm install
 ## CLI
 
 ```bash
-npm run cli -- inspect workspace.export-v3.json
+npm run cli -- inspect workspace.export-v4.json
 ```
 
 ## Browser extension

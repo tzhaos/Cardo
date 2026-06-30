@@ -9,7 +9,7 @@ import {
   type PreferencesState,
 } from '../domains/preferences/model/preferences';
 import type {
-  WorkspaceExportDocumentV3,
+  WorkspaceExportDocumentV4,
   WorkspaceSnapshot,
 } from '../domains/workspace/model/workspace';
 import {
@@ -32,7 +32,7 @@ export type SyncedPreferences = Pick<
 export interface WorkspaceSyncDocumentV1 {
   version: 1;
   exportedAt: string;
-  workspace: WorkspaceExportDocumentV3;
+  workspace: WorkspaceExportDocumentV4;
   preferences: SyncedPreferences;
 }
 

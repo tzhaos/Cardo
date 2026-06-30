@@ -1,4 +1,6 @@
 export { default as ManagedBoxContent } from './ui/ManagedBoxContent';
+export { default as ManagedInboxContent } from './ui/ManagedInboxContent';
+export { default as ManagedKanbanContent } from './ui/ManagedKanbanContent';
 export { default as ManagedItemCard } from './ui/ManagedItemCard';
 export { default as DraggableItem } from './ui/DraggableItem';
 export { default as AddItemPanel } from './ui/AddItemPanel';

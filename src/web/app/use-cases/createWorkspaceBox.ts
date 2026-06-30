@@ -1,5 +1,6 @@
 import {
   MAX_WORKSPACE_BOXES,
+  type BoxTemplateId,
   type WorkspaceBox,
 } from '../../../core/domains/workspace/model/workspace';
 import { createWorkspaceBoxCommand } from '../../../core/services/workspaceActions';
@@ -10,7 +11,11 @@ export type CreateWorkspaceBoxResult =
   | { status: 'created'; box: WorkspaceBox }
   | { status: 'limit-reached'; limit: number };
 
-export function createWorkspaceBox(placement: { centerX: number; centerY: number }) {
+export function createWorkspaceBox(placement: {
+  centerX: number;
+  centerY: number;
+  templateId?: BoxTemplateId;
+}) {
   const { snapshot, dispatch } = useWorkspaceStore.getState();
   const result = createWorkspaceBoxCommand(snapshot, placement, createId);
 

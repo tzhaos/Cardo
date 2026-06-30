@@ -20,7 +20,7 @@ export function calculateSnap(
   const guides: SnapGuide[] = [];
 
   for (const other of allBoxes) {
-    if (other.id === currentId || other.isMinimized) {
+    if (other.id === currentId) {
       continue;
     }
 

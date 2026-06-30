@@ -1,7 +1,11 @@
 import type { WorkspaceBox } from '../../../../core/domains/workspace/model/workspace';
 import BoxContainer from '../../../widgets/Box/BoxContainer';
 import BoxHeader from '../../../widgets/Box/BoxHeader';
-import { ManagedBoxContent } from '../../item-management';
+import {
+  ManagedBoxContent,
+  ManagedInboxContent,
+  ManagedKanbanContent,
+} from '../../item-management';
 import { useManagedBox, useManagedBoxController } from '../hooks/useManagedBoxController';
 
 interface ManagedBoxProps {
@@ -14,14 +18,28 @@ interface ManagedBoxViewProps {
 
 function ManagedBoxView({ box }: ManagedBoxViewProps) {
   const controller = useManagedBoxController(box);
+  const content =
+    box.templateId === 'kanban' ? (
+      <ManagedKanbanContent box={box} />
+    ) : box.templateId === 'inbox' ? (
+      <ManagedInboxContent
+        box={box}
+        showAddMenu={controller.showAddMenu}
+        setShowAddMenu={controller.setShowAddMenu}
+      />
+    ) : (
+      <ManagedBoxContent
+        box={box}
+        showAddMenu={controller.showAddMenu}
+        setShowAddMenu={controller.setShowAddMenu}
+      />
+    );
 
   return (
     <BoxContainer
       box={box}
       isActive={controller.isActive}
       isDragging={controller.isDragging}
-      transitionKind={controller.transitionKind}
-      transitionDockRect={controller.transitionDockRect}
       editingSessionId={controller.editingSessionId}
       onFocus={controller.focusBox}
       onMouseEnter={controller.handleMouseEnter}
@@ -40,12 +58,12 @@ function ManagedBoxView({ box }: ManagedBoxViewProps) {
           isEditing={controller.isEditing}
           isInteractionLocked={controller.isInteractionLocked}
           inputRef={controller.inputRef}
+          canToggleLayout={box.templateId !== 'kanban'}
           toggleLayoutLabel={controller.labels.toggleLayout}
           lockPositionLabel={controller.labels.lockPosition}
           unlockPositionLabel={controller.labels.unlockPosition}
           collapseLabel={controller.labels.collapse}
           expandLabel={controller.labels.expand}
-          minimizeLabel={controller.labels.minimize}
           closeLabel={controller.labels.close}
           onDragStart={controller.handleDragStart}
           onStartEdit={(event) => {
@@ -57,17 +75,10 @@ function ManagedBoxView({ box }: ManagedBoxViewProps) {
           onToggleLayout={controller.toggleLayout}
           onToggleLock={controller.toggleLock}
           onToggleCollapse={controller.toggleCollapse}
-          onMinimize={controller.minimize}
           onClose={controller.close}
         />
       }
-      content={
-        <ManagedBoxContent
-          box={box}
-          showAddMenu={controller.showAddMenu}
-          setShowAddMenu={controller.setShowAddMenu}
-        />
-      }
+      content={content}
     />
   );
 }

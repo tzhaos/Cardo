@@ -9,13 +9,14 @@ import {
   getVisibleBoxes,
   getVisibleBoxIds,
   getWorkspaceBox,
-  areAllBoxesMinimized,
 } from './workspaceSelectors';
 
 function createTestBox(id: string, isMinimized = false) {
   return {
     id,
     customTitle: null,
+    templateId: 'collection' as const,
+    templateState: {},
     bounds: { x: 0, y: 0, width: 320, height: 400 },
     isLocked: false,
     isCollapsed: false,
@@ -48,7 +49,7 @@ test('getOrderedBoxes filters out missing boxes', () => {
   assert.equal(ordered[0].id, 'box-a');
 });
 
-test('getVisibleBoxes returns only non-minimized boxes', () => {
+test('getVisibleBoxes keeps legacy minimized boxes visible after dock removal', () => {
   const snapshot = createWorkspaceSnapshot([
     createTestBox('box-1', false),
     createTestBox('box-2', true),
@@ -56,9 +57,10 @@ test('getVisibleBoxes returns only non-minimized boxes', () => {
   ]);
 
   const visible = getVisibleBoxes(snapshot);
-  assert.equal(visible.length, 2);
+  assert.equal(visible.length, 3);
   assert.equal(visible[0].id, 'box-1');
-  assert.equal(visible[1].id, 'box-3');
+  assert.equal(visible[1].id, 'box-2');
+  assert.equal(visible[2].id, 'box-3');
 });
 
 test('getVisibleBoxes keeps collapsed boxes on desktop', () => {
@@ -80,15 +82,15 @@ test('getVisibleBoxIds returns array of visible box ids', () => {
   ]);
 
   const ids = getVisibleBoxIds(snapshot);
-  assert.deepEqual(ids, ['box-1', 'box-3']);
+  assert.deepEqual(ids, ['box-1', 'box-2', 'box-3']);
 });
 
 test('getWorkspaceBox returns box by id', () => {
   const snapshot = createInitialWorkspaceSnapshot();
-  const box = getWorkspaceBox(snapshot, 'default-box');
+  const box = getWorkspaceBox(snapshot, 'default-inbox');
 
   assert.notEqual(box, null);
-  assert.equal(box?.id, 'default-box');
+  assert.equal(box?.id, 'default-inbox');
 });
 
 test('getWorkspaceBox returns null for non-existent box', () => {
@@ -96,27 +98,4 @@ test('getWorkspaceBox returns null for non-existent box', () => {
   const box = getWorkspaceBox(snapshot, 'non-existent');
 
   assert.equal(box, null);
-});
-
-test('areAllBoxesMinimized returns true when all boxes minimized', () => {
-  const snapshot = createWorkspaceSnapshot([
-    createTestBox('box-1', true),
-    createTestBox('box-2', true),
-  ]);
-
-  assert.equal(areAllBoxesMinimized(snapshot), true);
-});
-
-test('areAllBoxesMinimized returns false when any box visible', () => {
-  const snapshot = createWorkspaceSnapshot([
-    createTestBox('box-1', true),
-    createTestBox('box-2', false),
-  ]);
-
-  assert.equal(areAllBoxesMinimized(snapshot), false);
-});
-
-test('areAllBoxesMinimized returns true for empty workspace', () => {
-  const snapshot = createWorkspaceSnapshot([]);
-  assert.equal(areAllBoxesMinimized(snapshot), true);
 });

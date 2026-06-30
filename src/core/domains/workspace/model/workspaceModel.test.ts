@@ -5,6 +5,7 @@ import { createInitialWorkspaceSnapshot } from './createInitialWorkspaceSnapshot
 import { reduceWorkspace } from './reduceWorkspace';
 import { getBoxItems } from './workspaceSelectors';
 import {
+  DEFAULT_KANBAN_COLUMNS,
   WORKSPACE_EXPORT_VERSION,
   WORKSPACE_SCHEMA_VERSION,
   type WorkspaceBoxWithItems,
@@ -25,16 +26,16 @@ test('workspace reducer keeps items global and pin state in placements', () => {
 
   const withItem = reduceWorkspace(snapshot, {
     type: 'item.add',
-    boxId: 'default-box',
+    boxId: 'default-inbox',
     item: noteItem,
   });
   assert.equal(Object.keys(withItem.itemsById).length, 1);
-  assert.equal(getBoxItems(withItem, 'default-box')[0].title, 'Scratch');
-  assert.equal(getBoxItems(withItem, 'default-box')[0].isPinned, false);
+  assert.equal(getBoxItems(withItem, 'default-inbox')[0].title, 'Scratch');
+  assert.equal(getBoxItems(withItem, 'default-inbox')[0].isPinned, false);
 
   const withUpdatedItem = reduceWorkspace(withItem, {
     type: 'item.update',
-    boxId: 'default-box',
+    boxId: 'default-inbox',
     itemId: noteItem.id,
     updates: {
       title: 'Updated scratch',
@@ -42,24 +43,24 @@ test('workspace reducer keeps items global and pin state in placements', () => {
     },
   });
   assert.equal(withUpdatedItem.itemsById[noteItem.id].title, 'Updated scratch');
-  const updatedPlacedItem = getBoxItems(withUpdatedItem, 'default-box')[0];
+  const updatedPlacedItem = getBoxItems(withUpdatedItem, 'default-inbox')[0];
   assert.equal(updatedPlacedItem.type, 'note');
   assert.equal(updatedPlacedItem.type === 'note' ? updatedPlacedItem.text : null, 'Updated note');
 
   const withPinnedItem = reduceWorkspace(withUpdatedItem, {
     type: 'item.setPinned',
-    boxId: 'default-box',
+    boxId: 'default-inbox',
     itemId: noteItem.id,
     isPinned: true,
   });
-  assert.equal(withPinnedItem.itemPlacementsByBoxId['default-box'][0].isPinned, true);
+  assert.equal(withPinnedItem.itemPlacementsByBoxId['default-inbox'][0].isPinned, true);
 
   const withoutItem = reduceWorkspace(withPinnedItem, {
     type: 'item.delete',
-    boxId: 'default-box',
+    boxId: 'default-inbox',
     itemId: noteItem.id,
   });
-  assert.equal(withoutItem.itemPlacementsByBoxId['default-box'].length, 0);
+  assert.equal(withoutItem.itemPlacementsByBoxId['default-inbox'].length, 0);
   assert.equal(withoutItem.itemsById[noteItem.id], undefined);
 });
 
@@ -77,6 +78,8 @@ test('move item inherits placement pin state without mutating item entity', () =
   const foldersBox = {
     id: 'system-folders',
     customTitle: 'Folders',
+    templateId: 'collection',
+    templateState: {},
     bounds: { x: 100, y: 100, width: 320, height: 400 },
     isLocked: false,
     isCollapsed: false,
@@ -88,6 +91,8 @@ test('move item inherits placement pin state without mutating item entity', () =
   const linksBox = {
     id: 'system-links',
     customTitle: 'Links',
+    templateId: 'collection',
+    templateState: {},
     bounds: { x: 450, y: 100, width: 320, height: 400 },
     isLocked: false,
     isCollapsed: false,
@@ -99,6 +104,8 @@ test('move item inherits placement pin state without mutating item entity', () =
   const notesBox = {
     id: 'system-notes',
     customTitle: 'Notes',
+    templateId: 'collection',
+    templateState: {},
     bounds: { x: 800, y: 100, width: 320, height: 400 },
     isLocked: false,
     isCollapsed: false,
@@ -128,14 +135,105 @@ test('move item inherits placement pin state without mutating item entity', () =
   assert.equal(nextState.itemsById[sourceItem.id].type, 'folder');
 });
 
+test('move item can assign a kanban column placement', () => {
+  const snapshot = createInitialWorkspaceSnapshot();
+  const cardItem = createWorkspaceItem('item-card', {
+    type: 'note',
+    title: 'Ship kanban',
+    content: 'Connect cards to columns',
+  });
+  const withCard = reduceWorkspace(snapshot, {
+    type: 'item.add',
+    boxId: 'default-kanban',
+    item: cardItem,
+    columnId: 'todo',
+  });
+  const movedCard = reduceWorkspace(withCard, {
+    type: 'item.move',
+    itemId: cardItem.id,
+    sourceBoxId: 'default-kanban',
+    targetBoxId: 'default-kanban',
+    targetColumnId: 'doing',
+  });
+
+  assert.equal(movedCard.itemPlacementsByBoxId['default-kanban'][0].columnId, 'doing');
+  assert.equal(getBoxItems(movedCard, 'default-kanban')[0].columnId, 'doing');
+});
+
+test('kanban column commands manage columns and reroute deleted cards', () => {
+  const snapshot = createInitialWorkspaceSnapshot();
+  const cardItem = createWorkspaceItem('item-card', {
+    type: 'note',
+    title: 'Blocked card',
+    content: 'Needs a real lane',
+  });
+  const withCard = reduceWorkspace(snapshot, {
+    type: 'item.add',
+    boxId: 'default-kanban',
+    item: cardItem,
+    columnId: 'doing',
+  });
+  const withBlockedColumn = reduceWorkspace(withCard, {
+    type: 'kanban.column.add',
+    boxId: 'default-kanban',
+    column: { id: 'blocked', title: 'Blocked' },
+    afterColumnId: 'doing',
+  });
+  const withRenamedColumn = reduceWorkspace(withBlockedColumn, {
+    type: 'kanban.column.update',
+    boxId: 'default-kanban',
+    columnId: 'blocked',
+    title: 'Waiting',
+  });
+  const withMovedColumn = reduceWorkspace(withRenamedColumn, {
+    type: 'kanban.column.move',
+    boxId: 'default-kanban',
+    columnId: 'blocked',
+    targetIndex: 1,
+  });
+  const withDeletedColumn = reduceWorkspace(withMovedColumn, {
+    type: 'kanban.column.delete',
+    boxId: 'default-kanban',
+    columnId: 'doing',
+    fallbackColumnId: 'todo',
+  });
+
+  assert.deepEqual(
+    withBlockedColumn.boxesById['default-kanban'].templateState.kanbanColumns?.map(
+      (column) => column.id,
+    ),
+    ['todo', 'doing', 'blocked', 'done'],
+  );
+  assert.deepEqual(
+    withMovedColumn.boxesById['default-kanban'].templateState.kanbanColumns?.map((column) => [
+      column.id,
+      column.title,
+    ]),
+    [
+      ['todo', DEFAULT_KANBAN_COLUMNS[0].title],
+      ['blocked', 'Waiting'],
+      ['doing', DEFAULT_KANBAN_COLUMNS[1].title],
+      ['done', DEFAULT_KANBAN_COLUMNS[2].title],
+    ],
+  );
+  assert.equal(withDeletedColumn.itemPlacementsByBoxId['default-kanban'][0].columnId, 'todo');
+  assert.equal(
+    withDeletedColumn.boxesById['default-kanban'].templateState.kanbanColumns?.some(
+      (column) => column.id === 'doing',
+    ),
+    false,
+  );
+});
+
 test('workspace export document round-trips with current schema', () => {
   const snapshot = createInitialWorkspaceSnapshot();
   const document = createWorkspaceExportDocument(snapshot);
   const parsed = parseWorkspaceExportDocument(document);
 
   assert.equal(parsed.version, WORKSPACE_EXPORT_VERSION);
-  assert.equal(parsed.boxes.length, 1);
+  assert.equal(parsed.boxes.length, 3);
   assert.equal(parsed.boxes[0].customTitle, null);
+  assert.equal(parsed.boxes[1].templateId, 'kanban');
 });
 
 test('workspace snapshot parser accepts current schema payloads', () => {

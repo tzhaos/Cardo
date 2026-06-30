@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import {
   getBoxItems,
-  getOrderedBoxes,
   getVisibleBoxes,
   getWorkspaceBox,
 } from '../../../core/domains/workspace/model/workspaceSelectors';
@@ -28,9 +27,4 @@ export function useWorkspaceBox(boxId: string) {
 export function useWorkspaceBoxItems(boxId: string) {
   const snapshot = useWorkspaceSnapshot();
   return useMemo(() => getBoxItems(snapshot, boxId), [boxId, snapshot]);
-}
-
-export function useTrayBoxes() {
-  const snapshot = useWorkspaceSnapshot();
-  return useMemo(() => getOrderedBoxes(snapshot), [snapshot]);
 }

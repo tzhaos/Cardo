@@ -1,0 +1,143 @@
+import { useMemo, useState } from 'react';
+import type { MessageKey } from '../../../../core/domains/i18n/model/messages';
+import { getWorkspaceItemContent } from '../../../../core/domains/items/model/item';
+import { screenToWorld } from '../../../../core/domains/layout/model/viewport';
+import {
+  MAX_WORKSPACE_BOXES,
+  type BoxTemplateId,
+  type WorkspaceBox,
+} from '../../../../core/domains/workspace/model/workspace';
+import { getBoxDisplayTitle } from '../../../../core/domains/workspace/model/boxTitles';
+import { getBoxItems } from '../../../../core/domains/workspace/model/workspaceSelectors';
+import { getRuntimeViewport } from '../../../app/controllers/runtimeDocumentController';
+import { useI18n } from '../../../app/hooks/useI18n';
+import { useCanvasStore } from '../../../app/stores/useCanvasStore';
+import { useInteractionStore } from '../../../app/stores/useInteractionStore';
+import { useSettingsPanelStore } from '../../../app/stores/useSettingsPanelStore';
+import {
+  useVisibleBoxes,
+  useWorkspaceDispatch,
+  useWorkspaceSnapshot,
+} from '../../../app/stores/useWorkspaceSelectors';
+import { createWorkspaceBox } from '../../../app/use-cases/createWorkspaceBox';
+
+const TEMPLATE_LABEL_KEYS = {
+  collection: 'template.collection',
+  kanban: 'template.kanban',
+  launcher: 'template.launcher',
+  inbox: 'template.inbox',
+} as const satisfies Record<BoxTemplateId, MessageKey>;
+
+const TEMPLATE_IDS: BoxTemplateId[] = ['collection', 'kanban', 'launcher', 'inbox'];
+
+function getSearchText(box: WorkspaceBox, title: string) {
+  return `${title} ${box.templateId}`.toLowerCase();
+}
+
+export function useWorkspaceCommandCenter() {
+  const { t } = useI18n();
+  const snapshot = useWorkspaceSnapshot();
+  const boxes = useVisibleBoxes();
+  const dispatch = useWorkspaceDispatch();
+  const setActiveBox = useInteractionStore((state) => state.setActiveBox);
+  const centerOn = useCanvasStore((state) => state.centerOn);
+  const panX = useCanvasStore((state) => state.panX);
+  const panY = useCanvasStore((state) => state.panY);
+  const openSettings = useSettingsPanelStore((state) => state.open);
+  const [isTemplateMenuOpen, setTemplateMenuOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const hasReachedBoxLimit = boxes.length >= MAX_WORKSPACE_BOXES;
+  const normalizedQuery = query.trim().toLowerCase();
+  const boxRows = useMemo(
+    () =>
+      boxes.map((box) => ({
+        box,
+        title: getBoxDisplayTitle(box, t),
+      })),
+    [boxes, t],
+  );
+  const filteredBoxRows = useMemo(
+    () =>
+      normalizedQuery
+        ? boxRows.filter((row) => getSearchText(row.box, row.title).includes(normalizedQuery))
+        : boxRows,
+    [boxRows, normalizedQuery],
+  );
+  const itemRows = useMemo(
+    () =>
+      boxes.flatMap((box) => {
+        const boxTitle = getBoxDisplayTitle(box, t);
+        return getBoxItems(snapshot, box.id).map((item) => ({
+          item,
+          box,
+          boxTitle,
+          searchText: `${item.title} ${getWorkspaceItemContent(item)} ${boxTitle} ${
+            box.templateId
+          }`.toLowerCase(),
+        }));
+      }),
+    [boxes, snapshot, t],
+  );
+  const filteredItemRows = useMemo(
+    () =>
+      normalizedQuery
+        ? itemRows.filter((row) => row.searchText.includes(normalizedQuery))
+        : itemRows.slice(0, 6),
+    [itemRows, normalizedQuery],
+  );
+
+  const focusBox = (box: WorkspaceBox) => {
+    const viewport = getRuntimeViewport();
+    centerOn(box.bounds.x + box.bounds.width / 2, box.bounds.y + box.bounds.height / 2, viewport);
+    dispatch({ type: 'box.bringToFront', boxId: box.id });
+    setActiveBox(box.id);
+  };
+
+  const createTemplate = (templateId: BoxTemplateId) => {
+    if (hasReachedBoxLimit) {
+      return;
+    }
+
+    const viewport = getRuntimeViewport();
+    const center = screenToWorld(
+      { clientX: viewport.width / 2, clientY: viewport.height / 2 },
+      { panX, panY },
+    );
+    const result = createWorkspaceBox({
+      centerX: center.x,
+      centerY: center.y,
+      templateId,
+    });
+
+    if (result.status === 'created') {
+      setActiveBox(result.box.id);
+      setTemplateMenuOpen(false);
+    }
+  };
+
+  return {
+    query,
+    setQuery,
+    isTemplateMenuOpen,
+    setTemplateMenuOpen,
+    hasReachedBoxLimit,
+    filteredBoxRows,
+    filteredItemRows,
+    templates: TEMPLATE_IDS.map((templateId) => ({
+      id: templateId,
+      label: t(TEMPLATE_LABEL_KEYS[templateId]),
+    })),
+    labels: {
+      createTemplate: t('workspace.createTemplate'),
+      searchPlaceholder: t('workspace.searchPlaceholder'),
+      settings: t('settings.title'),
+      navigator: t('workspace.navigator'),
+      items: t('workspace.items'),
+    },
+    openSettings,
+    focusBox,
+    createTemplate,
+  };
+}
+
+export type WorkspaceCommandCenterController = ReturnType<typeof useWorkspaceCommandCenter>;

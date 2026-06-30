@@ -1,15 +1,17 @@
 import {
   ChevronDown,
   ChevronUp,
+  Columns3,
+  Inbox,
   LayoutGrid,
   List,
   Lock,
-  Minus,
   Package,
+  Rocket,
   Unlock,
   X,
 } from 'lucide-react';
-import type { MouseEvent, RefObject } from 'react';
+import type { MouseEvent, PointerEvent, RefObject } from 'react';
 import type { WorkspaceBox } from '../../../core/domains/workspace/model/workspace';
 import { cn } from '../../lib/utils';
 
@@ -22,22 +24,37 @@ interface BoxHeaderProps {
   isEditing: boolean;
   isInteractionLocked: boolean;
   inputRef: RefObject<HTMLInputElement | null>;
+  canToggleLayout: boolean;
   toggleLayoutLabel: string;
   lockPositionLabel: string;
   unlockPositionLabel: string;
   collapseLabel: string;
   expandLabel: string;
-  minimizeLabel: string;
   closeLabel: string;
-  onDragStart: (event: MouseEvent<HTMLDivElement>) => void;
+  onDragStart: (event: PointerEvent<HTMLDivElement>) => void;
   onStartEdit: (event: MouseEvent<HTMLDivElement>) => void;
   onTitleChange: (value: string) => void;
   onFinishEditing: (shouldSave: boolean) => void;
   onToggleLayout: () => void;
   onToggleLock: () => void;
   onToggleCollapse: () => void;
-  onMinimize: () => void;
   onClose: () => void;
+}
+
+function getBoxIcon(box: WorkspaceBox) {
+  if (box.templateId === 'kanban') {
+    return <Columns3 size={16} className="shrink-0 text-win-text" strokeWidth={2} />;
+  }
+
+  if (box.templateId === 'launcher') {
+    return <Rocket size={16} className="shrink-0 text-win-text" strokeWidth={2} />;
+  }
+
+  if (box.templateId === 'inbox') {
+    return <Inbox size={16} className="shrink-0 text-win-text" strokeWidth={2} />;
+  }
+
+  return <Package size={16} className="shrink-0 text-win-text" strokeWidth={2} />;
 }
 
 export default function BoxHeader({
@@ -49,12 +66,12 @@ export default function BoxHeader({
   isEditing,
   isInteractionLocked,
   inputRef,
+  canToggleLayout,
   toggleLayoutLabel,
   lockPositionLabel,
   unlockPositionLabel,
   collapseLabel,
   expandLabel,
-  minimizeLabel,
   closeLabel,
   onDragStart,
   onStartEdit,
@@ -63,7 +80,6 @@ export default function BoxHeader({
   onToggleLayout,
   onToggleLock,
   onToggleCollapse,
-  onMinimize,
   onClose,
 }: BoxHeaderProps) {
   return (
@@ -72,10 +88,10 @@ export default function BoxHeader({
         'kb-box-header group flex shrink-0 select-none items-center justify-between p-3 pb-2',
         isEditing || isInteractionLocked ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
       )}
-      onMouseDown={isEditing || isInteractionLocked ? undefined : onDragStart}
+      onPointerDown={isEditing || isInteractionLocked ? undefined : onDragStart}
     >
       <div className="flex flex-1 items-center gap-2 overflow-hidden" onDoubleClick={onStartEdit}>
-        <Package size={16} className="shrink-0 text-win-text" strokeWidth={2} />
+        {getBoxIcon(box)}
         {isEditing ? (
           <input
             ref={inputRef}
@@ -115,14 +131,16 @@ export default function BoxHeader({
           !isEditing && (isHovering || isActive) ? 'opacity-100' : !isEditing ? 'opacity-0' : '',
         )}
       >
-        <button
-          onClick={onToggleLayout}
-          className="kb-icon-button rounded-md p-1.5 transition-colors"
-          title={toggleLayoutLabel}
-          onPointerDown={(event) => event.stopPropagation()}
-        >
-          {box.layout === 'grid' ? <List size={14} /> : <LayoutGrid size={14} />}
-        </button>
+        {canToggleLayout ? (
+          <button
+            onClick={onToggleLayout}
+            className="kb-icon-button rounded-md p-1.5 transition-colors"
+            title={toggleLayoutLabel}
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            {box.layout === 'grid' ? <List size={14} /> : <LayoutGrid size={14} />}
+          </button>
+        ) : null}
 
         <button
           onClick={onToggleLock}
@@ -142,15 +160,6 @@ export default function BoxHeader({
           onPointerDown={(event) => event.stopPropagation()}
         >
           {box.isCollapsed ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-        </button>
-
-        <button
-          onClick={onMinimize}
-          className="kb-icon-button rounded-md p-1.5 transition-colors"
-          title={minimizeLabel}
-          onPointerDown={(event) => event.stopPropagation()}
-        >
-          <Minus size={14} />
         </button>
 
         <button

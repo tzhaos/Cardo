@@ -196,30 +196,12 @@ select {
     color: var(--shell-muted);
   }
 
-  .kb-dock {
-    border: 1px solid var(--color-win-border);
-    background-color: var(--color-win-mica);
-    box-shadow: var(--shadow-win-flyout);
-  }
-
-  .kb-dock-action {
+  .kb-floating-action {
     color: var(--color-win-text-secondary);
   }
 
-  .kb-dock-action:hover {
+  .kb-floating-action:hover {
     background: var(--color-win-hover);
-  }
-
-  .kb-dock-item {
-    color: var(--color-win-text);
-  }
-
-  .kb-dock-item-active {
-    background: var(--color-win-hover);
-  }
-
-  .kb-dock-indicator {
-    box-shadow: none;
   }
 
   .kb-box {

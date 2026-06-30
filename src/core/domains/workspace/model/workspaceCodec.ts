@@ -2,16 +2,26 @@ import { createWorkspaceItem, type WorkspaceItem } from '../../items/model/item'
 import {
   BOX_MIN_HEIGHT,
   BOX_MIN_WIDTH,
+  BOX_TEMPLATE_IDS,
+  DEFAULT_BOX_TEMPLATE_ID,
+  DEFAULT_KANBAN_COLUMNS,
   WORKSPACE_EXPORT_VERSION,
   WORKSPACE_SCHEMA_VERSION,
   type BoxDesktopViewState,
   type BoxItemPlacement,
+  type BoxTemplateId,
+  type KanbanColumn,
   type WorkspaceBoxEntity,
-  type WorkspaceExportBoxV3,
-  type WorkspaceExportDocumentV3,
+  type WorkspaceBoxTemplateState,
+  type WorkspaceExportBoxV4,
+  type WorkspaceExportDocumentV4,
   type WorkspaceSnapshot,
-  type WorkspaceSnapshotV5,
+  type WorkspaceSnapshotV6,
 } from './workspace';
+
+const BOX_TEMPLATE_ID_SET = new Set<string>(BOX_TEMPLATE_IDS);
+const LEGACY_WORKSPACE_SCHEMA_VERSION = 5;
+const LEGACY_WORKSPACE_EXPORT_VERSION = 3;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -27,6 +37,45 @@ function asBoolean(value: unknown, fallback = false) {
 
 function asNumber(value: unknown, fallback: number) {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
+function asTemplateId(value: unknown): BoxTemplateId {
+  const templateId = asString(value)?.trim();
+  return templateId && BOX_TEMPLATE_ID_SET.has(templateId)
+    ? (templateId as BoxTemplateId)
+    : DEFAULT_BOX_TEMPLATE_ID;
+}
+
+function normalizeKanbanColumns(input: unknown): KanbanColumn[] {
+  if (!Array.isArray(input)) {
+    return DEFAULT_KANBAN_COLUMNS.map((column) => ({ ...column }));
+  }
+
+  const columns = input.flatMap((column) => {
+    if (!isRecord(column)) {
+      return [];
+    }
+
+    const id = asString(column.id)?.trim();
+    const title = asString(column.title)?.trim();
+    return id && title ? [{ id, title }] : [];
+  });
+
+  return columns.length > 0 ? columns : DEFAULT_KANBAN_COLUMNS.map((column) => ({ ...column }));
+}
+
+function normalizeTemplateState(
+  templateId: BoxTemplateId,
+  input: unknown,
+): WorkspaceBoxTemplateState {
+  if (templateId !== 'kanban') {
+    return {};
+  }
+
+  const rawState = isRecord(input) ? input : {};
+  return {
+    kanbanColumns: normalizeKanbanColumns(rawState.kanbanColumns),
+  };
 }
 
 function normalizeWorkspaceItem(input: unknown): WorkspaceItem | null {
@@ -70,9 +119,13 @@ function normalizeBoxEntity(input: unknown): WorkspaceBoxEntity | null {
     return null;
   }
 
+  const templateId = asTemplateId(input.templateId);
+
   return {
     id,
     customTitle: asString(input.customTitle)?.trim() || null,
+    templateId,
+    templateState: normalizeTemplateState(templateId, input.templateState),
   };
 }
 
@@ -88,6 +141,8 @@ function normalizeViewState(input: unknown, index: number): BoxDesktopViewState 
     return null;
   }
 
+  const layout = asString(input.layout) === 'grid' ? 'grid' : 'list';
+
   return {
     boxId,
     bounds: {
@@ -99,7 +154,7 @@ function normalizeViewState(input: unknown, index: number): BoxDesktopViewState 
     isLocked: asBoolean(input.isLocked),
     isCollapsed: asBoolean(input.isCollapsed),
     isMinimized: asBoolean(input.isMinimized),
-    layout: asString(input.layout) === 'grid' ? 'grid' : 'list',
+    layout,
     zIndex: Math.max(0, Math.round(asNumber(input.zIndex, index + 1))),
   };
 }
@@ -110,22 +165,46 @@ function normalizePlacement(input: unknown): BoxItemPlacement | null {
   }
 
   const itemId = asString(input.itemId)?.trim();
+  const columnId = asString(input.columnId)?.trim();
 
   return itemId
     ? {
         itemId,
         isPinned: asBoolean(input.isPinned),
+        ...(columnId ? { columnId } : {}),
       }
     : null;
 }
 
+function normalizePlacementList(input: unknown): BoxItemPlacement[] | null {
+  const rawPlacements = Array.isArray(input) ? input : [];
+  const placements = rawPlacements
+    .map(normalizePlacement)
+    .filter((placement): placement is BoxItemPlacement => placement !== null);
+
+  return placements.length === rawPlacements.length ? placements : null;
+}
+
+function normalizeLegacyItemIdPlacements(input: unknown): BoxItemPlacement[] | null {
+  if (!Array.isArray(input)) {
+    return [];
+  }
+
+  const placements = input.flatMap((itemId) => {
+    const normalizedItemId = asString(itemId)?.trim();
+    return normalizedItemId ? [{ itemId: normalizedItemId, isPinned: false }] : [];
+  });
+
+  return placements.length === input.length ? placements : null;
+}
+
 function createExportDocumentFromSnapshot(
   snapshot: Pick<
-    WorkspaceSnapshotV5,
+    WorkspaceSnapshotV6,
     'boxesById' | 'boxOrder' | 'boxViewStatesById' | 'itemsById' | 'itemPlacementsByBoxId'
   >,
-): WorkspaceExportDocumentV3 {
-  const boxes: WorkspaceExportBoxV3[] = snapshot.boxOrder
+): WorkspaceExportDocumentV4 {
+  const boxes: WorkspaceExportBoxV4[] = snapshot.boxOrder
     .map((boxId) => snapshot.boxesById[boxId])
     .filter((box): box is WorkspaceBoxEntity => Boolean(box))
     .map((box) => ({
@@ -148,21 +227,19 @@ function createExportDocumentFromSnapshot(
 
 export function createWorkspaceExportDocument(
   snapshot: Pick<
-    WorkspaceSnapshotV5,
+    WorkspaceSnapshotV6,
     'boxesById' | 'boxOrder' | 'boxViewStatesById' | 'itemsById' | 'itemPlacementsByBoxId'
   >,
-): WorkspaceExportDocumentV3 {
+): WorkspaceExportDocumentV4 {
   return createExportDocumentFromSnapshot(snapshot);
 }
 
-function normalizeExportDocumentV3(
-  input: Record<string, unknown>,
-): WorkspaceExportDocumentV3 | null {
+function normalizeExportDocument(input: Record<string, unknown>): WorkspaceExportDocumentV4 | null {
   if (!Array.isArray(input.boxes) || !Array.isArray(input.items)) {
     return null;
   }
 
-  const boxes: WorkspaceExportBoxV3[] = [];
+  const boxes: WorkspaceExportBoxV4[] = [];
   const boxViewStates: BoxDesktopViewState[] = [];
   const itemPlacementsByBoxId: Record<string, BoxItemPlacement[]> = {};
   const rawPlacementsByBoxId = isRecord(input.itemPlacementsByBoxId)
@@ -185,14 +262,12 @@ function normalizeExportDocumentV3(
       return null;
     }
 
-    const rawPlacements: unknown[] = Array.isArray(rawPlacementsByBoxId[entity.id])
-      ? (rawPlacementsByBoxId[entity.id] as unknown[])
-      : [];
-    const placements = rawPlacements
-      .map(normalizePlacement)
-      .filter((placement): placement is BoxItemPlacement => placement !== null);
+    const hasPlacementList = Object.prototype.hasOwnProperty.call(rawPlacementsByBoxId, entity.id);
+    const placements = hasPlacementList
+      ? normalizePlacementList(rawPlacementsByBoxId[entity.id])
+      : normalizeLegacyItemIdPlacements(isRecord(rawBox) ? rawBox.itemIds : null);
 
-    if (placements.length !== rawPlacements.length) {
+    if (!placements) {
       return null;
     }
 
@@ -229,14 +304,14 @@ function normalizeExportDocumentV3(
   };
 }
 
-/** Validates and normalizes a JSON export file. */
-export function parseWorkspaceExportDocument(input: unknown): WorkspaceExportDocumentV3 {
+export function parseWorkspaceExportDocument(input: unknown): WorkspaceExportDocumentV4 {
   if (!isRecord(input)) {
     throw new Error('Invalid workspace export document');
   }
 
-  const exportDocument =
-    input.version === WORKSPACE_EXPORT_VERSION ? normalizeExportDocumentV3(input) : null;
+  const isSupportedVersion =
+    input.version === WORKSPACE_EXPORT_VERSION || input.version === LEGACY_WORKSPACE_EXPORT_VERSION;
+  const exportDocument = isSupportedVersion ? normalizeExportDocument(input) : null;
 
   if (!exportDocument) {
     throw new Error('Invalid workspace export document');
@@ -246,14 +321,16 @@ export function parseWorkspaceExportDocument(input: unknown): WorkspaceExportDoc
 }
 
 function snapshotFromExportDocument(
-  exportDocument: WorkspaceExportDocumentV3,
-): WorkspaceSnapshotV5 {
+  exportDocument: WorkspaceExportDocumentV4,
+): WorkspaceSnapshotV6 {
   const boxesById = Object.fromEntries(
     exportDocument.boxes.map((box) => [
       box.id,
       {
         id: box.id,
         customTitle: box.customTitle,
+        templateId: box.templateId,
+        templateState: box.templateState,
       },
     ]),
   );
@@ -278,7 +355,7 @@ function snapshotFromExportDocument(
   };
 }
 
-function normalizePersistedSnapshotV5(input: Record<string, unknown>): WorkspaceSnapshotV5 | null {
+function normalizePersistedSnapshot(input: Record<string, unknown>): WorkspaceSnapshotV6 | null {
   const boxesById = isRecord(input.boxesById) ? input.boxesById : null;
   const boxViewStatesById = isRecord(input.boxViewStatesById) ? input.boxViewStatesById : null;
   const rawItemsById = isRecord(input.itemsById) ? input.itemsById : null;
@@ -308,7 +385,10 @@ function normalizePersistedSnapshotV5(input: Record<string, unknown>): Workspace
     }
 
     normalizedBoxesById[boxId] = entity;
-    normalizedViewStatesById[boxId] = viewState;
+    normalizedViewStatesById[boxId] = {
+      ...viewState,
+      isMinimized: false,
+    };
 
     const rawPlacements = Array.isArray(rawPlacementsByBoxId[boxId])
       ? rawPlacementsByBoxId[boxId]
@@ -346,19 +426,19 @@ function normalizePersistedSnapshotV5(input: Record<string, unknown>): Workspace
   };
 }
 
-/** Accepts persisted storage state for the workspace store. */
 export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null {
   if (!isRecord(input)) {
     return null;
   }
 
-  return input.schemaVersion === WORKSPACE_SCHEMA_VERSION
-    ? normalizePersistedSnapshotV5(input)
+  return input.schemaVersion === WORKSPACE_SCHEMA_VERSION ||
+    input.schemaVersion === LEGACY_WORKSPACE_SCHEMA_VERSION
+    ? normalizePersistedSnapshot(input)
     : null;
 }
 
 export function createWorkspaceSnapshotFromExportDocument(
-  document: WorkspaceExportDocumentV3,
-): WorkspaceSnapshotV5 {
+  document: WorkspaceExportDocumentV4,
+): WorkspaceSnapshotV6 {
   return snapshotFromExportDocument(document);
 }

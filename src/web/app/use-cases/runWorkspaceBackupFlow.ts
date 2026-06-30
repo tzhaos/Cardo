@@ -6,7 +6,7 @@ import { exportWorkspace } from './exportWorkspace';
 import { importWorkspace } from './importWorkspace';
 
 export function runExportWorkspaceForUi(t: TranslateFn): ToastSpec {
-  exportWorkspace(t('dock.exportFilePrefix'));
+  exportWorkspace(t('workspace.exportFilePrefix'));
   return { level: 'success', messageKey: 'toast.dataExported' };
 }
 

@@ -17,7 +17,7 @@ export function getOrderedBoxes(
 export function getVisibleBoxes(
   snapshot: Pick<WorkspaceSnapshotV5, 'boxesById' | 'boxOrder' | 'boxViewStatesById'>,
 ) {
-  return getOrderedBoxes(snapshot).filter((box) => !box.isMinimized);
+  return getOrderedBoxes(snapshot);
 }
 
 export function getVisibleBoxIds(
@@ -49,13 +49,14 @@ export function getBoxItems(
   return getBoxPlacements(snapshot, boxId)
     .map((placement) => {
       const item = snapshot.itemsById[placement.itemId];
-      return item ? { ...item, boxId, isPinned: placement.isPinned } : null;
+      return item
+        ? {
+            ...item,
+            boxId,
+            isPinned: placement.isPinned,
+            ...(placement.columnId ? { columnId: placement.columnId } : {}),
+          }
+        : null;
     })
     .filter((item): item is PlacedWorkspaceItem => Boolean(item));
-}
-
-export function areAllBoxesMinimized(
-  snapshot: Pick<WorkspaceSnapshotV5, 'boxesById' | 'boxOrder' | 'boxViewStatesById'>,
-) {
-  return getOrderedBoxes(snapshot).every((box) => box.isMinimized);
 }

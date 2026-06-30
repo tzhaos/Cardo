@@ -6,6 +6,18 @@ import type {
 
 export type BoxLayout = 'grid' | 'list';
 
+export const BOX_TEMPLATE_IDS = ['collection', 'kanban', 'launcher', 'inbox'] as const;
+export type BoxTemplateId = (typeof BOX_TEMPLATE_IDS)[number];
+
+export interface KanbanColumn {
+  id: string;
+  title: string;
+}
+
+export interface WorkspaceBoxTemplateState {
+  kanbanColumns?: KanbanColumn[];
+}
+
 export interface WorkspaceBoxBounds {
   x: number;
   y: number;
@@ -16,6 +28,8 @@ export interface WorkspaceBoxBounds {
 export interface WorkspaceBoxEntity {
   id: string;
   customTitle: string | null;
+  templateId: BoxTemplateId;
+  templateState: WorkspaceBoxTemplateState;
 }
 
 export interface BoxDesktopViewState {
@@ -31,6 +45,7 @@ export interface BoxDesktopViewState {
 export interface BoxItemPlacement {
   itemId: string;
   isPinned: boolean;
+  columnId?: string;
 }
 
 export type WorkspaceBox = WorkspaceBoxEntity & Omit<BoxDesktopViewState, 'boxId'>;
@@ -39,8 +54,8 @@ export interface WorkspaceBoxWithItems extends WorkspaceBox {
   items: PlacedWorkspaceItem[];
 }
 
-export interface WorkspaceSnapshotV5 {
-  schemaVersion: 5;
+export interface WorkspaceSnapshotV6 {
+  schemaVersion: 6;
   boxesById: Record<string, WorkspaceBoxEntity>;
   boxOrder: string[];
   boxViewStatesById: Record<string, BoxDesktopViewState>;
@@ -49,9 +64,12 @@ export interface WorkspaceSnapshotV5 {
   maxZIndex: number;
 }
 
-export type WorkspaceSnapshot = WorkspaceSnapshotV5;
+export type WorkspaceSnapshotV5 = WorkspaceSnapshotV6;
+export type WorkspaceSnapshot = WorkspaceSnapshotV6;
 
-export interface WorkspaceExportBoxV3 extends WorkspaceBoxEntity {
+export interface WorkspaceExportBoxV3 {
+  id: string;
+  customTitle: string | null;
   itemIds: string[];
 }
 
@@ -63,8 +81,22 @@ export interface WorkspaceExportDocumentV3 {
   boxViewStates: BoxDesktopViewState[];
 }
 
+export interface WorkspaceExportBoxV4 extends WorkspaceBoxEntity {
+  itemIds: string[];
+}
+
+export interface WorkspaceExportDocumentV4 {
+  version: 4;
+  boxes: WorkspaceExportBoxV4[];
+  items: WorkspaceItem[];
+  itemPlacementsByBoxId: Record<string, BoxItemPlacement[]>;
+  boxViewStates: BoxDesktopViewState[];
+}
+
 export interface WorkspaceBoxUpdate {
   customTitle?: string | null;
+  templateId?: BoxTemplateId;
+  templateState?: WorkspaceBoxTemplateState;
   bounds?: Partial<WorkspaceBoxBounds>;
   isLocked?: boolean;
   isCollapsed?: boolean;
@@ -74,14 +106,28 @@ export interface WorkspaceBoxUpdate {
 }
 
 export type WorkspaceCommand =
-  | { type: 'workspace.replace'; snapshot: WorkspaceSnapshotV5 }
+  | { type: 'workspace.replace'; snapshot: WorkspaceSnapshotV6 }
   | { type: 'workspace.replaceBoxes'; boxes: WorkspaceBoxWithItems[] }
-  | { type: 'workspace.toggleAllBoxesMinimized' }
   | { type: 'box.create'; box: WorkspaceBox; placements?: BoxItemPlacement[] }
   | { type: 'box.update'; boxId: string; updates: WorkspaceBoxUpdate }
   | { type: 'box.delete'; boxId: string }
   | { type: 'box.bringToFront'; boxId: string }
-  | { type: 'item.add'; boxId: string; item: WorkspaceItem; isPinned?: boolean }
+  | { type: 'kanban.column.add'; boxId: string; column: KanbanColumn; afterColumnId?: string }
+  | { type: 'kanban.column.update'; boxId: string; columnId: string; title: string }
+  | {
+      type: 'kanban.column.delete';
+      boxId: string;
+      columnId: string;
+      fallbackColumnId?: string;
+    }
+  | { type: 'kanban.column.move'; boxId: string; columnId: string; targetIndex: number }
+  | {
+      type: 'item.add';
+      boxId: string;
+      item: WorkspaceItem;
+      isPinned?: boolean;
+      columnId?: string;
+    }
   | { type: 'item.update'; boxId?: string; itemId: string; updates: WorkspaceItemUpdate }
   | { type: 'item.delete'; boxId?: string; itemId: string }
   | { type: 'item.setPinned'; boxId: string; itemId: string; isPinned: boolean }
@@ -91,11 +137,19 @@ export type WorkspaceCommand =
       sourceBoxId: string;
       targetBoxId: string;
       targetIndex?: number;
+      targetColumnId?: string;
     };
 
-export const WORKSPACE_SCHEMA_VERSION = 5 as const;
-export const WORKSPACE_EXPORT_VERSION = 3 as const;
+export const WORKSPACE_SCHEMA_VERSION = 6 as const;
+export const WORKSPACE_EXPORT_VERSION = 4 as const;
 export const MAX_WORKSPACE_BOXES = 12;
+export const MAX_KANBAN_COLUMNS = 8;
+export const DEFAULT_BOX_TEMPLATE_ID: BoxTemplateId = 'collection';
+export const DEFAULT_KANBAN_COLUMNS: KanbanColumn[] = [
+  { id: 'todo', title: 'To do' },
+  { id: 'doing', title: 'Doing' },
+  { id: 'done', title: 'Done' },
+];
 
 /** Minimum visual dimensions for workspace boxes, shared across codec and resize logic. */
 export const BOX_MIN_WIDTH = 200;

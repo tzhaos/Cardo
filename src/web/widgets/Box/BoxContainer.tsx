@@ -22,8 +22,6 @@ interface BoxContainerProps {
   isDragging: boolean;
   isCanvasTransforming: boolean;
   isPanModifierActive: boolean;
-  transitionKind?: 'minimize' | 'restore' | null;
-  transitionDockRect?: WorkspaceBoxBounds | null;
   editingSessionId: string | null;
   camera: ViewportCamera;
   onFocus: () => void;
@@ -42,8 +40,6 @@ export default function BoxContainer({
   isDragging,
   isCanvasTransforming,
   isPanModifierActive,
-  transitionKind = null,
-  transitionDockRect = null,
   editingSessionId,
   camera,
   onFocus,
@@ -56,68 +52,39 @@ export default function BoxContainer({
   const renderedBounds = box.isCollapsed
     ? { ...box.bounds, height: COLLAPSED_BOX_HEIGHT }
     : box.bounds;
-  const isMinimizing = transitionKind === 'minimize';
-  const isRestoring = transitionKind === 'restore';
-  const transitionBounds = transitionDockRect;
   const renderedScreenBounds = addCameraToBounds(renderedBounds, camera);
-  const initialBounds = isRestoring && transitionBounds ? transitionBounds : renderedScreenBounds;
-  const animateBounds = isMinimizing && transitionBounds ? transitionBounds : renderedScreenBounds;
-  const minimizeEase: [number, number, number, number] = [0.2, 0.9, 0.2, 1];
-  const restoreEase: [number, number, number, number] = [0.16, 1, 0.3, 1];
-  const isTransitioning = isMinimizing || isRestoring;
-  const contentTransition =
-    isRestoring && transitionBounds
-      ? {
-          duration: 0.24,
-          delay: 0.06,
-          ease: restoreEase,
-        }
-      : isMinimizing && transitionBounds
-        ? {
-            duration: 0.16,
-            ease: minimizeEase,
-          }
-        : {
-            duration: 0.18,
-            ease: 'easeOut' as const,
-          };
+  const contentTransition = {
+    duration: 0.18,
+    ease: 'easeOut' as const,
+  };
 
   return (
     <motion.div
       onMouseDown={onFocus}
       initial={{
-        left: initialBounds.x,
-        top: initialBounds.y,
-        width: initialBounds.width,
-        height: initialBounds.height,
-        opacity: isRestoring && transitionBounds ? 0.82 : 0,
-        borderRadius: isRestoring && transitionBounds ? 20 : 12,
-        scale: isRestoring && transitionBounds ? 0.84 : 0.97,
+        left: renderedScreenBounds.x,
+        top: renderedScreenBounds.y,
+        width: renderedScreenBounds.width,
+        height: renderedScreenBounds.height,
+        opacity: 0,
+        borderRadius: 12,
+        scale: 0.97,
       }}
       animate={{
-        left: animateBounds.x,
-        top: animateBounds.y,
-        width: animateBounds.width,
-        height: animateBounds.height,
-        opacity: isMinimizing && transitionBounds ? 0.8 : 1,
-        borderRadius: isTransitioning && transitionBounds ? 20 : 12,
-        scale: isDragging ? 1.02 : isMinimizing && transitionBounds ? 0.88 : 1,
-        filter: isTransitioning && transitionBounds ? 'saturate(0.94)' : 'saturate(1)',
+        left: renderedScreenBounds.x,
+        top: renderedScreenBounds.y,
+        width: renderedScreenBounds.width,
+        height: renderedScreenBounds.height,
+        opacity: 1,
+        borderRadius: 12,
+        scale: isDragging ? 1.02 : 1,
+        filter: 'saturate(1)',
       }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={
         isDragging || isCanvasTransforming
           ? { duration: 0 }
-          : isMinimizing
-            ? { duration: 0.28, ease: minimizeEase }
-            : {
-                type: isRestoring && transitionBounds ? 'spring' : 'tween',
-                stiffness: isRestoring && transitionBounds ? 520 : undefined,
-                damping: isRestoring && transitionBounds ? 44 : undefined,
-                mass: isRestoring && transitionBounds ? 0.88 : undefined,
-                duration: isRestoring && transitionBounds ? undefined : 0.22,
-                ease: isRestoring && transitionBounds ? undefined : restoreEase,
-              }
+          : { type: 'tween', duration: 0.22, ease: [0.16, 1, 0.3, 1] }
       }
       style={{
         transformOrigin: 'center center',
@@ -138,9 +105,9 @@ export default function BoxContainer({
     >
       <motion.div
         animate={{
-          y: isMinimizing && transitionBounds ? -1 : 0,
-          opacity: isRestoring && transitionBounds ? 0.98 : 1,
-          scale: isMinimizing && transitionBounds ? 0.99 : 1,
+          y: 0,
+          opacity: 1,
+          scale: 1,
         }}
         transition={contentTransition}
       >
@@ -151,15 +118,11 @@ export default function BoxContainer({
         {!box.isCollapsed ? (
           <motion.div
             key="box-content"
-            initial={
-              isRestoring && transitionBounds
-                ? { opacity: 0, y: 10, scale: 0.96 }
-                : { opacity: 0, y: -6, scale: 0.98 }
-            }
+            initial={{ opacity: 0, y: -6, scale: 0.98 }}
             animate={{
-              opacity: isMinimizing && transitionBounds ? 0 : 1,
-              y: isMinimizing && transitionBounds ? 10 : 0,
-              scale: isMinimizing && transitionBounds ? 0.94 : 1,
+              opacity: 1,
+              y: 0,
+              scale: 1,
             }}
             exit={{ opacity: 0, y: 8, scale: 0.96 }}
             transition={contentTransition}
@@ -175,7 +138,7 @@ export default function BoxContainer({
           <motion.div
             key="resize-handle"
             initial={{ opacity: 0 }}
-            animate={{ opacity: isMinimizing && transitionBounds ? 0 : 1 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={contentTransition}
             className={cn(

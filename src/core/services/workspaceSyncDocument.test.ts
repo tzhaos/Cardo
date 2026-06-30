@@ -12,6 +12,8 @@ import {
 const BOX: WorkspaceBox = {
   id: 'box-1',
   customTitle: null,
+  templateId: 'collection',
+  templateState: {},
   bounds: { x: 10, y: 20, width: 320, height: 400 },
   isLocked: false,
   isCollapsed: false,

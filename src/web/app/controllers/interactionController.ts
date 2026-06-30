@@ -1,10 +1,9 @@
 import type { SnapPreview } from '../../../core/domains/layout/model/snap';
-import type { BoxTransitionState } from '../stores/useInteractionStore';
 import { useInteractionStore } from '../stores/useInteractionStore';
 
 export function getInteractionSnapshot() {
-  const { activeBoxId, boxTransition, editingSessionId } = useInteractionStore.getState();
-  return { activeBoxId, boxTransition, editingSessionId };
+  const { activeBoxId, editingSessionId } = useInteractionStore.getState();
+  return { activeBoxId, editingSessionId };
 }
 
 export function hasEditingSession() {
@@ -16,22 +15,6 @@ export function clearEditingSessionIfActive(sessionId: string) {
 
   if (state.editingSessionId === sessionId) {
     state.setEditingSessionId(null);
-  }
-}
-
-export function getBoxTransition() {
-  return useInteractionStore.getState().boxTransition;
-}
-
-export function setBoxTransition(transition: BoxTransitionState | null) {
-  useInteractionStore.getState().setBoxTransition(transition);
-}
-
-export function clearBoxTransitionIfActive(boxId: string) {
-  const state = useInteractionStore.getState();
-
-  if (state.boxTransition?.boxId === boxId) {
-    state.setBoxTransition(null);
   }
 }
 

@@ -30,7 +30,7 @@ function resolveRenderableSnapshot(input: unknown, fallback: WorkspaceSnapshot) 
     return fallback;
   }
 
-  if (orderedBoxes.every((box) => box.isMinimized)) {
+  if (orderedBoxes.some((box) => box.isMinimized)) {
     return {
       ...parsed,
       boxViewStatesById: Object.fromEntries(

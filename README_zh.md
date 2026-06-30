@@ -1,6 +1,6 @@
 # KhaosBox
 
-KhaosBox 是一个多宿主 TypeScript 工作区应用，用可移动的 box 管理链接、笔记、文件和文件夹。
+KhaosBox 是一个多宿主 TypeScript 空间工作台，用资料箱、启动器、收件箱、看板等模板化 box 管理链接、笔记、文件、文件夹和轻量工作流。
 
 ## 宿主
 
@@ -51,7 +51,7 @@ npm install
 ## CLI
 
 ```bash
-npm run cli -- inspect workspace.export-v3.json
+npm run cli -- inspect workspace.export-v4.json
 ```
 
 ## 浏览器扩展

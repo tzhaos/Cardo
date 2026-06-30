@@ -56,6 +56,7 @@ export interface WorkspaceItemUpdate {
 export interface PlacedWorkspaceItemMeta {
   boxId: string;
   isPinned: boolean;
+  columnId?: string;
 }
 
 export type PlacedWorkspaceItem = WorkspaceItem & PlacedWorkspaceItemMeta;

@@ -6,20 +6,19 @@ import {
 } from '../domains/items/model/item';
 import { parseTextToItemDraft } from '../domains/items/services/parseTextToItemDraft';
 import {
+  DEFAULT_BOX_TEMPLATE_ID,
   MAX_WORKSPACE_BOXES,
+  type BoxTemplateId,
   type WorkspaceBox,
   type WorkspaceCommand,
   type WorkspaceSnapshot,
 } from '../domains/workspace/model/workspace';
+import { createDefaultTemplateState } from '../domains/workspace/model/createInitialWorkspaceSnapshot';
 import {
   createWorkspaceExportDocument,
   parseWorkspaceExportDocument,
 } from '../domains/workspace/model/workspaceCodec';
-import {
-  areAllBoxesMinimized,
-  getWorkspaceBox,
-  getOrderedBoxes,
-} from '../domains/workspace/model/workspaceSelectors';
+import { getWorkspaceBox, getOrderedBoxes } from '../domains/workspace/model/workspaceSelectors';
 import type { ClipboardPort } from '../ports/ClipboardPort';
 import type { FileExportPort } from '../ports/FileExportPort';
 import type { FileImportPort } from '../ports/FileImportPort';
@@ -100,7 +99,12 @@ export async function readWorkspaceImportDocument(source: unknown, fileImport: F
   return parseWorkspaceExportDocument(JSON.parse(fileContents) as unknown);
 }
 
-export function createAddItemCommand(boxId: string, draft: ItemDraft, createId: IdFactory) {
+export function createAddItemCommand(
+  boxId: string,
+  draft: ItemDraft,
+  createId: IdFactory,
+  columnId?: string,
+) {
   const item = createWorkspaceItem(createId('item'), draft);
 
   return {
@@ -109,6 +113,7 @@ export function createAddItemCommand(boxId: string, draft: ItemDraft, createId: 
       type: 'item.add',
       boxId,
       item,
+      ...(columnId ? { columnId } : {}),
     } satisfies WorkspaceCommand,
   };
 }
@@ -118,6 +123,7 @@ export function createMoveItemCommand(
   sourceBoxId: string,
   targetBoxId: string,
   targetIndex?: number,
+  targetColumnId?: string,
 ): WorkspaceCommand {
   return {
     type: 'item.move',
@@ -125,13 +131,7 @@ export function createMoveItemCommand(
     sourceBoxId,
     targetBoxId,
     ...(targetIndex !== undefined ? { targetIndex } : {}),
-  };
-}
-
-export function createToggleAllBoxesMinimizedCommand(snapshot: WorkspaceSnapshot) {
-  return {
-    areBoxesNowMinimized: !areAllBoxesMinimized(snapshot),
-    command: { type: 'workspace.toggleAllBoxesMinimized' } satisfies WorkspaceCommand,
+    ...(targetColumnId ? { targetColumnId } : {}),
   };
 }
 
@@ -142,10 +142,12 @@ export function createPasteTextCommand(
   createId: IdFactory,
 ): PastedWorkspaceItemResult | null {
   const draft = parseTextToItemDraft(text);
+  const orderedBoxes = getOrderedBoxes(snapshot);
 
   const targetBox =
     (activeBoxId ? getWorkspaceBox(snapshot, activeBoxId) : null) ??
-    getOrderedBoxes(snapshot)[0] ??
+    orderedBoxes.find((box) => box.templateId === 'inbox') ??
+    orderedBoxes[0] ??
     null;
 
   if (!targetBox) {
@@ -163,7 +165,7 @@ export function createPasteTextCommand(
 
 export function createWorkspaceBoxCommand(
   snapshot: WorkspaceSnapshot,
-  placement: { centerX: number; centerY: number },
+  placement: { centerX: number; centerY: number; templateId?: BoxTemplateId },
   createId: IdFactory,
 ): CreateWorkspaceBoxResult {
   if (snapshot.boxOrder.length >= MAX_WORKSPACE_BOXES) {
@@ -173,19 +175,29 @@ export function createWorkspaceBoxCommand(
     };
   }
 
+  const templateId = placement.templateId ?? DEFAULT_BOX_TEMPLATE_ID;
+  const size =
+    templateId === 'kanban'
+      ? { width: 680, height: 440 }
+      : templateId === 'launcher'
+        ? { width: 340, height: 280 }
+        : { width: 340, height: 420 };
+  const layout = templateId === 'launcher' ? 'grid' : 'list';
   const box: WorkspaceBox = {
     id: createId('box'),
     customTitle: null,
+    templateId,
+    templateState: createDefaultTemplateState(templateId),
     bounds: {
-      x: placement.centerX - 160,
-      y: placement.centerY - 200,
-      width: 320,
-      height: 400,
+      x: placement.centerX - size.width / 2,
+      y: placement.centerY - size.height / 2,
+      width: size.width,
+      height: size.height,
     },
     isLocked: false,
     isCollapsed: false,
     isMinimized: false,
-    layout: 'list',
+    layout,
     zIndex: snapshot.maxZIndex + 1,
   };
 
