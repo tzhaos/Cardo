@@ -18,6 +18,7 @@ import ItemCard from '../../../widgets/ItemCard/ItemCard';
 import { useManagedItemCardController } from '../hooks/useManagedItemCardController';
 
 interface ManagedItemCardProps {
+  boxId: string;
   item: PlacedWorkspaceItem;
   layout: 'grid' | 'list';
   onUpdate: (updates: WorkspaceItemUpdate) => void;
@@ -55,18 +56,26 @@ function getItemIcon(item: WorkspaceItem, layout: 'grid' | 'list') {
 }
 
 export default function ManagedItemCard({
+  boxId,
   item,
   layout,
   onUpdate,
   onSetPinned,
   onDelete,
 }: ManagedItemCardProps) {
-  const controller = useManagedItemCardController({ item, onUpdate, onSetPinned, onDelete });
+  const controller = useManagedItemCardController({
+    boxId,
+    item,
+    onUpdate,
+    onSetPinned,
+    onDelete,
+  });
 
   const sharedProps = {
     item,
     layout,
     icon: getItemIcon(item, layout),
+    isFocused: controller.isFocused,
     isEditing: controller.isEditing,
     isInteractionLocked: controller.isInteractionLocked,
     editTitle: controller.editTitle,
@@ -98,5 +107,9 @@ export default function ManagedItemCard({
     onDeleteClick: controller.deleteItem,
   };
 
-  return <ItemCard {...sharedProps} />;
+  return (
+    <div ref={controller.rootRef} data-kb-item-id={item.id}>
+      <ItemCard {...sharedProps} />
+    </div>
+  );
 }

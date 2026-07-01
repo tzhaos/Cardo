@@ -114,7 +114,7 @@ export default function WorkspaceCommandCenter() {
                 <button
                   key={`${box.id}:${item.id}`}
                   type="button"
-                  onClick={() => controller.focusBox(box)}
+                  onClick={() => controller.focusItem(box, item.id)}
                   className="flex items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-win-text transition-colors hover:bg-win-hover"
                 >
                   <ClipboardList size={15} className="shrink-0 text-win-text-secondary" />

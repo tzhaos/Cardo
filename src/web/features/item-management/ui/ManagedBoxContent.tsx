@@ -33,6 +33,7 @@ export default function ManagedBoxContent({
       onDragEnd={controller.drop.handleItemDragEnd}
     >
       <ManagedItemCard
+        boxId={box.id}
         item={item}
         layout={box.layout}
         onUpdate={(updates) => controller.updateItem(item, updates)}

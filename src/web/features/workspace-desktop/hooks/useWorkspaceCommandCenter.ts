@@ -34,12 +34,21 @@ function getSearchText(box: WorkspaceBox, title: string) {
   return `${title} ${box.templateId}`.toLowerCase();
 }
 
+function runOptionalFocusAction(action: () => void) {
+  try {
+    action();
+  } catch {
+    // The desktop bridge is unavailable in browser-only previews; item focus still works without z-order persistence.
+  }
+}
+
 export function useWorkspaceCommandCenter() {
   const { t } = useI18n();
   const snapshot = useWorkspaceSnapshot();
   const boxes = useVisibleBoxes();
   const dispatch = useWorkspaceDispatch();
   const setActiveBox = useInteractionStore((state) => state.setActiveBox);
+  const setFocusedItemInfo = useInteractionStore((state) => state.setFocusedItemInfo);
   const centerOn = useCanvasStore((state) => state.centerOn);
   const panX = useCanvasStore((state) => state.panX);
   const panY = useCanvasStore((state) => state.panY);
@@ -87,10 +96,22 @@ export function useWorkspaceCommandCenter() {
   );
 
   const focusBox = (box: WorkspaceBox) => {
-    const viewport = getRuntimeViewport();
-    centerOn(box.bounds.x + box.bounds.width / 2, box.bounds.y + box.bounds.height / 2, viewport);
-    dispatch({ type: 'box.bringToFront', boxId: box.id });
     setActiveBox(box.id);
+    runOptionalFocusAction(() => {
+      const viewport = getRuntimeViewport();
+      centerOn(box.bounds.x + box.bounds.width / 2, box.bounds.y + box.bounds.height / 2, viewport);
+      dispatch({ type: 'box.bringToFront', boxId: box.id });
+    });
+  };
+
+  const focusItem = (box: WorkspaceBox, itemId: string) => {
+    setActiveBox(box.id);
+    setFocusedItemInfo({ boxId: box.id, itemId });
+    runOptionalFocusAction(() => {
+      const viewport = getRuntimeViewport();
+      centerOn(box.bounds.x + box.bounds.width / 2, box.bounds.y + box.bounds.height / 2, viewport);
+      dispatch({ type: 'box.bringToFront', boxId: box.id });
+    });
   };
 
   const createTemplate = (templateId: BoxTemplateId) => {
@@ -136,6 +157,7 @@ export function useWorkspaceCommandCenter() {
     },
     openSettings,
     focusBox,
+    focusItem,
     createTemplate,
   };
 }

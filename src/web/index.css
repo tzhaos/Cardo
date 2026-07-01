@@ -303,6 +303,13 @@ select {
     background: var(--color-win-hover);
   }
 
+  .kb-item-focused {
+    background: color-mix(in srgb, var(--color-win-accent) 14%, var(--color-win-hover));
+    box-shadow:
+      0 0 0 2px var(--color-win-accent),
+      0 0 0 6px color-mix(in srgb, var(--color-win-accent) 16%, transparent);
+  }
+
   .kb-item-title {
     color: var(--color-win-text);
   }

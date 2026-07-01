@@ -11,6 +11,7 @@ export interface ItemCardProps {
   item: PlacedWorkspaceItem;
   layout: 'grid' | 'list';
   icon: ReactNode;
+  isFocused: boolean;
   isEditing: boolean;
   isInteractionLocked: boolean;
   editTitle: string;
@@ -57,6 +58,7 @@ export default function ItemCard({
   item,
   layout,
   icon,
+  isFocused,
   isEditing,
   isInteractionLocked,
   editTitle,
@@ -132,6 +134,7 @@ export default function ItemCard({
         layout === 'grid'
           ? 'kb-item-card-grid relative flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-transparent p-3'
           : 'flex shrink-0 cursor-pointer items-center justify-between gap-3 rounded-md p-2 hover:bg-win-hover active:bg-win-active',
+        isFocused ? 'kb-item-focused' : '',
         isInteractionLocked ? 'cursor-default opacity-55' : '',
       )}
     >

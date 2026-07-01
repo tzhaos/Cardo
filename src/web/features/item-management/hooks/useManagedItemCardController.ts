@@ -18,11 +18,13 @@ import {
 import { useItemActions } from './useItemActions';
 
 export function useManagedItemCardController({
+  boxId,
   item,
   onUpdate,
   onSetPinned,
   onDelete,
 }: {
+  boxId: string;
   item: PlacedWorkspaceItem;
   onUpdate: (updates: WorkspaceItemUpdate) => void;
   onSetPinned: (isPinned: boolean) => void;
@@ -31,16 +33,25 @@ export function useManagedItemCardController({
   const { t } = useI18n();
   const editorId = `item:${item.id}`;
   const editingSessionId = useInteractionStore((state) => state.editingSessionId);
+  const focusedAt = useInteractionStore((state) => {
+    const focusedItemInfo = state.focusedItemInfo;
+    return focusedItemInfo?.boxId === boxId && focusedItemInfo.itemId === item.id
+      ? focusedItemInfo.focusedAt
+      : null;
+  });
   const setEditingSessionId = useInteractionStore((state) => state.setEditingSessionId);
+  const setFocusedItemInfo = useInteractionStore((state) => state.setFocusedItemInfo);
   const itemContent = getWorkspaceItemContent(item);
   const [editTitle, setEditTitle] = useState(item.title);
   const [editContent, setEditContent] = useState(itemContent);
+  const rootRef = useRef<HTMLDivElement>(null);
   const editorRootRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const { openItem } = useItemActions();
 
   const isEditing = editingSessionId === editorId;
   const isInteractionLocked = Boolean(editingSessionId && editingSessionId !== editorId);
+  const isFocused = focusedAt !== null;
 
   const closeEditor = useCallback(() => {
     clearEditingSessionIfActive(editorId);
@@ -120,6 +131,26 @@ export function useManagedItemCardController({
     };
   }, [isEditing, handleSave]);
 
+  useEffect(() => {
+    if (!isFocused) {
+      return;
+    }
+
+    rootRef.current?.scrollIntoView({
+      block: 'center',
+      inline: 'center',
+      behavior: 'smooth',
+    });
+
+    if (!focusedAt) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => setFocusedItemInfo(null), 2400);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [focusedAt, isFocused, setFocusedItemInfo]);
+
   useEffect(
     () => () => {
       clearEditingSessionIfActive(editorId);
@@ -146,11 +177,13 @@ export function useManagedItemCardController({
   };
 
   return {
+    rootRef,
     editTitle,
     editContent,
     editorRootRef,
     titleInputRef,
     isEditing,
+    isFocused,
     isInteractionLocked,
     labels: {
       editor: t('item.edit'),

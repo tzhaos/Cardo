@@ -19,6 +19,7 @@ interface ManagedKanbanContentProps {
 }
 
 interface KanbanColumnViewProps {
+  boxId: string;
   column: KanbanColumn;
   columnIndex: number;
   items: PlacedWorkspaceItem[];
@@ -61,6 +62,7 @@ interface KanbanColumnViewProps {
 }
 
 function KanbanColumnView({
+  boxId,
   column,
   columnIndex,
   items,
@@ -229,6 +231,7 @@ function KanbanColumnView({
               <div className="absolute -top-1 left-0 z-50 h-1 w-full rounded-full bg-win-accent" />
             ) : null}
             <ManagedItemCard
+              boxId={boxId}
               item={item}
               layout="list"
               onUpdate={(updates) => onUpdateItem(item, updates)}
@@ -269,6 +272,7 @@ export default function ManagedKanbanContent({ box }: ManagedKanbanContentProps)
       {controller.columns.map(({ column, index, items, canMoveLeft, canMoveRight, canDelete }) => (
         <KanbanColumnView
           key={column.id}
+          boxId={box.id}
           column={column}
           columnIndex={index}
           items={items}

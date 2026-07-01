@@ -68,6 +68,7 @@ export default function ManagedInboxContent({
     >
       <div className="overflow-hidden rounded-md bg-win-card shadow-sm">
         <ManagedItemCard
+          boxId={box.id}
           item={item}
           layout={box.layout}
           onUpdate={(updates) => controller.updateItem(item, updates)}

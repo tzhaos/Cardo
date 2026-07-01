@@ -5,7 +5,8 @@ import {
   type WorkspaceBox,
 } from '../../../../core/domains/workspace/model/workspace';
 import { useI18n } from '../../../app/hooks/useI18n';
-import { useVisibleBoxes } from '../../../app/stores/useWorkspaceSelectors';
+import { useInteractionStore } from '../../../app/stores/useInteractionStore';
+import { useVisibleBoxes, useWorkspaceDispatch } from '../../../app/stores/useWorkspaceSelectors';
 import { moveItemToBox } from '../../../app/use-cases/moveItemToBox';
 import { useManagedBoxContent } from './useManagedBoxContent';
 
@@ -21,6 +22,14 @@ function getKanbanColumns(box: WorkspaceBox) {
   return columns && columns.length > 0 ? columns : DEFAULT_KANBAN_COLUMNS;
 }
 
+function suppressOptionalFocusError(action: () => void) {
+  try {
+    action();
+  } catch {
+    // Browser-only previews cannot persist z-order without the desktop bridge.
+  }
+}
+
 export function useManagedInboxContent(
   box: WorkspaceBox,
   showAddMenu: boolean,
@@ -29,6 +38,9 @@ export function useManagedInboxContent(
   const { t } = useI18n();
   const base = useManagedBoxContent(box, showAddMenu, setShowAddMenu);
   const boxes = useVisibleBoxes();
+  const dispatch = useWorkspaceDispatch();
+  const setActiveBox = useInteractionStore((state) => state.setActiveBox);
+  const setFocusedItemInfo = useInteractionStore((state) => state.setFocusedItemInfo);
   const routeTargets = useMemo(
     () =>
       boxes.flatMap((candidate): InboxRouteTarget[] => {
@@ -73,6 +85,11 @@ export function useManagedInboxContent(
       }
 
       moveItemToBox(itemId, box.id, target.boxId, undefined, target.columnId);
+      setActiveBox(target.boxId);
+      setFocusedItemInfo({ boxId: target.boxId, itemId });
+      suppressOptionalFocusError(() => {
+        dispatch({ type: 'box.bringToFront', boxId: target.boxId });
+      });
     },
   };
 }
