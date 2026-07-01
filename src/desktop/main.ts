@@ -13,11 +13,13 @@ import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import fsPromises from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { normalizeLocalResourcePath } from '../core/services/localResourcePath';
 
 declare const __KHAOSBOX_DEBUG_PACKAGE__: boolean;
 
 const isDebugPackage = __KHAOSBOX_DEBUG_PACKAGE__ || process.env.KHAOSBOX_DEBUG_PACKAGE === '1';
+const desktopAppRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 let debugLogPath: string | null = null;
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
@@ -31,7 +33,7 @@ const originalConsole = {
 };
 
 function getDesktopAppPath(...segments: string[]) {
-  return path.join(app.getAppPath(), ...segments);
+  return path.join(desktopAppRoot, ...segments);
 }
 
 function getRendererIndexPath() {
