@@ -30,7 +30,7 @@ export default function WorkspaceDesktop() {
 
   return (
     <div
-      className={`kb-desktop-root relative h-screen w-full overflow-hidden ${
+      className={`kb-desktop-root relative h-full w-full overflow-hidden ${
         isViewportLocked
           ? 'cursor-default'
           : interactionMode === 'panning' || isPanModifierActive

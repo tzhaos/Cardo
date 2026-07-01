@@ -2,6 +2,17 @@ import { contextBridge, ipcRenderer } from 'electron';
 import type { DesktopBridge } from './bridge';
 
 const bridge: DesktopBridge = {
+  minimizeWindow: () => ipcRenderer.invoke('window:minimize') as Promise<void>,
+  toggleMaximizeWindow: () => ipcRenderer.invoke('window:toggle-maximize') as Promise<boolean>,
+  closeWindow: () => ipcRenderer.invoke('window:close') as Promise<void>,
+  isWindowMaximized: () => ipcRenderer.invoke('window:is-maximized') as Promise<boolean>,
+  onWindowMaximizedChange: (callback) => {
+    const listener = (_event: Electron.IpcRendererEvent, isMaximized: boolean) => {
+      callback(isMaximized);
+    };
+    ipcRenderer.on('window:maximized-change', listener);
+    return () => ipcRenderer.off('window:maximized-change', listener);
+  },
   storageGet: (name) => ipcRenderer.invoke('storage:get', name) as Promise<string | null>,
   storageSet: (name, value) => ipcRenderer.invoke('storage:set', name, value) as Promise<void>,
   storageRemove: (name) => ipcRenderer.invoke('storage:remove', name) as Promise<void>,

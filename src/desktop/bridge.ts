@@ -1,4 +1,9 @@
 export interface DesktopBridge {
+  minimizeWindow(): Promise<void>;
+  toggleMaximizeWindow(): Promise<boolean>;
+  closeWindow(): Promise<void>;
+  isWindowMaximized(): Promise<boolean>;
+  onWindowMaximizedChange(callback: (isMaximized: boolean) => void): () => void;
   storageGet(name: string): Promise<string | null>;
   storageSet(name: string, value: string): Promise<void>;
   storageRemove(name: string): Promise<void>;

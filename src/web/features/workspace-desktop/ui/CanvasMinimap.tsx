@@ -11,7 +11,7 @@ export default function CanvasMinimap({ minimap }: { minimap: CanvasMinimapProps
   }
 
   return (
-    <div className="fixed right-4 top-16 z-[99990] rounded-xl border border-win-border bg-win-mica p-2 shadow-win-flyout">
+    <div className="absolute right-4 top-16 z-[99990] rounded-xl border border-win-border bg-win-mica p-2 shadow-win-flyout">
       <svg
         width={minimap.width}
         height={minimap.height}

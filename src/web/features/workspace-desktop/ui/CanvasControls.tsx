@@ -16,7 +16,7 @@ export default function CanvasControls({
   const controls = useCanvasControls();
 
   return (
-    <div className="fixed right-4 top-4 z-[99990] flex items-center gap-1 rounded-xl border border-win-border bg-win-mica p-1 shadow-win-card">
+    <div className="absolute right-4 top-4 z-[99990] flex items-center gap-1 rounded-xl border border-win-border bg-win-mica p-1 shadow-win-card">
       <button
         type="button"
         onClick={controls.resetViewport}

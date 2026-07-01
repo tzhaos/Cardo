@@ -332,6 +332,42 @@ select {
     border: 1px solid var(--color-win-border);
     background-color: var(--color-win-mica);
   }
+
+  .kb-desktop-titlebar {
+    -webkit-app-region: drag;
+    user-select: none;
+  }
+
+  .kb-desktop-window-controls,
+  .kb-window-control {
+    -webkit-app-region: no-drag;
+  }
+
+  .kb-window-control {
+    display: inline-flex;
+    height: 100%;
+    width: 46px;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-win-text-secondary);
+    transition:
+      background-color 120ms ease,
+      color 120ms ease;
+  }
+
+  .kb-window-control:hover {
+    background: var(--color-win-hover);
+    color: var(--color-win-text);
+  }
+
+  .kb-window-control:active {
+    background: var(--color-win-active);
+  }
+
+  .kb-window-control-close:hover {
+    background: #c42b1c;
+    color: #ffffff;
+  }
 }
 
 @layer utilities {

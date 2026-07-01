@@ -6,6 +6,7 @@ import {
   ipcMain,
   shell,
   type Event,
+  type IpcMainInvokeEvent,
   type WebContentsConsoleMessageEventParams,
 } from 'electron';
 import { spawn } from 'node:child_process';
@@ -178,6 +179,18 @@ function registerWindowDebugLogging(win: BrowserWindow) {
   });
 }
 
+function registerWindowStateEvents(win: BrowserWindow) {
+  const sendMaximizedState = () => {
+    if (!win.isDestroyed()) {
+      win.webContents.send('window:maximized-change', win.isMaximized());
+    }
+  };
+
+  win.on('maximize', sendMaximizedState);
+  win.on('unmaximize', sendMaximizedState);
+  win.on('restore', sendMaximizedState);
+}
+
 async function readStateFile() {
   const statePath = path.join(app.getPath('userData'), 'state.json');
 
@@ -195,6 +208,35 @@ async function writeStateFile(state: Record<string, string>) {
 }
 
 function registerIpcHandlers() {
+  const getSenderWindow = (event: IpcMainInvokeEvent) =>
+    BrowserWindow.fromWebContents(event.sender);
+
+  ipcMain.handle('window:minimize', (event) => {
+    getSenderWindow(event)?.minimize();
+  });
+
+  ipcMain.handle('window:toggle-maximize', (event) => {
+    const win = getSenderWindow(event);
+
+    if (!win) {
+      return false;
+    }
+
+    if (win.isMaximized()) {
+      win.unmaximize();
+    } else {
+      win.maximize();
+    }
+
+    return win.isMaximized();
+  });
+
+  ipcMain.handle('window:close', (event) => {
+    getSenderWindow(event)?.close();
+  });
+
+  ipcMain.handle('window:is-maximized', (event) => Boolean(getSenderWindow(event)?.isMaximized()));
+
   ipcMain.handle('storage:get', async (_event, name: string) => {
     const state = await readStateFile();
     return state[name] ?? null;
@@ -258,6 +300,7 @@ async function createWindow() {
     minWidth: 900,
     minHeight: 620,
     title: 'KhaosBox',
+    frame: false,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
@@ -265,6 +308,7 @@ async function createWindow() {
     },
   });
   registerWindowDebugLogging(win);
+  registerWindowStateEvents(win);
 
   if (process.env.KHAOSBOX_DESKTOP_DEV_SERVER_URL) {
     await win.loadURL(process.env.KHAOSBOX_DESKTOP_DEV_SERVER_URL);
