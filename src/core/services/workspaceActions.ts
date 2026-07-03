@@ -14,6 +14,7 @@ import {
   type WorkspaceSnapshot,
 } from '../domains/workspace/model/workspace';
 import {
+  createDefaultTemplateItems,
   createDefaultTemplateState,
   getBoxTemplateDefinition,
 } from '../domains/workspace/model/boxTemplates';
@@ -181,8 +182,21 @@ export function createWorkspaceBoxCommand(
   const templateId = placement.templateId ?? DEFAULT_BOX_TEMPLATE_ID;
   const template = getBoxTemplateDefinition(templateId);
   const size = template.defaultBounds;
+  const boxId = createId('box');
+  const defaultItems = createDefaultTemplateItems(templateId).map((defaultItem) => {
+    const item = createWorkspaceItem(createId('item'), defaultItem.draft);
+
+    return {
+      item,
+      placement: {
+        itemId: item.id,
+        isPinned: defaultItem.isPinned ?? false,
+        ...(defaultItem.columnId ? { columnId: defaultItem.columnId } : {}),
+      },
+    };
+  });
   const box: WorkspaceBox = {
-    id: createId('box'),
+    id: boxId,
     customTitle: null,
     templateId,
     templateState: createDefaultTemplateState(templateId),
@@ -205,6 +219,12 @@ export function createWorkspaceBoxCommand(
     command: {
       type: 'box.create',
       box,
+      ...(defaultItems.length > 0
+        ? {
+            items: defaultItems.map(({ item }) => item),
+            placements: defaultItems.map(({ placement }) => placement),
+          }
+        : {}),
     },
   };
 }

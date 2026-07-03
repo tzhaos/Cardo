@@ -17,6 +17,7 @@ import { cn } from '../../../lib/utils';
 
 const TEMPLATE_ICONS = {
   collection: Package,
+  'project-board': ClipboardList,
   kanban: Columns3,
   launcher: Rocket,
   inbox: Inbox,

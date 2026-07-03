@@ -6,6 +6,7 @@ import {
   DEFAULT_BOX_TEMPLATE_ID,
   WORKSPACE_EXPORT_VERSION,
   WORKSPACE_SCHEMA_VERSION,
+  isKanbanTemplateId,
   type BoxDesktopViewState,
   type BoxItemPlacement,
   type BoxTemplateId,
@@ -46,8 +47,8 @@ function asTemplateId(value: unknown): BoxTemplateId {
     : DEFAULT_BOX_TEMPLATE_ID;
 }
 
-function normalizeKanbanColumns(input: unknown): KanbanColumn[] {
-  const defaultColumns = createDefaultTemplateState('kanban').kanbanColumns ?? [];
+function normalizeKanbanColumns(templateId: BoxTemplateId, input: unknown): KanbanColumn[] {
+  const defaultColumns = createDefaultTemplateState(templateId).kanbanColumns ?? [];
 
   if (!Array.isArray(input)) {
     return defaultColumns;
@@ -70,13 +71,13 @@ function normalizeTemplateState(
   templateId: BoxTemplateId,
   input: unknown,
 ): WorkspaceBoxTemplateState {
-  if (templateId !== 'kanban') {
+  if (!isKanbanTemplateId(templateId)) {
     return {};
   }
 
   const rawState = isRecord(input) ? input : {};
   return {
-    kanbanColumns: normalizeKanbanColumns(rawState.kanbanColumns),
+    kanbanColumns: normalizeKanbanColumns(templateId, rawState.kanbanColumns),
   };
 }
 

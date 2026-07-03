@@ -6,8 +6,21 @@ import type {
 
 export type BoxLayout = 'grid' | 'list';
 
-export const BOX_TEMPLATE_IDS = ['collection', 'kanban', 'launcher', 'inbox'] as const;
+export const BOX_TEMPLATE_IDS = [
+  'collection',
+  'project-board',
+  'kanban',
+  'launcher',
+  'inbox',
+] as const;
 export type BoxTemplateId = (typeof BOX_TEMPLATE_IDS)[number];
+export type KanbanTemplateId = Extract<BoxTemplateId, 'kanban' | 'project-board'>;
+
+const KANBAN_TEMPLATE_ID_SET = new Set<BoxTemplateId>(['kanban', 'project-board']);
+
+export function isKanbanTemplateId(templateId: BoxTemplateId): templateId is KanbanTemplateId {
+  return KANBAN_TEMPLATE_ID_SET.has(templateId);
+}
 
 export interface KanbanColumn {
   id: string;
@@ -108,7 +121,12 @@ export interface WorkspaceBoxUpdate {
 export type WorkspaceCommand =
   | { type: 'workspace.replace'; snapshot: WorkspaceSnapshotV6 }
   | { type: 'workspace.replaceBoxes'; boxes: WorkspaceBoxWithItems[] }
-  | { type: 'box.create'; box: WorkspaceBox; placements?: BoxItemPlacement[] }
+  | {
+      type: 'box.create';
+      box: WorkspaceBox;
+      items?: WorkspaceItem[];
+      placements?: BoxItemPlacement[];
+    }
   | { type: 'box.update'; boxId: string; updates: WorkspaceBoxUpdate }
   | { type: 'box.delete'; boxId: string }
   | { type: 'box.bringToFront'; boxId: string }
@@ -148,6 +166,12 @@ export const DEFAULT_BOX_TEMPLATE_ID: BoxTemplateId = 'collection';
 export const DEFAULT_KANBAN_COLUMNS: KanbanColumn[] = [
   { id: 'todo', title: 'To do' },
   { id: 'doing', title: 'Doing' },
+  { id: 'done', title: 'Done' },
+];
+export const DEFAULT_PROJECT_BOARD_COLUMNS: KanbanColumn[] = [
+  { id: 'backlog', title: 'Backlog' },
+  { id: 'doing', title: 'Doing' },
+  { id: 'review', title: 'Review' },
   { id: 'done', title: 'Done' },
 ];
 

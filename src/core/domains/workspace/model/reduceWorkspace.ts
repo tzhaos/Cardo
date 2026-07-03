@@ -13,7 +13,7 @@ import type {
   WorkspaceSnapshot,
   WorkspaceSnapshotV6,
 } from './workspace';
-import { MAX_KANBAN_COLUMNS } from './workspace';
+import { isKanbanTemplateId, MAX_KANBAN_COLUMNS } from './workspace';
 
 function splitBox(box: WorkspaceBox): {
   entity: WorkspaceBoxEntity;
@@ -105,14 +105,14 @@ function updateBoxViewState(
 }
 
 function getKanbanColumns(entity: WorkspaceBoxEntity): KanbanColumn[] {
-  if (entity.templateId !== 'kanban') {
+  if (!isKanbanTemplateId(entity.templateId)) {
     return [];
   }
 
   const columns = entity.templateState.kanbanColumns;
   return columns && columns.length > 0
     ? columns.map((column) => ({ ...column }))
-    : (createDefaultTemplateState('kanban').kanbanColumns ?? []);
+    : (createDefaultTemplateState(entity.templateId).kanbanColumns ?? []);
 }
 
 function updateBoxTemplateState(
@@ -145,7 +145,7 @@ function updateKanbanColumns(
 ): WorkspaceSnapshotV6 {
   const entity = snapshot.boxesById[boxId];
 
-  if (!entity || entity.templateId !== 'kanban') {
+  if (!entity || !isKanbanTemplateId(entity.templateId)) {
     return snapshot;
   }
 
@@ -169,7 +169,7 @@ function deleteKanbanColumn(
 ): WorkspaceSnapshotV6 {
   const entity = snapshot.boxesById[boxId];
 
-  if (!entity || entity.templateId !== 'kanban') {
+  if (!entity || !isKanbanTemplateId(entity.templateId)) {
     return snapshot;
   }
 
@@ -302,9 +302,16 @@ export function reduceWorkspace(
       }
 
       const { entity, viewState } = splitBox(command.box);
+      const itemsById = command.items
+        ? {
+            ...snapshot.itemsById,
+            ...Object.fromEntries(command.items.map((item) => [item.id, item])),
+          }
+        : snapshot.itemsById;
 
       return {
         ...snapshot,
+        itemsById,
         boxesById: {
           ...snapshot.boxesById,
           [command.box.id]: entity,

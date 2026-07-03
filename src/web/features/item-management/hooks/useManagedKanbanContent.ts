@@ -34,7 +34,7 @@ function getKanbanColumns(box: WorkspaceBox) {
   const columns = box.templateState.kanbanColumns;
   return columns && columns.length > 0
     ? columns
-    : (createDefaultTemplateState('kanban').kanbanColumns ?? []);
+    : (createDefaultTemplateState(box.templateId).kanbanColumns ?? []);
 }
 
 function groupItemsByColumn(items: PlacedWorkspaceItem[], columns: KanbanColumn[]) {

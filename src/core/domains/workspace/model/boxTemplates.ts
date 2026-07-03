@@ -1,11 +1,19 @@
 import type { MessageKey } from '../../i18n/model/messages';
+import type { ItemDraft } from '../../items/model/item';
 import {
   DEFAULT_KANBAN_COLUMNS,
+  DEFAULT_PROJECT_BOARD_COLUMNS,
   type BoxLayout,
   type BoxTemplateId,
   type WorkspaceBoxBounds,
   type WorkspaceBoxTemplateState,
 } from './workspace';
+
+export interface BoxTemplateDefaultItem {
+  draft: ItemDraft;
+  isPinned?: boolean;
+  columnId?: string;
+}
 
 export interface BoxTemplateDefinition {
   id: BoxTemplateId;
@@ -15,9 +23,11 @@ export interface BoxTemplateDefinition {
   defaultLayout: BoxLayout;
   defaultBounds: Pick<WorkspaceBoxBounds, 'width' | 'height'>;
   createDefaultState: () => WorkspaceBoxTemplateState;
+  createDefaultItems: () => BoxTemplateDefaultItem[];
 }
 
 const EMPTY_TEMPLATE_STATE = () => ({});
+const EMPTY_DEFAULT_ITEMS = () => [];
 
 export const BOX_TEMPLATE_DEFINITIONS = {
   collection: {
@@ -28,6 +38,29 @@ export const BOX_TEMPLATE_DEFINITIONS = {
     defaultLayout: 'list',
     defaultBounds: { width: 340, height: 420 },
     createDefaultState: EMPTY_TEMPLATE_STATE,
+    createDefaultItems: EMPTY_DEFAULT_ITEMS,
+  },
+  'project-board': {
+    id: 'project-board',
+    titleKey: 'template.projectBoard',
+    descriptionKey: 'template.projectBoard.description',
+    actionKey: 'template.projectBoard.action',
+    defaultLayout: 'list',
+    defaultBounds: { width: 760, height: 460 },
+    createDefaultState: () => ({
+      kanbanColumns: DEFAULT_PROJECT_BOARD_COLUMNS.map((column) => ({ ...column })),
+    }),
+    createDefaultItems: () => [
+      {
+        draft: {
+          type: 'note',
+          title: 'Project brief',
+          content: 'Define the outcome, owner, and next decision for this project.',
+        },
+        columnId: 'backlog',
+        isPinned: true,
+      },
+    ],
   },
   kanban: {
     id: 'kanban',
@@ -39,6 +72,7 @@ export const BOX_TEMPLATE_DEFINITIONS = {
     createDefaultState: () => ({
       kanbanColumns: DEFAULT_KANBAN_COLUMNS.map((column) => ({ ...column })),
     }),
+    createDefaultItems: EMPTY_DEFAULT_ITEMS,
   },
   launcher: {
     id: 'launcher',
@@ -48,6 +82,7 @@ export const BOX_TEMPLATE_DEFINITIONS = {
     defaultLayout: 'grid',
     defaultBounds: { width: 340, height: 280 },
     createDefaultState: EMPTY_TEMPLATE_STATE,
+    createDefaultItems: EMPTY_DEFAULT_ITEMS,
   },
   inbox: {
     id: 'inbox',
@@ -57,11 +92,13 @@ export const BOX_TEMPLATE_DEFINITIONS = {
     defaultLayout: 'list',
     defaultBounds: { width: 340, height: 420 },
     createDefaultState: EMPTY_TEMPLATE_STATE,
+    createDefaultItems: EMPTY_DEFAULT_ITEMS,
   },
 } as const satisfies Record<BoxTemplateId, BoxTemplateDefinition>;
 
 export const BOX_TEMPLATE_LIBRARY: BoxTemplateDefinition[] = [
   BOX_TEMPLATE_DEFINITIONS.collection,
+  BOX_TEMPLATE_DEFINITIONS['project-board'],
   BOX_TEMPLATE_DEFINITIONS.kanban,
   BOX_TEMPLATE_DEFINITIONS.launcher,
   BOX_TEMPLATE_DEFINITIONS.inbox,
@@ -73,4 +110,8 @@ export function getBoxTemplateDefinition(templateId: BoxTemplateId): BoxTemplate
 
 export function createDefaultTemplateState(templateId: BoxTemplateId): WorkspaceBoxTemplateState {
   return getBoxTemplateDefinition(templateId).createDefaultState();
+}
+
+export function createDefaultTemplateItems(templateId: BoxTemplateId): BoxTemplateDefaultItem[] {
+  return getBoxTemplateDefinition(templateId).createDefaultItems();
 }

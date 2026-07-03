@@ -1,4 +1,7 @@
-import type { WorkspaceBox } from '../../../../core/domains/workspace/model/workspace';
+import {
+  isKanbanTemplateId,
+  type WorkspaceBox,
+} from '../../../../core/domains/workspace/model/workspace';
 import BoxContainer from '../../../widgets/Box/BoxContainer';
 import BoxHeader from '../../../widgets/Box/BoxHeader';
 import {
@@ -18,22 +21,21 @@ interface ManagedBoxViewProps {
 
 function ManagedBoxView({ box }: ManagedBoxViewProps) {
   const controller = useManagedBoxController(box);
-  const content =
-    box.templateId === 'kanban' ? (
-      <ManagedKanbanContent box={box} />
-    ) : box.templateId === 'inbox' ? (
-      <ManagedInboxContent
-        box={box}
-        showAddMenu={controller.showAddMenu}
-        setShowAddMenu={controller.setShowAddMenu}
-      />
-    ) : (
-      <ManagedBoxContent
-        box={box}
-        showAddMenu={controller.showAddMenu}
-        setShowAddMenu={controller.setShowAddMenu}
-      />
-    );
+  const content = isKanbanTemplateId(box.templateId) ? (
+    <ManagedKanbanContent box={box} />
+  ) : box.templateId === 'inbox' ? (
+    <ManagedInboxContent
+      box={box}
+      showAddMenu={controller.showAddMenu}
+      setShowAddMenu={controller.setShowAddMenu}
+    />
+  ) : (
+    <ManagedBoxContent
+      box={box}
+      showAddMenu={controller.showAddMenu}
+      setShowAddMenu={controller.setShowAddMenu}
+    />
+  );
 
   return (
     <BoxContainer
@@ -58,7 +60,7 @@ function ManagedBoxView({ box }: ManagedBoxViewProps) {
           isEditing={controller.isEditing}
           isInteractionLocked={controller.isInteractionLocked}
           inputRef={controller.inputRef}
-          canToggleLayout={box.templateId !== 'kanban'}
+          canToggleLayout={!isKanbanTemplateId(box.templateId)}
           toggleLayoutLabel={controller.labels.toggleLayout}
           lockPositionLabel={controller.labels.lockPosition}
           unlockPositionLabel={controller.labels.unlockPosition}

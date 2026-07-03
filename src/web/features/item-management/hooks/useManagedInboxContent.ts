@@ -1,7 +1,10 @@
 import { useMemo, useState } from 'react';
 import { createDefaultTemplateState } from '../../../../core/domains/workspace/model/boxTemplates';
 import { getBoxDisplayTitle } from '../../../../core/domains/workspace/model/boxTitles';
-import type { WorkspaceBox } from '../../../../core/domains/workspace/model/workspace';
+import {
+  isKanbanTemplateId,
+  type WorkspaceBox,
+} from '../../../../core/domains/workspace/model/workspace';
 import { useI18n } from '../../../app/hooks/useI18n';
 import { presentToastSpec } from '../../../app/presentation/toastSpec';
 import { useInteractionStore } from '../../../app/stores/useInteractionStore';
@@ -18,7 +21,7 @@ function getKanbanColumns(box: WorkspaceBox) {
   const columns = box.templateState.kanbanColumns;
   return columns && columns.length > 0
     ? columns
-    : (createDefaultTemplateState('kanban').kanbanColumns ?? []);
+    : (createDefaultTemplateState(box.templateId).kanbanColumns ?? []);
 }
 
 function suppressOptionalFocusError(action: () => void) {
@@ -52,7 +55,7 @@ export function useManagedInboxContent(
 
         const boxTitle = getBoxDisplayTitle(candidate, t);
 
-        if (candidate.templateId !== 'kanban') {
+        if (!isKanbanTemplateId(candidate.templateId)) {
           return [
             {
               id: candidate.id,
