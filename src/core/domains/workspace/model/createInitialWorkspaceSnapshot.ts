@@ -1,21 +1,13 @@
 import {
   DEFAULT_BOX_TEMPLATE_ID,
-  DEFAULT_KANBAN_COLUMNS,
   WORKSPACE_SCHEMA_VERSION,
   type BoxDesktopViewState,
   type BoxItemPlacement,
-  type BoxTemplateId,
-  type WorkspaceBoxTemplateState,
   type WorkspaceBox,
   type WorkspaceBoxEntity,
   type WorkspaceSnapshotV6,
 } from './workspace';
-
-export function createDefaultTemplateState(templateId: BoxTemplateId): WorkspaceBoxTemplateState {
-  return templateId === 'kanban'
-    ? { kanbanColumns: DEFAULT_KANBAN_COLUMNS.map((column) => ({ ...column })) }
-    : {};
-}
+import { createDefaultTemplateState, getBoxTemplateDefinition } from './boxTemplates';
 
 function splitBox(box: WorkspaceBox): {
   entity: WorkspaceBoxEntity;
@@ -74,17 +66,21 @@ export function createWorkspaceSnapshot(boxes: WorkspaceBox[]): WorkspaceSnapsho
 }
 
 export function createInitialWorkspaceSnapshot(): WorkspaceSnapshotV6 {
+  const inboxTemplate = getBoxTemplateDefinition('inbox');
+  const kanbanTemplate = getBoxTemplateDefinition('kanban');
+  const launcherTemplate = getBoxTemplateDefinition('launcher');
+
   return createWorkspaceSnapshot([
     {
       id: 'default-inbox',
       customTitle: null,
       templateId: 'inbox',
       templateState: createDefaultTemplateState('inbox'),
-      bounds: { x: 80, y: 96, width: 340, height: 420 },
+      bounds: { x: 80, y: 96, ...inboxTemplate.defaultBounds },
       isLocked: false,
       isCollapsed: false,
       isMinimized: false,
-      layout: 'list',
+      layout: inboxTemplate.defaultLayout,
       zIndex: 1,
     },
     {
@@ -92,11 +88,11 @@ export function createInitialWorkspaceSnapshot(): WorkspaceSnapshotV6 {
       customTitle: null,
       templateId: 'kanban',
       templateState: createDefaultTemplateState('kanban'),
-      bounds: { x: 460, y: 96, width: 680, height: 440 },
+      bounds: { x: 460, y: 96, ...kanbanTemplate.defaultBounds },
       isLocked: false,
       isCollapsed: false,
       isMinimized: false,
-      layout: 'list',
+      layout: kanbanTemplate.defaultLayout,
       zIndex: 2,
     },
     {
@@ -104,11 +100,11 @@ export function createInitialWorkspaceSnapshot(): WorkspaceSnapshotV6 {
       customTitle: null,
       templateId: 'launcher',
       templateState: createDefaultTemplateState('launcher'),
-      bounds: { x: 80, y: 560, width: 340, height: 280 },
+      bounds: { x: 80, y: 560, ...launcherTemplate.defaultBounds },
       isLocked: false,
       isCollapsed: false,
       isMinimized: false,
-      layout: 'grid',
+      layout: launcherTemplate.defaultLayout,
       zIndex: 3,
     },
   ]);

@@ -1,10 +1,9 @@
 import { useMemo } from 'react';
+import { createDefaultTemplateState } from '../../../../core/domains/workspace/model/boxTemplates';
 import { getBoxDisplayTitle } from '../../../../core/domains/workspace/model/boxTitles';
-import {
-  DEFAULT_KANBAN_COLUMNS,
-  type WorkspaceBox,
-} from '../../../../core/domains/workspace/model/workspace';
+import type { WorkspaceBox } from '../../../../core/domains/workspace/model/workspace';
 import { useI18n } from '../../../app/hooks/useI18n';
+import { presentToastSpec } from '../../../app/presentation/toastSpec';
 import { useInteractionStore } from '../../../app/stores/useInteractionStore';
 import { useVisibleBoxes, useWorkspaceDispatch } from '../../../app/stores/useWorkspaceSelectors';
 import { moveItemToBox } from '../../../app/use-cases/moveItemToBox';
@@ -19,7 +18,9 @@ interface InboxRouteTarget {
 
 function getKanbanColumns(box: WorkspaceBox) {
   const columns = box.templateState.kanbanColumns;
-  return columns && columns.length > 0 ? columns : DEFAULT_KANBAN_COLUMNS;
+  return columns && columns.length > 0
+    ? columns
+    : (createDefaultTemplateState('kanban').kanbanColumns ?? []);
 }
 
 function suppressOptionalFocusError(action: () => void) {
@@ -76,6 +77,7 @@ export function useManagedInboxContent(
     labels: {
       routePlaceholder: t('inbox.routePlaceholder'),
       noDestinations: t('inbox.noDestinations'),
+      empty: t('inbox.empty'),
     },
     routeItem: (itemId: string, targetId: string) => {
       const target = routeTargets.find((candidate) => candidate.id === targetId);
@@ -89,6 +91,11 @@ export function useManagedInboxContent(
       setFocusedItemInfo({ boxId: target.boxId, itemId });
       suppressOptionalFocusError(() => {
         dispatch({ type: 'box.bringToFront', boxId: target.boxId });
+      });
+      presentToastSpec(t, {
+        level: 'success',
+        messageKey: 'toast.movedItemToTarget',
+        params: { target: target.label },
       });
     },
   };

@@ -1,7 +1,10 @@
 import { useMemo, useState } from 'react';
-import type { MessageKey } from '../../../../core/domains/i18n/model/messages';
 import { getWorkspaceItemContent } from '../../../../core/domains/items/model/item';
 import { screenToWorld } from '../../../../core/domains/layout/model/viewport';
+import {
+  BOX_TEMPLATE_LIBRARY,
+  getBoxTemplateDefinition,
+} from '../../../../core/domains/workspace/model/boxTemplates';
 import {
   MAX_WORKSPACE_BOXES,
   type BoxTemplateId,
@@ -21,17 +24,9 @@ import {
 } from '../../../app/stores/useWorkspaceSelectors';
 import { createWorkspaceBox } from '../../../app/use-cases/createWorkspaceBox';
 
-const TEMPLATE_LABEL_KEYS = {
-  collection: 'template.collection',
-  kanban: 'template.kanban',
-  launcher: 'template.launcher',
-  inbox: 'template.inbox',
-} as const satisfies Record<BoxTemplateId, MessageKey>;
-
-const TEMPLATE_IDS: BoxTemplateId[] = ['collection', 'kanban', 'launcher', 'inbox'];
-
 function getSearchText(box: WorkspaceBox, title: string) {
-  return `${title} ${box.templateId}`.toLowerCase();
+  const template = getBoxTemplateDefinition(box.templateId);
+  return `${title} ${box.templateId} ${template.titleKey}`.toLowerCase();
 }
 
 function runOptionalFocusAction(action: () => void) {
@@ -142,11 +137,12 @@ export function useWorkspaceCommandCenter() {
     isTemplateMenuOpen,
     setTemplateMenuOpen,
     hasReachedBoxLimit,
+    hasQuery: normalizedQuery.length > 0,
     filteredBoxRows,
     filteredItemRows,
-    templates: TEMPLATE_IDS.map((templateId) => ({
-      id: templateId,
-      label: t(TEMPLATE_LABEL_KEYS[templateId]),
+    templates: BOX_TEMPLATE_LIBRARY.map((template) => ({
+      id: template.id,
+      label: t(template.titleKey),
     })),
     labels: {
       createTemplate: t('workspace.createTemplate'),
@@ -154,6 +150,8 @@ export function useWorkspaceCommandCenter() {
       settings: t('settings.title'),
       navigator: t('workspace.navigator'),
       items: t('workspace.items'),
+      noBoxes: t('workspace.noBoxes'),
+      noItems: t('workspace.noItems'),
     },
     openSettings,
     focusBox,

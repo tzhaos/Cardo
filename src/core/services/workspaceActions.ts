@@ -13,7 +13,10 @@ import {
   type WorkspaceCommand,
   type WorkspaceSnapshot,
 } from '../domains/workspace/model/workspace';
-import { createDefaultTemplateState } from '../domains/workspace/model/createInitialWorkspaceSnapshot';
+import {
+  createDefaultTemplateState,
+  getBoxTemplateDefinition,
+} from '../domains/workspace/model/boxTemplates';
 import {
   createWorkspaceExportDocument,
   parseWorkspaceExportDocument,
@@ -176,13 +179,8 @@ export function createWorkspaceBoxCommand(
   }
 
   const templateId = placement.templateId ?? DEFAULT_BOX_TEMPLATE_ID;
-  const size =
-    templateId === 'kanban'
-      ? { width: 680, height: 440 }
-      : templateId === 'launcher'
-        ? { width: 340, height: 280 }
-        : { width: 340, height: 420 };
-  const layout = templateId === 'launcher' ? 'grid' : 'list';
+  const template = getBoxTemplateDefinition(templateId);
+  const size = template.defaultBounds;
   const box: WorkspaceBox = {
     id: createId('box'),
     customTitle: null,
@@ -197,7 +195,7 @@ export function createWorkspaceBoxCommand(
     isLocked: false,
     isCollapsed: false,
     isMinimized: false,
-    layout,
+    layout: template.defaultLayout,
     zIndex: snapshot.maxZIndex + 1,
   };
 

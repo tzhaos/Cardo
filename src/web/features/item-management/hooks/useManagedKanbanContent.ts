@@ -1,6 +1,6 @@
 import { useMemo, useState, type DragEvent } from 'react';
+import { createDefaultTemplateState } from '../../../../core/domains/workspace/model/boxTemplates';
 import {
-  DEFAULT_KANBAN_COLUMNS,
   MAX_KANBAN_COLUMNS,
   type KanbanColumn,
   type WorkspaceBox,
@@ -32,7 +32,9 @@ interface KanbanDropIndicator {
 
 function getKanbanColumns(box: WorkspaceBox) {
   const columns = box.templateState.kanbanColumns;
-  return columns && columns.length > 0 ? columns : DEFAULT_KANBAN_COLUMNS;
+  return columns && columns.length > 0
+    ? columns
+    : (createDefaultTemplateState('kanban').kanbanColumns ?? []);
 }
 
 function groupItemsByColumn(items: PlacedWorkspaceItem[], columns: KanbanColumn[]) {
@@ -231,6 +233,8 @@ export function useManagedKanbanContent(box: WorkspaceBox) {
     setDraftColumnTitle,
     labels: {
       addColumn: t('kanban.addColumn'),
+      columnLimitReached: t('kanban.columnLimitReached'),
+      emptyColumn: t('kanban.emptyColumn'),
       renameColumn: t('kanban.renameColumn'),
       deleteColumn: t('kanban.deleteColumn'),
       moveColumnLeft: t('kanban.moveColumnLeft'),

@@ -7,6 +7,7 @@ interface BoxContentProps {
   isDragOver: boolean;
   items: ReactNode;
   addPanel: ReactNode;
+  emptyState?: ReactNode;
   overlay?: ReactNode;
   onPointerDown: (event: PointerEvent<HTMLDivElement>) => void;
   onDragEnter: (event: DragEvent<HTMLDivElement>) => void;
@@ -20,6 +21,7 @@ export default function BoxContent({
   isDragOver,
   items,
   addPanel,
+  emptyState,
   overlay,
   onPointerDown,
   onDragEnter,
@@ -42,6 +44,7 @@ export default function BoxContent({
     >
       {overlay}
       {items}
+      {emptyState}
       {addPanel}
     </div>
   );

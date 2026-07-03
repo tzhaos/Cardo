@@ -35,6 +35,9 @@ interface KanbanColumnViewProps {
   isEditingTitle: boolean;
   draftColumnTitle: string;
   labels: {
+    addColumn: string;
+    columnLimitReached: string;
+    emptyColumn: string;
     renameColumn: string;
     deleteColumn: string;
     moveColumnLeft: string;
@@ -215,6 +218,11 @@ function KanbanColumnView({
       </div>
 
       <div className="kb-scroll-hidden flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-2 pb-2">
+        {items.length === 0 ? (
+          <div className="rounded-md border border-dashed border-win-border px-3 py-4 text-center text-sm text-win-text-secondary">
+            {labels.emptyColumn}
+          </div>
+        ) : null}
         {items.map((item) => (
           <div
             key={item.id}
@@ -313,7 +321,11 @@ export default function ManagedKanbanContent({ box }: ManagedKanbanContentProps)
           <Plus size={16} />
           <span>{controller.labels.addColumn}</span>
         </button>
-      ) : null}
+      ) : (
+        <div className="flex min-w-[150px] shrink-0 items-center justify-center self-stretch rounded-lg border border-dashed border-win-border bg-win-bg-secondary px-3 text-center text-sm text-win-text-secondary">
+          {controller.labels.columnLimitReached}
+        </div>
+      )}
     </div>
   );
 }

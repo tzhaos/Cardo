@@ -1,8 +1,6 @@
 import { updateWorkspaceItem, type WorkspaceItem } from '../../items/model/item';
-import {
-  createDefaultTemplateState,
-  createWorkspaceSnapshot,
-} from './createInitialWorkspaceSnapshot';
+import { createWorkspaceSnapshot } from './createInitialWorkspaceSnapshot';
+import { createDefaultTemplateState } from './boxTemplates';
 import type {
   BoxDesktopViewState,
   BoxItemPlacement,

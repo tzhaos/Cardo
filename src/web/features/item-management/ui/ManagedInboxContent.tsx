@@ -20,6 +20,7 @@ export default function ManagedInboxContent({
   setShowAddMenu,
 }: ManagedInboxContentProps) {
   const controller = useManagedInboxContent(box, showAddMenu, setShowAddMenu);
+  const isEmpty = controller.pinnedItems.length === 0 && controller.regularItems.length === 0;
 
   const stopControlEvent = (event: DragEvent | PointerEvent) => {
     event.stopPropagation();
@@ -102,6 +103,13 @@ export default function ManagedInboxContent({
           )}
           {controller.regularItems.map(renderDraggableItem)}
         </>
+      }
+      emptyState={
+        isEmpty ? (
+          <div className="rounded-md border border-dashed border-win-border px-3 py-4 text-center text-sm text-win-text-secondary">
+            {controller.labels.empty}
+          </div>
+        ) : null
       }
       addPanel={
         <AddItemPanel

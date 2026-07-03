@@ -4,7 +4,6 @@ import {
   BOX_MIN_WIDTH,
   BOX_TEMPLATE_IDS,
   DEFAULT_BOX_TEMPLATE_ID,
-  DEFAULT_KANBAN_COLUMNS,
   WORKSPACE_EXPORT_VERSION,
   WORKSPACE_SCHEMA_VERSION,
   type BoxDesktopViewState,
@@ -18,6 +17,7 @@ import {
   type WorkspaceSnapshot,
   type WorkspaceSnapshotV6,
 } from './workspace';
+import { createDefaultTemplateState } from './boxTemplates';
 
 const BOX_TEMPLATE_ID_SET = new Set<string>(BOX_TEMPLATE_IDS);
 const LEGACY_WORKSPACE_SCHEMA_VERSION = 5;
@@ -47,8 +47,10 @@ function asTemplateId(value: unknown): BoxTemplateId {
 }
 
 function normalizeKanbanColumns(input: unknown): KanbanColumn[] {
+  const defaultColumns = createDefaultTemplateState('kanban').kanbanColumns ?? [];
+
   if (!Array.isArray(input)) {
-    return DEFAULT_KANBAN_COLUMNS.map((column) => ({ ...column }));
+    return defaultColumns;
   }
 
   const columns = input.flatMap((column) => {
@@ -61,7 +63,7 @@ function normalizeKanbanColumns(input: unknown): KanbanColumn[] {
     return id && title ? [{ id, title }] : [];
   });
 
-  return columns.length > 0 ? columns : DEFAULT_KANBAN_COLUMNS.map((column) => ({ ...column }));
+  return columns.length > 0 ? columns : defaultColumns;
 }
 
 function normalizeTemplateState(

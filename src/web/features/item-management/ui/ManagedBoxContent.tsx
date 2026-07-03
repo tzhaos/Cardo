@@ -1,5 +1,6 @@
 import type { PlacedWorkspaceItem } from '../../../../core/domains/items/model/item';
 import type { WorkspaceBox } from '../../../../core/domains/workspace/model/workspace';
+import { useI18n } from '../../../app/hooks/useI18n';
 import BoxContent from '../../../widgets/Box/BoxContent';
 import { useManagedBoxContent } from '../hooks/useManagedBoxContent';
 import AddItemPanel from './AddItemPanel';
@@ -18,7 +19,9 @@ export default function ManagedBoxContent({
   showAddMenu,
   setShowAddMenu,
 }: ManagedBoxContentProps) {
+  const { t } = useI18n();
   const controller = useManagedBoxContent(box, showAddMenu, setShowAddMenu);
+  const isEmpty = controller.pinnedItems.length === 0 && controller.regularItems.length === 0;
 
   const renderDraggableItem = (item: PlacedWorkspaceItem) => (
     <DraggableItem
@@ -65,6 +68,13 @@ export default function ManagedBoxContent({
           )}
           {controller.regularItems.map(renderDraggableItem)}
         </>
+      }
+      emptyState={
+        isEmpty ? (
+          <div className="col-span-full rounded-md border border-dashed border-win-border px-3 py-4 text-center text-sm text-win-text-secondary">
+            {t('box.empty')}
+          </div>
+        ) : null
       }
       addPanel={
         <AddItemPanel

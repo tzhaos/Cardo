@@ -84,46 +84,58 @@ export default function WorkspaceCommandCenter() {
           <span>{controller.labels.navigator}</span>
         </div>
         <div className="flex flex-col gap-1">
-          {controller.filteredBoxRows.map(({ box, title }) => {
-            const TemplateIcon = TEMPLATE_ICONS[box.templateId];
+          {controller.filteredBoxRows.length > 0 ? (
+            controller.filteredBoxRows.map(({ box, title }) => {
+              const TemplateIcon = TEMPLATE_ICONS[box.templateId];
 
-            return (
-              <button
-                key={box.id}
-                type="button"
-                onClick={() => controller.focusBox(box)}
-                className={cn(
-                  'flex items-center gap-2 rounded-lg px-2 py-2 text-left text-sm transition-colors hover:bg-win-hover',
-                  box.isLocked ? 'text-red-300' : 'text-win-text',
-                )}
-              >
-                <TemplateIcon size={15} className="shrink-0 text-win-text-secondary" />
-                <span className="min-w-0 flex-1 truncate">{title}</span>
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={box.id}
+                  type="button"
+                  onClick={() => controller.focusBox(box)}
+                  className={cn(
+                    'flex items-center gap-2 rounded-lg px-2 py-2 text-left text-sm transition-colors hover:bg-win-hover',
+                    box.isLocked ? 'text-red-300' : 'text-win-text',
+                  )}
+                >
+                  <TemplateIcon size={15} className="shrink-0 text-win-text-secondary" />
+                  <span className="min-w-0 flex-1 truncate">{title}</span>
+                </button>
+              );
+            })
+          ) : (
+            <div className="rounded-lg px-2 py-2 text-sm text-win-text-secondary">
+              {controller.labels.noBoxes}
+            </div>
+          )}
         </div>
-        {controller.filteredItemRows.length > 0 ? (
+        {controller.filteredItemRows.length > 0 || controller.hasQuery ? (
           <>
             <div className="mb-1 mt-3 flex items-center gap-2 px-1 text-xs text-win-text-secondary">
               <ClipboardList size={13} />
               <span>{controller.labels.items}</span>
             </div>
             <div className="flex flex-col gap-1">
-              {controller.filteredItemRows.map(({ item, box, boxTitle }) => (
-                <button
-                  key={`${box.id}:${item.id}`}
-                  type="button"
-                  onClick={() => controller.focusItem(box, item.id)}
-                  className="flex items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-win-text transition-colors hover:bg-win-hover"
-                >
-                  <ClipboardList size={15} className="shrink-0 text-win-text-secondary" />
-                  <span className="min-w-0 flex-1 truncate">{item.title}</span>
-                  <span className="max-w-[6rem] truncate text-xs text-win-text-secondary">
-                    {boxTitle}
-                  </span>
-                </button>
-              ))}
+              {controller.filteredItemRows.length > 0 ? (
+                controller.filteredItemRows.map(({ item, box, boxTitle }) => (
+                  <button
+                    key={`${box.id}:${item.id}`}
+                    type="button"
+                    onClick={() => controller.focusItem(box, item.id)}
+                    className="flex items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-win-text transition-colors hover:bg-win-hover"
+                  >
+                    <ClipboardList size={15} className="shrink-0 text-win-text-secondary" />
+                    <span className="min-w-0 flex-1 truncate">{item.title}</span>
+                    <span className="max-w-[6rem] truncate text-xs text-win-text-secondary">
+                      {boxTitle}
+                    </span>
+                  </button>
+                ))
+              ) : (
+                <div className="rounded-lg px-2 py-2 text-sm text-win-text-secondary">
+                  {controller.labels.noItems}
+                </div>
+              )}
             </div>
           </>
         ) : null}
