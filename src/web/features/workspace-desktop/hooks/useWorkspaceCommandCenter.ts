@@ -26,7 +26,9 @@ import { createWorkspaceBox } from '../../../app/use-cases/createWorkspaceBox';
 
 function getSearchText(box: WorkspaceBox, title: string) {
   const template = getBoxTemplateDefinition(box.templateId);
-  return `${title} ${box.templateId} ${template.titleKey}`.toLowerCase();
+  return `${title} ${box.templateId} ${template.titleKey} ${template.descriptionKey} ${
+    template.actionKey
+  }`.toLowerCase();
 }
 
 function runOptionalFocusAction(action: () => void) {
@@ -49,6 +51,9 @@ export function useWorkspaceCommandCenter() {
   const panY = useCanvasStore((state) => state.panY);
   const openSettings = useSettingsPanelStore((state) => state.open);
   const [isTemplateMenuOpen, setTemplateMenuOpen] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<BoxTemplateId>(
+    BOX_TEMPLATE_LIBRARY[0].id,
+  );
   const [query, setQuery] = useState('');
   const hasReachedBoxLimit = boxes.length >= MAX_WORKSPACE_BOXES;
   const normalizedQuery = query.trim().toLowerCase();
@@ -131,11 +136,17 @@ export function useWorkspaceCommandCenter() {
     }
   };
 
+  const selectedTemplate =
+    BOX_TEMPLATE_LIBRARY.find((template) => template.id === selectedTemplateId) ??
+    BOX_TEMPLATE_LIBRARY[0];
+
   return {
     query,
     setQuery,
     isTemplateMenuOpen,
     setTemplateMenuOpen,
+    selectedTemplateId,
+    setSelectedTemplateId,
     hasReachedBoxLimit,
     hasQuery: normalizedQuery.length > 0,
     filteredBoxRows,
@@ -143,9 +154,21 @@ export function useWorkspaceCommandCenter() {
     templates: BOX_TEMPLATE_LIBRARY.map((template) => ({
       id: template.id,
       label: t(template.titleKey),
+      description: t(template.descriptionKey),
+      action: t(template.actionKey),
+      defaultLayout: template.defaultLayout,
     })),
+    selectedTemplate: {
+      id: selectedTemplate.id,
+      label: t(selectedTemplate.titleKey),
+      description: t(selectedTemplate.descriptionKey),
+      action: t(selectedTemplate.actionKey),
+      defaultLayout: selectedTemplate.defaultLayout,
+      defaultBounds: selectedTemplate.defaultBounds,
+    },
     labels: {
       createTemplate: t('workspace.createTemplate'),
+      templatePicker: t('workspace.templatePicker'),
       searchPlaceholder: t('workspace.searchPlaceholder'),
       settings: t('settings.title'),
       navigator: t('workspace.navigator'),

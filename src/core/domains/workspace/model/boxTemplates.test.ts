@@ -24,6 +24,13 @@ test('box template definitions provide default layout and bounds', () => {
   assert.deepEqual(kanban.defaultBounds, { width: 680, height: 440 });
 });
 
+test('box template definitions expose product metadata', () => {
+  for (const template of BOX_TEMPLATE_LIBRARY) {
+    assert.match(template.descriptionKey, /^template\..+\.description$/);
+    assert.match(template.actionKey, /^template\..+\.action$/);
+  }
+});
+
 test('createDefaultTemplateState clones kanban columns', () => {
   const firstState = createDefaultTemplateState('kanban');
   const secondState = createDefaultTemplateState('kanban');

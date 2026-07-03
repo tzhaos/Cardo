@@ -10,6 +10,8 @@ import {
 export interface BoxTemplateDefinition {
   id: BoxTemplateId;
   titleKey: MessageKey;
+  descriptionKey: MessageKey;
+  actionKey: MessageKey;
   defaultLayout: BoxLayout;
   defaultBounds: Pick<WorkspaceBoxBounds, 'width' | 'height'>;
   createDefaultState: () => WorkspaceBoxTemplateState;
@@ -21,6 +23,8 @@ export const BOX_TEMPLATE_DEFINITIONS = {
   collection: {
     id: 'collection',
     titleKey: 'template.collection',
+    descriptionKey: 'template.collection.description',
+    actionKey: 'template.collection.action',
     defaultLayout: 'list',
     defaultBounds: { width: 340, height: 420 },
     createDefaultState: EMPTY_TEMPLATE_STATE,
@@ -28,6 +32,8 @@ export const BOX_TEMPLATE_DEFINITIONS = {
   kanban: {
     id: 'kanban',
     titleKey: 'template.kanban',
+    descriptionKey: 'template.kanban.description',
+    actionKey: 'template.kanban.action',
     defaultLayout: 'list',
     defaultBounds: { width: 680, height: 440 },
     createDefaultState: () => ({
@@ -37,6 +43,8 @@ export const BOX_TEMPLATE_DEFINITIONS = {
   launcher: {
     id: 'launcher',
     titleKey: 'template.launcher',
+    descriptionKey: 'template.launcher.description',
+    actionKey: 'template.launcher.action',
     defaultLayout: 'grid',
     defaultBounds: { width: 340, height: 280 },
     createDefaultState: EMPTY_TEMPLATE_STATE,
@@ -44,6 +52,8 @@ export const BOX_TEMPLATE_DEFINITIONS = {
   inbox: {
     id: 'inbox',
     titleKey: 'template.inbox',
+    descriptionKey: 'template.inbox.description',
+    actionKey: 'template.inbox.action',
     defaultLayout: 'list',
     defaultBounds: { width: 340, height: 420 },
     createDefaultState: EMPTY_TEMPLATE_STATE,
