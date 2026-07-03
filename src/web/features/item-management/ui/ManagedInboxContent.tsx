@@ -1,7 +1,10 @@
-import type { ChangeEvent, DragEvent, PointerEvent } from 'react';
+import { ChevronDown, Clock3, Columns3, Inbox, MoveRight, Search } from 'lucide-react';
+import type { DragEvent, KeyboardEvent, PointerEvent } from 'react';
 import type { PlacedWorkspaceItem } from '../../../../core/domains/items/model/item';
 import type { WorkspaceBox } from '../../../../core/domains/workspace/model/workspace';
+import { cn } from '../../../lib/utils';
 import BoxContent from '../../../widgets/Box/BoxContent';
+import type { InboxRouteTarget } from '../services/inboxRouteTargets';
 import AddItemPanel from './AddItemPanel';
 import DraggableItem from './DraggableItem';
 import DropZoneOverlay from './DropZoneOverlay';
@@ -22,36 +25,128 @@ export default function ManagedInboxContent({
   const controller = useManagedInboxContent(box, showAddMenu, setShowAddMenu);
   const isEmpty = controller.pinnedItems.length === 0 && controller.regularItems.length === 0;
 
-  const stopControlEvent = (event: DragEvent | PointerEvent) => {
+  const stopControlEvent = (event: DragEvent | KeyboardEvent | PointerEvent) => {
     event.stopPropagation();
   };
+
+  const renderRouteTarget = (item: PlacedWorkspaceItem, target: InboxRouteTarget) => {
+    const TargetIcon = target.columnId ? Columns3 : Inbox;
+
+    return (
+      <button
+        key={target.id}
+        type="button"
+        onClick={() => controller.routeItem(item.id, target.id)}
+        className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-xs text-win-text transition-colors hover:bg-win-hover"
+      >
+        <TargetIcon size={14} className="shrink-0 text-win-text-secondary" />
+        <span className="min-w-0 flex-1">
+          <span className="block truncate">{target.boxLabel}</span>
+          {target.columnLabel ? (
+            <span className="mt-0.5 block truncate text-win-text-secondary">
+              {controller.labels.columnTarget(target.columnLabel)}
+            </span>
+          ) : null}
+        </span>
+        <MoveRight size={14} className="shrink-0 text-win-text-secondary" />
+      </button>
+    );
+  };
+
+  const renderRouteSection = (
+    item: PlacedWorkspaceItem,
+    label: string,
+    targets: InboxRouteTarget[],
+    icon: 'all' | 'recent',
+  ) =>
+    targets.length > 0 ? (
+      <div className="mt-2">
+        <div className="mb-1 flex items-center gap-1.5 px-1 text-[11px] text-win-text-secondary">
+          {icon === 'recent' ? <Clock3 size={12} /> : <Inbox size={12} />}
+          <span>{label}</span>
+        </div>
+        <div className="flex flex-col gap-0.5">
+          {targets.map((target) => renderRouteTarget(item, target))}
+        </div>
+      </div>
+    ) : null;
 
   const renderRouteSelector = (item: PlacedWorkspaceItem) => (
     <div
       className="border-t border-win-border bg-win-bg-secondary px-2 py-1.5"
       onPointerDown={stopControlEvent}
       onDragStart={stopControlEvent}
+      onKeyDown={stopControlEvent}
     >
-      <select
-        defaultValue=""
+      <button
+        type="button"
         disabled={controller.routeTargets.length === 0}
-        onChange={(event: ChangeEvent<HTMLSelectElement>) => {
-          controller.routeItem(item.id, event.currentTarget.value);
-          event.currentTarget.value = '';
-        }}
-        className="w-full rounded-md border border-win-border bg-win-card px-2 py-1 text-xs text-win-text outline-none transition-colors"
+        onClick={() => controller.toggleRoutePicker(item.id)}
+        aria-expanded={controller.openRouteItemId === item.id}
+        className="kb-secondary-button flex h-8 w-full items-center gap-2 rounded-md border border-win-border bg-win-card px-2 text-left text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <option value="">
+        <MoveRight size={14} className="shrink-0 text-win-text-secondary" />
+        <span className="min-w-0 flex-1 truncate">
           {controller.routeTargets.length === 0
             ? controller.labels.noDestinations
             : controller.labels.routePlaceholder}
-        </option>
-        {controller.routeTargets.map((target) => (
-          <option key={target.id} value={target.id}>
-            {target.label}
-          </option>
-        ))}
-      </select>
+        </span>
+        <ChevronDown
+          size={14}
+          className={cn(
+            'shrink-0 text-win-text-secondary transition-transform',
+            controller.openRouteItemId === item.id ? 'rotate-180' : '',
+          )}
+        />
+      </button>
+
+      {controller.openRouteItemId === item.id ? (
+        <div className="mt-1.5 rounded-md border border-win-border bg-win-card p-1.5 shadow-win-card">
+          <label className="flex h-8 items-center gap-2 rounded-md border border-win-border bg-win-bg-secondary px-2">
+            <Search size={13} className="shrink-0 text-win-text-secondary" />
+            <input
+              value={controller.routeSearchQuery}
+              onChange={(event) => controller.setRouteSearchQuery(event.target.value)}
+              onKeyDown={(event) => {
+                event.stopPropagation();
+
+                if (event.key === 'Escape') {
+                  controller.closeRoutePicker();
+                }
+              }}
+              placeholder={controller.labels.routeSearchPlaceholder}
+              autoFocus
+              className="min-w-0 flex-1 bg-transparent text-xs text-win-text outline-none placeholder:text-win-text-secondary"
+            />
+          </label>
+
+          {controller.routeTargets.length === 0 ? (
+            <div className="px-2 py-3 text-center text-xs text-win-text-secondary">
+              {controller.labels.noDestinations}
+            </div>
+          ) : controller.routeTargetSections.recentTargets.length === 0 &&
+            controller.routeTargetSections.otherTargets.length === 0 ? (
+            <div className="px-2 py-3 text-center text-xs text-win-text-secondary">
+              {controller.labels.noMatchingDestinations}
+            </div>
+          ) : (
+            <>
+              {renderRouteSection(
+                item,
+                controller.labels.recentDestinations,
+                controller.routeTargetSections.recentTargets,
+                'recent',
+              )}
+              {renderRouteSection(
+                item,
+                controller.labels.allDestinations,
+                controller.routeTargetSections.otherTargets,
+                'all',
+              )}
+            </>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 
