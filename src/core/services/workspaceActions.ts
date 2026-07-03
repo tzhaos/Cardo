@@ -39,7 +39,11 @@ export type OpenItemResult =
   | { status: 'failed'; errorMessage: string };
 
 export type CreateWorkspaceBoxResult =
-  | { status: 'created'; box: WorkspaceBox; command: WorkspaceCommand }
+  | {
+      status: 'created';
+      box: WorkspaceBox;
+      command: Extract<WorkspaceCommand, { type: 'box.create' }>;
+    }
   | { status: 'limit-reached'; limit: number };
 
 export interface PastedWorkspaceItemResult {

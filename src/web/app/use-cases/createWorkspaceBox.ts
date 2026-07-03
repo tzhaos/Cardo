@@ -1,5 +1,6 @@
 import {
   MAX_WORKSPACE_BOXES,
+  type BoxItemPlacement,
   type BoxTemplateId,
   type WorkspaceBox,
 } from '../../../core/domains/workspace/model/workspace';
@@ -8,8 +9,19 @@ import { useWorkspaceStore } from '../stores/useWorkspaceStore';
 import { createId } from './createId';
 
 export type CreateWorkspaceBoxResult =
-  | { status: 'created'; box: WorkspaceBox }
+  | {
+      status: 'created';
+      box: WorkspaceBox;
+      createdItemIds: string[];
+      initialFocusItemId: string | null;
+    }
   | { status: 'limit-reached'; limit: number };
+
+export function getInitialFocusItemId(placements: BoxItemPlacement[] = []) {
+  return (
+    placements.find((placement) => placement.isPinned)?.itemId ?? placements[0]?.itemId ?? null
+  );
+}
 
 export function createWorkspaceBox(placement: {
   centerX: number;
@@ -31,5 +43,7 @@ export function createWorkspaceBox(placement: {
   return {
     status: 'created' as const,
     box: result.box,
+    createdItemIds: result.command.items?.map((item) => item.id) ?? [],
+    initialFocusItemId: getInitialFocusItemId(result.command.placements),
   };
 }

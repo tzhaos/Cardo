@@ -132,6 +132,12 @@ export function useWorkspaceCommandCenter() {
 
     if (result.status === 'created') {
       setActiveBox(result.box.id);
+      setFocusedItemInfo(
+        result.initialFocusItemId
+          ? { boxId: result.box.id, itemId: result.initialFocusItemId }
+          : null,
+      );
+      dispatch({ type: 'box.bringToFront', boxId: result.box.id });
       setTemplateMenuOpen(false);
     }
   };
