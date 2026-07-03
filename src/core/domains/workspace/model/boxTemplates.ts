@@ -1,6 +1,7 @@
 import type { MessageKey } from '../../i18n/model/messages';
 import type { ItemDraft } from '../../items/model/item';
 import {
+  DEFAULT_DAILY_DESK_COLUMNS,
   DEFAULT_KANBAN_COLUMNS,
   DEFAULT_PROJECT_BOARD_COLUMNS,
   type BoxLayout,
@@ -62,6 +63,36 @@ export const BOX_TEMPLATE_DEFINITIONS = {
       },
     ],
   },
+  'daily-desk': {
+    id: 'daily-desk',
+    titleKey: 'template.dailyDesk',
+    descriptionKey: 'template.dailyDesk.description',
+    actionKey: 'template.dailyDesk.action',
+    defaultLayout: 'list',
+    defaultBounds: { width: 720, height: 440 },
+    createDefaultState: () => ({
+      kanbanColumns: DEFAULT_DAILY_DESK_COLUMNS.map((column) => ({ ...column })),
+    }),
+    createDefaultItems: () => [
+      {
+        draft: {
+          type: 'note',
+          title: "Today's focus",
+          content: 'Pick one outcome for this desk before adding more items.',
+        },
+        columnId: 'today',
+        isPinned: true,
+      },
+      {
+        draft: {
+          type: 'note',
+          title: 'Quick capture',
+          content: 'Drop loose links, notes, files, or tasks here and route them during the day.',
+        },
+        columnId: 'capture',
+      },
+    ],
+  },
   kanban: {
     id: 'kanban',
     titleKey: 'template.kanban',
@@ -99,6 +130,7 @@ export const BOX_TEMPLATE_DEFINITIONS = {
 export const BOX_TEMPLATE_LIBRARY: BoxTemplateDefinition[] = [
   BOX_TEMPLATE_DEFINITIONS.collection,
   BOX_TEMPLATE_DEFINITIONS['project-board'],
+  BOX_TEMPLATE_DEFINITIONS['daily-desk'],
   BOX_TEMPLATE_DEFINITIONS.kanban,
   BOX_TEMPLATE_DEFINITIONS.launcher,
   BOX_TEMPLATE_DEFINITIONS.inbox,

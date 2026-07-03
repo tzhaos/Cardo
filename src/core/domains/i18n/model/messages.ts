@@ -10,6 +10,10 @@ const EN_MESSAGES = {
   'template.projectBoard.description':
     'Start with Backlog, Doing, Review, and Done plus a project brief card.',
   'template.projectBoard.action': 'Define the outcome',
+  'template.dailyDesk': 'Daily Desk',
+  'template.dailyDesk.description':
+    'Run today from Capture, Today, Waiting, and Done with focus prompts.',
+  'template.dailyDesk.action': 'Pick today’s focus',
   'template.kanban': 'Kanban',
   'template.kanban.description': 'Track work across To do, Doing, and Done columns.',
   'template.kanban.action': 'Plan the flow',
@@ -144,6 +148,9 @@ export const MESSAGES: Record<AppLocale, MessageDictionary> = {
     'template.projectBoard': '项目看板',
     'template.projectBoard.description': '自带 Backlog、Doing、Review、Done 和项目简报卡片。',
     'template.projectBoard.action': '定义成果',
+    'template.dailyDesk': '每日工作台',
+    'template.dailyDesk.description': '用 Capture、Today、Waiting、Done 推进当天工作。',
+    'template.dailyDesk.action': '确定今日重点',
     'template.kanban': '看板',
     'template.kanban.description': '用待办、进行中、已完成列推进工作。',
     'template.kanban.action': '规划流程',

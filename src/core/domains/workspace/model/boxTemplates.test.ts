@@ -6,12 +6,16 @@ import {
   createDefaultTemplateState,
   getBoxTemplateDefinition,
 } from './boxTemplates';
-import { DEFAULT_KANBAN_COLUMNS, DEFAULT_PROJECT_BOARD_COLUMNS } from './workspace';
+import {
+  DEFAULT_DAILY_DESK_COLUMNS,
+  DEFAULT_KANBAN_COLUMNS,
+  DEFAULT_PROJECT_BOARD_COLUMNS,
+} from './workspace';
 
 test('box template library keeps product-facing template order', () => {
   assert.deepEqual(
     BOX_TEMPLATE_LIBRARY.map((template) => template.id),
-    ['collection', 'project-board', 'kanban', 'launcher', 'inbox'],
+    ['collection', 'project-board', 'daily-desk', 'kanban', 'launcher', 'inbox'],
   );
 });
 
@@ -19,6 +23,7 @@ test('box template definitions provide default layout and bounds', () => {
   const launcher = getBoxTemplateDefinition('launcher');
   const kanban = getBoxTemplateDefinition('kanban');
   const projectBoard = getBoxTemplateDefinition('project-board');
+  const dailyDesk = getBoxTemplateDefinition('daily-desk');
 
   assert.equal(launcher.defaultLayout, 'grid');
   assert.deepEqual(launcher.defaultBounds, { width: 340, height: 280 });
@@ -26,6 +31,8 @@ test('box template definitions provide default layout and bounds', () => {
   assert.deepEqual(kanban.defaultBounds, { width: 680, height: 440 });
   assert.equal(projectBoard.defaultLayout, 'list');
   assert.deepEqual(projectBoard.defaultBounds, { width: 760, height: 460 });
+  assert.equal(dailyDesk.defaultLayout, 'list');
+  assert.deepEqual(dailyDesk.defaultBounds, { width: 720, height: 440 });
 });
 
 test('box template definitions expose product metadata', () => {
@@ -56,5 +63,23 @@ test('project board template provides default columns and starter content', () =
       isPinned: item.isPinned,
     })),
     [{ title: 'Project brief', columnId: 'backlog', isPinned: true }],
+  );
+});
+
+test('daily desk template provides default columns and starter content', () => {
+  const state = createDefaultTemplateState('daily-desk');
+  const items = createDefaultTemplateItems('daily-desk');
+
+  assert.deepEqual(state.kanbanColumns, DEFAULT_DAILY_DESK_COLUMNS);
+  assert.deepEqual(
+    items.map((item) => ({
+      title: item.draft.title,
+      columnId: item.columnId,
+      isPinned: item.isPinned ?? false,
+    })),
+    [
+      { title: "Today's focus", columnId: 'today', isPinned: true },
+      { title: 'Quick capture', columnId: 'capture', isPinned: false },
+    ],
   );
 });

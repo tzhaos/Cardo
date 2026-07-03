@@ -1,4 +1,5 @@
 import {
+  CalendarDays,
   ChevronDown,
   ChevronUp,
   ClipboardList,
@@ -43,6 +44,10 @@ interface BoxHeaderProps {
 }
 
 function getBoxIcon(box: WorkspaceBox) {
+  if (box.templateId === 'daily-desk') {
+    return <CalendarDays size={16} className="shrink-0 text-win-text" strokeWidth={2} />;
+  }
+
   if (box.templateId === 'project-board') {
     return <ClipboardList size={16} className="shrink-0 text-win-text" strokeWidth={2} />;
   }

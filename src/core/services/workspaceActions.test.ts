@@ -62,3 +62,45 @@ test('createWorkspaceBoxCommand creates project boards with starter structure', 
     ]);
   }
 });
+
+test('createWorkspaceBoxCommand creates daily desks with starter structure', () => {
+  const snapshot = createInitialWorkspaceSnapshot();
+  let nextId = 0;
+  const result = createWorkspaceBoxCommand(
+    snapshot,
+    { centerX: 100, centerY: 100, templateId: 'daily-desk' },
+    (prefix) => `${prefix}-${(nextId += 1)}`,
+  );
+
+  assert.equal(result.status, 'created');
+
+  if (result.status === 'created') {
+    const command = result.command;
+
+    assert.equal(result.box.id, 'box-1');
+    assert.equal(command.type, 'box.create');
+    if (command.type !== 'box.create') {
+      assert.fail('Expected box.create command');
+    }
+
+    assert.deepEqual(
+      result.box.templateState.kanbanColumns?.map((column) => column.id),
+      ['capture', 'today', 'waiting', 'done'],
+    );
+    assert.deepEqual(
+      command.items?.map((item) => item.title),
+      ["Today's focus", 'Quick capture'],
+    );
+    assert.deepEqual(command.placements, [
+      { itemId: 'item-2', isPinned: true, columnId: 'today' },
+      { itemId: 'item-3', isPinned: false, columnId: 'capture' },
+    ]);
+
+    const nextSnapshot = reduceWorkspace(snapshot, command);
+    assert.deepEqual(Object.keys(nextSnapshot.itemsById), ['item-2', 'item-3']);
+    assert.deepEqual(nextSnapshot.itemPlacementsByBoxId['box-1'], [
+      { itemId: 'item-2', isPinned: true, columnId: 'today' },
+      { itemId: 'item-3', isPinned: false, columnId: 'capture' },
+    ]);
+  }
+});

@@ -1,5 +1,6 @@
 import {
   Boxes,
+  CalendarDays,
   ClipboardList,
   Columns3,
   LayoutGrid,
@@ -18,6 +19,7 @@ import { cn } from '../../../lib/utils';
 const TEMPLATE_ICONS = {
   collection: Package,
   'project-board': ClipboardList,
+  'daily-desk': CalendarDays,
   kanban: Columns3,
   launcher: Rocket,
   inbox: Inbox,

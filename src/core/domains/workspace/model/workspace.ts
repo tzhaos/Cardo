@@ -9,14 +9,15 @@ export type BoxLayout = 'grid' | 'list';
 export const BOX_TEMPLATE_IDS = [
   'collection',
   'project-board',
+  'daily-desk',
   'kanban',
   'launcher',
   'inbox',
 ] as const;
 export type BoxTemplateId = (typeof BOX_TEMPLATE_IDS)[number];
-export type KanbanTemplateId = Extract<BoxTemplateId, 'kanban' | 'project-board'>;
+export type KanbanTemplateId = Extract<BoxTemplateId, 'kanban' | 'project-board' | 'daily-desk'>;
 
-const KANBAN_TEMPLATE_ID_SET = new Set<BoxTemplateId>(['kanban', 'project-board']);
+const KANBAN_TEMPLATE_ID_SET = new Set<BoxTemplateId>(['kanban', 'project-board', 'daily-desk']);
 
 export function isKanbanTemplateId(templateId: BoxTemplateId): templateId is KanbanTemplateId {
   return KANBAN_TEMPLATE_ID_SET.has(templateId);
@@ -172,6 +173,12 @@ export const DEFAULT_PROJECT_BOARD_COLUMNS: KanbanColumn[] = [
   { id: 'backlog', title: 'Backlog' },
   { id: 'doing', title: 'Doing' },
   { id: 'review', title: 'Review' },
+  { id: 'done', title: 'Done' },
+];
+export const DEFAULT_DAILY_DESK_COLUMNS: KanbanColumn[] = [
+  { id: 'capture', title: 'Capture' },
+  { id: 'today', title: 'Today' },
+  { id: 'waiting', title: 'Waiting' },
   { id: 'done', title: 'Done' },
 ];
 
