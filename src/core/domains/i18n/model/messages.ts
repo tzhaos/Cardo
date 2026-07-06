@@ -3,7 +3,7 @@ import type { AppLocale } from '../../preferences/model/preferences';
 
 const EN_MESSAGES = {
   'app.brand': 'KhaosBox',
-  'template.collection': 'Collection',
+  'template.collection': 'Folders',
   'template.collection.description': 'Gather mixed links, notes, files, and folders in one place.',
   'template.collection.action': 'Start collecting',
   'template.webLibrary': 'Web Library',
@@ -40,7 +40,7 @@ const EN_MESSAGES = {
   'workspace.tab.files': 'Files',
   'workspace.tab.web': 'Web',
   'workspace.tab.reading': 'Reading',
-  'workspace.pageEmpty': 'No columns on this page',
+  'workspace.pageEmpty': 'No boxes on this page',
   'workspace.frequentSites': 'Frequent Sites',
   'workspace.createTemplate': 'Create template',
   'workspace.templatePicker': 'Template picker',
@@ -169,7 +169,7 @@ export const MESSAGES: Record<AppLocale, MessageDictionary> = {
   en: EN_MESSAGES,
   zh: {
     'app.brand': 'KhaosBox',
-    'template.collection': '资料箱',
+    'template.collection': '文件夹',
     'template.collection.description': '集中收纳链接、笔记、文件和文件夹。',
     'template.collection.action': '开始收集',
     'template.webLibrary': '网站收藏库',
@@ -201,7 +201,7 @@ export const MESSAGES: Record<AppLocale, MessageDictionary> = {
     'workspace.tab.files': '文件夹',
     'workspace.tab.web': '网站',
     'workspace.tab.reading': '阅读',
-    'workspace.pageEmpty': '当前页面暂无列',
+    'workspace.pageEmpty': '当前页面暂无盒子',
     'workspace.frequentSites': '常用网址',
     'workspace.createTemplate': '新建模板',
     'workspace.templatePicker': '模板选择器',

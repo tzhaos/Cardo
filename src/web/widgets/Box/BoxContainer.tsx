@@ -13,6 +13,7 @@ import { cn } from '../../lib/utils';
 interface BoxContainerProps {
   placement?: 'canvas' | 'columns';
   box: {
+    id: string;
     bounds: WorkspaceBoxBounds;
     isCollapsed: boolean;
     isLocked: boolean;
@@ -63,6 +64,7 @@ export default function BoxContainer({
   if (placement === 'columns') {
     return (
       <motion.div
+        data-kb-box-id={box.id}
         onMouseDown={onFocus}
         initial={{
           height: renderedBounds.height,
@@ -84,6 +86,7 @@ export default function BoxContainer({
             : { type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }
         }
         style={{
+          breakInside: 'avoid',
           minHeight: renderedBounds.height,
           zIndex: isActive ? 2 : 1,
           boxShadow: isDragging
@@ -93,7 +96,7 @@ export default function BoxContainer({
               : 'var(--shadow-win-card)',
         }}
         className={cn(
-          'kb-box win-mica relative flex w-full flex-col overflow-hidden rounded-xl transition-[background-color,border-color,color,box-shadow] duration-300',
+          'kb-box win-mica relative mb-4 inline-flex w-full break-inside-avoid flex-col overflow-hidden rounded-xl align-top transition-[background-color,border-color,color,box-shadow] duration-300',
           box.isLocked ? 'ring-1 ring-red-500/50' : '',
           isPanModifierActive ? 'pointer-events-none' : '',
         )}
@@ -155,6 +158,7 @@ export default function BoxContainer({
 
   return (
     <motion.div
+      data-kb-box-id={box.id}
       onMouseDown={onFocus}
       initial={{
         left: renderedScreenBounds.x,

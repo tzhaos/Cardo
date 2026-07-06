@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { getWorkspaceItemContent } from '../../../../core/domains/items/model/item';
 import { getFrequentBookmarks } from '../../../../core/domains/bookmarks/services/frequentBookmarks';
-import { screenToWorld } from '../../../../core/domains/layout/model/viewport';
 import {
   BOX_TEMPLATE_LIBRARY,
   getBoxTemplateDefinition,
@@ -15,7 +14,6 @@ import { getBoxDisplayTitle } from '../../../../core/domains/workspace/model/box
 import { getBoxItems } from '../../../../core/domains/workspace/model/workspaceSelectors';
 import { getRuntimeViewport } from '../../../app/controllers/runtimeDocumentController';
 import { useI18n } from '../../../app/hooks/useI18n';
-import { useCanvasStore } from '../../../app/stores/useCanvasStore';
 import { useInteractionStore } from '../../../app/stores/useInteractionStore';
 import { useSettingsPanelStore } from '../../../app/stores/useSettingsPanelStore';
 import {
@@ -26,6 +24,11 @@ import {
 import { createWorkspaceBox } from '../../../app/use-cases/createWorkspaceBox';
 import { openBookmark as openBookmarkUseCase } from '../../../app/use-cases/openBookmark';
 
+interface UseWorkspaceCommandCenterOptions {
+  onSelectTemplatePage?: (templateId: BoxTemplateId) => void;
+  onRevealBox?: (boxId: string, itemId?: string) => void;
+}
+
 function getSearchText(box: WorkspaceBox, title: string) {
   const template = getBoxTemplateDefinition(box.templateId);
   return `${title} ${box.templateId} ${template.titleKey} ${template.descriptionKey} ${
@@ -33,24 +36,16 @@ function getSearchText(box: WorkspaceBox, title: string) {
   }`.toLowerCase();
 }
 
-function runOptionalFocusAction(action: () => void) {
-  try {
-    action();
-  } catch {
-    // The desktop bridge is unavailable in browser-only previews; item focus still works without z-order persistence.
-  }
-}
-
-export function useWorkspaceCommandCenter() {
+export function useWorkspaceCommandCenter({
+  onSelectTemplatePage,
+  onRevealBox,
+}: UseWorkspaceCommandCenterOptions = {}) {
   const { t } = useI18n();
   const snapshot = useWorkspaceSnapshot();
   const boxes = useVisibleBoxes();
   const dispatch = useWorkspaceDispatch();
   const setActiveBox = useInteractionStore((state) => state.setActiveBox);
   const setFocusedItemInfo = useInteractionStore((state) => state.setFocusedItemInfo);
-  const centerOn = useCanvasStore((state) => state.centerOn);
-  const panX = useCanvasStore((state) => state.panX);
-  const panY = useCanvasStore((state) => state.panY);
   const openSettings = useSettingsPanelStore((state) => state.open);
   const [isTemplateMenuOpen, setTemplateMenuOpen] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<BoxTemplateId>(
@@ -114,21 +109,18 @@ export function useWorkspaceCommandCenter() {
 
   const focusBox = (box: WorkspaceBox) => {
     setActiveBox(box.id);
-    runOptionalFocusAction(() => {
-      const viewport = getRuntimeViewport();
-      centerOn(box.bounds.x + box.bounds.width / 2, box.bounds.y + box.bounds.height / 2, viewport);
-      dispatch({ type: 'box.bringToFront', boxId: box.id });
-    });
+    setFocusedItemInfo(null);
+    onSelectTemplatePage?.(box.templateId);
+    dispatch({ type: 'box.bringToFront', boxId: box.id });
+    onRevealBox?.(box.id);
   };
 
   const focusItem = (box: WorkspaceBox, itemId: string) => {
     setActiveBox(box.id);
     setFocusedItemInfo({ boxId: box.id, itemId });
-    runOptionalFocusAction(() => {
-      const viewport = getRuntimeViewport();
-      centerOn(box.bounds.x + box.bounds.width / 2, box.bounds.y + box.bounds.height / 2, viewport);
-      dispatch({ type: 'box.bringToFront', boxId: box.id });
-    });
+    onSelectTemplatePage?.(box.templateId);
+    dispatch({ type: 'box.bringToFront', boxId: box.id });
+    onRevealBox?.(box.id, itemId);
   };
 
   const createTemplate = (templateId: BoxTemplateId) => {
@@ -137,13 +129,9 @@ export function useWorkspaceCommandCenter() {
     }
 
     const viewport = getRuntimeViewport();
-    const center = screenToWorld(
-      { clientX: viewport.width / 2, clientY: viewport.height / 2 },
-      { panX, panY },
-    );
     const result = createWorkspaceBox({
-      centerX: center.x,
-      centerY: center.y,
+      centerX: viewport.width / 2,
+      centerY: viewport.height / 2,
       templateId,
     });
 
@@ -155,6 +143,8 @@ export function useWorkspaceCommandCenter() {
           : null,
       );
       dispatch({ type: 'box.bringToFront', boxId: result.box.id });
+      onSelectTemplatePage?.(result.box.templateId);
+      onRevealBox?.(result.box.id, result.initialFocusItemId ?? undefined);
       setTemplateMenuOpen(false);
     }
   };
@@ -194,6 +184,7 @@ export function useWorkspaceCommandCenter() {
       templatePicker: t('workspace.templatePicker'),
       searchPlaceholder: t('workspace.searchPlaceholder'),
       settings: t('settings.title'),
+      close: t('settings.close'),
       navigator: t('workspace.navigator'),
       items: t('workspace.items'),
       frequentSites: t('workspace.frequentSites'),

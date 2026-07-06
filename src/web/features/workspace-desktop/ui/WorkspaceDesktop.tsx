@@ -1,6 +1,4 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { getBoxTemplateDefinition } from '../../../../core/domains/workspace/model/boxTemplates';
-import type { WorkspaceBox } from '../../../../core/domains/workspace/model/workspace';
 import { ToastViewport } from '../../../app/presentation/ToastViewport';
 import Background from '../../../widgets/DesktopShell/Background';
 import BrandBadge from '../../../widgets/DesktopShell/BrandBadge';
@@ -13,13 +11,6 @@ import {
 } from '../hooks/useWorkspaceDesktopState';
 import WorkspaceCommandCenter from './WorkspaceCommandCenter';
 
-function getColumnTrack(box: WorkspaceBox) {
-  const defaultWidth = getBoxTemplateDefinition(box.templateId).defaultBounds.width;
-  const hasManualWidth = Math.abs(box.bounds.width - defaultWidth) > 4;
-
-  return hasManualWidth ? `${Math.max(220, Math.round(box.bounds.width))}px` : 'minmax(0, 1fr)';
-}
-
 interface WorkspaceProductTabsProps {
   tabs: Array<{ id: WorkspaceProductTabId; label: string }>;
   activeTabId: WorkspaceProductTabId;
@@ -28,8 +19,8 @@ interface WorkspaceProductTabsProps {
 
 function WorkspaceProductTabs({ tabs, activeTabId, onSelectTab }: WorkspaceProductTabsProps) {
   return (
-    <nav className="fixed left-1/2 top-4 z-[99991] w-[min(42rem,calc(100vw-2rem))] -translate-x-1/2 rounded-2xl border border-win-border bg-win-mica p-1 shadow-win-flyout">
-      <div className="grid grid-cols-4 gap-1">
+    <nav className="fixed left-1/2 top-4 z-[99991] w-[min(62rem,calc(100vw-2rem))] -translate-x-1/2 rounded-2xl border border-win-border bg-win-mica p-1 shadow-win-flyout">
+      <div className="kb-scroll-hidden flex gap-1 overflow-x-auto">
         {tabs.map((tab) => {
           const isActive = tab.id === activeTabId;
 
@@ -38,7 +29,7 @@ function WorkspaceProductTabs({ tabs, activeTabId, onSelectTab }: WorkspaceProdu
               key={tab.id}
               type="button"
               onClick={() => onSelectTab(tab.id)}
-              className="relative min-w-0 overflow-hidden rounded-xl px-3 py-2 text-sm transition-colors"
+              className="relative min-w-28 shrink-0 overflow-hidden rounded-xl px-3 py-2 text-sm transition-colors"
             >
               {isActive ? (
                 <motion.span
@@ -64,6 +55,27 @@ function WorkspaceProductTabs({ tabs, activeTabId, onSelectTab }: WorkspaceProdu
   );
 }
 
+function findDataNode(attribute: string, value: string, root: ParentNode = document) {
+  return Array.from(root.querySelectorAll<HTMLElement>(`[${attribute}]`)).find(
+    (node) => node.getAttribute(attribute) === value,
+  );
+}
+
+function revealBoxCard(boxId: string, itemId?: string) {
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      const boxNode = findDataNode('data-kb-box-id', boxId);
+      const itemNode = itemId && boxNode ? findDataNode('data-kb-item-id', itemId, boxNode) : null;
+
+      (itemNode || boxNode)?.scrollIntoView({
+        block: 'start',
+        inline: 'nearest',
+        behavior: 'smooth',
+      });
+    });
+  });
+}
+
 export default function WorkspaceDesktop() {
   useWorkspaceGlobalEvents();
   const {
@@ -76,8 +88,6 @@ export default function WorkspaceDesktop() {
     theme,
     visibleBoxes,
   } = useWorkspaceDesktopState();
-  const gridTemplateColumns =
-    visibleBoxes.length > 0 ? visibleBoxes.map(getColumnTrack).join(' ') : undefined;
 
   return (
     <div
@@ -99,15 +109,16 @@ export default function WorkspaceDesktop() {
         }}
       />
       <ToastViewport theme={theme} />
-      <WorkspaceCommandCenter />
+      <WorkspaceCommandCenter onSelectTemplatePage={setActiveTabId} onRevealBox={revealBoxCard} />
 
       <main className="relative z-10 h-full overflow-auto px-6 pb-8 pt-24">
         <div className="mx-auto w-[min(1440px,calc(100vw-48px))]">
           {visibleBoxes.length > 0 ? (
             <div
-              className="grid items-start gap-4"
+              className="w-full"
               style={{
-                gridTemplateColumns,
+                columnGap: '1rem',
+                columnWidth: '22rem',
               }}
             >
               <AnimatePresence initial={false}>
