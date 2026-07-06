@@ -34,25 +34,25 @@
 :root,
 :root[data-theme='light'] {
   color-scheme: light;
-  --app-bg: #f6f6f6;
-  --desktop-grid: rgba(0, 0, 0, 0.035);
-  --desktop-glow: rgba(255, 255, 255, 0.72);
-  --shell-surface: rgba(255, 255, 255, 0.94);
-  --shell-border: rgba(0, 0, 0, 0.12);
-  --shell-muted: #8a8a8a;
-  --shell-strong: #1b1b1b;
-  --shell-shadow: rgba(0, 0, 0, 0.12);
+  --app-bg: #ededed;
+  --desktop-grid: rgba(0, 0, 0, 0.028);
+  --desktop-glow: rgba(255, 255, 255, 0.4);
+  --shell-surface: #24262b;
+  --shell-border: rgba(255, 255, 255, 0.1);
+  --shell-muted: rgba(255, 255, 255, 0.64);
+  --shell-strong: #f4f4f4;
+  --shell-shadow: rgba(0, 0, 0, 0.22);
 
-  --color-win-bg: #f6f6f6;
-  --color-win-bg-secondary: #f2f2f2;
+  --color-win-bg: #ededed;
+  --color-win-bg-secondary: #f7f7f7;
   --color-win-card: #ffffff;
-  --color-win-border: rgba(0, 0, 0, 0.07);
+  --color-win-border: rgba(0, 0, 0, 0.08);
   --color-win-border-strong: rgba(0, 0, 0, 0.14);
-  --color-win-text: #161616;
-  --color-win-text-secondary: #737373;
-  --color-win-accent: #4a8df6;
-  --color-win-hover: rgba(0, 0, 0, 0.045);
-  --color-win-active: rgba(74, 141, 246, 0.14);
+  --color-win-text: #333333;
+  --color-win-text-secondary: #8a8a8a;
+  --color-win-accent: #5079d9;
+  --color-win-hover: #f6f6f6;
+  --color-win-active: rgba(80, 121, 217, 0.12);
   --color-win-mica: #ffffff;
   --color-folder-bg: #fff7e0;
   --color-folder-border: #f2e4c3;
@@ -61,14 +61,10 @@
   --color-file-bg: #f3f4f6;
   --color-file-text: #6b7280;
 
-  --shadow-win-card:
-    0 16px 32px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.82);
-  --shadow-win-flyout:
-    0 22px 48px rgba(0, 0, 0, 0.16), 0 4px 12px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --shadow-win-card: 0 3px 8px -6px rgba(0, 0, 0, 0.1);
+  --shadow-win-flyout: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 20px 40px rgba(0, 0, 0, 0.15);
   --shadow-win-button:
-    0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 1px 2px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.82),
     inset 0 -1px 0 rgba(0, 0, 0, 0.06);
 
   --role-folder-fg: #e8b024;
@@ -179,20 +175,24 @@ select {
   }
 
   .kb-desktop-grid {
-    background-image:
-      linear-gradient(180deg, var(--desktop-grid) 1px, transparent 1px),
-      linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--desktop-glow) 84%, transparent),
-        transparent 38%
-      );
-    background-size:
-      100% 28px,
-      100% 100%;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.44), transparent 18rem), var(--app-bg);
   }
 
   .kb-desktop-glow {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.32), transparent 44%);
+    background: none;
+  }
+
+  .kb-smartisan-global-bar {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.42);
+    background: linear-gradient(180deg, #2c2f35, #1d1f23);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  }
+
+  .kb-smartisan-product-bar {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.09);
+    background: #ffffff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   }
 
   .kb-brand-shell {
@@ -200,10 +200,13 @@ select {
   }
 
   .kb-brand-mark {
-    border-color: var(--shell-border);
-    background: var(--shell-surface);
+    border-color: rgba(255, 255, 255, 0.16);
+    background:
+      radial-gradient(circle at 50% 28%, rgba(255, 255, 255, 0.18), transparent 46%), #2c2f35;
     color: var(--shell-strong);
-    box-shadow: 0 18px 40px var(--shell-shadow);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.08) inset,
+      0 1px 2px rgba(0, 0, 0, 0.36);
   }
 
   .kb-brand-text {
@@ -220,15 +223,12 @@ select {
 
   .kb-box {
     color: var(--color-win-text);
-    outline: 1px solid color-mix(in srgb, var(--color-win-border-strong) 86%, transparent);
+    outline: 1px solid var(--color-win-border-strong);
   }
 
   .kb-box-header {
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--color-win-card) 84%, var(--color-win-bg-secondary)),
-      transparent
-    );
+    border-bottom: 1px solid var(--color-win-border);
+    background: linear-gradient(180deg, #ffffff, #f7f7f7);
   }
 
   .kb-box-input {
@@ -364,35 +364,41 @@ select {
   }
 
   .kb-product-tabs {
-    border: 1px solid var(--shell-border);
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--shell-surface) 96%, white 4%),
-      color-mix(in srgb, var(--shell-surface) 92%, black 8%)
-    );
+    border: 1px solid var(--color-win-border-strong);
+    background: #ffffff;
     box-shadow:
-      0 10px 24px var(--shell-shadow),
-      inset 0 1px 0 rgba(255, 255, 255, 0.84),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.04);
+      0 3px 8px -6px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  }
+
+  .kb-product-tabs button {
+    color: var(--color-win-text-secondary);
+  }
+
+  .kb-product-tabs button + button {
+    border-left: 1px solid var(--color-win-border);
   }
 
   .kb-product-tab-active {
-    border: 1px solid var(--color-win-border-strong);
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--color-win-card) 92%, white 8%),
-      color-mix(in srgb, var(--color-win-card) 86%, var(--color-win-accent) 14%)
-    );
-    box-shadow: var(--shadow-win-button);
+    background: linear-gradient(180deg, rgba(80, 121, 217, 0.16), rgba(80, 121, 217, 0.08));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.7),
+      inset 0 -2px 0 var(--color-win-accent);
   }
 
   .kb-masonry-board {
-    min-height: calc(100vh - 9rem);
+    min-height: calc(100vh - 10rem);
+    border: 1px solid var(--color-win-border-strong);
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: var(--shadow-win-card);
+    overflow: hidden;
   }
 
   .kb-masonry-column {
-    min-height: calc(100vh - 9rem);
-    border-left: 1px solid color-mix(in srgb, var(--color-win-border) 66%, transparent);
+    min-height: calc(100vh - 10rem);
+    padding: 16px;
+    border-left: 1px solid var(--color-win-border);
   }
 
   .kb-masonry-column:first-child {
@@ -409,19 +415,19 @@ select {
   .kb-command-panel,
   .kb-page-create-card {
     border: 1px solid var(--color-win-border-strong);
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--color-win-card) 96%, white 4%),
-      color-mix(in srgb, var(--color-win-card) 90%, var(--color-win-bg-secondary) 10%)
-    );
-    box-shadow: var(--shadow-win-flyout);
+    background: #ffffff;
+    box-shadow: var(--shadow-win-card);
   }
 
   .kb-command-search:focus-within {
-    border-color: color-mix(in srgb, var(--color-win-accent) 54%, var(--color-win-border-strong));
+    border-color: color-mix(in srgb, var(--color-win-accent) 42%, var(--color-win-border-strong));
     box-shadow:
-      var(--shadow-win-flyout),
-      0 0 0 3px color-mix(in srgb, var(--color-win-accent) 16%, transparent);
+      var(--shadow-win-card),
+      0 0 0 2px color-mix(in srgb, var(--color-win-accent) 12%, transparent);
+  }
+
+  .kb-command-panel {
+    box-shadow: var(--shadow-win-flyout);
   }
 
   .kb-command-icon-button {
@@ -452,27 +458,20 @@ select {
   }
 
   .kb-page-create-card {
-    min-height: 6rem;
-    box-shadow: var(--shadow-win-card);
+    border-style: dashed;
+    background: #fbfbfb;
+    box-shadow: none;
   }
 
   .kb-page-create-card:hover {
-    border-color: color-mix(in srgb, var(--color-win-accent) 45%, var(--color-win-border-strong));
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--color-win-card) 90%, var(--color-win-accent) 10%),
-      color-mix(in srgb, var(--color-win-card) 96%, var(--color-win-bg-secondary) 4%)
-    );
-    box-shadow: var(--shadow-win-flyout);
+    border-color: color-mix(in srgb, var(--color-win-accent) 48%, var(--color-win-border-strong));
+    background: #f8faff;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-win-accent) 16%, transparent);
   }
 
   .kb-page-create-icon {
     border: 1px solid var(--color-win-border-strong);
-    background: radial-gradient(
-      circle at 50% 28%,
-      color-mix(in srgb, var(--color-win-card) 86%, white 14%),
-      color-mix(in srgb, var(--color-win-bg-secondary) 86%, black 14%)
-    );
+    background: linear-gradient(180deg, #ffffff, #f2f2f2);
     color: var(--color-win-accent);
     box-shadow: var(--shadow-win-button);
   }
@@ -516,7 +515,7 @@ select {
 
 @layer utilities {
   .win-mica {
-    background-color: color-mix(in srgb, var(--color-win-card) 96%, var(--color-win-bg));
+    background-color: var(--color-win-card);
     @apply border border-win-border transition-colors duration-300;
   }
 

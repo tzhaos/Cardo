@@ -68,8 +68,8 @@ interface PageCreateCardProps {
 
 function WorkspaceProductTabs({ tabs, activeTabId, onSelectTab }: WorkspaceProductTabsProps) {
   return (
-    <nav className="kb-product-tabs fixed left-4 top-4 z-[99991] w-[min(64rem,calc(100vw-27rem))] rounded-2xl p-1 max-[900px]:top-16 max-[900px]:w-[calc(100vw-2rem)]">
-      <div className="kb-scroll-hidden flex gap-1 overflow-x-auto">
+    <nav className="kb-product-tabs fixed left-6 top-[3.5rem] z-[99991] h-10 w-[min(64rem,calc(100vw-28rem))] overflow-hidden rounded-lg max-[900px]:top-[6.75rem] max-[900px]:w-[calc(100vw-3rem)]">
+      <div className="kb-scroll-hidden flex h-full overflow-x-auto">
         {tabs.map((tab) => {
           const isActive = tab.id === activeTabId;
 
@@ -78,12 +78,12 @@ function WorkspaceProductTabs({ tabs, activeTabId, onSelectTab }: WorkspaceProdu
               key={tab.id}
               type="button"
               onClick={() => onSelectTab(tab.id)}
-              className="relative min-w-28 shrink-0 overflow-hidden rounded-xl px-3 py-2 text-sm transition-colors"
+              className="relative min-w-28 shrink-0 overflow-hidden px-4 text-sm transition-colors"
             >
               {isActive ? (
                 <motion.span
                   layoutId="workspace-product-tab"
-                  className="kb-product-tab-active absolute inset-0 rounded-xl"
+                  className="kb-product-tab-active absolute inset-0"
                   transition={{ type: 'spring', stiffness: 420, damping: 34 }}
                 />
               ) : null}
@@ -111,7 +111,7 @@ function PageCreateCard({ hint, isDisabled, label, onCreate }: PageCreateCardPro
       type="button"
       disabled={isDisabled}
       onClick={onCreate}
-      className="kb-page-create-card group flex min-h-24 w-full min-w-0 items-center gap-3 rounded-xl px-4 py-4 text-left transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+      className="kb-page-create-card group flex min-h-32 w-full min-w-0 flex-col items-center justify-center gap-3 rounded-lg px-4 py-5 text-center transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
     >
       <span className="kb-page-create-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
         <Plus size={18} />
@@ -561,6 +561,8 @@ export default function WorkspaceDesktop() {
       }}
     >
       <Background camera={{ panX: 0, panY: 0 }} />
+      <div className="kb-smartisan-global-bar fixed inset-x-0 top-0 z-[99988] h-11" />
+      <div className="kb-smartisan-product-bar fixed inset-x-0 top-11 z-[99988] h-16 max-[900px]:h-28" />
       <BrandBadge label={brandLabel} />
       <WorkspaceProductTabs
         tabs={tabs}
@@ -574,13 +576,13 @@ export default function WorkspaceDesktop() {
       <ToastViewport theme={theme} />
       <WorkspaceCommandCenter onSelectTemplatePage={setActiveTabId} onRevealBox={revealBoxCard} />
 
-      <main className="relative z-10 h-full overflow-auto px-5 pb-10 pt-24 max-[900px]:pt-32">
+      <main className="relative z-10 h-full overflow-auto px-6 pb-10 pt-36 max-[900px]:pt-44">
         <div ref={masonryRef} className="mx-auto w-[min(1500px,calc(100vw-40px))]">
           <LayoutGroup id={`workspace-page-${activeTabId}`}>
             <div
               className="kb-masonry-board grid items-start"
               style={{
-                gap: `${MASONRY_GAP}px`,
+                columnGap: 0,
                 gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))`,
               }}
             >
@@ -627,7 +629,7 @@ export default function WorkspaceDesktop() {
 
       {dragState ? (
         <div
-          className="kb-drag-preview pointer-events-none fixed z-[99994] flex items-start rounded-xl px-3 py-3 text-sm font-semibold text-win-text"
+          className="kb-drag-preview pointer-events-none fixed z-[99994] flex items-start rounded-lg px-3 py-3 text-sm font-semibold text-win-text"
           style={{
             left: dragState.pointerX + 14,
             top: dragState.pointerY + 14,

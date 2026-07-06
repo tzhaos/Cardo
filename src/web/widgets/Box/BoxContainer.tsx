@@ -74,13 +74,13 @@ export default function BoxContainer({
         initial={{
           height: renderedBounds.height,
           opacity: 0,
-          borderRadius: 12,
+          borderRadius: 8,
           scale: 0.98,
         }}
         animate={{
           height: renderedBounds.height,
           opacity: 1,
-          borderRadius: 12,
+          borderRadius: 8,
           scale: isDragging ? 1.01 : 1,
           filter: 'saturate(1)',
         }}
@@ -102,7 +102,7 @@ export default function BoxContainer({
               : 'var(--shadow-win-card)',
         }}
         className={cn(
-          'kb-box win-mica relative inline-flex break-inside-avoid flex-col overflow-hidden rounded-xl align-top transition-[background-color,border-color,color,box-shadow,opacity] duration-300',
+          'kb-box win-mica relative inline-flex break-inside-avoid flex-col overflow-hidden rounded-lg align-top transition-[background-color,border-color,color,box-shadow,opacity] duration-300',
           box.isLocked ? 'ring-1 ring-red-500/50' : '',
           isPanModifierActive ? 'pointer-events-none' : '',
           isMasonryDragging ? 'opacity-35' : '',
@@ -173,7 +173,7 @@ export default function BoxContainer({
         width: renderedScreenBounds.width,
         height: renderedScreenBounds.height,
         opacity: 0,
-        borderRadius: 12,
+        borderRadius: 8,
         scale: 0.97,
       }}
       animate={{
@@ -182,7 +182,7 @@ export default function BoxContainer({
         width: renderedScreenBounds.width,
         height: renderedScreenBounds.height,
         opacity: 1,
-        borderRadius: 12,
+        borderRadius: 8,
         scale: isDragging ? 1.02 : 1,
         filter: 'saturate(1)',
       }}
@@ -202,7 +202,7 @@ export default function BoxContainer({
             : 'var(--shadow-win-card)',
       }}
       className={cn(
-        'kb-box win-mica absolute flex flex-col overflow-hidden rounded-xl transition-[background-color,border-color,color,box-shadow] duration-300',
+        'kb-box win-mica absolute flex flex-col overflow-hidden rounded-lg transition-[background-color,border-color,color,box-shadow] duration-300',
         box.isLocked ? 'ring-1 ring-red-500/50' : '',
         isPanModifierActive ? 'pointer-events-none' : '',
       )}

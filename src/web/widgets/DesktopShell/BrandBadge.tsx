@@ -4,8 +4,8 @@ interface BrandBadgeProps {
 
 export default function BrandBadge({ label }: BrandBadgeProps) {
   return (
-    <div className="kb-brand-shell pointer-events-none absolute left-6 top-6 z-10 flex select-none items-center gap-2 opacity-70">
-      <div className="kb-brand-mark flex h-8 w-8 items-center justify-center rounded-xl border">
+    <div className="kb-brand-shell pointer-events-none fixed left-5 top-0 z-[99993] flex h-11 select-none items-center gap-3">
+      <div className="kb-brand-mark flex h-7 w-7 items-center justify-center rounded-full border">
         <svg
           width="16"
           height="16"
@@ -23,7 +23,7 @@ export default function BrandBadge({ label }: BrandBadgeProps) {
           <line x1="12" y1="22.08" x2="12" y2="12" />
         </svg>
       </div>
-      <span className="kb-brand-text font-semibold tracking-wide">{label}</span>
+      <span className="kb-brand-text text-sm font-semibold">{label}</span>
     </div>
   );
 }
