@@ -32,67 +32,28 @@
 }
 
 :root,
-:root[data-theme='dark'] {
-  color-scheme: dark;
-  --app-bg: #101312;
-  --desktop-grid: rgba(255, 255, 255, 0.035);
-  --desktop-glow: rgba(124, 199, 184, 0.12);
-  --shell-surface: rgba(29, 33, 31, 0.88);
-  --shell-border: rgba(255, 255, 255, 0.12);
-  --shell-muted: rgba(229, 232, 225, 0.72);
-  --shell-strong: #ffffff;
-  --shell-shadow: rgba(0, 0, 0, 0.3);
-
-  --color-win-bg: #141816;
-  --color-win-bg-secondary: #1b201e;
-  --color-win-card: #222824;
-  --color-win-border: rgba(232, 235, 226, 0.08);
-  --color-win-border-strong: rgba(232, 235, 226, 0.16);
-  --color-win-text: #f4f6f0;
-  --color-win-text-secondary: #a9b0a8;
-  --color-win-accent: #7cc7b8;
-  --color-win-hover: rgba(255, 255, 255, 0.06);
-  --color-win-active: rgba(255, 255, 255, 0.1);
-  --color-win-mica: rgba(29, 33, 31, 0.78);
-  --color-folder-bg: #3a321c;
-  --color-folder-border: #5d4b1d;
-  --color-folder-text: #ffd764;
-  --color-folder-fill: #e5b52b;
-  --color-file-bg: #242424;
-  --color-file-text: #9e9e9e;
-
-  --shadow-win-card: 0 14px 28px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(255, 255, 255, 0.02);
-  --shadow-win-flyout: 0 18px 36px rgba(0, 0, 0, 0.36), 0 0 0 1px rgba(255, 255, 255, 0.04);
-  --shadow-win-button: 0 1px 2px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-
-  --role-folder-fg: #ffd764;
-  --role-link-fg: #6ee7ff;
-  --role-note-fg: #a9b4ff;
-  --role-generic-fg: rgba(255, 255, 255, 0.82);
-}
-
 :root[data-theme='light'] {
   color-scheme: light;
-  --app-bg: #f4f7f2;
-  --desktop-grid: rgba(43, 55, 48, 0.06);
-  --desktop-glow: rgba(71, 133, 118, 0.12);
-  --shell-surface: rgba(255, 255, 255, 0.82);
-  --shell-border: rgba(43, 55, 48, 0.16);
-  --shell-muted: rgba(28, 39, 34, 0.7);
-  --shell-strong: #17211d;
-  --shell-shadow: rgba(78, 96, 86, 0.16);
+  --app-bg: #f6f6f6;
+  --desktop-grid: rgba(0, 0, 0, 0.035);
+  --desktop-glow: rgba(255, 255, 255, 0.72);
+  --shell-surface: rgba(255, 255, 255, 0.94);
+  --shell-border: rgba(0, 0, 0, 0.12);
+  --shell-muted: #8a8a8a;
+  --shell-strong: #1b1b1b;
+  --shell-shadow: rgba(0, 0, 0, 0.12);
 
-  --color-win-bg: #f4f7f2;
-  --color-win-bg-secondary: #fbfcf8;
+  --color-win-bg: #f6f6f6;
+  --color-win-bg-secondary: #f2f2f2;
   --color-win-card: #ffffff;
-  --color-win-border: rgba(36, 48, 42, 0.08);
-  --color-win-border-strong: rgba(36, 48, 42, 0.16);
-  --color-win-text: #17211d;
-  --color-win-text-secondary: #627068;
-  --color-win-accent: #2f6f64;
-  --color-win-hover: rgba(47, 111, 100, 0.08);
-  --color-win-active: rgba(47, 111, 100, 0.14);
-  --color-win-mica: rgba(255, 255, 255, 0.78);
+  --color-win-border: rgba(0, 0, 0, 0.07);
+  --color-win-border-strong: rgba(0, 0, 0, 0.14);
+  --color-win-text: #161616;
+  --color-win-text-secondary: #737373;
+  --color-win-accent: #4a8df6;
+  --color-win-hover: rgba(0, 0, 0, 0.045);
+  --color-win-active: rgba(74, 141, 246, 0.14);
+  --color-win-mica: #ffffff;
   --color-folder-bg: #fff7e0;
   --color-folder-border: #f2e4c3;
   --color-folder-text: #e8b024;
@@ -100,14 +61,65 @@
   --color-file-bg: #f3f4f6;
   --color-file-text: #6b7280;
 
-  --shadow-win-card: 0 14px 28px rgba(78, 96, 86, 0.12), 0 0 0 1px rgba(36, 48, 42, 0.04);
-  --shadow-win-flyout: 0 18px 40px rgba(78, 96, 86, 0.2), 0 0 0 1px rgba(36, 48, 42, 0.06);
-  --shadow-win-button: 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  --shadow-win-card:
+    0 16px 32px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  --shadow-win-flyout:
+    0 22px 48px rgba(0, 0, 0, 0.16), 0 4px 12px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --shadow-win-button:
+    0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.06);
 
   --role-folder-fg: #e8b024;
   --role-link-fg: #0284c7;
   --role-note-fg: #5561db;
   --role-generic-fg: #334155;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --app-bg: #1c1c1c;
+  --desktop-grid: rgba(255, 255, 255, 0.04);
+  --desktop-glow: rgba(255, 255, 255, 0.04);
+  --shell-surface: rgba(44, 44, 44, 0.94);
+  --shell-border: rgba(255, 255, 255, 0.12);
+  --shell-muted: #a7a7a7;
+  --shell-strong: #f4f4f4;
+  --shell-shadow: rgba(0, 0, 0, 0.32);
+
+  --color-win-bg: #1c1c1c;
+  --color-win-bg-secondary: #252525;
+  --color-win-card: #2f2f2f;
+  --color-win-border: rgba(255, 255, 255, 0.08);
+  --color-win-border-strong: rgba(255, 255, 255, 0.16);
+  --color-win-text: #f3f3f3;
+  --color-win-text-secondary: #b3b3b3;
+  --color-win-accent: #6fa2ff;
+  --color-win-hover: rgba(255, 255, 255, 0.07);
+  --color-win-active: rgba(111, 162, 255, 0.2);
+  --color-win-mica: #2a2a2a;
+  --color-folder-bg: #3a321c;
+  --color-folder-border: #5d4b1d;
+  --color-folder-text: #ffd764;
+  --color-folder-fill: #e5b52b;
+  --color-file-bg: #242424;
+  --color-file-text: #9e9e9e;
+
+  --shadow-win-card:
+    0 16px 32px rgba(0, 0, 0, 0.24), 0 2px 6px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --shadow-win-flyout:
+    0 22px 48px rgba(0, 0, 0, 0.42), 0 4px 12px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --shadow-win-button:
+    0 2px 4px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.24);
+
+  --role-folder-fg: #ffd764;
+  --role-link-fg: #8ab8ff;
+  --role-note-fg: #a9b4ff;
+  --role-generic-fg: rgba(255, 255, 255, 0.82);
 }
 
 html,
@@ -168,25 +180,19 @@ select {
 
   .kb-desktop-grid {
     background-image:
-      linear-gradient(120deg, var(--desktop-grid) 1px, transparent 1px),
+      linear-gradient(180deg, var(--desktop-grid) 1px, transparent 1px),
       linear-gradient(
         180deg,
-        color-mix(in srgb, var(--desktop-glow) 54%, transparent),
-        transparent 42%
+        color-mix(in srgb, var(--desktop-glow) 84%, transparent),
+        transparent 38%
       );
     background-size:
-      34px 34px,
+      100% 28px,
       100% 100%;
   }
 
   .kb-desktop-glow {
-    background:
-      linear-gradient(
-        90deg,
-        color-mix(in srgb, var(--color-win-accent) 8%, transparent),
-        transparent 32%
-      ),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 48%);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.32), transparent 44%);
   }
 
   .kb-brand-shell {
@@ -214,14 +220,13 @@ select {
 
   .kb-box {
     color: var(--color-win-text);
-    outline: 1px solid color-mix(in srgb, var(--color-win-border-strong) 78%, transparent);
-    backdrop-filter: blur(18px);
+    outline: 1px solid color-mix(in srgb, var(--color-win-border-strong) 86%, transparent);
   }
 
   .kb-box-header {
     background: linear-gradient(
       180deg,
-      color-mix(in srgb, var(--color-win-card) 38%, transparent),
+      color-mix(in srgb, var(--color-win-card) 84%, var(--color-win-bg-secondary)),
       transparent
     );
   }
@@ -360,14 +365,24 @@ select {
 
   .kb-product-tabs {
     border: 1px solid var(--shell-border);
-    background: color-mix(in srgb, var(--shell-surface) 92%, transparent);
-    box-shadow: 0 18px 42px var(--shell-shadow);
-    backdrop-filter: blur(18px);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--shell-surface) 96%, white 4%),
+      color-mix(in srgb, var(--shell-surface) 92%, black 8%)
+    );
+    box-shadow:
+      0 10px 24px var(--shell-shadow),
+      inset 0 1px 0 rgba(255, 255, 255, 0.84),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.04);
   }
 
   .kb-product-tab-active {
     border: 1px solid var(--color-win-border-strong);
-    background: color-mix(in srgb, var(--color-win-card) 88%, var(--color-win-accent) 12%);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-win-card) 92%, white 8%),
+      color-mix(in srgb, var(--color-win-card) 86%, var(--color-win-accent) 14%)
+    );
     box-shadow: var(--shadow-win-button);
   }
 
@@ -377,7 +392,7 @@ select {
 
   .kb-masonry-column {
     min-height: calc(100vh - 9rem);
-    border-left: 1px solid color-mix(in srgb, var(--color-win-border) 72%, transparent);
+    border-left: 1px solid color-mix(in srgb, var(--color-win-border) 66%, transparent);
   }
 
   .kb-masonry-column:first-child {
@@ -386,15 +401,80 @@ select {
 
   .kb-drag-preview {
     border: 1px solid var(--color-win-border-strong);
-    background: color-mix(in srgb, var(--color-win-card) 88%, var(--color-win-accent) 12%);
+    background: color-mix(in srgb, var(--color-win-card) 92%, var(--color-win-accent) 8%);
     box-shadow: var(--shadow-win-flyout);
-    backdrop-filter: blur(18px);
   }
 
-  .kb-empty-page {
-    border: 1px dashed var(--color-win-border-strong);
-    background: color-mix(in srgb, var(--color-win-mica) 76%, transparent);
-    backdrop-filter: blur(14px);
+  .kb-command-search,
+  .kb-command-panel,
+  .kb-page-create-card {
+    border: 1px solid var(--color-win-border-strong);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-win-card) 96%, white 4%),
+      color-mix(in srgb, var(--color-win-card) 90%, var(--color-win-bg-secondary) 10%)
+    );
+    box-shadow: var(--shadow-win-flyout);
+  }
+
+  .kb-command-search:focus-within {
+    border-color: color-mix(in srgb, var(--color-win-accent) 54%, var(--color-win-border-strong));
+    box-shadow:
+      var(--shadow-win-flyout),
+      0 0 0 3px color-mix(in srgb, var(--color-win-accent) 16%, transparent);
+  }
+
+  .kb-command-icon-button {
+    color: var(--color-win-text-secondary);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.64);
+  }
+
+  .kb-command-icon-button:hover {
+    background: var(--color-win-hover);
+    color: var(--color-win-text);
+  }
+
+  .kb-command-section + .kb-command-section {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-win-border);
+  }
+
+  .kb-command-result:hover,
+  .kb-command-result:focus-visible {
+    background: var(--color-win-hover);
+    outline: none;
+  }
+
+  .kb-command-count {
+    border: 1px solid var(--color-win-border);
+    background: var(--color-win-bg-secondary);
+  }
+
+  .kb-page-create-card {
+    min-height: 6rem;
+    box-shadow: var(--shadow-win-card);
+  }
+
+  .kb-page-create-card:hover {
+    border-color: color-mix(in srgb, var(--color-win-accent) 45%, var(--color-win-border-strong));
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-win-card) 90%, var(--color-win-accent) 10%),
+      color-mix(in srgb, var(--color-win-card) 96%, var(--color-win-bg-secondary) 4%)
+    );
+    box-shadow: var(--shadow-win-flyout);
+  }
+
+  .kb-page-create-icon {
+    border: 1px solid var(--color-win-border-strong);
+    background: radial-gradient(
+      circle at 50% 28%,
+      color-mix(in srgb, var(--color-win-card) 86%, white 14%),
+      color-mix(in srgb, var(--color-win-bg-secondary) 86%, black 14%)
+    );
+    color: var(--color-win-accent);
+    box-shadow: var(--shadow-win-button);
   }
 
   .kb-desktop-titlebar {
@@ -436,8 +516,7 @@ select {
 
 @layer utilities {
   .win-mica {
-    background-color: var(--color-win-mica);
-    backdrop-filter: blur(18px);
+    background-color: color-mix(in srgb, var(--color-win-card) 96%, var(--color-win-bg));
     @apply border border-win-border transition-colors duration-300;
   }
 

@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useI18n } from '../../../app/hooks/useI18n';
 import { useInteractionStore } from '../../../app/stores/useInteractionStore';
 import { usePreferencesStore } from '../../../app/stores/usePreferencesStore';
 import { useVisibleBoxes, useWorkspaceDispatch } from '../../../app/stores/useWorkspaceSelectors';
+import { createWorkspaceBox } from '../../../app/use-cases/createWorkspaceBox';
 import { BOX_TEMPLATE_LIBRARY } from '../../../../core/domains/workspace/model/boxTemplates';
 import type { BoxTemplateId } from '../../../../core/domains/workspace/model/workspace';
 
@@ -25,6 +26,7 @@ export function useWorkspaceDesktopState() {
   const visibleBoxes = useVisibleBoxes();
   const dispatch = useWorkspaceDispatch();
   const setActiveBox = useInteractionStore((state) => state.setActiveBox);
+  const setFocusedItemInfo = useInteractionStore((state) => state.setFocusedItemInfo);
   const theme = usePreferencesStore((state) => state.theme);
   const [activeTabId, setActiveTabId] = useState<WorkspaceProductTabId>(
     TEMPLATE_PAGE_ORDER.find((templateId) =>
@@ -47,15 +49,38 @@ export function useWorkspaceDesktopState() {
     () => visibleBoxes.filter((box) => box.templateId === activeTabId),
     [activeTabId, visibleBoxes],
   );
+  const createBoxForActiveTab = useCallback(
+    (placement: { centerX: number; centerY: number }) => {
+      const result = createWorkspaceBox({
+        ...placement,
+        templateId: activeTabId,
+      });
+
+      if (result.status === 'created') {
+        setActiveBox(result.box.id);
+        setFocusedItemInfo(
+          result.initialFocusItemId
+            ? { boxId: result.box.id, itemId: result.initialFocusItemId }
+            : null,
+        );
+        dispatch({ type: 'box.bringToFront', boxId: result.box.id });
+      }
+
+      return result;
+    },
+    [activeTabId, dispatch, setActiveBox, setFocusedItemInfo],
+  );
 
   return {
     brandLabel: t('app.brand'),
     theme,
     activeTabId,
+    boxCount: visibleBoxes.length,
     tabs,
     pageEmptyLabel: t('workspace.pageEmpty'),
     visibleBoxes: visibleTabBoxes,
     clearActiveBox: () => setActiveBox(null),
+    createBoxForActiveTab,
     dispatch,
     setActiveTabId,
   };

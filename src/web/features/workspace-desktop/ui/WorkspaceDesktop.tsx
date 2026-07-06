@@ -1,4 +1,5 @@
 import { AnimatePresence, LayoutGroup, motion } from 'motion/react';
+import { Plus } from 'lucide-react';
 import {
   useCallback,
   useEffect,
@@ -7,8 +8,12 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
+import { getBoxTemplateDefinition } from '../../../../core/domains/workspace/model/boxTemplates';
 import { getBoxDisplayTitle } from '../../../../core/domains/workspace/model/boxTitles';
-import type { WorkspaceBox } from '../../../../core/domains/workspace/model/workspace';
+import {
+  MAX_WORKSPACE_BOXES,
+  type WorkspaceBox,
+} from '../../../../core/domains/workspace/model/workspace';
 import { ToastViewport } from '../../../app/presentation/ToastViewport';
 import { useI18n } from '../../../app/hooks/useI18n';
 import Background from '../../../widgets/DesktopShell/Background';
@@ -54,9 +59,16 @@ interface MasonryDragState {
   tabId: WorkspaceProductTabId;
 }
 
+interface PageCreateCardProps {
+  hint: string;
+  isDisabled: boolean;
+  label: string;
+  onCreate: () => void;
+}
+
 function WorkspaceProductTabs({ tabs, activeTabId, onSelectTab }: WorkspaceProductTabsProps) {
   return (
-    <nav className="kb-product-tabs fixed left-1/2 top-4 z-[99991] w-[min(64rem,calc(100vw-2rem))] -translate-x-1/2 rounded-2xl p-1">
+    <nav className="kb-product-tabs fixed left-4 top-4 z-[99991] w-[min(64rem,calc(100vw-27rem))] rounded-2xl p-1 max-[900px]:top-16 max-[900px]:w-[calc(100vw-2rem)]">
       <div className="kb-scroll-hidden flex gap-1 overflow-x-auto">
         {tabs.map((tab) => {
           const isActive = tab.id === activeTabId;
@@ -89,6 +101,26 @@ function WorkspaceProductTabs({ tabs, activeTabId, onSelectTab }: WorkspaceProdu
         })}
       </div>
     </nav>
+  );
+}
+
+function PageCreateCard({ hint, isDisabled, label, onCreate }: PageCreateCardProps) {
+  return (
+    <motion.button
+      layout
+      type="button"
+      disabled={isDisabled}
+      onClick={onCreate}
+      className="kb-page-create-card group flex min-h-24 w-full min-w-0 items-center gap-3 rounded-xl px-4 py-4 text-left transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      <span className="kb-page-create-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
+        <Plus size={18} />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-semibold text-win-text">{label}</span>
+        <span className="mt-1 block truncate text-xs text-win-text-secondary">{hint}</span>
+      </span>
+    </motion.button>
   );
 }
 
@@ -188,6 +220,23 @@ function createMasonryColumns(boxes: WorkspaceBox[], columnCount: number) {
   }
 
   return columns.map((column) => column.map((entry) => entry.box.id));
+}
+
+function getMasonryColumnHeight(column: string[], boxesById: Map<string, WorkspaceBox>) {
+  return column.reduce((height, boxId) => {
+    const box = boxesById.get(boxId);
+    return height + (box?.bounds.height ?? 0) + MASONRY_GAP;
+  }, 0);
+}
+
+function getShortestMasonryColumnIndex(columns: string[][], boxesById: Map<string, WorkspaceBox>) {
+  if (columns.length === 0) {
+    return 0;
+  }
+
+  const columnHeights = columns.map((column) => getMasonryColumnHeight(column, boxesById));
+  const shortestHeight = Math.min(...columnHeights);
+  return Math.max(0, columnHeights.indexOf(shortestHeight));
 }
 
 function moveBoxIdToSlot(
@@ -319,9 +368,11 @@ export default function WorkspaceDesktop() {
   useWorkspaceGlobalEvents();
   const { t } = useI18n();
   const {
+    boxCount,
     brandLabel,
     clearActiveBox,
     activeTabId,
+    createBoxForActiveTab,
     dispatch,
     pageEmptyLabel,
     setActiveTabId,
@@ -343,6 +394,17 @@ export default function WorkspaceDesktop() {
     () => new Map(visibleBoxes.map((box) => [box.id, box])),
     [visibleBoxes],
   );
+  const activeTemplate = getBoxTemplateDefinition(activeTabId);
+  const hasReachedBoxLimit = boxCount >= MAX_WORKSPACE_BOXES;
+  const createCardColumnIndex = getShortestMasonryColumnIndex(displayedColumns, boxesById);
+  const createBoxLabel = t('workspace.createPageBox', {
+    template: t(activeTemplate.titleKey),
+  });
+  const createBoxHint = hasReachedBoxLimit
+    ? t('workspace.boxLimitReached')
+    : visibleBoxes.length === 0
+      ? pageEmptyLabel
+      : t(activeTemplate.actionKey);
 
   useEffect(() => {
     columnRefs.current = columnRefs.current.slice(0, columnCount);
@@ -363,6 +425,39 @@ export default function WorkspaceDesktop() {
     },
     [dispatch],
   );
+
+  const handleCreatePageBox = useCallback(() => {
+    if (hasReachedBoxLimit || dragState) {
+      return;
+    }
+
+    const result = createBoxForActiveTab({
+      centerX: masonryWidth / 2,
+      centerY: 240,
+    });
+
+    if (result.status !== 'created') {
+      return;
+    }
+
+    const nextColumns = (
+      displayedColumns.length > 0 ? displayedColumns : createEmptyColumns(columnCount)
+    ).map((column) => [...column]);
+    const targetColumnIndex = getShortestMasonryColumnIndex(nextColumns, boxesById);
+    nextColumns[targetColumnIndex]?.push(result.box.id);
+
+    persistMasonryColumns(nextColumns);
+    revealBoxCard(result.box.id, result.initialFocusItemId ?? undefined);
+  }, [
+    boxesById,
+    columnCount,
+    createBoxForActiveTab,
+    displayedColumns,
+    dragState,
+    hasReachedBoxLimit,
+    masonryWidth,
+    persistMasonryColumns,
+  ]);
 
   const handleMasonryDragStart = useCallback(
     (event: ReactPointerEvent<HTMLDivElement>, box: WorkspaceBox) => {
@@ -479,51 +574,54 @@ export default function WorkspaceDesktop() {
       <ToastViewport theme={theme} />
       <WorkspaceCommandCenter onSelectTemplatePage={setActiveTabId} onRevealBox={revealBoxCard} />
 
-      <main className="relative z-10 h-full overflow-auto px-5 pb-10 pt-24">
+      <main className="relative z-10 h-full overflow-auto px-5 pb-10 pt-24 max-[900px]:pt-32">
         <div ref={masonryRef} className="mx-auto w-[min(1500px,calc(100vw-40px))]">
-          {visibleBoxes.length > 0 ? (
-            <LayoutGroup id={`workspace-page-${activeTabId}`}>
-              <div
-                className="kb-masonry-board grid items-start"
-                style={{
-                  gap: `${MASONRY_GAP}px`,
-                  gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))`,
-                }}
-              >
-                {displayedColumns.map((column, columnIndex) => (
-                  <div
-                    key={`${activeTabId}:${columnIndex}`}
-                    ref={(node) => {
-                      columnRefs.current[columnIndex] = node;
-                    }}
-                    className="kb-masonry-column flex min-w-0 flex-col items-start"
-                    style={{ gap: `${MASONRY_GAP}px` }}
-                    data-kb-masonry-column={columnIndex}
-                  >
-                    <AnimatePresence initial={false}>
-                      {column.map((boxId) => {
-                        const box = boxesById.get(boxId);
+          <LayoutGroup id={`workspace-page-${activeTabId}`}>
+            <div
+              className="kb-masonry-board grid items-start"
+              style={{
+                gap: `${MASONRY_GAP}px`,
+                gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))`,
+              }}
+            >
+              {displayedColumns.map((column, columnIndex) => (
+                <div
+                  key={`${activeTabId}:${columnIndex}`}
+                  ref={(node) => {
+                    columnRefs.current[columnIndex] = node;
+                  }}
+                  className="kb-masonry-column flex min-w-0 flex-col items-start"
+                  style={{ gap: `${MASONRY_GAP}px` }}
+                  data-kb-masonry-column={columnIndex}
+                >
+                  <AnimatePresence initial={false}>
+                    {column.map((boxId) => {
+                      const box = boxesById.get(boxId);
 
-                        return box ? (
-                          <ManagedBox
-                            key={box.id}
-                            boxId={box.id}
-                            placement="columns"
-                            isMasonryDragging={dragState?.boxId === box.id}
-                            onMasonryDragStart={handleMasonryDragStart}
-                          />
-                        ) : null;
-                      })}
-                    </AnimatePresence>
-                  </div>
-                ))}
-              </div>
-            </LayoutGroup>
-          ) : (
-            <div className="kb-empty-page mx-auto mt-16 w-full max-w-md rounded-xl px-4 py-8 text-center text-sm text-win-text-secondary">
-              {pageEmptyLabel}
+                      return box ? (
+                        <ManagedBox
+                          key={box.id}
+                          boxId={box.id}
+                          placement="columns"
+                          isMasonryDragging={dragState?.boxId === box.id}
+                          onMasonryDragStart={handleMasonryDragStart}
+                        />
+                      ) : null;
+                    })}
+                  </AnimatePresence>
+
+                  {columnIndex === createCardColumnIndex && !dragState ? (
+                    <PageCreateCard
+                      label={createBoxLabel}
+                      hint={createBoxHint}
+                      isDisabled={hasReachedBoxLimit}
+                      onCreate={handleCreatePageBox}
+                    />
+                  ) : null}
+                </div>
+              ))}
             </div>
-          )}
+          </LayoutGroup>
         </div>
       </main>
 

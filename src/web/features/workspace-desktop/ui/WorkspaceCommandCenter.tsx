@@ -1,25 +1,22 @@
+import { AnimatePresence, motion } from 'motion/react';
 import {
-  Boxes,
   BookOpen,
+  Boxes,
   CalendarDays,
   ClipboardList,
   Columns3,
   Globe2,
-  LayoutGrid,
-  List,
   Inbox,
   Package,
-  Plus,
   Rocket,
   Search,
   Settings,
   Star,
-  X,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState, type ComponentType, type ReactNode } from 'react';
 import type { BoxTemplateId } from '../../../../core/domains/workspace/model/workspace';
-import { useWorkspaceCommandCenter } from '../hooks/useWorkspaceCommandCenter';
 import { cn } from '../../../lib/utils';
+import { useWorkspaceCommandCenter } from '../hooks/useWorkspaceCommandCenter';
 
 const TEMPLATE_ICONS = {
   collection: Package,
@@ -38,6 +35,32 @@ interface WorkspaceCommandCenterProps {
   onRevealBox: (boxId: string, itemId?: string) => void;
 }
 
+interface ResultSectionProps {
+  children: ReactNode;
+  emptyLabel: string;
+  icon: ComponentType<{ size?: number; className?: string }>;
+  isEmpty: boolean;
+  title: string;
+}
+
+function ResultSection({ children, emptyLabel, icon: Icon, isEmpty, title }: ResultSectionProps) {
+  return (
+    <section className="kb-command-section">
+      <div className="mb-1 flex items-center gap-2 px-2 text-xs text-win-text-secondary">
+        <Icon size={13} className="shrink-0" />
+        <span className="truncate">{title}</span>
+      </div>
+      <div className="flex flex-col gap-1">
+        {isEmpty ? (
+          <div className="rounded-lg px-3 py-2 text-sm text-win-text-secondary">{emptyLabel}</div>
+        ) : (
+          children
+        )}
+      </div>
+    </section>
+  );
+}
+
 export default function WorkspaceCommandCenter({
   onSelectTemplatePage,
   onRevealBox,
@@ -46,189 +69,107 @@ export default function WorkspaceCommandCenter({
     onSelectTemplatePage,
     onRevealBox,
   });
-  const [isOpen, setOpen] = useState(false);
-  const SelectedTemplateIcon = TEMPLATE_ICONS[controller.selectedTemplate.id];
-  const SelectedLayoutIcon =
-    controller.selectedTemplate.defaultLayout === 'grid' ? LayoutGrid : List;
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const [isFocused, setFocused] = useState(false);
+  const isExpanded = isFocused || controller.hasQuery;
 
-  if (!isOpen) {
-    return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        title={controller.labels.searchPlaceholder}
-        aria-label={controller.labels.searchPlaceholder}
-        className="kb-floating-action fixed right-4 top-4 z-[99992] flex h-11 w-11 items-center justify-center rounded-2xl border border-win-border bg-win-mica shadow-win-flyout transition-colors active:scale-95"
-      >
-        <Search size={18} />
-      </button>
-    );
-  }
+  const closePanel = () => {
+    controller.setQuery('');
+    setFocused(false);
+    rootRef.current?.querySelector('input')?.blur();
+  };
 
   return (
-    <aside className="fixed left-4 top-20 z-[99990] w-[min(24rem,calc(100vw-2rem))] rounded-xl border border-win-border bg-win-mica p-2 shadow-win-flyout">
-      <div className="flex items-center gap-1">
-        <button
-          type="button"
-          onClick={() => controller.setTemplateMenuOpen((isOpen) => !isOpen)}
-          disabled={controller.hasReachedBoxLimit}
-          title={controller.labels.createTemplate}
-          aria-label={controller.labels.createTemplate}
-          className="kb-floating-action flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          <Plus size={18} />
-        </button>
+    <div
+      ref={rootRef}
+      className="kb-command-center fixed right-4 top-4 z-[99992] w-[min(23rem,calc(100vw-2rem))]"
+      onFocus={() => setFocused(true)}
+      onBlur={(event) => {
+        const nextFocusedNode = event.relatedTarget;
 
-        <label className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-win-border bg-win-bg-secondary px-2 py-1.5">
-          <Search size={15} className="shrink-0 text-win-text-secondary" />
-          <input
-            value={controller.query}
-            onChange={(event) => controller.setQuery(event.target.value)}
-            placeholder={controller.labels.searchPlaceholder}
-            className="min-w-0 flex-1 bg-transparent text-sm text-win-text outline-none placeholder:text-win-text-secondary"
-          />
-        </label>
+        if (nextFocusedNode instanceof Node && event.currentTarget.contains(nextFocusedNode)) {
+          return;
+        }
 
+        setFocused(false);
+      }}
+    >
+      <div className={cn('kb-command-search flex h-11 items-center gap-2 rounded-2xl px-3')}>
+        <Search size={16} className="shrink-0 text-win-text-secondary" />
+        <input
+          value={controller.query}
+          onChange={(event) => controller.setQuery(event.target.value)}
+          placeholder={controller.labels.searchPlaceholder}
+          aria-label={controller.labels.searchPlaceholder}
+          className="min-w-0 flex-1 bg-transparent text-sm text-win-text outline-none placeholder:text-win-text-secondary"
+        />
         <button
           type="button"
           onClick={controller.openSettings}
           title={controller.labels.settings}
           aria-label={controller.labels.settings}
-          className="kb-floating-action flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors active:scale-95"
+          className="kb-command-icon-button flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition active:scale-95"
         >
-          <Settings size={18} />
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setOpen(false)}
-          title={controller.labels.close}
-          aria-label={controller.labels.close}
-          className="kb-floating-action flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors active:scale-95"
-        >
-          <X size={18} />
+          <Settings size={16} />
         </button>
       </div>
 
-      {controller.isTemplateMenuOpen ? (
-        <div className="mt-2 rounded-lg border border-win-border bg-win-card p-2">
-          <div className="mb-2 flex items-center gap-2 px-1 text-xs text-win-text-secondary">
-            <Package size={13} />
-            <span>{controller.labels.templatePicker}</span>
-          </div>
-          <div className="grid gap-2 sm:grid-cols-[9.5rem_minmax(0,1fr)]">
-            <div className="grid grid-cols-2 gap-1 sm:grid-cols-1">
-              {controller.templates.map((template) => {
-                const Icon = TEMPLATE_ICONS[template.id];
-                const isSelected = template.id === controller.selectedTemplateId;
+      <AnimatePresence initial={false}>
+        {isExpanded ? (
+          <motion.div
+            key="command-results"
+            initial={{ opacity: 0, y: -8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.98 }}
+            transition={{ type: 'tween', duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            className="kb-command-panel custom-scrollbar absolute right-0 top-[calc(100%+10px)] max-h-[min(58vh,32rem)] w-[min(30rem,calc(100vw-2rem))] overflow-y-auto rounded-2xl p-2"
+            onMouseDown={(event) => event.preventDefault()}
+          >
+            <ResultSection
+              icon={Boxes}
+              title={controller.labels.navigator}
+              emptyLabel={controller.labels.noBoxes}
+              isEmpty={controller.filteredBoxRows.length === 0}
+            >
+              {controller.filteredBoxRows.map(({ box, title }) => {
+                const TemplateIcon = TEMPLATE_ICONS[box.templateId];
 
                 return (
                   <button
-                    key={template.id}
+                    key={box.id}
                     type="button"
-                    onClick={() => controller.setSelectedTemplateId(template.id)}
+                    onClick={() => {
+                      controller.focusBox(box);
+                      closePanel();
+                    }}
                     className={cn(
-                      'flex min-h-10 items-center gap-2 rounded-md px-2 py-2 text-left text-sm transition-colors',
-                      isSelected
-                        ? 'bg-win-active text-win-text'
-                        : 'text-win-text-secondary hover:bg-win-hover hover:text-win-text',
+                      'kb-command-result flex items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition',
+                      box.isLocked ? 'text-red-400' : 'text-win-text',
                     )}
                   >
-                    <Icon size={16} className="shrink-0" />
-                    <span className="min-w-0 flex-1 truncate">{template.label}</span>
+                    <TemplateIcon size={15} className="shrink-0 text-win-text-secondary" />
+                    <span className="min-w-0 flex-1 truncate">{title}</span>
                   </button>
                 );
               })}
-            </div>
+            </ResultSection>
 
-            <div className="min-w-0 rounded-md border border-win-border bg-win-bg-secondary p-3">
-              <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-win-border bg-win-card text-win-text-secondary">
-                  <SelectedTemplateIcon size={18} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm text-win-text">
-                    {controller.selectedTemplate.label}
-                  </div>
-                  <p className="mt-1 line-clamp-3 text-xs leading-5 text-win-text-secondary">
-                    {controller.selectedTemplate.description}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-3 flex items-center gap-2 text-xs text-win-text-secondary">
-                <SelectedLayoutIcon size={14} />
-                <span className="truncate">{controller.selectedTemplate.action}</span>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  controller.createTemplate(controller.selectedTemplate.id);
-                  setOpen(false);
-                }}
-                disabled={controller.hasReachedBoxLimit}
-                className="kb-primary-button mt-3 flex h-9 w-full items-center justify-center gap-2 rounded-md px-3 text-sm transition disabled:cursor-not-allowed disabled:opacity-40"
+            {controller.filteredFrequentBookmarkRows.length > 0 || controller.hasQuery ? (
+              <ResultSection
+                icon={Star}
+                title={controller.labels.frequentSites}
+                emptyLabel={controller.labels.noFrequentSites}
+                isEmpty={controller.filteredFrequentBookmarkRows.length === 0}
               >
-                <Plus size={16} />
-                <span className="truncate">{controller.labels.createTemplate}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      <div className="mt-2 max-h-[min(42vh,24rem)] overflow-y-auto">
-        <div className="mb-1 flex items-center gap-2 px-1 text-xs text-win-text-secondary">
-          <Boxes size={13} />
-          <span>{controller.labels.navigator}</span>
-        </div>
-        <div className="flex flex-col gap-1">
-          {controller.filteredBoxRows.length > 0 ? (
-            controller.filteredBoxRows.map(({ box, title }) => {
-              const TemplateIcon = TEMPLATE_ICONS[box.templateId];
-
-              return (
-                <button
-                  key={box.id}
-                  type="button"
-                  onClick={() => {
-                    controller.focusBox(box);
-                    setOpen(false);
-                  }}
-                  className={cn(
-                    'flex items-center gap-2 rounded-lg px-2 py-2 text-left text-sm transition-colors hover:bg-win-hover',
-                    box.isLocked ? 'text-red-300' : 'text-win-text',
-                  )}
-                >
-                  <TemplateIcon size={15} className="shrink-0 text-win-text-secondary" />
-                  <span className="min-w-0 flex-1 truncate">{title}</span>
-                </button>
-              );
-            })
-          ) : (
-            <div className="rounded-lg px-2 py-2 text-sm text-win-text-secondary">
-              {controller.labels.noBoxes}
-            </div>
-          )}
-        </div>
-        {controller.filteredFrequentBookmarkRows.length > 0 || controller.hasQuery ? (
-          <>
-            <div className="mb-1 mt-3 flex items-center gap-2 px-1 text-xs text-win-text-secondary">
-              <Star size={13} />
-              <span>{controller.labels.frequentSites}</span>
-            </div>
-            <div className="flex flex-col gap-1">
-              {controller.filteredFrequentBookmarkRows.length > 0 ? (
-                controller.filteredFrequentBookmarkRows.map(({ bookmark }) => (
+                {controller.filteredFrequentBookmarkRows.map(({ bookmark }) => (
                   <button
                     key={bookmark.id}
                     type="button"
                     onClick={() => {
                       controller.openBookmark(bookmark);
-                      setOpen(false);
+                      closePanel();
                     }}
-                    className="flex items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-win-text transition-colors hover:bg-win-hover"
+                    className="kb-command-result flex items-center gap-2 rounded-xl px-3 py-2 text-left text-sm text-win-text transition"
                   >
                     <Star
                       size={15}
@@ -242,54 +183,44 @@ export default function WorkspaceCommandCenter({
                       </span>
                     </span>
                     {bookmark.openCount > 0 ? (
-                      <span className="rounded-full bg-win-bg-secondary px-2 py-0.5 text-xs text-win-text-secondary">
+                      <span className="kb-command-count rounded-full px-2 py-0.5 text-xs text-win-text-secondary">
                         {bookmark.openCount}
                       </span>
                     ) : null}
                   </button>
-                ))
-              ) : (
-                <div className="rounded-lg px-2 py-2 text-sm text-win-text-secondary">
-                  {controller.labels.noFrequentSites}
-                </div>
-              )}
-            </div>
-          </>
-        ) : null}
-        {controller.filteredItemRows.length > 0 || controller.hasQuery ? (
-          <>
-            <div className="mb-1 mt-3 flex items-center gap-2 px-1 text-xs text-win-text-secondary">
-              <ClipboardList size={13} />
-              <span>{controller.labels.items}</span>
-            </div>
-            <div className="flex flex-col gap-1">
-              {controller.filteredItemRows.length > 0 ? (
-                controller.filteredItemRows.map(({ item, box, boxTitle }) => (
+                ))}
+              </ResultSection>
+            ) : null}
+
+            {controller.filteredItemRows.length > 0 || controller.hasQuery ? (
+              <ResultSection
+                icon={ClipboardList}
+                title={controller.labels.items}
+                emptyLabel={controller.labels.noItems}
+                isEmpty={controller.filteredItemRows.length === 0}
+              >
+                {controller.filteredItemRows.map(({ item, box, boxTitle }) => (
                   <button
                     key={`${box.id}:${item.id}`}
                     type="button"
                     onClick={() => {
                       controller.focusItem(box, item.id);
-                      setOpen(false);
+                      closePanel();
                     }}
-                    className="flex items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-win-text transition-colors hover:bg-win-hover"
+                    className="kb-command-result flex items-center gap-2 rounded-xl px-3 py-2 text-left text-sm text-win-text transition"
                   >
                     <ClipboardList size={15} className="shrink-0 text-win-text-secondary" />
                     <span className="min-w-0 flex-1 truncate">{item.title}</span>
-                    <span className="max-w-[6rem] truncate text-xs text-win-text-secondary">
+                    <span className="max-w-[7rem] truncate text-xs text-win-text-secondary">
                       {boxTitle}
                     </span>
                   </button>
-                ))
-              ) : (
-                <div className="rounded-lg px-2 py-2 text-sm text-win-text-secondary">
-                  {controller.labels.noItems}
-                </div>
-              )}
-            </div>
-          </>
+                ))}
+              </ResultSection>
+            ) : null}
+          </motion.div>
         ) : null}
-      </div>
-    </aside>
+      </AnimatePresence>
+    </div>
   );
 }
