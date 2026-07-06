@@ -168,6 +168,47 @@ export default function WorkspaceCommandCenter() {
             </div>
           )}
         </div>
+        {controller.filteredFrequentBookmarkRows.length > 0 || controller.hasQuery ? (
+          <>
+            <div className="mb-1 mt-3 flex items-center gap-2 px-1 text-xs text-win-text-secondary">
+              <Star size={13} />
+              <span>{controller.labels.frequentSites}</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              {controller.filteredFrequentBookmarkRows.length > 0 ? (
+                controller.filteredFrequentBookmarkRows.map(({ bookmark }) => (
+                  <button
+                    key={bookmark.id}
+                    type="button"
+                    onClick={() => controller.openBookmark(bookmark)}
+                    className="flex items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-win-text transition-colors hover:bg-win-hover"
+                  >
+                    <Star
+                      size={15}
+                      className="shrink-0 text-win-text-secondary"
+                      fill={bookmark.isPinned ? 'currentColor' : 'none'}
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate">{bookmark.title}</span>
+                      <span className="mt-0.5 block truncate text-xs text-win-text-secondary">
+                        {bookmark.url}
+                      </span>
+                    </span>
+                    {bookmark.openCount > 0 ? (
+                      <span className="rounded-full bg-win-bg-secondary px-2 py-0.5 text-xs text-win-text-secondary">
+                        {bookmark.openCount}
+                      </span>
+                    ) : null}
+                  </button>
+                ))
+              ) : (
+                <div className="rounded-lg px-2 py-2 text-sm text-win-text-secondary">
+                  {controller.labels.noFrequentSites}
+                </div>
+              )}
+            </div>
+          </>
+        ) : null}
         {controller.filteredItemRows.length > 0 || controller.hasQuery ? (
           <>
             <div className="mb-1 mt-3 flex items-center gap-2 px-1 text-xs text-win-text-secondary">

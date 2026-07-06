@@ -7,6 +7,7 @@ import {
   Pin,
   PinOff,
   Rocket,
+  Star,
   X,
 } from 'lucide-react';
 import type {
@@ -92,10 +93,14 @@ export default function ManagedItemCard({
     unpinLabel: controller.labels.unpin,
     editLabel: controller.labels.edit,
     deleteLabel: controller.labels.delete,
+    addBookmarkLabel: controller.labels.addBookmark,
+    removeBookmarkLabel: controller.labels.removeBookmark,
     editIcon: <Pencil size={layout === 'grid' ? 12 : 14} />,
     pinIcon: <Pin size={layout === 'grid' ? 12 : 14} />,
     unpinIcon: <PinOff size={layout === 'grid' ? 12 : 14} />,
+    bookmarkIcon: <Star size={layout === 'grid' ? 12 : 14} />,
     deleteIcon: <X size={layout === 'grid' ? 12 : 14} />,
+    isBookmarked: controller.isBookmarked,
     onCardClick: controller.openItem,
     onStartEdit: controller.startEdit,
     onEditTitleChange: controller.setEditTitle,
@@ -104,6 +109,7 @@ export default function ManagedItemCard({
     onSave: controller.handleSave,
     onCancel: controller.handleCancel,
     onTogglePinned: controller.togglePinned,
+    onToggleBookmark: controller.toggleBookmark,
     onDeleteClick: controller.deleteItem,
   };
 

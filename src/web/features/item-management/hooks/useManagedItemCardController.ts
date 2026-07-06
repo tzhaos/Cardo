@@ -9,6 +9,13 @@ import {
 import { useI18n } from '../../../app/hooks/useI18n';
 import { clearEditingSessionIfActive } from '../../../app/controllers/interactionController';
 import { useInteractionStore } from '../../../app/stores/useInteractionStore';
+import {
+  useWorkspaceDispatch,
+  useWorkspaceSnapshot,
+} from '../../../app/stores/useWorkspaceSelectors';
+import { createId } from '../../../app/use-cases/createId';
+import { createBookmark } from '../../../../core/domains/bookmarks/services/createBookmark';
+import { normalizeBookmarkUrl } from '../../../../core/domains/bookmarks/services/normalizeBookmarkUrl';
 import { deriveItemTitle } from '../../../../core/domains/items/services/deriveItemTitle';
 import {
   getWorkspaceItemContent,
@@ -48,10 +55,15 @@ export function useManagedItemCardController({
   const editorRootRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const { openItem } = useItemActions();
+  const snapshot = useWorkspaceSnapshot();
+  const dispatch = useWorkspaceDispatch();
 
   const isEditing = editingSessionId === editorId;
   const isInteractionLocked = Boolean(editingSessionId && editingSessionId !== editorId);
   const isFocused = focusedAt !== null;
+  const linkedBookmark =
+    item.type === 'url' && item.bookmarkId ? snapshot.bookmarksById[item.bookmarkId] : null;
+  const isBookmarked = Boolean(linkedBookmark);
 
   const closeEditor = useCallback(() => {
     clearEditingSessionIfActive(editorId);
@@ -201,6 +213,8 @@ export function useManagedItemCardController({
       unpin: t('item.unpin'),
       edit: t('item.edit'),
       delete: t('item.delete'),
+      addBookmark: t('item.addBookmark'),
+      removeBookmark: t('item.removeBookmark'),
     },
     openItem: () => {
       if (editingSessionId) {
@@ -229,9 +243,40 @@ export function useManagedItemCardController({
       event.stopPropagation();
       onSetPinned(!item.isPinned);
     },
+    toggleBookmark: (event: SyntheticEvent) => {
+      event.stopPropagation();
+
+      if (item.type !== 'url') {
+        return;
+      }
+
+      if (linkedBookmark) {
+        onUpdate({ bookmarkId: null });
+        return;
+      }
+
+      const normalizedUrl = normalizeBookmarkUrl(item.url);
+      const existingBookmark = Object.values(snapshot.bookmarksById).find(
+        (bookmark) => bookmark.normalizedUrl === normalizedUrl,
+      );
+      const bookmark =
+        existingBookmark ??
+        createBookmark(createId('bookmark'), {
+          title: item.title,
+          url: item.url,
+          source: 'item',
+        });
+
+      if (!existingBookmark) {
+        dispatch({ type: 'bookmark.upsert', bookmark });
+      }
+
+      onUpdate({ bookmarkId: bookmark.id });
+    },
     deleteItem: (event: SyntheticEvent) => {
       event.stopPropagation();
       onDelete();
     },
+    isBookmarked,
   };
 }

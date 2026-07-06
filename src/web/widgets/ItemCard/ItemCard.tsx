@@ -28,10 +28,14 @@ export interface ItemCardProps {
   unpinLabel: string;
   editLabel: string;
   deleteLabel: string;
+  addBookmarkLabel: string;
+  removeBookmarkLabel: string;
   editIcon: ReactNode;
   pinIcon: ReactNode;
   unpinIcon: ReactNode;
+  bookmarkIcon: ReactNode;
   deleteIcon: ReactNode;
+  isBookmarked: boolean;
   onCardClick: () => void;
   onStartEdit: (event: SyntheticEvent) => void;
   onEditTitleChange: (value: string) => void;
@@ -40,6 +44,7 @@ export interface ItemCardProps {
   onSave: (event?: SyntheticEvent) => void;
   onCancel: (event?: SyntheticEvent) => void;
   onTogglePinned: (event: SyntheticEvent) => void;
+  onToggleBookmark: (event: SyntheticEvent) => void;
   onDeleteClick: (event: SyntheticEvent) => void;
 }
 
@@ -75,10 +80,14 @@ export default function ItemCard({
   unpinLabel,
   editLabel,
   deleteLabel,
+  addBookmarkLabel,
+  removeBookmarkLabel,
   editIcon,
   pinIcon,
   unpinIcon,
+  bookmarkIcon,
   deleteIcon,
+  isBookmarked,
   onCardClick,
   onStartEdit,
   onEditTitleChange,
@@ -87,6 +96,7 @@ export default function ItemCard({
   onSave,
   onCancel,
   onTogglePinned,
+  onToggleBookmark,
   onDeleteClick,
 }: ItemCardProps) {
   const usesSingleLineContentEditor = item.type !== 'note';
@@ -193,6 +203,21 @@ export default function ItemCard({
         >
           {item.isPinned ? unpinIcon : pinIcon}
         </button>
+        {item.type === 'url' ? (
+          <button
+            onClick={onToggleBookmark}
+            className={cn(
+              'transition-colors',
+              layout === 'grid'
+                ? 'kb-item-grid-control rounded-md border p-1.5 shadow-sm hover:bg-win-accent hover:text-white'
+                : 'kb-item-list-control rounded-md p-1.5 text-win-text-secondary hover:bg-win-hover hover:text-win-text',
+              isBookmarked ? 'text-win-accent' : '',
+            )}
+            title={isBookmarked ? removeBookmarkLabel : addBookmarkLabel}
+          >
+            <span className={cn(isBookmarked ? '[&>svg]:fill-current' : '')}>{bookmarkIcon}</span>
+          </button>
+        ) : null}
         <button
           onClick={onStartEdit}
           className={cn(

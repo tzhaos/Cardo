@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { getWorkspaceItemContent } from '../../../../core/domains/items/model/item';
+import { getFrequentBookmarks } from '../../../../core/domains/bookmarks/services/frequentBookmarks';
 import { screenToWorld } from '../../../../core/domains/layout/model/viewport';
 import {
   BOX_TEMPLATE_LIBRARY,
@@ -23,6 +24,7 @@ import {
   useWorkspaceSnapshot,
 } from '../../../app/stores/useWorkspaceSelectors';
 import { createWorkspaceBox } from '../../../app/use-cases/createWorkspaceBox';
+import { openBookmark as openBookmarkUseCase } from '../../../app/use-cases/openBookmark';
 
 function getSearchText(box: WorkspaceBox, title: string) {
   const template = getBoxTemplateDefinition(box.templateId);
@@ -93,6 +95,21 @@ export function useWorkspaceCommandCenter() {
         ? itemRows.filter((row) => row.searchText.includes(normalizedQuery))
         : itemRows.slice(0, 6),
     [itemRows, normalizedQuery],
+  );
+  const frequentBookmarkRows = useMemo(
+    () =>
+      getFrequentBookmarks(Object.values(snapshot.bookmarksById), 6).map((bookmark) => ({
+        bookmark,
+        searchText: `${bookmark.title} ${bookmark.url} ${bookmark.tags.join(' ')}`.toLowerCase(),
+      })),
+    [snapshot.bookmarksById],
+  );
+  const filteredFrequentBookmarkRows = useMemo(
+    () =>
+      normalizedQuery
+        ? frequentBookmarkRows.filter((row) => row.searchText.includes(normalizedQuery))
+        : frequentBookmarkRows,
+    [frequentBookmarkRows, normalizedQuery],
   );
 
   const focusBox = (box: WorkspaceBox) => {
@@ -179,13 +196,17 @@ export function useWorkspaceCommandCenter() {
       settings: t('settings.title'),
       navigator: t('workspace.navigator'),
       items: t('workspace.items'),
+      frequentSites: t('workspace.frequentSites'),
       noBoxes: t('workspace.noBoxes'),
       noItems: t('workspace.noItems'),
+      noFrequentSites: t('workspace.noFrequentSites'),
     },
     openSettings,
     focusBox,
     focusItem,
+    openBookmark: openBookmarkUseCase,
     createTemplate,
+    filteredFrequentBookmarkRows,
   };
 }
 
