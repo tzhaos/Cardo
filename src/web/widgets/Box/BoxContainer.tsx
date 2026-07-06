@@ -5,6 +5,7 @@ import {
   type ViewportCamera,
 } from '../../../core/domains/layout/model/viewport';
 import {
+  BOX_MIN_WIDTH,
   type BoxLayout,
   type WorkspaceBoxBounds,
 } from '../../../core/domains/workspace/model/workspace';
@@ -22,6 +23,7 @@ interface BoxContainerProps {
   };
   isActive: boolean;
   isDragging: boolean;
+  isMasonryDragging?: boolean;
   isCanvasTransforming: boolean;
   isPanModifierActive: boolean;
   editingSessionId: string | null;
@@ -41,6 +43,7 @@ export default function BoxContainer({
   box,
   isActive,
   isDragging,
+  isMasonryDragging = false,
   isCanvasTransforming,
   isPanModifierActive,
   editingSessionId,
@@ -64,6 +67,8 @@ export default function BoxContainer({
   if (placement === 'columns') {
     return (
       <motion.div
+        layout
+        layoutId={`masonry-box-${box.id}`}
         data-kb-box-id={box.id}
         onMouseDown={onFocus}
         initial={{
@@ -87,6 +92,7 @@ export default function BoxContainer({
         }
         style={{
           breakInside: 'avoid',
+          width: `min(100%, ${Math.max(BOX_MIN_WIDTH, renderedBounds.width)}px)`,
           minHeight: renderedBounds.height,
           zIndex: isActive ? 2 : 1,
           boxShadow: isDragging
@@ -96,9 +102,10 @@ export default function BoxContainer({
               : 'var(--shadow-win-card)',
         }}
         className={cn(
-          'kb-box win-mica relative mb-4 inline-flex w-full break-inside-avoid flex-col overflow-hidden rounded-xl align-top transition-[background-color,border-color,color,box-shadow] duration-300',
+          'kb-box win-mica relative inline-flex break-inside-avoid flex-col overflow-hidden rounded-xl align-top transition-[background-color,border-color,color,box-shadow,opacity] duration-300',
           box.isLocked ? 'ring-1 ring-red-500/50' : '',
           isPanModifierActive ? 'pointer-events-none' : '',
+          isMasonryDragging ? 'opacity-35' : '',
         )}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}

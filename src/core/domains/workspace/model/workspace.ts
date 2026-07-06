@@ -156,6 +156,14 @@ export type WorkspaceCommand =
       placements?: BoxItemPlacement[];
     }
   | { type: 'box.update'; boxId: string; updates: WorkspaceBoxUpdate }
+  | {
+      type: 'box.layoutPage';
+      positions: Array<{
+        boxId: string;
+        columnIndex: number;
+        orderIndex: number;
+      }>;
+    }
   | { type: 'box.delete'; boxId: string }
   | { type: 'box.bringToFront'; boxId: string }
   | { type: 'kanban.column.add'; boxId: string; column: KanbanColumn; afterColumnId?: string }
@@ -199,7 +207,7 @@ export type WorkspaceCommand =
 
 export const WORKSPACE_SCHEMA_VERSION = 7 as const;
 export const WORKSPACE_EXPORT_VERSION = 5 as const;
-export const MAX_WORKSPACE_BOXES = 12;
+export const MAX_WORKSPACE_BOXES = 36;
 export const MAX_KANBAN_COLUMNS = 8;
 export const DEFAULT_BOX_TEMPLATE_ID: BoxTemplateId = 'collection';
 export const DEFAULT_KANBAN_COLUMNS: KanbanColumn[] = [

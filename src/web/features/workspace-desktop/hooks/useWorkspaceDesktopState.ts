@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useI18n } from '../../../app/hooks/useI18n';
 import { useInteractionStore } from '../../../app/stores/useInteractionStore';
 import { usePreferencesStore } from '../../../app/stores/usePreferencesStore';
-import { useVisibleBoxes } from '../../../app/stores/useWorkspaceSelectors';
+import { useVisibleBoxes, useWorkspaceDispatch } from '../../../app/stores/useWorkspaceSelectors';
 import { BOX_TEMPLATE_LIBRARY } from '../../../../core/domains/workspace/model/boxTemplates';
 import type { BoxTemplateId } from '../../../../core/domains/workspace/model/workspace';
 
@@ -23,6 +23,7 @@ const TEMPLATE_PAGE_ORDER: BoxTemplateId[] = [
 export function useWorkspaceDesktopState() {
   const { t } = useI18n();
   const visibleBoxes = useVisibleBoxes();
+  const dispatch = useWorkspaceDispatch();
   const setActiveBox = useInteractionStore((state) => state.setActiveBox);
   const theme = usePreferencesStore((state) => state.theme);
   const [activeTabId, setActiveTabId] = useState<WorkspaceProductTabId>(
@@ -55,6 +56,7 @@ export function useWorkspaceDesktopState() {
     pageEmptyLabel: t('workspace.pageEmpty'),
     visibleBoxes: visibleTabBoxes,
     clearActiveBox: () => setActiveBox(null),
+    dispatch,
     setActiveTabId,
   };
 }

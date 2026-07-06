@@ -370,6 +370,31 @@ export function reduceWorkspace(
         },
       };
     }
+    case 'box.layoutPage': {
+      const nextViewStates = { ...snapshot.boxViewStatesById };
+
+      for (const position of command.positions) {
+        const viewState = nextViewStates[position.boxId];
+
+        if (!viewState) {
+          continue;
+        }
+
+        nextViewStates[position.boxId] = {
+          ...viewState,
+          bounds: {
+            ...viewState.bounds,
+            x: Math.max(0, Math.round(position.columnIndex)),
+            y: Math.max(0, Math.round(position.orderIndex)),
+          },
+        };
+      }
+
+      return {
+        ...snapshot,
+        boxViewStatesById: nextViewStates,
+      };
+    }
     case 'box.delete': {
       if (!snapshot.boxesById[command.boxId]) {
         return snapshot;

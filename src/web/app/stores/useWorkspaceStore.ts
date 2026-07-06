@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { createInitialWorkspaceSnapshot } from '../../../core/domains/workspace/model/createInitialWorkspaceSnapshot';
+import {
+  createInitialWorkspaceSnapshot,
+  ensureDefaultWorkspacePageBoxes,
+} from '../../../core/domains/workspace/model/createInitialWorkspaceSnapshot';
 import { reduceWorkspace } from '../../../core/domains/workspace/model/reduceWorkspace';
 import { parseWorkspaceSnapshot } from '../../../core/domains/workspace/model/workspaceCodec';
 import { getOrderedBoxes } from '../../../core/domains/workspace/model/workspaceSelectors';
@@ -30,22 +33,22 @@ function resolveRenderableSnapshot(input: unknown, fallback: WorkspaceSnapshot) 
     return fallback;
   }
 
-  if (orderedBoxes.some((box) => box.isMinimized)) {
-    return {
-      ...parsed,
-      boxViewStatesById: Object.fromEntries(
-        Object.entries(parsed.boxViewStatesById).map(([boxId, viewState]) => [
-          boxId,
-          {
-            ...viewState,
-            isMinimized: false,
-          },
-        ]),
-      ),
-    };
-  }
+  const renderableSnapshot = orderedBoxes.some((box) => box.isMinimized)
+    ? {
+        ...parsed,
+        boxViewStatesById: Object.fromEntries(
+          Object.entries(parsed.boxViewStatesById).map(([boxId, viewState]) => [
+            boxId,
+            {
+              ...viewState,
+              isMinimized: false,
+            },
+          ]),
+        ),
+      }
+    : parsed;
 
-  return parsed;
+  return ensureDefaultWorkspacePageBoxes(renderableSnapshot);
 }
 
 export function createWorkspaceStore(storage: WorkspaceStoragePort) {

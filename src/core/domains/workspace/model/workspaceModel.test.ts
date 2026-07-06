@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createBookmark } from '../../bookmarks/services/createBookmark';
 import { createWorkspaceItem } from '../../items/model/item';
-import { createInitialWorkspaceSnapshot } from './createInitialWorkspaceSnapshot';
+import {
+  createInitialWorkspaceSnapshot,
+  ensureDefaultWorkspacePageBoxes,
+} from './createInitialWorkspaceSnapshot';
 import { reduceWorkspace } from './reduceWorkspace';
 import { getBoxItems } from './workspaceSelectors';
 import {
@@ -299,10 +302,66 @@ test('workspace export document round-trips with current schema', () => {
   const parsed = parseWorkspaceExportDocument(document);
 
   assert.equal(parsed.version, WORKSPACE_EXPORT_VERSION);
-  assert.equal(parsed.boxes.length, 3);
-  assert.equal(parsed.boxes[0].customTitle, null);
+  assert.equal(parsed.boxes.length, 20);
+  assert.equal(parsed.boxes[0].id, 'default-kanban');
+  assert.equal(parsed.boxes[0].customTitle, 'Priority flow');
   assert.equal(parsed.boxes[1].templateId, 'kanban');
   assert.equal(parsed.bookmarks[0].id, 'bookmark-export');
+});
+
+test('default workspace page boxes can be added to legacy snapshots without replacing user boxes', () => {
+  const snapshot = reduceWorkspace(createInitialWorkspaceSnapshot(), {
+    type: 'workspace.replaceBoxes',
+    boxes: [
+      {
+        id: 'legacy-inbox',
+        customTitle: 'Legacy inbox',
+        templateId: 'inbox',
+        templateState: {},
+        bounds: { x: 0, y: 0, width: 320, height: 360 },
+        isLocked: false,
+        isCollapsed: false,
+        isMinimized: false,
+        layout: 'list',
+        zIndex: 1,
+        items: [],
+      } satisfies WorkspaceBoxWithItems,
+    ],
+  });
+  const ensured = ensureDefaultWorkspacePageBoxes(snapshot);
+
+  assert.equal(ensured.boxesById['legacy-inbox']?.customTitle, 'Legacy inbox');
+  assert.equal(
+    Object.values(ensured.boxesById).filter((box) => box.templateId === 'kanban').length,
+    4,
+  );
+  assert.equal(
+    Object.values(ensured.boxesById).filter((box) => box.templateId === 'inbox').length,
+    2,
+  );
+  assert.ok(ensured.boxesById['default-launcher-tools']);
+});
+
+test('box.layoutPage stores masonry column and order slots', () => {
+  const snapshot = createInitialWorkspaceSnapshot();
+  const nextSnapshot = reduceWorkspace(snapshot, {
+    type: 'box.layoutPage',
+    positions: [
+      { boxId: 'default-kanban', columnIndex: 2, orderIndex: 1 },
+      { boxId: 'default-kanban-sprint', columnIndex: 0, orderIndex: 0 },
+    ],
+  });
+
+  assert.deepEqual(nextSnapshot.boxViewStatesById['default-kanban'].bounds, {
+    ...snapshot.boxViewStatesById['default-kanban'].bounds,
+    x: 2,
+    y: 1,
+  });
+  assert.deepEqual(nextSnapshot.boxViewStatesById['default-kanban-sprint'].bounds, {
+    ...snapshot.boxViewStatesById['default-kanban-sprint'].bounds,
+    x: 0,
+    y: 0,
+  });
 });
 
 test('workspace snapshot parser accepts current schema payloads', () => {

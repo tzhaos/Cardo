@@ -2,6 +2,7 @@ import {
   isKanbanTemplateId,
   type WorkspaceBox,
 } from '../../../../core/domains/workspace/model/workspace';
+import type { PointerEvent } from 'react';
 import BoxContainer from '../../../widgets/Box/BoxContainer';
 import BoxHeader from '../../../widgets/Box/BoxHeader';
 import {
@@ -15,14 +16,23 @@ import { useManagedBox, useManagedBoxController } from '../hooks/useManagedBoxCo
 interface ManagedBoxProps {
   boxId: string;
   placement?: 'canvas' | 'columns';
+  isMasonryDragging?: boolean;
+  onMasonryDragStart?: (event: PointerEvent<HTMLDivElement>, box: WorkspaceBox) => void;
 }
 
 interface ManagedBoxViewProps {
   box: WorkspaceBox;
   placement: 'canvas' | 'columns';
+  isMasonryDragging: boolean;
+  onMasonryDragStart?: (event: PointerEvent<HTMLDivElement>, box: WorkspaceBox) => void;
 }
 
-function ManagedBoxView({ box, placement }: ManagedBoxViewProps) {
+function ManagedBoxView({
+  box,
+  placement,
+  isMasonryDragging,
+  onMasonryDragStart,
+}: ManagedBoxViewProps) {
   const controller = useManagedBoxController(box);
   const content = isKanbanTemplateId(box.templateId) ? (
     <ManagedKanbanContent box={box} />
@@ -50,6 +60,7 @@ function ManagedBoxView({ box, placement }: ManagedBoxViewProps) {
       box={box}
       isActive={controller.isActive}
       isDragging={controller.isDragging}
+      isMasonryDragging={isMasonryDragging}
       editingSessionId={controller.editingSessionId}
       onFocus={controller.focusBox}
       onMouseEnter={controller.handleMouseEnter}
@@ -68,7 +79,7 @@ function ManagedBoxView({ box, placement }: ManagedBoxViewProps) {
           isEditing={controller.isEditing}
           isInteractionLocked={controller.isInteractionLocked}
           inputRef={controller.inputRef}
-          canDrag={placement === 'canvas'}
+          canDrag={placement === 'canvas' || Boolean(onMasonryDragStart)}
           canToggleLayout={!isKanbanTemplateId(box.templateId)}
           toggleLayoutLabel={controller.labels.toggleLayout}
           lockPositionLabel={controller.labels.lockPosition}
@@ -76,7 +87,14 @@ function ManagedBoxView({ box, placement }: ManagedBoxViewProps) {
           collapseLabel={controller.labels.collapse}
           expandLabel={controller.labels.expand}
           closeLabel={controller.labels.close}
-          onDragStart={controller.handleDragStart}
+          onDragStart={(event) => {
+            if (placement === 'columns' && onMasonryDragStart) {
+              onMasonryDragStart(event, box);
+              return;
+            }
+
+            controller.handleDragStart(event);
+          }}
           onStartEdit={(event) => {
             event.stopPropagation();
             controller.startTitleEdit();
@@ -94,12 +112,24 @@ function ManagedBoxView({ box, placement }: ManagedBoxViewProps) {
   );
 }
 
-export default function ManagedBox({ boxId, placement = 'canvas' }: ManagedBoxProps) {
+export default function ManagedBox({
+  boxId,
+  placement = 'canvas',
+  isMasonryDragging = false,
+  onMasonryDragStart,
+}: ManagedBoxProps) {
   const box = useManagedBox(boxId);
 
   if (!box) {
     return null;
   }
 
-  return <ManagedBoxView box={box} placement={placement} />;
+  return (
+    <ManagedBoxView
+      box={box}
+      placement={placement}
+      isMasonryDragging={isMasonryDragging}
+      onMasonryDragStart={onMasonryDragStart}
+    />
+  );
 }
