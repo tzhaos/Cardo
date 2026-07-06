@@ -71,7 +71,7 @@ export default function ManagedBoxContent({
       }
       emptyState={
         isEmpty ? (
-          <div className="col-span-full rounded-md border border-dashed border-win-border px-3 py-4 text-center text-sm text-win-text-secondary">
+          <div className="col-span-full rounded-2xl border border-dashed border-win-border px-3 py-4 text-center text-sm text-win-text-secondary">
             {t('box.empty')}
           </div>
         ) : null

@@ -129,7 +129,7 @@ export const BOX_TEMPLATE_DEFINITIONS = {
     descriptionKey: 'template.kanban.description',
     actionKey: 'template.kanban.action',
     defaultLayout: 'list',
-    defaultBounds: { width: 680, height: 440 },
+    defaultBounds: { width: 360, height: 280 },
     createDefaultState: () => ({
       kanbanColumns: DEFAULT_KANBAN_COLUMNS.map((column) => ({ ...column })),
     }),

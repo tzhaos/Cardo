@@ -43,7 +43,7 @@ export function WinSelect<Value extends string>({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex min-w-[140px] items-center justify-between gap-6 rounded-md border border-win-border-strong bg-win-bg-secondary px-3 py-1.5 text-sm transition-colors hover:bg-win-hover active:bg-win-active"
+        className="kb-soft-button flex min-w-[140px] items-center justify-between gap-6 rounded-full border border-win-border-strong px-3 py-1.5 text-sm transition-colors active:bg-win-active"
       >
         <span className="text-win-text">{activeLabel}</span>
         <ChevronDown className="h-4 w-4 text-win-text-secondary" />
@@ -56,7 +56,7 @@ export function WinSelect<Value extends string>({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
             transition={{ duration: 0.1 }}
-            className="absolute right-0 top-full z-50 mt-1 min-w-[140px] rounded-md border border-win-border bg-win-mica py-1 shadow-win-flyout"
+            className="kb-add-panel absolute right-0 top-full z-50 mt-2 min-w-[140px] rounded-2xl border py-1 shadow-win-flyout"
           >
             {options.map((option) => {
               const isActive = option.value === value;
@@ -69,14 +69,14 @@ export function WinSelect<Value extends string>({
                     onChange(option.value);
                     setIsOpen(false);
                   }}
-                  className="group relative flex w-full items-center px-3 py-1.5 text-left text-sm transition-colors hover:bg-win-hover"
+                  className="kb-soft-row group relative flex w-full items-center px-3 py-1.5 text-left text-sm transition-colors"
                 >
                   {isActive ? (
-                    <div className="absolute left-0 top-1/2 h-3/5 w-1 -translate-y-1/2 rounded-r-full bg-win-accent" />
+                    <div className="absolute left-3 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-win-accent" />
                   ) : null}
                   <span
                     className={cn(
-                      'pl-2',
+                      'pl-4',
                       isActive
                         ? 'font-medium text-win-text'
                         : 'text-win-text-secondary group-hover:text-win-text',
@@ -104,7 +104,7 @@ export function SegmentedControl<Value extends string>({
   onChange: (value: Value) => void;
 }) {
   return (
-    <div className="inline-flex rounded-lg border border-win-border bg-win-bg-secondary p-1 shadow-win-button">
+    <div className="kb-soft-segment inline-flex rounded-full border border-win-border p-1 shadow-win-button">
       {options.map((option) => {
         const isActive = option.value === value;
 
@@ -114,7 +114,7 @@ export function SegmentedControl<Value extends string>({
             type="button"
             onClick={() => onChange(option.value)}
             className={cn(
-              'rounded-md px-3 py-1.5 text-sm transition-colors',
+              'rounded-full px-3 py-1.5 text-sm transition-colors',
               isActive
                 ? 'bg-win-active text-win-text'
                 : 'text-win-text-secondary hover:bg-win-hover',
@@ -164,7 +164,7 @@ export function SettingRow({
   action: ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg border border-win-border bg-win-card p-4 shadow-sm">
+    <div className="kb-soft-card flex items-center justify-between gap-4 rounded-2xl border border-win-border p-4">
       <div className="flex items-center gap-4">
         {icon}
         <span className="text-sm font-medium text-win-text">{title}</span>
@@ -190,7 +190,7 @@ export function ActionRow({
       type="button"
       onClick={onClick}
       className={cn(
-        'flex items-center justify-between p-4 text-left transition-colors hover:bg-win-hover',
+        'kb-soft-row flex items-center justify-between p-4 text-left transition-colors',
         roundedClassName,
       )}
     >
@@ -223,7 +223,7 @@ export function AccentPalette({
             type="button"
             onClick={() => onChange(color)}
             className={cn(
-              'flex h-10 w-10 items-center justify-center rounded-lg border transition-transform hover:scale-[1.04]',
+              'flex h-10 w-10 items-center justify-center rounded-full border transition-transform hover:scale-[1.04]',
               isActive ? 'border-win-text shadow-win-button' : 'border-black/10',
             )}
             style={{ backgroundColor: color }}

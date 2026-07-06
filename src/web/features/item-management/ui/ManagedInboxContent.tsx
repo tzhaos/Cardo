@@ -37,7 +37,7 @@ export default function ManagedInboxContent({
         key={target.id}
         type="button"
         onClick={() => controller.routeItem(item.id, target.id)}
-        className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-xs text-win-text transition-colors hover:bg-win-hover"
+        className="kb-soft-row flex w-full items-center gap-2 rounded-xl px-2 py-2 text-left text-xs text-win-text transition-colors"
       >
         <TargetIcon size={14} className="shrink-0 text-win-text-secondary" />
         <span className="min-w-0 flex-1">
@@ -73,7 +73,7 @@ export default function ManagedInboxContent({
 
   const renderRouteSelector = (item: PlacedWorkspaceItem) => (
     <div
-      className="border-t border-win-border bg-win-bg-secondary px-2 py-1.5"
+      className="border-t border-win-border bg-win-bg-secondary/60 px-2 py-1.5"
       onPointerDown={stopControlEvent}
       onDragStart={stopControlEvent}
       onKeyDown={stopControlEvent}
@@ -83,7 +83,7 @@ export default function ManagedInboxContent({
         disabled={controller.routeTargets.length === 0}
         onClick={() => controller.toggleRoutePicker(item.id)}
         aria-expanded={controller.openRouteItemId === item.id}
-        className="kb-secondary-button flex h-8 w-full items-center gap-2 rounded-md border border-win-border bg-win-card px-2 text-left text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+        className="kb-secondary-button flex h-8 w-full items-center gap-2 rounded-full border px-2 text-left text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-50"
       >
         <MoveRight size={14} className="shrink-0 text-win-text-secondary" />
         <span className="min-w-0 flex-1 truncate">
@@ -101,8 +101,8 @@ export default function ManagedInboxContent({
       </button>
 
       {controller.openRouteItemId === item.id ? (
-        <div className="mt-1.5 rounded-md border border-win-border bg-win-card p-1.5 shadow-win-card">
-          <label className="flex h-8 items-center gap-2 rounded-md border border-win-border bg-win-bg-secondary px-2">
+        <div className="kb-add-panel mt-1.5 rounded-2xl border p-1.5">
+          <label className="kb-add-input flex h-8 items-center gap-2 rounded-full px-2">
             <Search size={13} className="shrink-0 text-win-text-secondary" />
             <input
               value={controller.routeSearchQuery}
@@ -162,7 +162,7 @@ export default function ManagedInboxContent({
       onDrop={controller.drop.handleItemDrop}
       onDragEnd={controller.drop.handleItemDragEnd}
     >
-      <div className="overflow-hidden rounded-md bg-win-card shadow-sm">
+      <div className="kb-soft-card overflow-hidden rounded-2xl border">
         <ManagedItemCard
           boxId={box.id}
           item={item}
@@ -201,7 +201,7 @@ export default function ManagedInboxContent({
       }
       emptyState={
         isEmpty ? (
-          <div className="rounded-md border border-dashed border-win-border px-3 py-4 text-center text-sm text-win-text-secondary">
+          <div className="rounded-2xl border border-dashed border-win-border px-3 py-4 text-center text-sm text-win-text-secondary">
             {controller.labels.empty}
           </div>
         ) : null

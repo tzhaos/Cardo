@@ -64,13 +64,17 @@ export default function AddItemPanel({
     return (
       <button
         onClick={onOpen}
+        title={t('addItem.button')}
+        aria-label={t('addItem.button')}
         className={cn(
-          'kb-add-trigger mt-2 flex items-center justify-center gap-2 rounded-md border border-dashed p-2 text-sm transition-colors',
-          layout === 'grid' ? 'aspect-square flex-col' : 'w-full shrink-0',
+          'kb-add-trigger mt-2 flex items-center justify-center gap-2 rounded-full border p-2 text-sm transition-colors',
+          layout === 'grid' ? 'aspect-square flex-col' : 'w-full shrink-0 py-1.5',
         )}
       >
-        <Plus size={16} />
-        <span>{t('addItem.button')}</span>
+        <span className="kb-add-trigger-icon flex h-7 w-7 items-center justify-center rounded-full">
+          <Plus size={15} />
+        </span>
+        {layout === 'list' ? <span>{t('addItem.button')}</span> : null}
       </button>
     );
   }
@@ -101,7 +105,7 @@ export default function AddItemPanel({
   return (
     <div
       className={cn(
-        'kb-add-panel mt-2 flex flex-col gap-2 rounded-md border border-dashed p-2',
+        'kb-add-panel mt-2 flex flex-col gap-2 rounded-2xl border p-2',
         layout === 'grid' ? 'col-span-3' : 'w-full shrink-0',
       )}
     >
@@ -115,35 +119,35 @@ export default function AddItemPanel({
       <div className="grid grid-cols-2 gap-2">
         <button
           onClick={() => onStartAdd('file')}
-          className="kb-secondary-button flex items-center gap-2 rounded-xl p-2 text-xs transition-colors"
+          className="kb-secondary-button flex items-center gap-2 rounded-full border p-2 text-xs transition-colors"
         >
           <File size={12} className="text-[var(--role-note-fg)]" />
           {t(ITEM_TYPE_PLURAL_KEYS.file)}
         </button>
         <button
           onClick={() => onStartAdd('folder')}
-          className="kb-secondary-button flex items-center gap-2 rounded-xl p-2 text-xs transition-colors"
+          className="kb-secondary-button flex items-center gap-2 rounded-full border p-2 text-xs transition-colors"
         >
           <Folder size={12} className="text-[var(--role-folder-fg)]" />
           {t(ITEM_TYPE_PLURAL_KEYS.folder)}
         </button>
         <button
           onClick={() => onStartAdd('url')}
-          className="kb-secondary-button flex items-center gap-2 rounded-xl p-2 text-xs transition-colors"
+          className="kb-secondary-button flex items-center gap-2 rounded-full border p-2 text-xs transition-colors"
         >
           <LinkIcon size={12} className="text-[var(--role-link-fg)]" />
           {t(ITEM_TYPE_PLURAL_KEYS.url)}
         </button>
         <button
           onClick={() => onStartAdd('shortcut')}
-          className="kb-secondary-button flex items-center gap-2 rounded-xl p-2 text-xs transition-colors"
+          className="kb-secondary-button flex items-center gap-2 rounded-full border p-2 text-xs transition-colors"
         >
           <Rocket size={12} className="text-[var(--role-generic-fg)]" />
           {t(ITEM_TYPE_PLURAL_KEYS.shortcut)}
         </button>
         <button
           onClick={() => onStartAdd('note')}
-          className="kb-secondary-button flex items-center gap-2 rounded-xl p-2 text-xs transition-colors"
+          className="kb-secondary-button flex items-center gap-2 rounded-full border p-2 text-xs transition-colors"
         >
           <ClipboardPaste size={12} className="text-[var(--role-generic-fg)]" />
           {t(ITEM_TYPE_PLURAL_KEYS.note)}

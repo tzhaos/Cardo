@@ -4,7 +4,7 @@ interface BrandBadgeProps {
 
 export default function BrandBadge({ label }: BrandBadgeProps) {
   return (
-    <div className="kb-brand-shell pointer-events-none fixed left-5 top-0 z-[99993] flex h-11 select-none items-center gap-3">
+    <div className="kb-brand-shell pointer-events-none fixed left-6 top-4 z-[99993] flex h-12 select-none items-center gap-3">
       <div className="kb-brand-mark flex h-7 w-7 items-center justify-center rounded-full border">
         <svg
           width="16"

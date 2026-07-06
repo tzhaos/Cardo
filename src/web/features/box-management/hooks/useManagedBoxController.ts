@@ -90,17 +90,20 @@ export function useManagedBoxController(box: WorkspaceBox) {
     updateBox({ isCollapsed: !box.isCollapsed });
   };
 
-  const allBoxes = getOrderedBoxes(snapshot);
+  const pageBoxes = getOrderedBoxes(snapshot).filter(
+    (candidateBox) => candidateBox.templateId === box.templateId,
+  );
 
   const { handleDragStart } = useBoxDrag({
     box,
-    allBoxes,
+    allBoxes: pageBoxes,
     onFocus: focusBox,
     onUpdate: updateBox,
     setIsDragging,
   });
   const { handleResize } = useBoxResize({
     box,
+    allBoxes: pageBoxes,
     onUpdate: updateBox,
   });
 

@@ -24,7 +24,7 @@ export default function ManagedBookmarkCollectionContent({
       onPointerDown={controller.handlePointerDown}
     >
       {controller.bookmarks.length === 0 ? (
-        <div className="rounded-md border border-dashed border-win-border px-3 py-4 text-center text-sm text-win-text-secondary">
+        <div className="rounded-2xl border border-dashed border-win-border px-3 py-4 text-center text-sm text-win-text-secondary">
           {mode === 'frequent' ? controller.labels.noFrequent : controller.labels.empty}
         </div>
       ) : null}
@@ -45,11 +45,11 @@ export default function ManagedBookmarkCollectionContent({
               }
             }}
             className={cn(
-              'group flex min-w-0 cursor-pointer gap-3 rounded-md p-2 text-left transition-colors hover:bg-win-hover',
+              'group kb-item-card-list flex min-w-0 cursor-pointer gap-3 rounded-2xl p-2 text-left transition-colors hover:bg-win-hover',
               box.layout === 'grid' ? 'min-h-[8rem] flex-col' : 'items-center',
             )}
           >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-file-bg text-[var(--role-link-fg)]">
+            <div className="kb-item-icon-chip flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-file-bg text-[var(--role-link-fg)]">
               <ExternalLink size={17} />
             </div>
             <span className="min-w-0 flex-1">
@@ -58,7 +58,7 @@ export default function ManagedBookmarkCollectionContent({
                 {bookmark.url}
               </span>
               {folder ? (
-                <span className="mt-2 inline-flex max-w-full items-center gap-1 rounded-md bg-win-bg-secondary px-2 py-0.5 text-xs text-win-text-secondary">
+                <span className="mt-2 inline-flex max-w-full items-center gap-1 rounded-full bg-win-bg-secondary px-2 py-0.5 text-xs text-win-text-secondary">
                   <Folder size={11} />
                   <span className="truncate">{folder.title}</span>
                 </span>
@@ -73,7 +73,7 @@ export default function ManagedBookmarkCollectionContent({
                   controller.togglePinned(bookmark);
                 }}
                 title={bookmark.isPinned ? controller.labels.unpin : controller.labels.pin}
-                className="kb-item-list-control rounded-md p-1.5 transition-colors hover:bg-win-hover"
+                className="kb-item-list-control rounded-full p-1.5 transition-colors hover:bg-win-hover"
               >
                 <Star
                   size={14}
@@ -90,7 +90,7 @@ export default function ManagedBookmarkCollectionContent({
                   controller.addBookmarkToBox(bookmark);
                 }}
                 title={alreadyInBox ? controller.labels.alreadyInBox : controller.labels.addToBox}
-                className="kb-item-list-control rounded-md p-1.5 transition-colors hover:bg-win-hover disabled:cursor-not-allowed disabled:opacity-40"
+                className="kb-item-list-control rounded-full p-1.5 transition-colors hover:bg-win-hover disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <Plus size={14} />
               </button>

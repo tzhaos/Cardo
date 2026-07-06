@@ -8,13 +8,79 @@ import {
 import { hasEditingSession } from '../../../app/controllers/interactionController';
 import { useCanvasStore } from '../../../app/stores/useCanvasStore';
 const RESIZE_GRID = 20;
+const MIN_BOX_GAP = 28;
 
 interface UseBoxResizeOptions {
   box: WorkspaceBox;
+  allBoxes: WorkspaceBox[];
   onUpdate: (updates: { bounds: Partial<WorkspaceBox['bounds']> }) => void;
 }
 
-export function useBoxResize({ box, onUpdate }: UseBoxResizeOptions) {
+function rangesHaveGapConflict(
+  firstStart: number,
+  firstEnd: number,
+  secondStart: number,
+  secondEnd: number,
+) {
+  return !(firstEnd + MIN_BOX_GAP <= secondStart || secondEnd + MIN_BOX_GAP <= firstStart);
+}
+
+function floorToGrid(value: number) {
+  return Math.floor(value / RESIZE_GRID) * RESIZE_GRID;
+}
+
+function constrainResizedBoxDimensions(
+  box: WorkspaceBox,
+  allBoxes: WorkspaceBox[],
+  width: number,
+  height: number,
+) {
+  let nextWidth = width;
+  let nextHeight = height;
+
+  for (let pass = 0; pass < 3; pass += 1) {
+    for (const other of allBoxes) {
+      if (other.id === box.id) {
+        continue;
+      }
+
+      const hasVerticalConflict = rangesHaveGapConflict(
+        box.bounds.y,
+        box.bounds.y + nextHeight,
+        other.bounds.y,
+        other.bounds.y + other.bounds.height,
+      );
+
+      if (hasVerticalConflict && other.bounds.x > box.bounds.x) {
+        nextWidth = Math.min(
+          nextWidth,
+          Math.max(BOX_MIN_WIDTH, floorToGrid(other.bounds.x - box.bounds.x - MIN_BOX_GAP)),
+        );
+      }
+
+      const hasHorizontalConflict = rangesHaveGapConflict(
+        box.bounds.x,
+        box.bounds.x + nextWidth,
+        other.bounds.x,
+        other.bounds.x + other.bounds.width,
+      );
+
+      if (hasHorizontalConflict && other.bounds.y > box.bounds.y) {
+        nextHeight = Math.min(
+          nextHeight,
+          Math.max(BOX_MIN_HEIGHT, floorToGrid(other.bounds.y - box.bounds.y - MIN_BOX_GAP)),
+        );
+      }
+    }
+  }
+
+  return {
+    width: nextWidth,
+    height: nextHeight,
+  };
+}
+
+export function useBoxResize({ box, allBoxes, onUpdate }: UseBoxResizeOptions) {
   const setInteractionMode = useCanvasStore((state) => state.setInteractionMode);
 
   const handleResize = (event: ReactMouseEvent) => {
@@ -40,7 +106,7 @@ export function useBoxResize({ box, onUpdate }: UseBoxResizeOptions) {
         minHeight: BOX_MIN_HEIGHT,
         grid: RESIZE_GRID,
       });
-      onUpdate({ bounds: { width, height } });
+      onUpdate({ bounds: constrainResizedBoxDimensions(box, allBoxes, width, height) });
     };
 
     const onMouseUp = () => {

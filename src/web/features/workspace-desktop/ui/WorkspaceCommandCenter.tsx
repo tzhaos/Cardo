@@ -52,7 +52,7 @@ function ResultSection({ children, emptyLabel, icon: Icon, isEmpty, title }: Res
       </div>
       <div className="flex flex-col gap-1">
         {isEmpty ? (
-          <div className="rounded-lg px-3 py-2 text-sm text-win-text-secondary">{emptyLabel}</div>
+          <div className="rounded-2xl px-3 py-2 text-sm text-win-text-secondary">{emptyLabel}</div>
         ) : (
           children
         )}
@@ -82,7 +82,7 @@ export default function WorkspaceCommandCenter({
   return (
     <div
       ref={rootRef}
-      className="kb-command-center fixed right-6 top-[3.5rem] z-[99992] w-[min(22rem,calc(100vw-3rem))]"
+      className="kb-command-center fixed right-6 top-4 z-[99992] w-[min(17rem,calc(100vw-3rem))]"
       onFocus={() => setFocused(true)}
       onBlur={(event) => {
         const nextFocusedNode = event.relatedTarget;
@@ -94,7 +94,7 @@ export default function WorkspaceCommandCenter({
         setFocused(false);
       }}
     >
-      <div className={cn('kb-command-search flex h-10 items-center gap-2 rounded-full px-3')}>
+      <div className={cn('kb-command-search flex h-12 items-center gap-2 rounded-full px-4')}>
         <Search size={16} className="shrink-0 text-win-text-secondary" />
         <input
           value={controller.query}
@@ -122,7 +122,7 @@ export default function WorkspaceCommandCenter({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ type: 'tween', duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-            className="kb-command-panel custom-scrollbar absolute right-0 top-[calc(100%+12px)] max-h-[min(58vh,32rem)] w-[min(28rem,calc(100vw-3rem))] overflow-y-auto rounded-lg p-2"
+            className="kb-command-panel absolute right-0 top-[calc(100%+8px)] max-h-[min(58vh,32rem)] w-[min(28rem,calc(100vw-3rem))] overflow-y-auto rounded-[10px] p-2"
             onMouseDown={(event) => event.preventDefault()}
           >
             <ResultSection
@@ -143,7 +143,7 @@ export default function WorkspaceCommandCenter({
                       closePanel();
                     }}
                     className={cn(
-                      'kb-command-result flex items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition',
+                      'kb-command-result flex items-center gap-2 rounded-2xl px-3 py-2 text-left text-sm transition',
                       box.isLocked ? 'text-red-400' : 'text-win-text',
                     )}
                   >
@@ -169,7 +169,7 @@ export default function WorkspaceCommandCenter({
                       controller.openBookmark(bookmark);
                       closePanel();
                     }}
-                    className="kb-command-result flex items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-win-text transition"
+                    className="kb-command-result flex items-center gap-2 rounded-2xl px-3 py-2 text-left text-sm text-win-text transition"
                   >
                     <Star
                       size={15}
@@ -207,7 +207,7 @@ export default function WorkspaceCommandCenter({
                       controller.focusItem(box, item.id);
                       closePanel();
                     }}
-                    className="kb-command-result flex items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-win-text transition"
+                    className="kb-command-result flex items-center gap-2 rounded-2xl px-3 py-2 text-left text-sm text-win-text transition"
                   >
                     <ClipboardList size={15} className="shrink-0 text-win-text-secondary" />
                     <span className="min-w-0 flex-1 truncate">{item.title}</span>

@@ -47,7 +47,7 @@ test('box template definitions provide default layout and bounds', () => {
   assert.equal(readingList.defaultLayout, 'list');
   assert.deepEqual(readingList.defaultBounds, { width: 380, height: 420 });
   assert.equal(kanban.defaultLayout, 'list');
-  assert.deepEqual(kanban.defaultBounds, { width: 680, height: 440 });
+  assert.deepEqual(kanban.defaultBounds, { width: 360, height: 280 });
   assert.equal(projectBoard.defaultLayout, 'list');
   assert.deepEqual(projectBoard.defaultBounds, { width: 760, height: 460 });
   assert.equal(dailyDesk.defaultLayout, 'list');

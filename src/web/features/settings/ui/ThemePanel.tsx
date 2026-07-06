@@ -10,7 +10,7 @@ import { AccentPalette, SegmentedControl, SettingRow } from './SettingsControls'
 
 function ThemePreviewCard({ resolvedTheme }: { resolvedTheme: ResolvedAppTheme }) {
   return (
-    <div className="rounded-xl border border-win-border bg-win-card p-4 shadow-sm">
+    <div className="kb-soft-card rounded-2xl border p-4">
       <div
         className={cn(
           'relative overflow-hidden rounded-[20px] border border-black/50 bg-[#0b0b0b] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]',
@@ -92,7 +92,7 @@ export function ThemePanel() {
         }
       />
 
-      <div className="rounded-lg border border-win-border bg-win-card p-4 shadow-sm">
+      <div className="kb-soft-card rounded-2xl border p-4">
         <div className="mb-4 text-sm font-medium text-win-text">{copy.recentColorsTitle}</div>
         <AccentPalette
           colors={settings.recentColors}
@@ -108,12 +108,12 @@ export function ThemePanel() {
               value={settings.accentColor}
               onChange={settings.setAccentColor}
             />
-            <div className="mt-4 flex items-center justify-between rounded-lg border border-win-border bg-win-bg-secondary px-3 py-3">
+            <div className="kb-add-panel mt-4 flex items-center justify-between rounded-2xl border px-3 py-3">
               <span className="text-sm text-win-text">{copy.customColorTitle}</span>
               <button
                 type="button"
                 onClick={() => settings.colorInputRef.current?.click()}
-                className="rounded-md border border-win-border-strong bg-win-card px-3 py-1.5 text-sm text-win-text transition-colors hover:bg-win-hover"
+                className="kb-secondary-button rounded-full border px-3 py-1.5 text-sm text-win-text transition-colors"
               >
                 {settings.accentColor.toUpperCase()}
               </button>

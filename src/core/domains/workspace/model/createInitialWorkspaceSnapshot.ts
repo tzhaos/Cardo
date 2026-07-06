@@ -28,7 +28,7 @@ const INITIAL_WORKSPACE_BOXES: InitialWorkspaceBoxConfig[] = [
     columnIndex: 0,
     orderIndex: 0,
     width: 340,
-    height: 460,
+    height: 280,
   },
   {
     id: 'default-kanban-sprint',
@@ -37,7 +37,7 @@ const INITIAL_WORKSPACE_BOXES: InitialWorkspaceBoxConfig[] = [
     columnIndex: 1,
     orderIndex: 0,
     width: 340,
-    height: 420,
+    height: 280,
   },
   {
     id: 'default-kanban-review',
@@ -46,7 +46,7 @@ const INITIAL_WORKSPACE_BOXES: InitialWorkspaceBoxConfig[] = [
     columnIndex: 2,
     orderIndex: 0,
     width: 340,
-    height: 500,
+    height: 280,
   },
   {
     id: 'default-kanban-done',
@@ -55,7 +55,7 @@ const INITIAL_WORKSPACE_BOXES: InitialWorkspaceBoxConfig[] = [
     columnIndex: 3,
     orderIndex: 0,
     width: 320,
-    height: 360,
+    height: 280,
   },
   {
     id: 'default-collection-folders',

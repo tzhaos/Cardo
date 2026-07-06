@@ -107,7 +107,7 @@ function KanbanColumnView({
   return (
     <section
       className={cn(
-        'group flex min-w-[210px] flex-1 flex-col rounded-lg border border-win-border bg-win-bg-secondary transition-colors',
+        'kb-kanban-column group flex min-w-[210px] flex-1 flex-col rounded-2xl border transition-colors',
         isDropTarget ? 'border-win-accent bg-win-hover' : '',
       )}
       onDragEnter={(event) => {
@@ -144,7 +144,7 @@ function KanbanColumnView({
                   onFinishColumnEdit(false);
                 }
               }}
-              className="kb-box-input min-w-0 flex-1 rounded-md border px-2 py-1 text-sm font-semibold outline-none"
+              className="kb-box-input min-w-0 flex-1 rounded-xl border px-2 py-1 text-sm font-semibold outline-none"
               autoFocus
             />
             <button
@@ -152,7 +152,7 @@ function KanbanColumnView({
               onClick={() => onFinishColumnEdit(true)}
               title={labels.saveColumn}
               aria-label={labels.saveColumn}
-              className="kb-icon-button rounded-md p-1 transition-colors"
+              className="kb-icon-button rounded-full p-1 transition-colors"
             >
               <Check size={13} />
             </button>
@@ -161,7 +161,7 @@ function KanbanColumnView({
               onClick={() => onFinishColumnEdit(false)}
               title={labels.cancelColumnEdit}
               aria-label={labels.cancelColumnEdit}
-              className="kb-icon-button rounded-md p-1 transition-colors"
+              className="kb-icon-button rounded-full p-1 transition-colors"
             >
               <X size={13} />
             </button>
@@ -184,7 +184,7 @@ function KanbanColumnView({
             disabled={!canMoveLeft}
             onClick={() => onMoveColumn(column.id, columnIndex - 1)}
             title={labels.moveColumnLeft}
-            className="kb-icon-button rounded-md p-1 transition-colors disabled:opacity-30"
+            className="kb-icon-button rounded-full p-1 transition-colors disabled:opacity-30"
           >
             <ChevronLeft size={13} />
           </button>
@@ -193,7 +193,7 @@ function KanbanColumnView({
             disabled={!canMoveRight}
             onClick={() => onMoveColumn(column.id, columnIndex + 1)}
             title={labels.moveColumnRight}
-            className="kb-icon-button rounded-md p-1 transition-colors disabled:opacity-30"
+            className="kb-icon-button rounded-full p-1 transition-colors disabled:opacity-30"
           >
             <ChevronRight size={13} />
           </button>
@@ -201,7 +201,7 @@ function KanbanColumnView({
             type="button"
             onClick={() => onStartColumnEdit(column)}
             title={labels.renameColumn}
-            className="kb-icon-button rounded-md p-1 transition-colors"
+            className="kb-icon-button rounded-full p-1 transition-colors"
           >
             <Pencil size={13} />
           </button>
@@ -210,7 +210,7 @@ function KanbanColumnView({
             disabled={!canDelete}
             onClick={() => onDeleteColumn(column.id)}
             title={labels.deleteColumn}
-            className="kb-icon-button kb-icon-button-danger rounded-md p-1 transition-colors disabled:opacity-30"
+            className="kb-icon-button kb-icon-button-danger rounded-full p-1 transition-colors disabled:opacity-30"
           >
             <Trash2 size={13} />
           </button>
@@ -219,7 +219,7 @@ function KanbanColumnView({
 
       <div className="kb-scroll-hidden flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-2 pb-2">
         {items.length === 0 ? (
-          <div className="rounded-md border border-dashed border-win-border px-3 py-4 text-center text-sm text-win-text-secondary">
+          <div className="rounded-2xl border border-dashed border-win-border px-3 py-4 text-center text-sm text-win-text-secondary">
             {labels.emptyColumn}
           </div>
         ) : null}
@@ -231,7 +231,7 @@ function KanbanColumnView({
             onDragOver={(event) => onCardDragOver(event, item.id, column.id)}
             onDrop={(event) => onCardDrop(event, item.id, column.id)}
             onDragEnd={onCardDragEnd}
-            className="relative rounded-md bg-win-card shadow-sm transition-opacity"
+            className="relative rounded-2xl bg-win-card shadow-sm transition-opacity"
           >
             {dropIndicator?.columnId === column.id &&
             dropIndicator.itemId === item.id &&
@@ -316,13 +316,13 @@ export default function ManagedKanbanContent({ box }: ManagedKanbanContentProps)
           type="button"
           onClick={() => controller.addColumn()}
           title={controller.labels.addColumn}
-          className="kb-secondary-button flex min-w-[150px] shrink-0 items-center justify-center gap-2 self-stretch rounded-lg border border-dashed border-win-border bg-win-bg-secondary px-3 text-sm transition-colors"
+          className="kb-secondary-button flex min-w-[150px] shrink-0 items-center justify-center gap-2 self-stretch rounded-2xl border px-3 text-sm transition-colors"
         >
           <Plus size={16} />
           <span>{controller.labels.addColumn}</span>
         </button>
       ) : (
-        <div className="flex min-w-[150px] shrink-0 items-center justify-center self-stretch rounded-lg border border-dashed border-win-border bg-win-bg-secondary px-3 text-center text-sm text-win-text-secondary">
+        <div className="kb-add-panel flex min-w-[150px] shrink-0 items-center justify-center self-stretch rounded-2xl border px-3 text-center text-sm text-win-text-secondary">
           {controller.labels.columnLimitReached}
         </div>
       )}

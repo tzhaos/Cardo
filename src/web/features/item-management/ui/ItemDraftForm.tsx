@@ -50,7 +50,7 @@ export default function ItemDraftForm({
   return (
     <div
       ref={rootRef}
-      className={cn('kb-add-panel relative flex flex-col gap-2 rounded-md border p-2', className)}
+      className={cn('kb-add-panel relative flex flex-col gap-2 rounded-2xl border p-2', className)}
       onClick={stopInteraction}
       onPointerDown={stopInteraction}
     >
@@ -107,7 +107,7 @@ export default function ItemDraftForm({
       <div className="mt-1 flex justify-end gap-2">
         <button
           onClick={onCancel}
-          className="kb-secondary-button rounded-lg px-3 py-1.5 text-xs transition-colors"
+          className="kb-secondary-button rounded-full border px-3 py-1.5 text-xs transition-colors"
           type="button"
         >
           {cancelLabel}
@@ -115,7 +115,7 @@ export default function ItemDraftForm({
         <button
           onClick={onSave}
           disabled={saveDisabled}
-          className="kb-primary-button rounded-lg px-3 py-1.5 text-xs transition-colors disabled:opacity-50"
+          className="kb-primary-button rounded-full px-3 py-1.5 text-xs transition-colors disabled:opacity-50"
           type="button"
         >
           {submitLabel}

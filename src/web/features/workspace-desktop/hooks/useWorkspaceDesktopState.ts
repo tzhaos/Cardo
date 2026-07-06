@@ -5,7 +5,10 @@ import { usePreferencesStore } from '../../../app/stores/usePreferencesStore';
 import { useVisibleBoxes, useWorkspaceDispatch } from '../../../app/stores/useWorkspaceSelectors';
 import { createWorkspaceBox } from '../../../app/use-cases/createWorkspaceBox';
 import { BOX_TEMPLATE_LIBRARY } from '../../../../core/domains/workspace/model/boxTemplates';
-import type { BoxTemplateId } from '../../../../core/domains/workspace/model/workspace';
+import {
+  MAX_WORKSPACE_BOXES,
+  type BoxTemplateId,
+} from '../../../../core/domains/workspace/model/workspace';
 
 export type WorkspaceProductTabId = BoxTemplateId;
 
@@ -76,6 +79,7 @@ export function useWorkspaceDesktopState() {
     theme,
     activeTabId,
     boxCount: visibleBoxes.length,
+    hasReachedBoxLimit: visibleBoxes.length >= MAX_WORKSPACE_BOXES,
     tabs,
     pageEmptyLabel: t('workspace.pageEmpty'),
     visibleBoxes: visibleTabBoxes,

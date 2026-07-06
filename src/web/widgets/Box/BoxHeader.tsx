@@ -124,7 +124,7 @@ export default function BoxHeader({
                 onFinishEditing(false);
               }
             }}
-            className="kb-box-input w-full truncate rounded-lg border px-2 py-1 text-sm font-medium outline-none transition-colors"
+            className="kb-box-input w-full truncate rounded-xl border px-2 py-1 text-sm font-medium outline-none transition-colors"
             onPointerDown={(event) => event.stopPropagation()}
             onPaste={(event) => event.stopPropagation()}
             onDragStart={(event) => event.stopPropagation()}

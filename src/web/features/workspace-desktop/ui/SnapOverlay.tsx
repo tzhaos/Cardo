@@ -17,19 +17,19 @@ export default function SnapOverlay() {
         <div
           key={`${guide.type}-${guide.pos}-${index}`}
           className={cn(
-            'absolute z-[99980] bg-win-accent pointer-events-none',
+            'absolute z-[99980] bg-win-accent/60 pointer-events-none',
             guide.type === 'vertical' ? 'top-0 h-full w-px' : 'left-0 h-px w-full',
           )}
           style={{
             [guide.type === 'vertical' ? 'left' : 'top']:
               guide.pos + (guide.type === 'vertical' ? camera.panX : camera.panY),
-            boxShadow: '0 0 0 1px var(--color-win-accent)',
+            boxShadow: '0 0 12px color-mix(in srgb, var(--color-win-accent) 42%, transparent)',
           }}
         />
       ))}
 
       <div
-        className="absolute z-[99970] rounded-xl border-2 border-win-accent bg-win-active transition-all duration-100 pointer-events-none"
+        className="absolute z-[99970] rounded-[24px] border border-win-accent bg-win-active/35 transition-all duration-100 pointer-events-none"
         style={{
           left: worldToScreen(snapPreview, camera).x,
           top: worldToScreen(snapPreview, camera).y,

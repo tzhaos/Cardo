@@ -74,7 +74,7 @@ export function DataPanel() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="rounded-lg border border-win-border bg-win-card p-5 shadow-sm">
+      <div className="kb-soft-card rounded-2xl border p-5">
         <div className="mb-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Cloud className="h-5 w-5 text-win-text-secondary" />
@@ -91,7 +91,7 @@ export function DataPanel() {
             <input
               value={actions.webdavEndpoint}
               onChange={(event) => actions.setWebDavEndpoint(event.target.value)}
-              className="kb-add-input rounded-lg px-3 py-2 text-sm outline-none"
+              className="kb-add-input rounded-2xl px-3 py-2 text-sm outline-none"
               placeholder="https://dav.jianguoyun.com/dav/"
             />
           </label>
@@ -100,7 +100,7 @@ export function DataPanel() {
             <input
               value={actions.webdavRemoteFilePath}
               onChange={(event) => actions.setWebDavRemoteFilePath(event.target.value)}
-              className="kb-add-input rounded-lg px-3 py-2 text-sm outline-none"
+              className="kb-add-input rounded-2xl px-3 py-2 text-sm outline-none"
               placeholder="KhaosBox/khaosbox-sync.json"
             />
           </label>
@@ -109,7 +109,7 @@ export function DataPanel() {
             <input
               value={actions.webdavUsername}
               onChange={(event) => actions.setWebDavUsername(event.target.value)}
-              className="kb-add-input rounded-lg px-3 py-2 text-sm outline-none"
+              className="kb-add-input rounded-2xl px-3 py-2 text-sm outline-none"
               placeholder="user@example.com"
             />
           </label>
@@ -119,7 +119,7 @@ export function DataPanel() {
               type="password"
               value={actions.webdavPassword}
               onChange={(event) => actions.setWebDavPassword(event.target.value)}
-              className="kb-add-input rounded-lg px-3 py-2 text-sm outline-none"
+              className="kb-add-input rounded-2xl px-3 py-2 text-sm outline-none"
               placeholder="******"
             />
           </label>
@@ -130,7 +130,7 @@ export function DataPanel() {
             type="button"
             disabled={actions.syncAction !== 'idle'}
             onClick={() => void actions.testConnection()}
-            className="kb-secondary-button rounded-lg border border-win-border px-3 py-2 text-sm transition-colors disabled:opacity-60"
+            className="kb-secondary-button rounded-full border px-3 py-2 text-sm transition-colors disabled:opacity-60"
           >
             {copy.testConnection}
           </button>
@@ -138,7 +138,7 @@ export function DataPanel() {
             type="button"
             disabled={actions.syncAction !== 'idle'}
             onClick={() => void actions.uploadNow()}
-            className="kb-primary-button rounded-lg px-3 py-2 text-sm transition-colors disabled:opacity-60"
+            className="kb-primary-button rounded-full px-3 py-2 text-sm transition-colors disabled:opacity-60"
           >
             <span className="inline-flex items-center gap-2">
               <CloudUpload className="h-4 w-4" />
@@ -149,7 +149,7 @@ export function DataPanel() {
             type="button"
             disabled={actions.syncAction !== 'idle'}
             onClick={() => void actions.downloadNow()}
-            className="kb-secondary-button rounded-lg border border-win-border px-3 py-2 text-sm transition-colors disabled:opacity-60"
+            className="kb-secondary-button rounded-full border px-3 py-2 text-sm transition-colors disabled:opacity-60"
           >
             <span className="inline-flex items-center gap-2">
               <CloudDownload className="h-4 w-4" />
@@ -163,38 +163,38 @@ export function DataPanel() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-win-border bg-win-card p-5 shadow-sm">
+      <div className="kb-soft-card rounded-2xl border p-5">
         <div className="mb-4 text-sm font-medium text-win-text">{copy.localTitle}</div>
-        <div className="flex flex-col rounded-lg border border-win-border bg-win-card shadow-sm">
+        <div className="kb-add-panel flex flex-col rounded-2xl border">
           <ActionRow
             icon={<Download className="h-5 w-5 text-win-text-secondary" />}
             title={copy.exportTitle}
             onClick={actions.handleExport}
-            roundedClassName="rounded-t-lg"
+            roundedClassName="rounded-t-2xl"
           />
           <div className="mx-4 h-px bg-win-border" />
           <ActionRow
             icon={<Upload className="h-5 w-5 text-win-text-secondary" />}
             title={copy.importTitle}
             onClick={() => actions.fileInputRef.current?.click()}
-            roundedClassName="rounded-b-lg"
+            roundedClassName="rounded-b-2xl"
           />
         </div>
 
         <div className="mt-4 mb-4 text-sm font-medium text-win-text">{copy.bookmarksTitle}</div>
-        <div className="flex flex-col rounded-lg border border-win-border bg-win-card shadow-sm">
+        <div className="kb-add-panel flex flex-col rounded-2xl border">
           <ActionRow
             icon={<Bookmark className="h-5 w-5 text-win-text-secondary" />}
             title={copy.exportBookmarksTitle}
             onClick={actions.handleBookmarkExport}
-            roundedClassName="rounded-t-lg"
+            roundedClassName="rounded-t-2xl"
           />
           <div className="mx-4 h-px bg-win-border" />
           <ActionRow
             icon={<Upload className="h-5 w-5 text-win-text-secondary" />}
             title={copy.importBookmarksTitle}
             onClick={() => actions.bookmarkImportInputRef.current?.click()}
-            roundedClassName="rounded-b-lg"
+            roundedClassName="rounded-b-2xl"
           />
         </div>
       </div>

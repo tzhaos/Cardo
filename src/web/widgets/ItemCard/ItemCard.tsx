@@ -51,12 +51,15 @@ export interface ItemCardProps {
 function getIconChipClassName(item: WorkspaceItem, layout: 'grid' | 'list') {
   if (item.type === 'folder') {
     return cn(
-      'bg-folder-bg border border-folder-border',
-      layout === 'grid' ? 'rounded-md p-2' : 'rounded p-1.5',
+      'kb-item-icon-chip bg-folder-bg border border-folder-border',
+      layout === 'grid' ? 'rounded-2xl p-2' : 'rounded-xl p-1.5',
     );
   }
 
-  return cn('bg-file-bg', layout === 'grid' ? 'rounded-md p-2' : 'rounded p-1.5');
+  return cn(
+    'kb-item-icon-chip bg-file-bg',
+    layout === 'grid' ? 'rounded-2xl p-2' : 'rounded-xl p-1.5',
+  );
 }
 
 export default function ItemCard({
@@ -104,11 +107,11 @@ export default function ItemCard({
   const pinnedButtonClassName =
     layout === 'grid'
       ? cn(
-          'kb-item-grid-control rounded-md border p-1.5 shadow-sm',
+          'kb-item-grid-control rounded-full border p-1.5 shadow-sm',
           item.isPinned ? 'bg-win-hover text-win-accent border-win-border-strong' : '',
         )
       : cn(
-          'kb-item-list-control rounded-md p-1.5 text-win-text-secondary hover:bg-win-hover hover:text-win-text',
+          'kb-item-list-control rounded-full p-1.5 text-win-text-secondary hover:bg-win-hover hover:text-win-text',
           item.isPinned ? 'bg-win-hover text-win-accent' : '',
         );
 
@@ -142,8 +145,8 @@ export default function ItemCard({
       className={cn(
         'group transition-all duration-200',
         layout === 'grid'
-          ? 'kb-item-card-grid relative flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-transparent p-3'
-          : 'flex shrink-0 cursor-pointer items-center justify-between gap-3 rounded-md p-2 hover:bg-win-hover active:bg-win-active',
+          ? 'kb-item-card-grid relative flex cursor-pointer flex-col items-center gap-2 rounded-2xl border border-transparent p-3'
+          : 'kb-item-card-list flex shrink-0 cursor-pointer items-center justify-between gap-3 rounded-2xl p-2 hover:bg-win-hover active:bg-win-active',
         isFocused ? 'kb-item-focused' : '',
         isInteractionLocked ? 'cursor-default opacity-55' : '',
       )}
@@ -209,8 +212,8 @@ export default function ItemCard({
             className={cn(
               'transition-colors',
               layout === 'grid'
-                ? 'kb-item-grid-control rounded-md border p-1.5 shadow-sm hover:bg-win-accent hover:text-white'
-                : 'kb-item-list-control rounded-md p-1.5 text-win-text-secondary hover:bg-win-hover hover:text-win-text',
+                ? 'kb-item-grid-control rounded-full border p-1.5 shadow-sm hover:bg-win-accent hover:text-white'
+                : 'kb-item-list-control rounded-full p-1.5 text-win-text-secondary hover:bg-win-hover hover:text-win-text',
               isBookmarked ? 'text-win-accent' : '',
             )}
             title={isBookmarked ? removeBookmarkLabel : addBookmarkLabel}
@@ -223,8 +226,8 @@ export default function ItemCard({
           className={cn(
             'transition-colors',
             layout === 'grid'
-              ? 'kb-item-grid-control rounded-md border p-1.5 shadow-sm hover:bg-win-accent hover:text-white'
-              : 'kb-item-list-control rounded-md p-1.5 text-win-text-secondary hover:bg-win-hover hover:text-win-text',
+              ? 'kb-item-grid-control rounded-full border p-1.5 shadow-sm hover:bg-win-accent hover:text-white'
+              : 'kb-item-list-control rounded-full p-1.5 text-win-text-secondary hover:bg-win-hover hover:text-win-text',
           )}
           title={editLabel}
         >
@@ -235,8 +238,8 @@ export default function ItemCard({
           className={cn(
             'transition-colors',
             layout === 'grid'
-              ? 'kb-item-grid-control rounded-md border p-1.5 shadow-sm hover:bg-red-500 hover:text-white'
-              : 'kb-item-list-control rounded-md p-1.5 text-win-text-secondary hover:bg-win-hover hover:text-win-text',
+              ? 'kb-item-grid-control rounded-full border p-1.5 shadow-sm hover:bg-red-500 hover:text-white'
+              : 'kb-item-list-control rounded-full p-1.5 text-win-text-secondary hover:bg-win-hover hover:text-win-text',
           )}
           title={deleteLabel}
         >

@@ -38,11 +38,11 @@ export default function SettingsPanel() {
 
   return (
     <div
-      className="fixed left-1/2 top-1/2 z-[99999] flex h-[min(560px,86vh)] w-[min(760px,92vw)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl shadow-win-flyout"
+      className="fixed left-1/2 top-1/2 z-[99999] flex h-[min(560px,86vh)] w-[min(760px,92vw)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[28px] shadow-win-flyout"
       onClick={(event) => event.stopPropagation()}
     >
-      <div className="kb-settings-surface flex h-full w-full overflow-hidden rounded-xl">
-        <div className="relative flex w-56 flex-col px-3 pb-4 pt-8">
+      <div className="kb-settings-surface flex h-full w-full overflow-hidden rounded-[28px]">
+        <div className="kb-settings-sidebar relative flex w-56 flex-col px-3 pb-4 pt-8">
           <div className="mb-5 px-3">
             <h2 className="text-xl font-semibold text-win-text">{controller.title}</h2>
           </div>
@@ -58,12 +58,12 @@ export default function SettingsPanel() {
                   type="button"
                   onClick={() => controller.setActiveTab(tab.id)}
                   className={cn(
-                    'relative flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
-                    isActive ? 'bg-win-active' : 'hover:bg-win-hover',
+                    'kb-settings-tab relative flex items-center gap-3 rounded-full px-3 py-2 text-sm transition-colors',
+                    isActive ? 'kb-settings-tab-active' : '',
                   )}
                 >
                   {isActive ? (
-                    <div className="absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full bg-win-accent" />
+                    <div className="absolute left-2 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-win-accent" />
                   ) : null}
                   <Icon
                     className={cn(
@@ -87,7 +87,7 @@ export default function SettingsPanel() {
             onClick={controller.close}
             title={controller.closeLabel}
             aria-label={controller.closeLabel}
-            className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-md text-win-text-secondary transition-colors hover:bg-[#E81123] hover:text-white"
+            className="kb-icon-button kb-icon-button-danger absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full text-win-text-secondary transition-colors"
           >
             <X className="h-4 w-4" />
           </button>

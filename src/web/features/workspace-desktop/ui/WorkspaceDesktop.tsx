@@ -1,19 +1,9 @@
 import { AnimatePresence, LayoutGroup, motion } from 'motion/react';
 import { Plus } from 'lucide-react';
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type PointerEvent as ReactPointerEvent,
-} from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { getBoxTemplateDefinition } from '../../../../core/domains/workspace/model/boxTemplates';
-import { getBoxDisplayTitle } from '../../../../core/domains/workspace/model/boxTitles';
-import {
-  MAX_WORKSPACE_BOXES,
-  type WorkspaceBox,
-} from '../../../../core/domains/workspace/model/workspace';
+import { BOX_MIN_HEIGHT, BOX_MIN_WIDTH } from '../../../../core/domains/workspace/model/workspace';
+import type { WorkspaceBox } from '../../../../core/domains/workspace/model/workspace';
 import { ToastViewport } from '../../../app/presentation/ToastViewport';
 import { useI18n } from '../../../app/hooks/useI18n';
 import Background from '../../../widgets/DesktopShell/Background';
@@ -25,102 +15,143 @@ import {
   type WorkspaceProductTabId,
   useWorkspaceDesktopState,
 } from '../hooks/useWorkspaceDesktopState';
+import SnapOverlay from './SnapOverlay';
 import WorkspaceCommandCenter from './WorkspaceCommandCenter';
 
-const MASONRY_GAP = 16;
-const DEFAULT_MASONRY_WIDTH = 1440;
-
-const TEMPLATE_COLUMN_CAPS: Record<WorkspaceProductTabId, number> = {
-  kanban: 4,
-  collection: 3,
-  launcher: 4,
-  inbox: 3,
-  'project-board': 3,
-  'daily-desk': 3,
-  'web-library': 3,
-  'frequent-sites': 4,
-  'reading-list': 3,
-};
+const FREE_LAYOUT_GRID = 20;
+const FREE_LAYOUT_GAP = 28;
+const FREE_LAYOUT_MIN_HEIGHT = 860;
+const COMPACT_DEFAULT_KANBAN_HEIGHT = 280;
+const DEFAULT_SURFACE_WIDTH = 1440;
 
 interface WorkspaceProductTabsProps {
   tabs: Array<{ id: WorkspaceProductTabId; label: string }>;
   activeTabId: WorkspaceProductTabId;
+  createLabel: string;
+  isCreateDisabled: boolean;
+  onCreate: () => void;
   onSelectTab: (tabId: WorkspaceProductTabId) => void;
 }
 
-interface MasonryDragState {
-  boxId: string;
-  columns: string[][];
-  pointerX: number;
-  pointerY: number;
-  previewWidth: number;
-  previewHeight: number;
-  title: string;
-  tabId: WorkspaceProductTabId;
+interface WorkspaceRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
-interface PageCreateCardProps {
-  hint: string;
-  isDisabled: boolean;
-  label: string;
-  onCreate: () => void;
-}
+function WorkspaceProductTabs({
+  tabs,
+  activeTabId,
+  createLabel,
+  isCreateDisabled,
+  onCreate,
+  onSelectTab,
+}: WorkspaceProductTabsProps) {
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const tabRefs = useRef(new Map<WorkspaceProductTabId, HTMLButtonElement>());
+  const [activePill, setActivePill] = useState<{ left: number; width: number } | null>(null);
 
-function WorkspaceProductTabs({ tabs, activeTabId, onSelectTab }: WorkspaceProductTabsProps) {
+  const updateActivePill = useCallback(() => {
+    const activeTab = tabRefs.current.get(activeTabId);
+
+    if (!activeTab) {
+      setActivePill(null);
+      return;
+    }
+
+    const nextPill = {
+      left: activeTab.offsetLeft + 4,
+      width: Math.max(0, activeTab.offsetWidth - 8),
+    };
+
+    setActivePill((currentPill) =>
+      currentPill?.left === nextPill.left && currentPill.width === nextPill.width
+        ? currentPill
+        : nextPill,
+    );
+  }, [activeTabId]);
+
+  useLayoutEffect(() => {
+    updateActivePill();
+
+    const activeTab = tabRefs.current.get(activeTabId);
+    activeTab?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+
+    if (typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    const observer = new ResizeObserver(updateActivePill);
+    const scroller = scrollerRef.current;
+
+    if (scroller) {
+      observer.observe(scroller);
+    }
+
+    if (activeTab) {
+      observer.observe(activeTab);
+    }
+
+    return () => observer.disconnect();
+  }, [activeTabId, tabs, updateActivePill]);
+
   return (
-    <nav className="kb-product-tabs fixed left-6 top-[3.5rem] z-[99991] h-10 w-[min(64rem,calc(100vw-28rem))] overflow-hidden rounded-lg max-[900px]:top-[6.75rem] max-[900px]:w-[calc(100vw-3rem)]">
-      <div className="kb-scroll-hidden flex h-full overflow-x-auto">
-        {tabs.map((tab) => {
-          const isActive = tab.id === activeTabId;
+    <nav className="kb-product-tabs fixed left-1/2 top-4 z-[99991] flex h-12 w-[min(42rem,calc(100vw-34rem))] min-w-[26rem] -translate-x-1/2 items-center overflow-hidden rounded-full px-2 max-[980px]:w-[calc(100vw-3rem)] max-[980px]:min-w-0">
+      <div ref={scrollerRef} className="kb-scroll-hidden h-full min-w-0 flex-1 overflow-x-auto">
+        <div className="relative flex h-full min-w-max">
+          {activePill ? (
+            <motion.span
+              className="kb-product-tab-active pointer-events-none absolute inset-y-1 left-0 rounded-full"
+              initial={false}
+              animate={{ x: activePill.left, width: activePill.width }}
+              transition={{ type: 'spring', stiffness: 280, damping: 32, mass: 0.72 }}
+            />
+          ) : null}
 
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => onSelectTab(tab.id)}
-              className="relative min-w-28 shrink-0 overflow-hidden px-4 text-sm transition-colors"
-            >
-              {isActive ? (
-                <motion.span
-                  layoutId="workspace-product-tab"
-                  className="kb-product-tab-active absolute inset-0"
-                  transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-                />
-              ) : null}
-              <span
-                className={
-                  isActive
-                    ? 'relative z-10 block truncate text-win-text'
-                    : 'relative z-10 block truncate text-win-text-secondary'
-                }
+          {tabs.map((tab) => {
+            const isActive = tab.id === activeTabId;
+
+            return (
+              <button
+                key={tab.id}
+                ref={(node) => {
+                  if (node) {
+                    tabRefs.current.set(tab.id, node);
+                  } else {
+                    tabRefs.current.delete(tab.id);
+                  }
+                }}
+                type="button"
+                onClick={() => onSelectTab(tab.id)}
+                className="relative z-10 min-w-24 shrink-0 overflow-hidden px-4 text-sm transition-colors"
               >
-                {tab.label}
-              </span>
-            </button>
-          );
-        })}
+                <span
+                  className={
+                    isActive
+                      ? 'relative z-10 block truncate text-win-text'
+                      : 'relative z-10 block truncate text-win-text-secondary'
+                  }
+                >
+                  {tab.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
+      <div className="kb-capsule-divider mx-2 h-6 w-px shrink-0" />
+      <button
+        type="button"
+        onClick={onCreate}
+        disabled={isCreateDisabled}
+        title={createLabel}
+        aria-label={createLabel}
+        className="kb-capsule-action flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-45"
+      >
+        <Plus size={17} />
+      </button>
     </nav>
-  );
-}
-
-function PageCreateCard({ hint, isDisabled, label, onCreate }: PageCreateCardProps) {
-  return (
-    <motion.button
-      layout
-      type="button"
-      disabled={isDisabled}
-      onClick={onCreate}
-      className="kb-page-create-card group flex min-h-32 w-full min-w-0 flex-col items-center justify-center gap-3 rounded-lg px-4 py-5 text-center transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
-    >
-      <span className="kb-page-create-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
-        <Plus size={18} />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-semibold text-win-text">{label}</span>
-        <span className="mt-1 block truncate text-xs text-win-text-secondary">{hint}</span>
-      </span>
-    </motion.button>
   );
 }
 
@@ -137,213 +168,128 @@ function revealBoxCard(boxId: string, itemId?: string) {
       const itemNode = itemId && boxNode ? findDataNode('data-kb-item-id', itemId, boxNode) : null;
 
       (itemNode || boxNode)?.scrollIntoView({
-        block: 'start',
-        inline: 'nearest',
+        block: 'center',
+        inline: 'center',
         behavior: 'smooth',
       });
     });
   });
 }
 
-function resolveMasonryColumnCount(tabId: WorkspaceProductTabId, width: number) {
-  const columnCap = TEMPLATE_COLUMN_CAPS[tabId] ?? 3;
-
-  if (width < 620) {
-    return 1;
-  }
-
-  if (width < 980) {
-    return Math.min(2, columnCap);
-  }
-
-  if (width < 1320) {
-    return Math.min(3, columnCap);
-  }
-
-  return columnCap;
+function roundToGrid(value: number) {
+  return Math.max(0, Math.round(value / FREE_LAYOUT_GRID) * FREE_LAYOUT_GRID);
 }
 
-function isStoredMasonrySlot(box: WorkspaceBox, columnCount: number) {
+function isLegacyMasonrySlot(box: WorkspaceBox) {
   return (
     Number.isInteger(box.bounds.x) &&
     Number.isInteger(box.bounds.y) &&
     box.bounds.x >= 0 &&
-    box.bounds.x < columnCount &&
+    box.bounds.x < 8 &&
     box.bounds.y >= 0 &&
-    box.bounds.y < 1000
+    box.bounds.y < 80
   );
 }
 
-function createEmptyColumns(columnCount: number) {
-  return Array.from({ length: columnCount }, () => [] as string[]);
+function isOversizedDefaultKanbanBox(box: WorkspaceBox) {
+  return (
+    box.templateId === 'kanban' &&
+    box.id.startsWith('default-kanban') &&
+    box.bounds.height > COMPACT_DEFAULT_KANBAN_HEIGHT + FREE_LAYOUT_GRID
+  );
 }
 
-function createMasonryColumns(boxes: WorkspaceBox[], columnCount: number) {
-  const columns = Array.from({ length: columnCount }, () => {
-    return [] as Array<{ box: WorkspaceBox; orderIndex: number; sourceIndex: number }>;
-  });
-  const unslotted: Array<{ box: WorkspaceBox; sourceIndex: number }> = [];
+function resolveFreeLayoutColumnCount(width: number) {
+  if (width < 720) {
+    return 1;
+  }
 
-  boxes.forEach((box, sourceIndex) => {
-    if (!isStoredMasonrySlot(box, columnCount)) {
-      unslotted.push({ box, sourceIndex });
-      return;
-    }
+  if (width < 1100) {
+    return 2;
+  }
 
-    columns[box.bounds.x].push({
-      box,
-      orderIndex: box.bounds.y,
-      sourceIndex,
-    });
-  });
+  return 3;
+}
 
-  columns.forEach((column) => {
-    column.sort(
-      (first, second) =>
-        first.orderIndex - second.orderIndex || first.sourceIndex - second.sourceIndex,
-    );
-  });
+function getDefaultFreePositions(boxes: WorkspaceBox[], surfaceWidth: number) {
+  const columnCount = resolveFreeLayoutColumnCount(surfaceWidth);
+  const gutter = FREE_LAYOUT_GAP;
+  const usableWidth = Math.max(BOX_MIN_WIDTH, surfaceWidth - gutter * 2);
+  const columnWidth = (usableWidth - gutter * (columnCount - 1)) / columnCount;
+  const columnHeights = Array.from({ length: columnCount }, () => gutter);
+  const positions = new Map<string, { x: number; y: number }>();
 
-  const columnHeights = columns.map((column) =>
-    column.reduce((height, entry) => height + entry.box.bounds.height + MASONRY_GAP, 0),
-  );
-
-  for (const entry of unslotted) {
+  boxes.forEach((box, index) => {
+    const preferredColumn = index % columnCount;
     const shortestHeight = Math.min(...columnHeights);
-    const columnIndex = Math.max(0, columnHeights.indexOf(shortestHeight));
-    columns[columnIndex].push({
-      box: entry.box,
-      orderIndex: columns[columnIndex].length,
-      sourceIndex: entry.sourceIndex,
+    const columnIndex =
+      columnHeights[preferredColumn] <= shortestHeight + FREE_LAYOUT_GRID
+        ? preferredColumn
+        : columnHeights.indexOf(shortestHeight);
+    const x =
+      gutter +
+      columnIndex * (columnWidth + gutter) +
+      Math.max(0, columnWidth - box.bounds.width) / 2;
+    const y = columnHeights[columnIndex];
+
+    positions.set(box.id, {
+      x: roundToGrid(x),
+      y: roundToGrid(y),
     });
-    columnHeights[columnIndex] += entry.box.bounds.height + MASONRY_GAP;
-  }
+    columnHeights[columnIndex] = y + Math.max(BOX_MIN_HEIGHT, box.bounds.height) + gutter;
+  });
 
-  return columns.map((column) => column.map((entry) => entry.box.id));
+  return positions;
 }
 
-function getMasonryColumnHeight(column: string[], boxesById: Map<string, WorkspaceBox>) {
-  return column.reduce((height, boxId) => {
-    const box = boxesById.get(boxId);
-    return height + (box?.bounds.height ?? 0) + MASONRY_GAP;
-  }, 0);
+function rectsHaveGapConflict(first: WorkspaceRect, second: WorkspaceRect) {
+  return !(
+    first.x + first.width + FREE_LAYOUT_GAP <= second.x ||
+    second.x + second.width + FREE_LAYOUT_GAP <= first.x ||
+    first.y + first.height + FREE_LAYOUT_GAP <= second.y ||
+    second.y + second.height + FREE_LAYOUT_GAP <= first.y
+  );
 }
 
-function getShortestMasonryColumnIndex(columns: string[][], boxesById: Map<string, WorkspaceBox>) {
-  if (columns.length === 0) {
-    return 0;
-  }
-
-  const columnHeights = columns.map((column) => getMasonryColumnHeight(column, boxesById));
-  const shortestHeight = Math.min(...columnHeights);
-  return Math.max(0, columnHeights.indexOf(shortestHeight));
-}
-
-function moveBoxIdToSlot(
-  columns: string[][],
-  boxId: string,
-  targetColumnIndex: number,
-  targetIndex: number,
+function findOpenFreePosition(
+  boxes: WorkspaceBox[],
+  surfaceWidth: number,
+  size: Pick<WorkspaceRect, 'height' | 'width'>,
 ) {
-  let foundBox = false;
-  const nextColumns = columns.map((column) =>
-    column.filter((candidateId) => {
-      const shouldKeep = candidateId !== boxId;
-      foundBox ||= !shouldKeep;
-      return shouldKeep;
-    }),
-  );
+  const safeWidth = Math.max(BOX_MIN_WIDTH, size.width);
+  const safeHeight = Math.max(BOX_MIN_HEIGHT, size.height);
+  const step = FREE_LAYOUT_GRID;
+  const maxX = Math.max(FREE_LAYOUT_GAP, surfaceWidth - safeWidth - FREE_LAYOUT_GAP);
+  const placedRects = boxes.map((box) => box.bounds);
 
-  if (!foundBox || nextColumns.length === 0) {
-    return columns;
-  }
+  for (let y = FREE_LAYOUT_GAP; y < FREE_LAYOUT_MIN_HEIGHT * 3; y += step) {
+    for (let x = FREE_LAYOUT_GAP; x <= maxX; x += step) {
+      const candidate = { x, y, width: safeWidth, height: safeHeight };
 
-  const safeColumnIndex = Math.min(Math.max(targetColumnIndex, 0), nextColumns.length - 1);
-  const safeTargetIndex = Math.min(Math.max(targetIndex, 0), nextColumns[safeColumnIndex].length);
-  nextColumns[safeColumnIndex].splice(safeTargetIndex, 0, boxId);
-
-  return nextColumns;
-}
-
-function areColumnsEqual(firstColumns: string[][], secondColumns: string[][]) {
-  if (firstColumns.length !== secondColumns.length) {
-    return false;
-  }
-
-  return firstColumns.every(
-    (column, columnIndex) =>
-      column.length === secondColumns[columnIndex].length &&
-      column.every((boxId, boxIndex) => boxId === secondColumns[columnIndex][boxIndex]),
-  );
-}
-
-function getDropColumnIndex(clientX: number, columnNodes: Array<HTMLDivElement | null>) {
-  const columnRects = columnNodes
-    .map((node, columnIndex) => ({
-      columnIndex,
-      rect: node?.getBoundingClientRect() ?? null,
-    }))
-    .filter((entry): entry is { columnIndex: number; rect: DOMRect } => Boolean(entry.rect));
-
-  if (columnRects.length === 0) {
-    return 0;
-  }
-
-  const containingColumn = columnRects.find(
-    ({ rect }) => clientX >= rect.left && clientX <= rect.right,
-  );
-
-  if (containingColumn) {
-    return containingColumn.columnIndex;
-  }
-
-  return columnRects.reduce((closest, candidate) => {
-    const closestCenter = closest.rect.left + closest.rect.width / 2;
-    const candidateCenter = candidate.rect.left + candidate.rect.width / 2;
-
-    return Math.abs(candidateCenter - clientX) < Math.abs(closestCenter - clientX)
-      ? candidate
-      : closest;
-  }).columnIndex;
-}
-
-function getDropTarget(
-  clientX: number,
-  clientY: number,
-  columns: string[][],
-  boxId: string,
-  columnNodes: Array<HTMLDivElement | null>,
-) {
-  const columnIndex = getDropColumnIndex(clientX, columnNodes);
-  const targetColumn = columns[columnIndex]?.filter((candidateId) => candidateId !== boxId) ?? [];
-  let targetIndex = targetColumn.length;
-  const columnNode = columnNodes[columnIndex];
-
-  if (!columnNode) {
-    return { columnIndex, targetIndex };
-  }
-
-  for (const [index, candidateId] of targetColumn.entries()) {
-    const candidateNode = findDataNode('data-kb-box-id', candidateId, columnNode);
-
-    if (!candidateNode) {
-      continue;
-    }
-
-    const rect = candidateNode.getBoundingClientRect();
-
-    if (clientY < rect.top + rect.height / 2) {
-      targetIndex = index;
-      break;
+      if (!placedRects.some((rect) => rectsHaveGapConflict(candidate, rect))) {
+        return { x, y };
+      }
     }
   }
 
-  return { columnIndex, targetIndex };
+  return {
+    x: FREE_LAYOUT_GAP,
+    y: Math.max(
+      FREE_LAYOUT_GAP,
+      ...placedRects.map((rect) => rect.y + rect.height + FREE_LAYOUT_GAP),
+    ),
+  };
 }
 
 function useElementWidth() {
   const ref = useRef<HTMLDivElement | null>(null);
-  const [width, setWidth] = useState(DEFAULT_MASONRY_WIDTH);
+  const [width, setWidth] = useState(() => {
+    if (typeof window === 'undefined') {
+      return DEFAULT_SURFACE_WIDTH;
+    }
+
+    return Math.min(DEFAULT_SURFACE_WIDTH, Math.max(BOX_MIN_WIDTH, window.innerWidth - 48));
+  });
 
   useEffect(() => {
     const element = ref.current;
@@ -368,7 +314,6 @@ export default function WorkspaceDesktop() {
   useWorkspaceGlobalEvents();
   const { t } = useI18n();
   const {
-    boxCount,
     brandLabel,
     clearActiveBox,
     activeTabId,
@@ -379,177 +324,153 @@ export default function WorkspaceDesktop() {
     tabs,
     theme,
     visibleBoxes,
+    hasReachedBoxLimit,
   } = useWorkspaceDesktopState();
-  const { ref: masonryRef, width: masonryWidth } = useElementWidth();
-  const columnRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const [dragState, setDragState] = useState<MasonryDragState | null>(null);
-  const columnCount = resolveMasonryColumnCount(activeTabId, masonryWidth);
-  const baseColumns = useMemo(
-    () => createMasonryColumns(visibleBoxes, columnCount),
-    [columnCount, visibleBoxes],
-  );
-  const displayedColumns =
-    dragState && dragState.tabId === activeTabId ? dragState.columns : baseColumns;
-  const boxesById = useMemo(
-    () => new Map(visibleBoxes.map((box) => [box.id, box])),
-    [visibleBoxes],
-  );
+  const { ref: surfaceRef, width: surfaceWidth } = useElementWidth();
+  const repairedPagesRef = useRef(new Set<string>());
   const activeTemplate = getBoxTemplateDefinition(activeTabId);
-  const hasReachedBoxLimit = boxCount >= MAX_WORKSPACE_BOXES;
-  const createCardColumnIndex = getShortestMasonryColumnIndex(displayedColumns, boxesById);
   const createBoxLabel = t('workspace.createPageBox', {
     template: t(activeTemplate.titleKey),
   });
-  const createBoxHint = hasReachedBoxLimit
-    ? t('workspace.boxLimitReached')
-    : visibleBoxes.length === 0
-      ? pageEmptyLabel
-      : t(activeTemplate.actionKey);
-
-  useEffect(() => {
-    columnRefs.current = columnRefs.current.slice(0, columnCount);
-  }, [columnCount]);
-
-  const persistMasonryColumns = useCallback(
-    (columns: string[][]) => {
-      dispatch({
-        type: 'box.layoutPage',
-        positions: columns.flatMap((column, columnIndex) =>
-          column.map((boxId, orderIndex) => ({
-            boxId,
-            columnIndex,
-            orderIndex,
-          })),
-        ),
-      });
-    },
-    [dispatch],
+  const canvasHeight = useMemo(
+    () =>
+      Math.max(
+        FREE_LAYOUT_MIN_HEIGHT,
+        ...visibleBoxes.map((box) => box.bounds.y + box.bounds.height + FREE_LAYOUT_GAP),
+      ),
+    [visibleBoxes],
   );
 
+  useEffect(() => {
+    const oversizedDefaultKanbanBoxes = visibleBoxes.filter(isOversizedDefaultKanbanBox);
+
+    if (oversizedDefaultKanbanBoxes.length > 0) {
+      const oversizedDefaultKanbanIds = new Set(oversizedDefaultKanbanBoxes.map((box) => box.id));
+      const compactBoxes = visibleBoxes.map((box) =>
+        isOversizedDefaultKanbanBox(box)
+          ? {
+              ...box,
+              bounds: {
+                ...box.bounds,
+                height: COMPACT_DEFAULT_KANBAN_HEIGHT,
+              },
+            }
+          : box,
+      );
+      const defaultPositions = getDefaultFreePositions(compactBoxes, surfaceWidth);
+
+      compactBoxes.forEach((box) => {
+        if (!oversizedDefaultKanbanIds.has(box.id)) {
+          return;
+        }
+
+        const defaultPosition = defaultPositions.get(box.id);
+
+        dispatch({
+          type: 'box.update',
+          boxId: box.id,
+          updates: {
+            bounds: {
+              height: COMPACT_DEFAULT_KANBAN_HEIGHT,
+              ...(defaultPosition ?? {}),
+            },
+          },
+        });
+      });
+      return;
+    }
+
+    const legacyBoxes = visibleBoxes.filter(isLegacyMasonrySlot);
+
+    if (legacyBoxes.length > 0) {
+      const defaultPositions = getDefaultFreePositions(visibleBoxes, surfaceWidth);
+
+      visibleBoxes.forEach((box) => {
+        if (!isLegacyMasonrySlot(box)) {
+          return;
+        }
+
+        const defaultPosition = defaultPositions.get(box.id);
+
+        if (!defaultPosition) {
+          return;
+        }
+
+        dispatch({
+          type: 'box.update',
+          boxId: box.id,
+          updates: {
+            bounds: defaultPosition,
+          },
+        });
+      });
+      return;
+    }
+
+    const repairKey = `${activeTabId}:${Math.round(surfaceWidth)}`;
+
+    if (repairedPagesRef.current.has(repairKey)) {
+      return;
+    }
+
+    repairedPagesRef.current.add(repairKey);
+    const placedBoxes: WorkspaceBox[] = [];
+
+    visibleBoxes.forEach((box) => {
+      const hasConflict = placedBoxes.some((placedBox) =>
+        rectsHaveGapConflict(box.bounds, placedBox.bounds),
+      );
+      const isOutsideSurface = box.bounds.x + box.bounds.width + FREE_LAYOUT_GAP > surfaceWidth;
+
+      if (!hasConflict && !isOutsideSurface) {
+        placedBoxes.push(box);
+        return;
+      }
+
+      const position = findOpenFreePosition(placedBoxes, surfaceWidth, box.bounds);
+      const repairedBox = {
+        ...box,
+        bounds: {
+          ...box.bounds,
+          ...position,
+        },
+      };
+
+      placedBoxes.push(repairedBox);
+      dispatch({
+        type: 'box.update',
+        boxId: box.id,
+        updates: {
+          bounds: position,
+        },
+      });
+    });
+  }, [activeTabId, dispatch, surfaceWidth, visibleBoxes]);
+
   const handleCreatePageBox = useCallback(() => {
-    if (hasReachedBoxLimit || dragState) {
+    if (hasReachedBoxLimit) {
       return;
     }
 
     const result = createBoxForActiveTab({
-      centerX: masonryWidth / 2,
-      centerY: 240,
+      centerX: surfaceWidth / 2,
+      centerY: 260,
     });
 
     if (result.status !== 'created') {
       return;
     }
 
-    const nextColumns = (
-      displayedColumns.length > 0 ? displayedColumns : createEmptyColumns(columnCount)
-    ).map((column) => [...column]);
-    const targetColumnIndex = getShortestMasonryColumnIndex(nextColumns, boxesById);
-    nextColumns[targetColumnIndex]?.push(result.box.id);
-
-    persistMasonryColumns(nextColumns);
+    const position = findOpenFreePosition(visibleBoxes, surfaceWidth, result.box.bounds);
+    dispatch({
+      type: 'box.update',
+      boxId: result.box.id,
+      updates: {
+        bounds: position,
+      },
+    });
     revealBoxCard(result.box.id, result.initialFocusItemId ?? undefined);
-  }, [
-    boxesById,
-    columnCount,
-    createBoxForActiveTab,
-    displayedColumns,
-    dragState,
-    hasReachedBoxLimit,
-    masonryWidth,
-    persistMasonryColumns,
-  ]);
-
-  const handleMasonryDragStart = useCallback(
-    (event: ReactPointerEvent<HTMLDivElement>, box: WorkspaceBox) => {
-      event.preventDefault();
-      event.stopPropagation();
-
-      if (event.button !== 0 || !event.isPrimary || box.isLocked) {
-        return;
-      }
-
-      const sourceNode = findDataNode('data-kb-box-id', box.id);
-      const sourceRect = sourceNode?.getBoundingClientRect();
-      const initialColumns = dragState?.tabId === activeTabId ? dragState.columns : baseColumns;
-
-      setDragState({
-        boxId: box.id,
-        columns: initialColumns.length > 0 ? initialColumns : createEmptyColumns(columnCount),
-        pointerX: event.clientX,
-        pointerY: event.clientY,
-        previewWidth: sourceRect?.width ?? box.bounds.width,
-        previewHeight: sourceRect?.height ?? box.bounds.height,
-        title: getBoxDisplayTitle(box, t),
-        tabId: activeTabId,
-      });
-
-      const handlePointerMove = (moveEvent: PointerEvent) => {
-        if (moveEvent.pointerId !== event.pointerId) {
-          return;
-        }
-
-        setDragState((current) => {
-          if (!current || current.boxId !== box.id) {
-            return current;
-          }
-
-          const target = getDropTarget(
-            moveEvent.clientX,
-            moveEvent.clientY,
-            current.columns,
-            box.id,
-            columnRefs.current,
-          );
-          const nextColumns = moveBoxIdToSlot(
-            current.columns,
-            box.id,
-            target.columnIndex,
-            target.targetIndex,
-          );
-
-          return {
-            ...current,
-            columns: areColumnsEqual(current.columns, nextColumns) ? current.columns : nextColumns,
-            pointerX: moveEvent.clientX,
-            pointerY: moveEvent.clientY,
-          };
-        });
-      };
-
-      const finishDrag = (finishEvent: PointerEvent) => {
-        if (finishEvent.pointerId !== event.pointerId) {
-          return;
-        }
-
-        cleanup();
-        setDragState((current) => {
-          if (current?.boxId === box.id) {
-            persistMasonryColumns(current.columns);
-          }
-
-          return null;
-        });
-      };
-
-      const cancelDrag = () => {
-        cleanup();
-        setDragState(null);
-      };
-
-      const cleanup = () => {
-        window.removeEventListener('pointermove', handlePointerMove, true);
-        window.removeEventListener('pointerup', finishDrag, true);
-        window.removeEventListener('pointercancel', cancelDrag, true);
-        window.removeEventListener('blur', cancelDrag);
-      };
-
-      window.addEventListener('pointermove', handlePointerMove, true);
-      window.addEventListener('pointerup', finishDrag, true);
-      window.addEventListener('pointercancel', cancelDrag, true);
-      window.addEventListener('blur', cancelDrag);
-    },
-    [activeTabId, baseColumns, columnCount, dragState, persistMasonryColumns, t],
-  );
+  }, [createBoxForActiveTab, dispatch, hasReachedBoxLimit, surfaceWidth, visibleBoxes]);
 
   return (
     <div
@@ -561,14 +482,14 @@ export default function WorkspaceDesktop() {
       }}
     >
       <Background camera={{ panX: 0, panY: 0 }} />
-      <div className="kb-smartisan-global-bar fixed inset-x-0 top-0 z-[99988] h-11" />
-      <div className="kb-smartisan-product-bar fixed inset-x-0 top-11 z-[99988] h-16 max-[900px]:h-28" />
       <BrandBadge label={brandLabel} />
       <WorkspaceProductTabs
         tabs={tabs}
         activeTabId={activeTabId}
+        createLabel={createBoxLabel}
+        isCreateDisabled={hasReachedBoxLimit}
+        onCreate={handleCreatePageBox}
         onSelectTab={(tabId) => {
-          setDragState(null);
           clearActiveBox();
           setActiveTabId(tabId);
         }}
@@ -576,71 +497,40 @@ export default function WorkspaceDesktop() {
       <ToastViewport theme={theme} />
       <WorkspaceCommandCenter onSelectTemplatePage={setActiveTabId} onRevealBox={revealBoxCard} />
 
-      <main className="relative z-10 h-full overflow-auto px-6 pb-10 pt-36 max-[900px]:pt-44">
-        <div ref={masonryRef} className="mx-auto w-[min(1500px,calc(100vw-40px))]">
+      <main className="relative z-10 h-full overflow-hidden px-6 pb-6 pt-28">
+        <div
+          ref={surfaceRef}
+          className="kb-free-workspace mx-auto w-[min(1500px,calc(100vw-3rem))]"
+          onPointerDown={(event) => {
+            if (event.currentTarget === event.target) {
+              clearActiveBox();
+            }
+          }}
+        >
           <LayoutGroup id={`workspace-page-${activeTabId}`}>
-            <div
-              className="kb-masonry-board grid items-start"
-              style={{
-                columnGap: 0,
-                gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))`,
-              }}
-            >
-              {displayedColumns.map((column, columnIndex) => (
-                <div
-                  key={`${activeTabId}:${columnIndex}`}
-                  ref={(node) => {
-                    columnRefs.current[columnIndex] = node;
-                  }}
-                  className="kb-masonry-column flex min-w-0 flex-col items-start"
-                  style={{ gap: `${MASONRY_GAP}px` }}
-                  data-kb-masonry-column={columnIndex}
+            <div className="kb-free-canvas relative" style={{ minHeight: canvasHeight }}>
+              <SnapOverlay />
+              <AnimatePresence initial={false}>
+                {visibleBoxes.map((box) => (
+                  <ManagedBox key={box.id} boxId={box.id} placement="canvas" />
+                ))}
+              </AnimatePresence>
+
+              {visibleBoxes.length === 0 ? (
+                <button
+                  type="button"
+                  className="kb-empty-create absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full transition active:scale-95"
+                  title={pageEmptyLabel}
+                  aria-label={createBoxLabel}
+                  onClick={handleCreatePageBox}
                 >
-                  <AnimatePresence initial={false}>
-                    {column.map((boxId) => {
-                      const box = boxesById.get(boxId);
-
-                      return box ? (
-                        <ManagedBox
-                          key={box.id}
-                          boxId={box.id}
-                          placement="columns"
-                          isMasonryDragging={dragState?.boxId === box.id}
-                          onMasonryDragStart={handleMasonryDragStart}
-                        />
-                      ) : null;
-                    })}
-                  </AnimatePresence>
-
-                  {columnIndex === createCardColumnIndex && !dragState ? (
-                    <PageCreateCard
-                      label={createBoxLabel}
-                      hint={createBoxHint}
-                      isDisabled={hasReachedBoxLimit}
-                      onCreate={handleCreatePageBox}
-                    />
-                  ) : null}
-                </div>
-              ))}
+                  <Plus size={20} />
+                </button>
+              ) : null}
             </div>
           </LayoutGroup>
         </div>
       </main>
-
-      {dragState ? (
-        <div
-          className="kb-drag-preview pointer-events-none fixed z-[99994] flex items-start rounded-lg px-3 py-3 text-sm font-semibold text-win-text"
-          style={{
-            left: dragState.pointerX + 14,
-            top: dragState.pointerY + 14,
-            width: dragState.previewWidth,
-            minHeight: Math.min(dragState.previewHeight, 180),
-            maxWidth: 'min(24rem, calc(100vw - 2rem))',
-          }}
-        >
-          <span className="truncate">{dragState.title}</span>
-        </div>
-      ) : null}
 
       <SettingsPanel />
     </div>
