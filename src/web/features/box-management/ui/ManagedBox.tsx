@@ -14,13 +14,15 @@ import { useManagedBox, useManagedBoxController } from '../hooks/useManagedBoxCo
 
 interface ManagedBoxProps {
   boxId: string;
+  placement?: 'canvas' | 'columns';
 }
 
 interface ManagedBoxViewProps {
   box: WorkspaceBox;
+  placement: 'canvas' | 'columns';
 }
 
-function ManagedBoxView({ box }: ManagedBoxViewProps) {
+function ManagedBoxView({ box, placement }: ManagedBoxViewProps) {
   const controller = useManagedBoxController(box);
   const content = isKanbanTemplateId(box.templateId) ? (
     <ManagedKanbanContent box={box} />
@@ -44,6 +46,7 @@ function ManagedBoxView({ box }: ManagedBoxViewProps) {
 
   return (
     <BoxContainer
+      placement={placement}
       box={box}
       isActive={controller.isActive}
       isDragging={controller.isDragging}
@@ -65,6 +68,7 @@ function ManagedBoxView({ box }: ManagedBoxViewProps) {
           isEditing={controller.isEditing}
           isInteractionLocked={controller.isInteractionLocked}
           inputRef={controller.inputRef}
+          canDrag={placement === 'canvas'}
           canToggleLayout={!isKanbanTemplateId(box.templateId)}
           toggleLayoutLabel={controller.labels.toggleLayout}
           lockPositionLabel={controller.labels.lockPosition}
@@ -90,12 +94,12 @@ function ManagedBoxView({ box }: ManagedBoxViewProps) {
   );
 }
 
-export default function ManagedBox({ boxId }: ManagedBoxProps) {
+export default function ManagedBox({ boxId, placement = 'canvas' }: ManagedBoxProps) {
   const box = useManagedBox(boxId);
 
   if (!box) {
     return null;
   }
 
-  return <ManagedBoxView box={box} />;
+  return <ManagedBoxView box={box} placement={placement} />;
 }

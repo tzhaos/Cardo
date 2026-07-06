@@ -26,6 +26,7 @@ interface BoxHeaderProps {
   isEditing: boolean;
   isInteractionLocked: boolean;
   inputRef: RefObject<HTMLInputElement | null>;
+  canDrag: boolean;
   canToggleLayout: boolean;
   toggleLayoutLabel: string;
   lockPositionLabel: string;
@@ -76,6 +77,7 @@ export default function BoxHeader({
   isEditing,
   isInteractionLocked,
   inputRef,
+  canDrag,
   canToggleLayout,
   toggleLayoutLabel,
   lockPositionLabel,
@@ -96,9 +98,11 @@ export default function BoxHeader({
     <div
       className={cn(
         'kb-box-header group flex shrink-0 select-none items-center justify-between p-3 pb-2',
-        isEditing || isInteractionLocked ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
+        isEditing || isInteractionLocked || !canDrag
+          ? 'cursor-default'
+          : 'cursor-grab active:cursor-grabbing',
       )}
-      onPointerDown={isEditing || isInteractionLocked ? undefined : onDragStart}
+      onPointerDown={isEditing || isInteractionLocked || !canDrag ? undefined : onDragStart}
     >
       <div className="flex flex-1 items-center gap-2 overflow-hidden" onDoubleClick={onStartEdit}>
         {getBoxIcon(box)}
