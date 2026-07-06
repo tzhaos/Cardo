@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { createBookmark } from '../../bookmarks/services/createBookmark';
 import { createWorkspaceItem } from '../../items/model/item';
 import { createInitialWorkspaceSnapshot } from './createInitialWorkspaceSnapshot';
 import { reduceWorkspace } from './reduceWorkspace';
@@ -62,6 +63,63 @@ test('workspace reducer keeps items global and pin state in placements', () => {
   });
   assert.equal(withoutItem.itemPlacementsByBoxId['default-inbox'].length, 0);
   assert.equal(withoutItem.itemsById[noteItem.id], undefined);
+});
+
+test('bookmarks stay independent from box item placement lifecycle', () => {
+  const snapshot = createInitialWorkspaceSnapshot();
+  const bookmark = createBookmark(
+    'bookmark-example',
+    {
+      title: 'Example',
+      url: 'https://example.com/docs',
+      source: 'manual',
+    },
+    new Date('2026-01-01T00:00:00.000Z'),
+  );
+  const item = createWorkspaceItem('item-example', {
+    type: 'url',
+    title: 'Example docs',
+    content: bookmark.url,
+    bookmarkId: bookmark.id,
+  });
+
+  const withBookmark = reduceWorkspace(snapshot, {
+    type: 'bookmark.upsert',
+    bookmark,
+  });
+  const withItem = reduceWorkspace(withBookmark, {
+    type: 'item.add',
+    boxId: 'default-inbox',
+    item,
+  });
+  const withoutBox = reduceWorkspace(withItem, {
+    type: 'box.delete',
+    boxId: 'default-inbox',
+  });
+
+  assert.equal(withoutBox.itemsById[item.id], undefined);
+  assert.equal(withoutBox.bookmarksById[bookmark.id].url, 'https://example.com/docs');
+});
+
+test('bookmark open commands update frequent site signals', () => {
+  const snapshot = createInitialWorkspaceSnapshot();
+  const bookmark = createBookmark(
+    'bookmark-khaos',
+    {
+      title: 'KhaosBox',
+      url: 'https://example.com',
+    },
+    new Date('2026-01-01T00:00:00.000Z'),
+  );
+  const withBookmark = reduceWorkspace(snapshot, { type: 'bookmark.upsert', bookmark });
+  const opened = reduceWorkspace(withBookmark, {
+    type: 'bookmark.recordOpen',
+    bookmarkId: bookmark.id,
+    openedAt: '2026-02-01T00:00:00.000Z',
+  });
+
+  assert.equal(opened.bookmarksById[bookmark.id].openCount, 1);
+  assert.equal(opened.bookmarksById[bookmark.id].lastOpenedAt, '2026-02-01T00:00:00.000Z');
 });
 
 test('move item inherits placement pin state without mutating item entity', () => {
@@ -227,13 +285,24 @@ test('kanban column commands manage columns and reroute deleted cards', () => {
 
 test('workspace export document round-trips with current schema', () => {
   const snapshot = createInitialWorkspaceSnapshot();
-  const document = createWorkspaceExportDocument(snapshot);
+  const bookmark = createBookmark(
+    'bookmark-export',
+    {
+      title: 'Exported link',
+      url: 'https://example.com',
+      isPinned: true,
+    },
+    new Date('2026-01-01T00:00:00.000Z'),
+  );
+  const withBookmark = reduceWorkspace(snapshot, { type: 'bookmark.upsert', bookmark });
+  const document = createWorkspaceExportDocument(withBookmark);
   const parsed = parseWorkspaceExportDocument(document);
 
   assert.equal(parsed.version, WORKSPACE_EXPORT_VERSION);
   assert.equal(parsed.boxes.length, 3);
   assert.equal(parsed.boxes[0].customTitle, null);
   assert.equal(parsed.boxes[1].templateId, 'kanban');
+  assert.equal(parsed.bookmarks[0].id, 'bookmark-export');
 });
 
 test('workspace snapshot parser accepts current schema payloads', () => {
@@ -242,5 +311,6 @@ test('workspace snapshot parser accepts current schema payloads', () => {
 
   assert.ok(parsed);
   assert.equal(parsed?.schemaVersion, WORKSPACE_SCHEMA_VERSION);
+  assert.deepEqual(parsed?.bookmarksById, {});
   assert.equal(parseWorkspaceSnapshot({ version: 2, boxes: [] }), null);
 });

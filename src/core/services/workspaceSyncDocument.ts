@@ -9,7 +9,7 @@ import {
   type PreferencesState,
 } from '../domains/preferences/model/preferences';
 import type {
-  WorkspaceExportDocumentV4,
+  WorkspaceExportDocumentV5,
   WorkspaceSnapshot,
 } from '../domains/workspace/model/workspace';
 import {
@@ -32,7 +32,7 @@ export type SyncedPreferences = Pick<
 export interface WorkspaceSyncDocumentV1 {
   version: 1;
   exportedAt: string;
-  workspace: WorkspaceExportDocumentV4;
+  workspace: WorkspaceExportDocumentV5;
   preferences: SyncedPreferences;
 }
 
@@ -67,7 +67,14 @@ export function pickSyncedPreferences(preferences: PreferencesState): SyncedPref
 export function createWorkspaceSyncDocument(
   snapshot: Pick<
     WorkspaceSnapshot,
-    'boxesById' | 'boxOrder' | 'boxViewStatesById' | 'itemsById' | 'itemPlacementsByBoxId'
+    | 'boxesById'
+    | 'boxOrder'
+    | 'boxViewStatesById'
+    | 'itemsById'
+    | 'itemPlacementsByBoxId'
+    | 'bookmarksById'
+    | 'bookmarkFoldersById'
+    | 'bookmarkFolderOrder'
   >,
   preferences: PreferencesState,
   exportedAt: string,

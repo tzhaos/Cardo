@@ -5,7 +5,7 @@ import {
   type BoxItemPlacement,
   type WorkspaceBox,
   type WorkspaceBoxEntity,
-  type WorkspaceSnapshotV6,
+  type WorkspaceSnapshotV7,
 } from './workspace';
 import { createDefaultTemplateState, getBoxTemplateDefinition } from './boxTemplates';
 
@@ -34,7 +34,7 @@ function splitBox(box: WorkspaceBox): {
   };
 }
 
-export function createWorkspaceSnapshot(boxes: WorkspaceBox[]): WorkspaceSnapshotV6 {
+export function createWorkspaceSnapshot(boxes: WorkspaceBox[]): WorkspaceSnapshotV7 {
   const boxesById: Record<string, WorkspaceBoxEntity> = {};
   const boxViewStatesById: Record<string, BoxDesktopViewState> = {};
   const itemPlacementsByBoxId: Record<string, BoxItemPlacement[]> = {};
@@ -61,11 +61,14 @@ export function createWorkspaceSnapshot(boxes: WorkspaceBox[]): WorkspaceSnapsho
     boxViewStatesById,
     itemsById: {},
     itemPlacementsByBoxId,
+    bookmarksById: {},
+    bookmarkFoldersById: {},
+    bookmarkFolderOrder: [],
     maxZIndex,
   };
 }
 
-export function createInitialWorkspaceSnapshot(): WorkspaceSnapshotV6 {
+export function createInitialWorkspaceSnapshot(): WorkspaceSnapshotV7 {
   const inboxTemplate = getBoxTemplateDefinition('inbox');
   const kanbanTemplate = getBoxTemplateDefinition('kanban');
   const launcherTemplate = getBoxTemplateDefinition('launcher');

@@ -11,7 +11,7 @@ import type {
   WorkspaceBoxWithItems,
   WorkspaceCommand,
   WorkspaceSnapshot,
-  WorkspaceSnapshotV6,
+  WorkspaceSnapshotV7,
 } from './workspace';
 import { isKanbanTemplateId, MAX_KANBAN_COLUMNS } from './workspace';
 
@@ -43,7 +43,7 @@ function stripPlacedItem(item: WorkspaceBoxWithItems['items'][number]): Workspac
   return workspaceItem;
 }
 
-function createSnapshotFromBoxesWithItems(boxes: WorkspaceBoxWithItems[]): WorkspaceSnapshotV6 {
+function createSnapshotFromBoxesWithItems(boxes: WorkspaceBoxWithItems[]): WorkspaceSnapshotV7 {
   const snapshot = createWorkspaceSnapshot(boxes);
   const itemsById: Record<string, WorkspaceItem> = {};
   const itemPlacementsByBoxId: Record<string, BoxItemPlacement[]> = {
@@ -68,7 +68,7 @@ function createSnapshotFromBoxesWithItems(boxes: WorkspaceBoxWithItems[]): Works
   };
 }
 
-function pruneUnplacedItems(snapshot: WorkspaceSnapshotV6): WorkspaceSnapshotV6 {
+function pruneUnplacedItems(snapshot: WorkspaceSnapshotV7): WorkspaceSnapshotV7 {
   const placedItemIds = new Set(
     Object.values(snapshot.itemPlacementsByBoxId).flatMap((placements) =>
       placements.map((placement) => placement.itemId),
@@ -85,10 +85,10 @@ function pruneUnplacedItems(snapshot: WorkspaceSnapshotV6): WorkspaceSnapshotV6 
 }
 
 function updateBoxViewState(
-  snapshot: WorkspaceSnapshotV6,
+  snapshot: WorkspaceSnapshotV7,
   boxId: string,
   updater: (viewState: BoxDesktopViewState) => BoxDesktopViewState,
-): WorkspaceSnapshotV6 {
+): WorkspaceSnapshotV7 {
   const viewState = snapshot.boxViewStatesById[boxId];
 
   if (!viewState) {
@@ -116,10 +116,10 @@ function getKanbanColumns(entity: WorkspaceBoxEntity): KanbanColumn[] {
 }
 
 function updateBoxTemplateState(
-  snapshot: WorkspaceSnapshotV6,
+  snapshot: WorkspaceSnapshotV7,
   boxId: string,
   templateState: WorkspaceBoxTemplateState,
-): WorkspaceSnapshotV6 {
+): WorkspaceSnapshotV7 {
   const entity = snapshot.boxesById[boxId];
 
   if (!entity) {
@@ -139,10 +139,10 @@ function updateBoxTemplateState(
 }
 
 function updateKanbanColumns(
-  snapshot: WorkspaceSnapshotV6,
+  snapshot: WorkspaceSnapshotV7,
   boxId: string,
   updater: (columns: KanbanColumn[]) => KanbanColumn[] | null,
-): WorkspaceSnapshotV6 {
+): WorkspaceSnapshotV7 {
   const entity = snapshot.boxesById[boxId];
 
   if (!entity || !isKanbanTemplateId(entity.templateId)) {
@@ -162,11 +162,11 @@ function updateKanbanColumns(
 }
 
 function deleteKanbanColumn(
-  snapshot: WorkspaceSnapshotV6,
+  snapshot: WorkspaceSnapshotV7,
   boxId: string,
   columnId: string,
   fallbackColumnId?: string,
-): WorkspaceSnapshotV6 {
+): WorkspaceSnapshotV7 {
   const entity = snapshot.boxesById[boxId];
 
   if (!entity || !isKanbanTemplateId(entity.templateId)) {
@@ -206,13 +206,13 @@ function deleteKanbanColumn(
 }
 
 function moveWorkspaceItem(
-  snapshot: WorkspaceSnapshotV6,
+  snapshot: WorkspaceSnapshotV7,
   itemId: string,
   sourceBoxId: string,
   targetBoxId: string,
   targetIndex?: number,
   targetColumnId?: string,
-): WorkspaceSnapshotV6 {
+): WorkspaceSnapshotV7 {
   if (!snapshot.boxesById[sourceBoxId] || !snapshot.boxesById[targetBoxId]) {
     return snapshot;
   }
@@ -542,6 +542,126 @@ export function reduceWorkspace(
         command.targetIndex,
         command.targetColumnId,
       );
+    case 'bookmark.upsert': {
+      const existingBookmark = snapshot.bookmarksById[command.bookmark.id];
+
+      return {
+        ...snapshot,
+        bookmarksById: {
+          ...snapshot.bookmarksById,
+          [command.bookmark.id]: {
+            ...existingBookmark,
+            ...command.bookmark,
+          },
+        },
+      };
+    }
+    case 'bookmark.delete': {
+      const bookmarksById = { ...snapshot.bookmarksById };
+      delete bookmarksById[command.bookmarkId];
+
+      return {
+        ...snapshot,
+        bookmarksById,
+        itemsById: Object.fromEntries(
+          Object.entries(snapshot.itemsById).map(([itemId, item]) => [
+            itemId,
+            item.type === 'url' && item.bookmarkId === command.bookmarkId
+              ? { ...item, bookmarkId: null }
+              : item,
+          ]),
+        ),
+      };
+    }
+    case 'bookmark.folder.upsert': {
+      const bookmarkFolderOrder = [...snapshot.bookmarkFolderOrder];
+      const existingIndex = bookmarkFolderOrder.indexOf(command.folder.id);
+
+      if (existingIndex >= 0) {
+        bookmarkFolderOrder.splice(existingIndex, 1);
+      }
+
+      const targetIndex =
+        command.index === undefined
+          ? bookmarkFolderOrder.length
+          : Math.min(Math.max(command.index, 0), bookmarkFolderOrder.length);
+      bookmarkFolderOrder.splice(targetIndex, 0, command.folder.id);
+
+      return {
+        ...snapshot,
+        bookmarkFoldersById: {
+          ...snapshot.bookmarkFoldersById,
+          [command.folder.id]: command.folder,
+        },
+        bookmarkFolderOrder,
+      };
+    }
+    case 'bookmark.folder.delete': {
+      const bookmarkFoldersById = { ...snapshot.bookmarkFoldersById };
+      delete bookmarkFoldersById[command.folderId];
+
+      return {
+        ...snapshot,
+        bookmarkFoldersById,
+        bookmarkFolderOrder: snapshot.bookmarkFolderOrder.filter(
+          (folderId) => folderId !== command.folderId,
+        ),
+        bookmarksById: Object.fromEntries(
+          Object.entries(snapshot.bookmarksById).map(([bookmarkId, bookmark]) => [
+            bookmarkId,
+            bookmark.folderId === command.folderId ? { ...bookmark, folderId: null } : bookmark,
+          ]),
+        ),
+      };
+    }
+    case 'bookmark.recordOpen': {
+      const bookmark = snapshot.bookmarksById[command.bookmarkId];
+
+      if (!bookmark) {
+        return snapshot;
+      }
+
+      return {
+        ...snapshot,
+        bookmarksById: {
+          ...snapshot.bookmarksById,
+          [bookmark.id]: {
+            ...bookmark,
+            lastOpenedAt: command.openedAt,
+            openCount: bookmark.openCount + 1,
+            updatedAt: command.openedAt,
+          },
+        },
+      };
+    }
+    case 'bookmarks.import': {
+      const nextFoldersById = { ...snapshot.bookmarkFoldersById };
+      const nextFolderOrder = [...snapshot.bookmarkFolderOrder];
+
+      for (const folder of command.folders) {
+        nextFoldersById[folder.id] = folder;
+
+        if (!nextFolderOrder.includes(folder.id)) {
+          nextFolderOrder.push(folder.id);
+        }
+      }
+
+      const importedFolderOrder =
+        command.folderOrder?.filter((folderId) => Boolean(nextFoldersById[folderId])) ?? [];
+
+      return {
+        ...snapshot,
+        bookmarksById: {
+          ...snapshot.bookmarksById,
+          ...Object.fromEntries(command.bookmarks.map((bookmark) => [bookmark.id, bookmark])),
+        },
+        bookmarkFoldersById: nextFoldersById,
+        bookmarkFolderOrder:
+          importedFolderOrder.length > 0
+            ? Array.from(new Set([...nextFolderOrder, ...importedFolderOrder]))
+            : nextFolderOrder,
+      };
+    }
     default:
       return snapshot;
   }

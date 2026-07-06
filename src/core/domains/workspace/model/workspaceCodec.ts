@@ -1,4 +1,6 @@
 import { createWorkspaceItem, type WorkspaceItem } from '../../items/model/item';
+import type { Bookmark, BookmarkFolder, BookmarkSource } from '../../bookmarks/model/bookmark';
+import { normalizeBookmarkUrl } from '../../bookmarks/services/normalizeBookmarkUrl';
 import {
   BOX_MIN_HEIGHT,
   BOX_MIN_WIDTH,
@@ -14,15 +16,16 @@ import {
   type WorkspaceBoxEntity,
   type WorkspaceBoxTemplateState,
   type WorkspaceExportBoxV4,
-  type WorkspaceExportDocumentV4,
+  type WorkspaceExportDocumentV5,
   type WorkspaceSnapshot,
-  type WorkspaceSnapshotV6,
+  type WorkspaceSnapshotV7,
 } from './workspace';
 import { createDefaultTemplateState } from './boxTemplates';
 
 const BOX_TEMPLATE_ID_SET = new Set<string>(BOX_TEMPLATE_IDS);
-const LEGACY_WORKSPACE_SCHEMA_VERSION = 5;
-const LEGACY_WORKSPACE_EXPORT_VERSION = 3;
+const LEGACY_WORKSPACE_SCHEMA_VERSIONS = new Set([5, 6]);
+const LEGACY_WORKSPACE_EXPORT_VERSIONS = new Set([3, 4]);
+const BOOKMARK_SOURCES = new Set<BookmarkSource>(['manual', 'import', 'item']);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -38,6 +41,19 @@ function asBoolean(value: unknown, fallback = false) {
 
 function asNumber(value: unknown, fallback: number) {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
+function asStringArray(value: unknown) {
+  return Array.isArray(value)
+    ? value.map((item) => asString(item)?.trim()).filter((item): item is string => !!item)
+    : [];
+}
+
+function asBookmarkSource(value: unknown): BookmarkSource {
+  const source = asString(value)?.trim();
+  return source && BOOKMARK_SOURCES.has(source as BookmarkSource)
+    ? (source as BookmarkSource)
+    : 'manual';
 }
 
 function asTemplateId(value: unknown): BoxTemplateId {
@@ -104,11 +120,75 @@ function normalizeWorkspaceItem(input: unknown): WorkspaceItem | null {
     return null;
   }
 
+  const bookmarkId = type === 'url' ? asString(input.bookmarkId)?.trim() : null;
+
   return createWorkspaceItem(id, {
     type: type as WorkspaceItem['type'],
     content,
     title: asString(input.title)?.trim() || null,
+    ...(bookmarkId ? { bookmarkId } : {}),
   });
+}
+
+function normalizeBookmark(input: unknown): Bookmark | null {
+  if (!isRecord(input)) {
+    return null;
+  }
+
+  const id = asString(input.id)?.trim();
+  const url = asString(input.url)?.trim();
+
+  if (!id || !url) {
+    return null;
+  }
+
+  const title = asString(input.title)?.trim() || url;
+  const normalizedUrl = asString(input.normalizedUrl)?.trim() || normalizeBookmarkUrl(url);
+  const folderId = asString(input.folderId)?.trim() || null;
+  const createdAt = asString(input.createdAt)?.trim() || new Date(0).toISOString();
+  const updatedAt = asString(input.updatedAt)?.trim() || createdAt;
+  const lastOpenedAt = asString(input.lastOpenedAt)?.trim() || null;
+
+  return {
+    id,
+    title,
+    url,
+    normalizedUrl,
+    description: asString(input.description)?.trim() || null,
+    tags: asStringArray(input.tags),
+    folderId,
+    source: asBookmarkSource(input.source),
+    createdAt,
+    updatedAt,
+    lastOpenedAt,
+    openCount: Math.max(0, Math.round(asNumber(input.openCount, 0))),
+    isFavorite: asBoolean(input.isFavorite),
+    isPinned: asBoolean(input.isPinned),
+  };
+}
+
+function normalizeBookmarkFolder(input: unknown): BookmarkFolder | null {
+  if (!isRecord(input)) {
+    return null;
+  }
+
+  const id = asString(input.id)?.trim();
+  const title = asString(input.title)?.trim();
+
+  if (!id || !title) {
+    return null;
+  }
+
+  const createdAt = asString(input.createdAt)?.trim() || new Date(0).toISOString();
+
+  return {
+    id,
+    title,
+    parentId: asString(input.parentId)?.trim() || null,
+    source: asBookmarkSource(input.source),
+    createdAt,
+    updatedAt: asString(input.updatedAt)?.trim() || createdAt,
+  };
 }
 
 function normalizeBoxEntity(input: unknown): WorkspaceBoxEntity | null {
@@ -203,10 +283,17 @@ function normalizeLegacyItemIdPlacements(input: unknown): BoxItemPlacement[] | n
 
 function createExportDocumentFromSnapshot(
   snapshot: Pick<
-    WorkspaceSnapshotV6,
-    'boxesById' | 'boxOrder' | 'boxViewStatesById' | 'itemsById' | 'itemPlacementsByBoxId'
+    WorkspaceSnapshotV7,
+    | 'boxesById'
+    | 'boxOrder'
+    | 'boxViewStatesById'
+    | 'itemsById'
+    | 'itemPlacementsByBoxId'
+    | 'bookmarksById'
+    | 'bookmarkFoldersById'
+    | 'bookmarkFolderOrder'
   >,
-): WorkspaceExportDocumentV4 {
+): WorkspaceExportDocumentV5 {
   const boxes: WorkspaceExportBoxV4[] = snapshot.boxOrder
     .map((boxId) => snapshot.boxesById[boxId])
     .filter((box): box is WorkspaceBoxEntity => Boolean(box))
@@ -225,19 +312,30 @@ function createExportDocumentFromSnapshot(
     boxViewStates: snapshot.boxOrder
       .map((boxId) => snapshot.boxViewStatesById[boxId])
       .filter((viewState): viewState is BoxDesktopViewState => Boolean(viewState)),
+    bookmarks: Object.values(snapshot.bookmarksById),
+    bookmarkFolders: snapshot.bookmarkFolderOrder
+      .map((folderId) => snapshot.bookmarkFoldersById[folderId])
+      .filter((folder): folder is BookmarkFolder => Boolean(folder)),
   };
 }
 
 export function createWorkspaceExportDocument(
   snapshot: Pick<
-    WorkspaceSnapshotV6,
-    'boxesById' | 'boxOrder' | 'boxViewStatesById' | 'itemsById' | 'itemPlacementsByBoxId'
+    WorkspaceSnapshotV7,
+    | 'boxesById'
+    | 'boxOrder'
+    | 'boxViewStatesById'
+    | 'itemsById'
+    | 'itemPlacementsByBoxId'
+    | 'bookmarksById'
+    | 'bookmarkFoldersById'
+    | 'bookmarkFolderOrder'
   >,
-): WorkspaceExportDocumentV4 {
+): WorkspaceExportDocumentV5 {
   return createExportDocumentFromSnapshot(snapshot);
 }
 
-function normalizeExportDocument(input: Record<string, unknown>): WorkspaceExportDocumentV4 | null {
+function normalizeExportDocument(input: Record<string, unknown>): WorkspaceExportDocumentV5 | null {
   if (!Array.isArray(input.boxes) || !Array.isArray(input.items)) {
     return null;
   }
@@ -298,22 +396,43 @@ function normalizeExportDocument(input: Record<string, unknown>): WorkspaceExpor
     return null;
   }
 
+  const rawBookmarks = Array.isArray(input.bookmarks) ? input.bookmarks : [];
+  const bookmarks = rawBookmarks
+    .map(normalizeBookmark)
+    .filter((bookmark): bookmark is Bookmark => bookmark !== null);
+
+  if (bookmarks.length !== rawBookmarks.length) {
+    return null;
+  }
+
+  const rawBookmarkFolders = Array.isArray(input.bookmarkFolders) ? input.bookmarkFolders : [];
+  const bookmarkFolders = rawBookmarkFolders
+    .map(normalizeBookmarkFolder)
+    .filter((folder): folder is BookmarkFolder => folder !== null);
+
+  if (bookmarkFolders.length !== rawBookmarkFolders.length) {
+    return null;
+  }
+
   return {
     version: WORKSPACE_EXPORT_VERSION,
     boxes,
     items,
     itemPlacementsByBoxId,
     boxViewStates,
+    bookmarks,
+    bookmarkFolders,
   };
 }
 
-export function parseWorkspaceExportDocument(input: unknown): WorkspaceExportDocumentV4 {
+export function parseWorkspaceExportDocument(input: unknown): WorkspaceExportDocumentV5 {
   if (!isRecord(input)) {
     throw new Error('Invalid workspace export document');
   }
 
   const isSupportedVersion =
-    input.version === WORKSPACE_EXPORT_VERSION || input.version === LEGACY_WORKSPACE_EXPORT_VERSION;
+    input.version === WORKSPACE_EXPORT_VERSION ||
+    LEGACY_WORKSPACE_EXPORT_VERSIONS.has(Number(input.version));
   const exportDocument = isSupportedVersion ? normalizeExportDocument(input) : null;
 
   if (!exportDocument) {
@@ -324,8 +443,8 @@ export function parseWorkspaceExportDocument(input: unknown): WorkspaceExportDoc
 }
 
 function snapshotFromExportDocument(
-  exportDocument: WorkspaceExportDocumentV4,
-): WorkspaceSnapshotV6 {
+  exportDocument: WorkspaceExportDocumentV5,
+): WorkspaceSnapshotV7 {
   const boxesById = Object.fromEntries(
     exportDocument.boxes.map((box) => [
       box.id,
@@ -354,11 +473,18 @@ function snapshotFromExportDocument(
     boxViewStatesById,
     itemsById,
     itemPlacementsByBoxId: exportDocument.itemPlacementsByBoxId,
+    bookmarksById: Object.fromEntries(
+      exportDocument.bookmarks.map((bookmark) => [bookmark.id, bookmark]),
+    ),
+    bookmarkFoldersById: Object.fromEntries(
+      exportDocument.bookmarkFolders.map((folder) => [folder.id, folder]),
+    ),
+    bookmarkFolderOrder: exportDocument.bookmarkFolders.map((folder) => folder.id),
     maxZIndex,
   };
 }
 
-function normalizePersistedSnapshot(input: Record<string, unknown>): WorkspaceSnapshotV6 | null {
+function normalizePersistedSnapshot(input: Record<string, unknown>): WorkspaceSnapshotV7 | null {
   const boxesById = isRecord(input.boxesById) ? input.boxesById : null;
   const boxViewStatesById = isRecord(input.boxViewStatesById) ? input.boxViewStatesById : null;
   const rawItemsById = isRecord(input.itemsById) ? input.itemsById : null;
@@ -415,6 +541,37 @@ function normalizePersistedSnapshot(input: Record<string, unknown>): WorkspaceSn
     return null;
   }
 
+  const rawBookmarksById = isRecord(input.bookmarksById) ? input.bookmarksById : {};
+  const bookmarks = Object.values(rawBookmarksById)
+    .map(normalizeBookmark)
+    .filter((bookmark): bookmark is Bookmark => bookmark !== null);
+
+  if (bookmarks.length !== Object.values(rawBookmarksById).length) {
+    return null;
+  }
+
+  const rawBookmarkFoldersById = isRecord(input.bookmarkFoldersById)
+    ? input.bookmarkFoldersById
+    : {};
+  const bookmarkFolders = Object.values(rawBookmarkFoldersById)
+    .map(normalizeBookmarkFolder)
+    .filter((folder): folder is BookmarkFolder => folder !== null);
+
+  if (bookmarkFolders.length !== Object.values(rawBookmarkFoldersById).length) {
+    return null;
+  }
+
+  const bookmarkFoldersById = Object.fromEntries(
+    bookmarkFolders.map((folder) => [folder.id, folder]),
+  );
+  const bookmarkFolderOrder = Array.isArray(input.bookmarkFolderOrder)
+    ? input.bookmarkFolderOrder
+        .map((folderId) => asString(folderId)?.trim())
+        .filter(
+          (folderId): folderId is string => !!folderId && Boolean(bookmarkFoldersById[folderId]),
+        )
+    : bookmarkFolders.map((folder) => folder.id);
+
   return {
     schemaVersion: WORKSPACE_SCHEMA_VERSION,
     boxesById: normalizedBoxesById,
@@ -422,6 +579,9 @@ function normalizePersistedSnapshot(input: Record<string, unknown>): WorkspaceSn
     boxViewStatesById: normalizedViewStatesById,
     itemsById: Object.fromEntries(items.map((item) => [item.id, item])),
     itemPlacementsByBoxId,
+    bookmarksById: Object.fromEntries(bookmarks.map((bookmark) => [bookmark.id, bookmark])),
+    bookmarkFoldersById,
+    bookmarkFolderOrder: Array.from(new Set(bookmarkFolderOrder)),
     maxZIndex: Math.max(
       asNumber(input.maxZIndex, 0),
       ...Object.values(normalizedViewStatesById).map((viewState) => viewState.zIndex),
@@ -435,13 +595,13 @@ export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null
   }
 
   return input.schemaVersion === WORKSPACE_SCHEMA_VERSION ||
-    input.schemaVersion === LEGACY_WORKSPACE_SCHEMA_VERSION
+    LEGACY_WORKSPACE_SCHEMA_VERSIONS.has(Number(input.schemaVersion))
     ? normalizePersistedSnapshot(input)
     : null;
 }
 
 export function createWorkspaceSnapshotFromExportDocument(
-  document: WorkspaceExportDocumentV4,
-): WorkspaceSnapshotV6 {
+  document: WorkspaceExportDocumentV5,
+): WorkspaceSnapshotV7 {
   return snapshotFromExportDocument(document);
 }

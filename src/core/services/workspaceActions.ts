@@ -90,7 +90,14 @@ export async function readClipboardItemDraft(clipboard: Pick<ClipboardPort, 'rea
 export function exportWorkspaceSnapshot(
   snapshot: Pick<
     WorkspaceSnapshot,
-    'boxesById' | 'boxOrder' | 'boxViewStatesById' | 'itemsById' | 'itemPlacementsByBoxId'
+    | 'boxesById'
+    | 'boxOrder'
+    | 'boxViewStatesById'
+    | 'itemsById'
+    | 'itemPlacementsByBoxId'
+    | 'bookmarksById'
+    | 'bookmarkFoldersById'
+    | 'bookmarkFolderOrder'
   >,
   fileExport: FileExportPort,
   filenamePrefix: string,

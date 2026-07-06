@@ -3,11 +3,15 @@ import type {
   WorkspaceItem,
   WorkspaceItemUpdate,
 } from '../../items/model/item';
+import type { Bookmark, BookmarkFolder } from '../../bookmarks/model/bookmark';
 
 export type BoxLayout = 'grid' | 'list';
 
 export const BOX_TEMPLATE_IDS = [
   'collection',
+  'web-library',
+  'frequent-sites',
+  'reading-list',
   'project-board',
   'daily-desk',
   'kanban',
@@ -78,8 +82,21 @@ export interface WorkspaceSnapshotV6 {
   maxZIndex: number;
 }
 
-export type WorkspaceSnapshotV5 = WorkspaceSnapshotV6;
-export type WorkspaceSnapshot = WorkspaceSnapshotV6;
+export interface WorkspaceSnapshotV7 {
+  schemaVersion: 7;
+  boxesById: Record<string, WorkspaceBoxEntity>;
+  boxOrder: string[];
+  boxViewStatesById: Record<string, BoxDesktopViewState>;
+  itemsById: Record<string, WorkspaceItem>;
+  itemPlacementsByBoxId: Record<string, BoxItemPlacement[]>;
+  bookmarksById: Record<string, Bookmark>;
+  bookmarkFoldersById: Record<string, BookmarkFolder>;
+  bookmarkFolderOrder: string[];
+  maxZIndex: number;
+}
+
+export type WorkspaceSnapshotV5 = WorkspaceSnapshotV7;
+export type WorkspaceSnapshot = WorkspaceSnapshotV7;
 
 export interface WorkspaceExportBoxV3 {
   id: string;
@@ -107,6 +124,16 @@ export interface WorkspaceExportDocumentV4 {
   boxViewStates: BoxDesktopViewState[];
 }
 
+export interface WorkspaceExportDocumentV5 {
+  version: 5;
+  boxes: WorkspaceExportBoxV4[];
+  items: WorkspaceItem[];
+  itemPlacementsByBoxId: Record<string, BoxItemPlacement[]>;
+  boxViewStates: BoxDesktopViewState[];
+  bookmarks: Bookmark[];
+  bookmarkFolders: BookmarkFolder[];
+}
+
 export interface WorkspaceBoxUpdate {
   customTitle?: string | null;
   templateId?: BoxTemplateId;
@@ -120,7 +147,7 @@ export interface WorkspaceBoxUpdate {
 }
 
 export type WorkspaceCommand =
-  | { type: 'workspace.replace'; snapshot: WorkspaceSnapshotV6 }
+  | { type: 'workspace.replace'; snapshot: WorkspaceSnapshotV7 }
   | { type: 'workspace.replaceBoxes'; boxes: WorkspaceBoxWithItems[] }
   | {
       type: 'box.create';
@@ -157,10 +184,21 @@ export type WorkspaceCommand =
       targetBoxId: string;
       targetIndex?: number;
       targetColumnId?: string;
+    }
+  | { type: 'bookmark.upsert'; bookmark: Bookmark }
+  | { type: 'bookmark.delete'; bookmarkId: string }
+  | { type: 'bookmark.folder.upsert'; folder: BookmarkFolder; index?: number }
+  | { type: 'bookmark.folder.delete'; folderId: string }
+  | { type: 'bookmark.recordOpen'; bookmarkId: string; openedAt: string }
+  | {
+      type: 'bookmarks.import';
+      bookmarks: Bookmark[];
+      folders: BookmarkFolder[];
+      folderOrder?: string[];
     };
 
-export const WORKSPACE_SCHEMA_VERSION = 6 as const;
-export const WORKSPACE_EXPORT_VERSION = 4 as const;
+export const WORKSPACE_SCHEMA_VERSION = 7 as const;
+export const WORKSPACE_EXPORT_VERSION = 5 as const;
 export const MAX_WORKSPACE_BOXES = 12;
 export const MAX_KANBAN_COLUMNS = 8;
 export const DEFAULT_BOX_TEMPLATE_ID: BoxTemplateId = 'collection';

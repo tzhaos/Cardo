@@ -1,8 +1,10 @@
 import {
   Boxes,
+  BookOpen,
   CalendarDays,
   ClipboardList,
   Columns3,
+  Globe2,
   LayoutGrid,
   List,
   Inbox,
@@ -11,6 +13,7 @@ import {
   Rocket,
   Search,
   Settings,
+  Star,
 } from 'lucide-react';
 import type { BoxTemplateId } from '../../../../core/domains/workspace/model/workspace';
 import { useWorkspaceCommandCenter } from '../hooks/useWorkspaceCommandCenter';
@@ -18,6 +21,9 @@ import { cn } from '../../../lib/utils';
 
 const TEMPLATE_ICONS = {
   collection: Package,
+  'web-library': Globe2,
+  'frequent-sites': Star,
+  'reading-list': BookOpen,
   'project-board': ClipboardList,
   'daily-desk': CalendarDays,
   kanban: Columns3,

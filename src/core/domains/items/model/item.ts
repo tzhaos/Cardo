@@ -7,6 +7,7 @@ export interface ItemDraft {
   type: ItemType;
   content: string;
   title?: string | null;
+  bookmarkId?: string | null;
 }
 
 interface WorkspaceItemBase {
@@ -17,6 +18,7 @@ interface WorkspaceItemBase {
 export interface UrlWorkspaceItem extends WorkspaceItemBase {
   type: 'url';
   url: string;
+  bookmarkId?: string | null;
 }
 
 export interface NoteWorkspaceItem extends WorkspaceItemBase {
@@ -51,6 +53,7 @@ export interface WorkspaceItemUpdate {
   url?: string;
   text?: string;
   path?: string;
+  bookmarkId?: string | null;
 }
 
 export interface PlacedWorkspaceItemMeta {
@@ -79,7 +82,12 @@ export function createWorkspaceItem(itemId: string, draft: ItemDraft): Workspace
   const base = { id: itemId, title };
 
   if (draft.type === 'url') {
-    return { ...base, type: 'url', url: content };
+    return {
+      ...base,
+      type: 'url',
+      url: content,
+      ...(draft.bookmarkId ? { bookmarkId: draft.bookmarkId } : {}),
+    };
   }
 
   if (draft.type === 'note') {
@@ -101,7 +109,12 @@ export function updateWorkspaceItem(item: WorkspaceItem, updates: WorkspaceItemU
   const nextTitle = updates.title ?? item.title;
 
   if (item.type === 'url') {
-    return { ...item, title: nextTitle, url: updates.url ?? item.url };
+    return {
+      ...item,
+      title: nextTitle,
+      url: updates.url ?? item.url,
+      ...(updates.bookmarkId === undefined ? {} : { bookmarkId: updates.bookmarkId }),
+    };
   }
 
   if (item.type === 'note') {

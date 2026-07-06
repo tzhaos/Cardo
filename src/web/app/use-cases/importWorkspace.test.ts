@@ -42,7 +42,7 @@ test('importWorkspace parses valid export and returns document', async (t) => {
   const file = new File([''], 'backup.json');
   const result = await importWorkspace(file);
 
-  assert.equal(result.version, 4);
+  assert.equal(result.version, 5);
   assert.equal(result.boxes.length, 1);
   assert.equal(result.boxes[0].templateId, 'collection');
   assert.equal(result.items.length, 1);

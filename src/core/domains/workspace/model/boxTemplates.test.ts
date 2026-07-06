@@ -15,18 +15,37 @@ import {
 test('box template library keeps product-facing template order', () => {
   assert.deepEqual(
     BOX_TEMPLATE_LIBRARY.map((template) => template.id),
-    ['collection', 'project-board', 'daily-desk', 'kanban', 'launcher', 'inbox'],
+    [
+      'collection',
+      'web-library',
+      'frequent-sites',
+      'reading-list',
+      'project-board',
+      'daily-desk',
+      'kanban',
+      'launcher',
+      'inbox',
+    ],
   );
 });
 
 test('box template definitions provide default layout and bounds', () => {
   const launcher = getBoxTemplateDefinition('launcher');
+  const webLibrary = getBoxTemplateDefinition('web-library');
+  const frequentSites = getBoxTemplateDefinition('frequent-sites');
+  const readingList = getBoxTemplateDefinition('reading-list');
   const kanban = getBoxTemplateDefinition('kanban');
   const projectBoard = getBoxTemplateDefinition('project-board');
   const dailyDesk = getBoxTemplateDefinition('daily-desk');
 
   assert.equal(launcher.defaultLayout, 'grid');
   assert.deepEqual(launcher.defaultBounds, { width: 340, height: 280 });
+  assert.equal(webLibrary.defaultLayout, 'list');
+  assert.deepEqual(webLibrary.defaultBounds, { width: 460, height: 460 });
+  assert.equal(frequentSites.defaultLayout, 'grid');
+  assert.deepEqual(frequentSites.defaultBounds, { width: 360, height: 320 });
+  assert.equal(readingList.defaultLayout, 'list');
+  assert.deepEqual(readingList.defaultBounds, { width: 380, height: 420 });
   assert.equal(kanban.defaultLayout, 'list');
   assert.deepEqual(kanban.defaultBounds, { width: 680, height: 440 });
   assert.equal(projectBoard.defaultLayout, 'list');
