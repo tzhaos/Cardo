@@ -6,6 +6,8 @@ import {
   runExportWorkspaceForUi,
   runImportWorkspaceForUi,
 } from '../../../app/use-cases/runWorkspaceBackupFlow';
+import { exportBrowserBookmarks } from '../../../app/use-cases/exportBrowserBookmarks';
+import { importBrowserBookmarks } from '../../../app/use-cases/importBrowserBookmarks';
 import {
   buildCurrentWebDavConfig,
   downloadWorkspaceFromWebDav,
@@ -25,10 +27,19 @@ export interface DataSettingsCopy {
   syncTestSuccess: string;
   syncUploadSuccess: string;
   syncDownloadSuccess: string;
+  bookmarkExportFilePrefix: string;
+  bookmarkExportSuccess: string;
+  bookmarkImportSuccess: (
+    addedCount: number,
+    duplicateCount: number,
+    invalidUrlCount: number,
+  ) => string;
+  bookmarkImportFailed: string;
 }
 
 export function useDataSettingsActions(t: TranslateFn, copy: DataSettingsCopy) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const bookmarkImportInputRef = useRef<HTMLInputElement>(null);
   const [syncAction, setSyncAction] = useState<SyncAction>('idle');
 
   const webdavEndpoint = usePreferencesStore((state) => state.webdavEndpoint);
@@ -71,6 +82,7 @@ export function useDataSettingsActions(t: TranslateFn, copy: DataSettingsCopy) {
 
   return {
     fileInputRef,
+    bookmarkImportInputRef,
     syncAction,
     currentSyncStatus,
     webdavEndpoint,
@@ -85,6 +97,10 @@ export function useDataSettingsActions(t: TranslateFn, copy: DataSettingsCopy) {
     handleExport: () => {
       presentToastSpec(t, runExportWorkspaceForUi(t));
     },
+    handleBookmarkExport: () => {
+      exportBrowserBookmarks(copy.bookmarkExportFilePrefix);
+      presentToastText('success', copy.bookmarkExportSuccess);
+    },
     handleImport: async (event: ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
 
@@ -96,6 +112,31 @@ export function useDataSettingsActions(t: TranslateFn, copy: DataSettingsCopy) {
 
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
+      }
+    },
+    handleBookmarkImport: async (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+
+      if (!file) {
+        return;
+      }
+
+      try {
+        const summary = await importBrowserBookmarks(file);
+        presentToastText(
+          'success',
+          copy.bookmarkImportSuccess(
+            summary.addedCount,
+            summary.duplicateCount,
+            summary.invalidUrlCount,
+          ),
+        );
+      } catch {
+        presentToastText('error', copy.bookmarkImportFailed);
+      } finally {
+        if (bookmarkImportInputRef.current) {
+          bookmarkImportInputRef.current.value = '';
+        }
       }
     },
     testConnection: () =>

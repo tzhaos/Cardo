@@ -1,4 +1,4 @@
-import { Cloud, CloudDownload, CloudUpload, Download, Upload } from 'lucide-react';
+import { Bookmark, Cloud, CloudDownload, CloudUpload, Download, Upload } from 'lucide-react';
 import { useI18n } from '../../../app/hooks/useI18n';
 import { useDataSettingsActions } from '../hooks/useDataSettingsActions';
 import { ActionRow } from './SettingsControls';
@@ -29,6 +29,15 @@ export function DataPanel() {
           notSyncedYet: '\u5c1a\u672a\u540c\u6b65',
           exportTitle: '\u5bfc\u51fa\u5de5\u4f5c\u533a',
           importTitle: '\u5bfc\u5165\u5de5\u4f5c\u533a',
+          bookmarksTitle: '\u7f51\u7ad9\u6536\u85cf',
+          exportBookmarksTitle: '\u5bfc\u51fa\u6d4f\u89c8\u5668\u6536\u85cf\u5939',
+          importBookmarksTitle: '\u5bfc\u5165\u6d4f\u89c8\u5668\u6536\u85cf\u5939',
+          bookmarkExportFilePrefix: 'khaosbox-\u6536\u85cf\u5939',
+          bookmarkExportSuccess: '\u6536\u85cf\u5939 HTML \u5df2\u5bfc\u51fa',
+          bookmarkImportSuccess: (added: number, duplicates: number, invalid: number) =>
+            `\u5df2\u5bfc\u5165 ${added} \u4e2a\u6536\u85cf\uff0c\u8df3\u8fc7 ${duplicates} \u4e2a\u91cd\u590d\uff0c${invalid} \u4e2a\u65e0\u6548 URL`,
+          bookmarkImportFailed:
+            '\u5bfc\u5165\u5931\u8d25\uff1a\u8bf7\u9009\u62e9\u6d4f\u89c8\u5668\u5bfc\u51fa\u7684\u4e66\u7b7e HTML',
         }
       : {
           localTitle: 'Local data',
@@ -52,6 +61,14 @@ export function DataPanel() {
           notSyncedYet: 'Not synced yet',
           exportTitle: 'Export workspace',
           importTitle: 'Import workspace',
+          bookmarksTitle: 'Website bookmarks',
+          exportBookmarksTitle: 'Export browser bookmarks',
+          importBookmarksTitle: 'Import browser bookmarks',
+          bookmarkExportFilePrefix: 'khaosbox-bookmarks',
+          bookmarkExportSuccess: 'Bookmarks HTML exported',
+          bookmarkImportSuccess: (added: number, duplicates: number, invalid: number) =>
+            `Imported ${added} bookmark(s), skipped ${duplicates} duplicate(s), ${invalid} invalid URL(s)`,
+          bookmarkImportFailed: 'Import failed: choose a browser bookmarks HTML file',
         };
   const actions = useDataSettingsActions(t, copy);
 
@@ -163,6 +180,23 @@ export function DataPanel() {
             roundedClassName="rounded-b-lg"
           />
         </div>
+
+        <div className="mt-4 mb-4 text-sm font-medium text-win-text">{copy.bookmarksTitle}</div>
+        <div className="flex flex-col rounded-lg border border-win-border bg-win-card shadow-sm">
+          <ActionRow
+            icon={<Bookmark className="h-5 w-5 text-win-text-secondary" />}
+            title={copy.exportBookmarksTitle}
+            onClick={actions.handleBookmarkExport}
+            roundedClassName="rounded-t-lg"
+          />
+          <div className="mx-4 h-px bg-win-border" />
+          <ActionRow
+            icon={<Upload className="h-5 w-5 text-win-text-secondary" />}
+            title={copy.importBookmarksTitle}
+            onClick={() => actions.bookmarkImportInputRef.current?.click()}
+            roundedClassName="rounded-b-lg"
+          />
+        </div>
       </div>
 
       <input
@@ -171,6 +205,13 @@ export function DataPanel() {
         accept=".json"
         className="hidden"
         onChange={actions.handleImport}
+      />
+      <input
+        ref={actions.bookmarkImportInputRef}
+        type="file"
+        accept=".html,.htm,text/html"
+        className="hidden"
+        onChange={actions.handleBookmarkImport}
       />
     </div>
   );

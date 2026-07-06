@@ -286,6 +286,20 @@ function registerIpcHandlers() {
 
     await fsPromises.writeFile(result.filePath, payload, 'utf8');
   });
+
+  ipcMain.handle('dialog:save-text', async (_event, filename: string, payload: string) => {
+    const extension = path.extname(filename).replace(/^\./, '') || 'txt';
+    const result = await dialog.showSaveDialog({
+      defaultPath: filename,
+      filters: [{ name: extension.toUpperCase(), extensions: [extension] }],
+    });
+
+    if (result.canceled || !result.filePath) {
+      return;
+    }
+
+    await fsPromises.writeFile(result.filePath, payload, 'utf8');
+  });
 }
 
 async function createWindow() {

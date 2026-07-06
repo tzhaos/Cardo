@@ -17,6 +17,9 @@ export function createDesktopPorts(): AppPorts {
       downloadJson: (filename, payload) => {
         void getDesktopBridge().saveJson(filename, payload);
       },
+      downloadText: (filename, payload) => {
+        void getDesktopBridge().saveText(filename, payload);
+      },
     },
     fileImport: {
       readText: (source) => {

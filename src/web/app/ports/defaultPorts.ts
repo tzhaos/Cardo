@@ -27,6 +27,7 @@ function createDefaultAppPorts(): AppPorts {
     },
     fileExport: {
       downloadJson: () => {},
+      downloadText: () => {},
     },
     fileImport: {
       readText: async () => {
@@ -86,6 +87,8 @@ export const clipboardPort: ClipboardPort = {
 
 export const fileExportPort: FileExportPort = {
   downloadJson: (filename, contents) => activePorts.fileExport.downloadJson(filename, contents),
+  downloadText: (filename, contents, mimeType) =>
+    activePorts.fileExport.downloadText(filename, contents, mimeType),
 };
 
 export const fileImportPort: FileImportPort = {

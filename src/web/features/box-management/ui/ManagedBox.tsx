@@ -6,6 +6,7 @@ import BoxContainer from '../../../widgets/Box/BoxContainer';
 import BoxHeader from '../../../widgets/Box/BoxHeader';
 import {
   ManagedBoxContent,
+  ManagedBookmarkCollectionContent,
   ManagedInboxContent,
   ManagedKanbanContent,
 } from '../../item-management';
@@ -23,6 +24,10 @@ function ManagedBoxView({ box }: ManagedBoxViewProps) {
   const controller = useManagedBoxController(box);
   const content = isKanbanTemplateId(box.templateId) ? (
     <ManagedKanbanContent box={box} />
+  ) : box.templateId === 'web-library' ? (
+    <ManagedBookmarkCollectionContent box={box} mode="library" />
+  ) : box.templateId === 'frequent-sites' ? (
+    <ManagedBookmarkCollectionContent box={box} mode="frequent" />
   ) : box.templateId === 'inbox' ? (
     <ManagedInboxContent
       box={box}

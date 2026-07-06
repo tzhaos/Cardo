@@ -7,6 +7,7 @@ test('createExtensionPorts returns a full port bundle', () => {
   assert.ok(ports.workspaceStorage?.getItem);
   assert.ok(ports.clipboard?.readText);
   assert.ok(ports.fileExport?.downloadJson);
+  assert.ok(ports.fileExport?.downloadText);
   assert.ok(ports.fileImport?.readText);
   assert.ok(ports.tabs?.openUrl);
   assert.ok(ports.runtimeDocument?.setTheme);
