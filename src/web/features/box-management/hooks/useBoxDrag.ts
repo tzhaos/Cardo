@@ -16,6 +16,24 @@ interface UseBoxDragOptions {
   setIsDragging: (isDragging: boolean) => void;
 }
 
+const EDGE_BOUNDARY_GAP = 28;
+
+function getDragLayoutBounds(target: EventTarget | null, boxWidth: number) {
+  if (!(target instanceof Element)) {
+    return { minX: EDGE_BOUNDARY_GAP, minY: 0 };
+  }
+
+  const boxNode = target.closest<HTMLElement>('[data-kb-box-id]');
+  const canvasNode = boxNode?.parentElement;
+  const canvasWidth = canvasNode?.clientWidth ?? window.innerWidth;
+
+  return {
+    minX: EDGE_BOUNDARY_GAP,
+    minY: 0,
+    maxX: Math.max(EDGE_BOUNDARY_GAP, canvasWidth - boxWidth - EDGE_BOUNDARY_GAP),
+  };
+}
+
 export function useBoxDrag({ box, allBoxes, onFocus, onUpdate, setIsDragging }: UseBoxDragOptions) {
   const lastSnapRef = useRef<string | null>(null);
   const setInteractionMode = useCanvasStore((state) => state.setInteractionMode);
@@ -32,6 +50,7 @@ export function useBoxDrag({ box, allBoxes, onFocus, onUpdate, setIsDragging }: 
     setInteractionMode('box-dragging');
     onFocus();
     const renderedBounds = getRenderedBoxBounds(box);
+    const layoutBounds = getDragLayoutBounds(event.target, renderedBounds.width);
     const draggableBox = {
       ...box,
       bounds: renderedBounds,
@@ -51,6 +70,7 @@ export function useBoxDrag({ box, allBoxes, onFocus, onUpdate, setIsDragging }: 
         dragStart,
         draggableBox,
         allBoxes,
+        layoutBounds,
       );
 
       onUpdate({ bounds: { x: newX, y: newY } });

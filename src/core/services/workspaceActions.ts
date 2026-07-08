@@ -161,7 +161,7 @@ export function createPasteTextCommand(
 
   const targetBox =
     (activeBoxId ? getWorkspaceBox(snapshot, activeBoxId) : null) ??
-    orderedBoxes.find((box) => box.templateId === 'inbox') ??
+    orderedBoxes.find((box) => box.templateId === DEFAULT_BOX_TEMPLATE_ID) ??
     orderedBoxes[0] ??
     null;
 

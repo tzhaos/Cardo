@@ -15,17 +15,7 @@ import {
 test('box template library keeps product-facing template order', () => {
   assert.deepEqual(
     BOX_TEMPLATE_LIBRARY.map((template) => template.id),
-    [
-      'collection',
-      'web-library',
-      'frequent-sites',
-      'reading-list',
-      'project-board',
-      'daily-desk',
-      'kanban',
-      'launcher',
-      'inbox',
-    ],
+    ['collection', 'web-library', 'frequent-sites', 'reading-list', 'launcher'],
   );
 });
 
@@ -34,9 +24,6 @@ test('box template definitions provide default layout and bounds', () => {
   const webLibrary = getBoxTemplateDefinition('web-library');
   const frequentSites = getBoxTemplateDefinition('frequent-sites');
   const readingList = getBoxTemplateDefinition('reading-list');
-  const kanban = getBoxTemplateDefinition('kanban');
-  const projectBoard = getBoxTemplateDefinition('project-board');
-  const dailyDesk = getBoxTemplateDefinition('daily-desk');
 
   assert.equal(launcher.defaultLayout, 'grid');
   assert.deepEqual(launcher.defaultBounds, { width: 340, height: 280 });
@@ -46,12 +33,6 @@ test('box template definitions provide default layout and bounds', () => {
   assert.deepEqual(frequentSites.defaultBounds, { width: 360, height: 320 });
   assert.equal(readingList.defaultLayout, 'list');
   assert.deepEqual(readingList.defaultBounds, { width: 380, height: 420 });
-  assert.equal(kanban.defaultLayout, 'list');
-  assert.deepEqual(kanban.defaultBounds, { width: 360, height: 280 });
-  assert.equal(projectBoard.defaultLayout, 'list');
-  assert.deepEqual(projectBoard.defaultBounds, { width: 760, height: 460 });
-  assert.equal(dailyDesk.defaultLayout, 'list');
-  assert.deepEqual(dailyDesk.defaultBounds, { width: 720, height: 440 });
 });
 
 test('box template definitions expose product metadata', () => {
@@ -61,7 +42,7 @@ test('box template definitions expose product metadata', () => {
   }
 });
 
-test('createDefaultTemplateState clones kanban columns', () => {
+test('legacy kanban template state clones kanban columns', () => {
   const firstState = createDefaultTemplateState('kanban');
   const secondState = createDefaultTemplateState('kanban');
 
@@ -70,7 +51,7 @@ test('createDefaultTemplateState clones kanban columns', () => {
   assert.notEqual(firstState.kanbanColumns?.[0], secondState.kanbanColumns?.[0]);
 });
 
-test('project board template provides default columns and starter content', () => {
+test('legacy project board template provides default columns and starter content', () => {
   const state = createDefaultTemplateState('project-board');
   const items = createDefaultTemplateItems('project-board');
 
@@ -85,7 +66,7 @@ test('project board template provides default columns and starter content', () =
   );
 });
 
-test('daily desk template provides default columns and starter content', () => {
+test('legacy daily desk template provides default columns and starter content', () => {
   const state = createDefaultTemplateState('daily-desk');
   const items = createDefaultTemplateItems('daily-desk');
 

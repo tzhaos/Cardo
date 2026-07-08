@@ -4,6 +4,12 @@ import { fetchWebDavPort } from '../sync/fetchWebDavPort';
 
 export function createDesktopPorts(): AppPorts {
   return {
+    browserBookmarks: {
+      isSupported: () => false,
+      requestTree: async () => {
+        throw new Error('Browser bookmarks import is only available in the browser extension.');
+      },
+    },
     workspaceStorage: {
       getItem: (name) => getDesktopBridge().storageGet(name),
       setItem: (name, value) => getDesktopBridge().storageSet(name, value),

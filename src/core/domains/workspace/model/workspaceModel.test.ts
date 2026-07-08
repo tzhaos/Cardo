@@ -20,6 +20,29 @@ import {
   parseWorkspaceSnapshot,
 } from './workspaceCodec';
 
+function createLegacyKanbanSnapshot() {
+  const legacyKanbanBox = {
+    id: 'legacy-kanban',
+    customTitle: 'Legacy kanban',
+    templateId: 'kanban',
+    templateState: {
+      kanbanColumns: DEFAULT_KANBAN_COLUMNS.map((column) => ({ ...column })),
+    },
+    bounds: { x: 100, y: 100, width: 360, height: 280 },
+    isLocked: false,
+    isCollapsed: false,
+    isMinimized: false,
+    layout: 'list',
+    zIndex: 1,
+    items: [],
+  } satisfies WorkspaceBoxWithItems;
+
+  return reduceWorkspace(createInitialWorkspaceSnapshot(), {
+    type: 'workspace.replaceBoxes',
+    boxes: [legacyKanbanBox],
+  });
+}
+
 test('workspace reducer keeps items global and pin state in placements', () => {
   const snapshot = createInitialWorkspaceSnapshot();
   const noteItem = createWorkspaceItem('item-note', {
@@ -30,16 +53,16 @@ test('workspace reducer keeps items global and pin state in placements', () => {
 
   const withItem = reduceWorkspace(snapshot, {
     type: 'item.add',
-    boxId: 'default-inbox',
+    boxId: 'default-collection-folders',
     item: noteItem,
   });
   assert.equal(Object.keys(withItem.itemsById).length, 1);
-  assert.equal(getBoxItems(withItem, 'default-inbox')[0].title, 'Scratch');
-  assert.equal(getBoxItems(withItem, 'default-inbox')[0].isPinned, false);
+  assert.equal(getBoxItems(withItem, 'default-collection-folders')[0].title, 'Scratch');
+  assert.equal(getBoxItems(withItem, 'default-collection-folders')[0].isPinned, false);
 
   const withUpdatedItem = reduceWorkspace(withItem, {
     type: 'item.update',
-    boxId: 'default-inbox',
+    boxId: 'default-collection-folders',
     itemId: noteItem.id,
     updates: {
       title: 'Updated scratch',
@@ -47,24 +70,27 @@ test('workspace reducer keeps items global and pin state in placements', () => {
     },
   });
   assert.equal(withUpdatedItem.itemsById[noteItem.id].title, 'Updated scratch');
-  const updatedPlacedItem = getBoxItems(withUpdatedItem, 'default-inbox')[0];
+  const updatedPlacedItem = getBoxItems(withUpdatedItem, 'default-collection-folders')[0];
   assert.equal(updatedPlacedItem.type, 'note');
   assert.equal(updatedPlacedItem.type === 'note' ? updatedPlacedItem.text : null, 'Updated note');
 
   const withPinnedItem = reduceWorkspace(withUpdatedItem, {
     type: 'item.setPinned',
-    boxId: 'default-inbox',
+    boxId: 'default-collection-folders',
     itemId: noteItem.id,
     isPinned: true,
   });
-  assert.equal(withPinnedItem.itemPlacementsByBoxId['default-inbox'][0].isPinned, true);
+  assert.equal(
+    withPinnedItem.itemPlacementsByBoxId['default-collection-folders'][0].isPinned,
+    true,
+  );
 
   const withoutItem = reduceWorkspace(withPinnedItem, {
     type: 'item.delete',
-    boxId: 'default-inbox',
+    boxId: 'default-collection-folders',
     itemId: noteItem.id,
   });
-  assert.equal(withoutItem.itemPlacementsByBoxId['default-inbox'].length, 0);
+  assert.equal(withoutItem.itemPlacementsByBoxId['default-collection-folders'].length, 0);
   assert.equal(withoutItem.itemsById[noteItem.id], undefined);
 });
 
@@ -92,12 +118,12 @@ test('bookmarks stay independent from box item placement lifecycle', () => {
   });
   const withItem = reduceWorkspace(withBookmark, {
     type: 'item.add',
-    boxId: 'default-inbox',
+    boxId: 'default-collection-folders',
     item,
   });
   const withoutBox = reduceWorkspace(withItem, {
     type: 'box.delete',
-    boxId: 'default-inbox',
+    boxId: 'default-collection-folders',
   });
 
   assert.equal(withoutBox.itemsById[item.id], undefined);
@@ -197,7 +223,7 @@ test('move item inherits placement pin state without mutating item entity', () =
 });
 
 test('move item can assign a kanban column placement', () => {
-  const snapshot = createInitialWorkspaceSnapshot();
+  const snapshot = createLegacyKanbanSnapshot();
   const cardItem = createWorkspaceItem('item-card', {
     type: 'note',
     title: 'Ship kanban',
@@ -205,24 +231,24 @@ test('move item can assign a kanban column placement', () => {
   });
   const withCard = reduceWorkspace(snapshot, {
     type: 'item.add',
-    boxId: 'default-kanban',
+    boxId: 'legacy-kanban',
     item: cardItem,
     columnId: 'todo',
   });
   const movedCard = reduceWorkspace(withCard, {
     type: 'item.move',
     itemId: cardItem.id,
-    sourceBoxId: 'default-kanban',
-    targetBoxId: 'default-kanban',
+    sourceBoxId: 'legacy-kanban',
+    targetBoxId: 'legacy-kanban',
     targetColumnId: 'doing',
   });
 
-  assert.equal(movedCard.itemPlacementsByBoxId['default-kanban'][0].columnId, 'doing');
-  assert.equal(getBoxItems(movedCard, 'default-kanban')[0].columnId, 'doing');
+  assert.equal(movedCard.itemPlacementsByBoxId['legacy-kanban'][0].columnId, 'doing');
+  assert.equal(getBoxItems(movedCard, 'legacy-kanban')[0].columnId, 'doing');
 });
 
 test('kanban column commands manage columns and reroute deleted cards', () => {
-  const snapshot = createInitialWorkspaceSnapshot();
+  const snapshot = createLegacyKanbanSnapshot();
   const cardItem = createWorkspaceItem('item-card', {
     type: 'note',
     title: 'Blocked card',
@@ -230,43 +256,43 @@ test('kanban column commands manage columns and reroute deleted cards', () => {
   });
   const withCard = reduceWorkspace(snapshot, {
     type: 'item.add',
-    boxId: 'default-kanban',
+    boxId: 'legacy-kanban',
     item: cardItem,
     columnId: 'doing',
   });
   const withBlockedColumn = reduceWorkspace(withCard, {
     type: 'kanban.column.add',
-    boxId: 'default-kanban',
+    boxId: 'legacy-kanban',
     column: { id: 'blocked', title: 'Blocked' },
     afterColumnId: 'doing',
   });
   const withRenamedColumn = reduceWorkspace(withBlockedColumn, {
     type: 'kanban.column.update',
-    boxId: 'default-kanban',
+    boxId: 'legacy-kanban',
     columnId: 'blocked',
     title: 'Waiting',
   });
   const withMovedColumn = reduceWorkspace(withRenamedColumn, {
     type: 'kanban.column.move',
-    boxId: 'default-kanban',
+    boxId: 'legacy-kanban',
     columnId: 'blocked',
     targetIndex: 1,
   });
   const withDeletedColumn = reduceWorkspace(withMovedColumn, {
     type: 'kanban.column.delete',
-    boxId: 'default-kanban',
+    boxId: 'legacy-kanban',
     columnId: 'doing',
     fallbackColumnId: 'todo',
   });
 
   assert.deepEqual(
-    withBlockedColumn.boxesById['default-kanban'].templateState.kanbanColumns?.map(
+    withBlockedColumn.boxesById['legacy-kanban'].templateState.kanbanColumns?.map(
       (column) => column.id,
     ),
     ['todo', 'doing', 'blocked', 'done'],
   );
   assert.deepEqual(
-    withMovedColumn.boxesById['default-kanban'].templateState.kanbanColumns?.map((column) => [
+    withMovedColumn.boxesById['legacy-kanban'].templateState.kanbanColumns?.map((column) => [
       column.id,
       column.title,
     ]),
@@ -277,9 +303,9 @@ test('kanban column commands manage columns and reroute deleted cards', () => {
       ['done', DEFAULT_KANBAN_COLUMNS[2].title],
     ],
   );
-  assert.equal(withDeletedColumn.itemPlacementsByBoxId['default-kanban'][0].columnId, 'todo');
+  assert.equal(withDeletedColumn.itemPlacementsByBoxId['legacy-kanban'][0].columnId, 'todo');
   assert.equal(
-    withDeletedColumn.boxesById['default-kanban'].templateState.kanbanColumns?.some(
+    withDeletedColumn.boxesById['legacy-kanban'].templateState.kanbanColumns?.some(
       (column) => column.id === 'doing',
     ),
     false,
@@ -302,21 +328,22 @@ test('workspace export document round-trips with current schema', () => {
   const parsed = parseWorkspaceExportDocument(document);
 
   assert.equal(parsed.version, WORKSPACE_EXPORT_VERSION);
-  assert.equal(parsed.boxes.length, 20);
-  assert.equal(parsed.boxes[0].id, 'default-kanban');
-  assert.equal(parsed.boxes[0].customTitle, 'Priority flow');
-  assert.equal(parsed.boxes[1].templateId, 'kanban');
+  assert.equal(parsed.boxes.length, 10);
+  assert.equal(parsed.boxes[0].id, 'default-collection-folders');
+  assert.equal(parsed.boxes[0].customTitle, 'Folders');
+  assert.equal(parsed.boxes.every((box) => box.templateId !== 'kanban'), true);
+  assert.equal(parsed.boxes.every((box) => box.templateId !== 'inbox'), true);
   assert.equal(parsed.bookmarks[0].id, 'bookmark-export');
 });
 
-test('default workspace page boxes can be added to legacy snapshots without replacing user boxes', () => {
+test('default workspace page boxes can be added to sparse snapshots without retired templates', () => {
   const snapshot = reduceWorkspace(createInitialWorkspaceSnapshot(), {
     type: 'workspace.replaceBoxes',
     boxes: [
       {
-        id: 'legacy-inbox',
-        customTitle: 'Legacy inbox',
-        templateId: 'inbox',
+        id: 'user-folders',
+        customTitle: 'User folders',
+        templateId: 'collection',
         templateState: {},
         bounds: { x: 0, y: 0, width: 320, height: 360 },
         isLocked: false,
@@ -330,14 +357,14 @@ test('default workspace page boxes can be added to legacy snapshots without repl
   });
   const ensured = ensureDefaultWorkspacePageBoxes(snapshot);
 
-  assert.equal(ensured.boxesById['legacy-inbox']?.customTitle, 'Legacy inbox');
+  assert.equal(ensured.boxesById['user-folders']?.customTitle, 'User folders');
   assert.equal(
-    Object.values(ensured.boxesById).filter((box) => box.templateId === 'kanban').length,
-    4,
+    Object.values(ensured.boxesById).filter((box) => box.templateId === 'collection').length,
+    2,
   );
   assert.equal(
     Object.values(ensured.boxesById).filter((box) => box.templateId === 'inbox').length,
-    2,
+    0,
   );
   assert.ok(ensured.boxesById['default-launcher-tools']);
 });
@@ -347,21 +374,73 @@ test('box.layoutPage stores masonry column and order slots', () => {
   const nextSnapshot = reduceWorkspace(snapshot, {
     type: 'box.layoutPage',
     positions: [
-      { boxId: 'default-kanban', columnIndex: 2, orderIndex: 1 },
-      { boxId: 'default-kanban-sprint', columnIndex: 0, orderIndex: 0 },
+      { boxId: 'default-collection-folders', columnIndex: 2, orderIndex: 1 },
+      { boxId: 'default-collection-projects', columnIndex: 0, orderIndex: 0 },
     ],
   });
 
-  assert.deepEqual(nextSnapshot.boxViewStatesById['default-kanban'].bounds, {
-    ...snapshot.boxViewStatesById['default-kanban'].bounds,
+  assert.deepEqual(nextSnapshot.boxViewStatesById['default-collection-folders'].bounds, {
+    ...snapshot.boxViewStatesById['default-collection-folders'].bounds,
     x: 2,
     y: 1,
   });
-  assert.deepEqual(nextSnapshot.boxViewStatesById['default-kanban-sprint'].bounds, {
-    ...snapshot.boxViewStatesById['default-kanban-sprint'].bounds,
+  assert.deepEqual(nextSnapshot.boxViewStatesById['default-collection-projects'].bounds, {
+    ...snapshot.boxViewStatesById['default-collection-projects'].bounds,
     x: 0,
     y: 0,
   });
+});
+
+test('workspace snapshot parser maps retired product templates to folders', () => {
+  const snapshot = createInitialWorkspaceSnapshot();
+  const parsed = parseWorkspaceSnapshot({
+    ...snapshot,
+    boxesById: {
+      'legacy-kanban': {
+        id: 'legacy-kanban',
+        customTitle: 'Old board',
+        templateId: 'kanban',
+        templateState: {
+          kanbanColumns: DEFAULT_KANBAN_COLUMNS,
+        },
+      },
+      'legacy-inbox': {
+        id: 'legacy-inbox',
+        customTitle: 'Old inbox',
+        templateId: 'inbox',
+        templateState: {},
+      },
+    },
+    boxOrder: ['legacy-kanban', 'legacy-inbox'],
+    boxViewStatesById: {
+      'legacy-kanban': {
+        boxId: 'legacy-kanban',
+        bounds: { x: 0, y: 0, width: 320, height: 300 },
+        isLocked: false,
+        isCollapsed: false,
+        isMinimized: false,
+        layout: 'list',
+        zIndex: 1,
+      },
+      'legacy-inbox': {
+        boxId: 'legacy-inbox',
+        bounds: { x: 340, y: 0, width: 320, height: 300 },
+        isLocked: false,
+        isCollapsed: false,
+        isMinimized: false,
+        layout: 'list',
+        zIndex: 2,
+      },
+    },
+    itemPlacementsByBoxId: {
+      'legacy-kanban': [],
+      'legacy-inbox': [],
+    },
+  });
+
+  assert.equal(parsed?.boxesById['legacy-kanban'].templateId, 'collection');
+  assert.equal(parsed?.boxesById['legacy-inbox'].templateId, 'collection');
+  assert.deepEqual(parsed?.boxesById['legacy-kanban'].templateState, {});
 });
 
 test('workspace snapshot parser accepts current schema payloads', () => {

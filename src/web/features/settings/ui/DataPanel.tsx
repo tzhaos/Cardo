@@ -1,4 +1,4 @@
-import { Bookmark, Cloud, CloudDownload, CloudUpload, Download, Upload } from 'lucide-react';
+import { Bookmark, Cloud, CloudDownload, CloudUpload, Download, Globe2, Upload } from 'lucide-react';
 import { useI18n } from '../../../app/hooks/useI18n';
 import { useDataSettingsActions } from '../hooks/useDataSettingsActions';
 import { ActionRow } from './SettingsControls';
@@ -32,12 +32,15 @@ export function DataPanel() {
           bookmarksTitle: '\u7f51\u7ad9\u6536\u85cf',
           exportBookmarksTitle: '\u5bfc\u51fa\u6d4f\u89c8\u5668\u6536\u85cf\u5939',
           importBookmarksTitle: '\u5bfc\u5165\u6d4f\u89c8\u5668\u6536\u85cf\u5939',
+          importBookmarksFromBrowserTitle: '\u4ece\u5f53\u524d\u6d4f\u89c8\u5668\u5bfc\u5165',
           bookmarkExportFilePrefix: 'khaosbox-\u6536\u85cf\u5939',
           bookmarkExportSuccess: '\u6536\u85cf\u5939 HTML \u5df2\u5bfc\u51fa',
           bookmarkImportSuccess: (added: number, duplicates: number, invalid: number) =>
             `\u5df2\u5bfc\u5165 ${added} \u4e2a\u6536\u85cf\uff0c\u8df3\u8fc7 ${duplicates} \u4e2a\u91cd\u590d\uff0c${invalid} \u4e2a\u65e0\u6548 URL`,
           bookmarkImportFailed:
             '\u5bfc\u5165\u5931\u8d25\uff1a\u8bf7\u9009\u62e9\u6d4f\u89c8\u5668\u5bfc\u51fa\u7684\u4e66\u7b7e HTML',
+          browserBookmarkImportFailed:
+            '\u5bfc\u5165\u5931\u8d25\uff1a\u8bf7\u5141\u8bb8\u8bfb\u53d6\u6d4f\u89c8\u5668\u6536\u85cf\u5939\u540e\u91cd\u8bd5',
         }
       : {
           localTitle: 'Local data',
@@ -64,11 +67,13 @@ export function DataPanel() {
           bookmarksTitle: 'Website bookmarks',
           exportBookmarksTitle: 'Export browser bookmarks',
           importBookmarksTitle: 'Import browser bookmarks',
+          importBookmarksFromBrowserTitle: 'Import from this browser',
           bookmarkExportFilePrefix: 'khaosbox-bookmarks',
           bookmarkExportSuccess: 'Bookmarks HTML exported',
           bookmarkImportSuccess: (added: number, duplicates: number, invalid: number) =>
             `Imported ${added} bookmark(s), skipped ${duplicates} duplicate(s), ${invalid} invalid URL(s)`,
           bookmarkImportFailed: 'Import failed: choose a browser bookmarks HTML file',
+          browserBookmarkImportFailed: 'Import failed: allow browser bookmarks access and try again',
         };
   const actions = useDataSettingsActions(t, copy);
 
@@ -194,8 +199,21 @@ export function DataPanel() {
             icon={<Upload className="h-5 w-5 text-win-text-secondary" />}
             title={copy.importBookmarksTitle}
             onClick={() => actions.bookmarkImportInputRef.current?.click()}
-            roundedClassName="rounded-b-2xl"
+            roundedClassName={
+              actions.canImportBrowserBookmarksFromBrowser ? '' : 'rounded-b-2xl'
+            }
           />
+          {actions.canImportBrowserBookmarksFromBrowser ? (
+            <>
+              <div className="mx-4 h-px bg-win-border" />
+              <ActionRow
+                icon={<Globe2 className="h-5 w-5 text-win-text-secondary" />}
+                title={copy.importBookmarksFromBrowserTitle}
+                onClick={() => void actions.handleBrowserBookmarkImport()}
+                roundedClassName="rounded-b-2xl"
+              />
+            </>
+          ) : null}
         </div>
       </div>
 

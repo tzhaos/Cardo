@@ -87,10 +87,10 @@ test('getVisibleBoxIds returns array of visible box ids', () => {
 
 test('getWorkspaceBox returns box by id', () => {
   const snapshot = createInitialWorkspaceSnapshot();
-  const box = getWorkspaceBox(snapshot, 'default-inbox');
+  const box = getWorkspaceBox(snapshot, 'default-collection-folders');
 
   assert.notEqual(box, null);
-  assert.equal(box?.id, 'default-inbox');
+  assert.equal(box?.id, 'default-collection-folders');
 });
 
 test('getWorkspaceBox returns null for non-existent box', () => {

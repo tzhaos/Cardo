@@ -4,6 +4,17 @@ import type { WorkspaceBox } from '../../workspace/model/workspace';
 const MIN_BOX_GAP = 28;
 const POSITION_GRID = 20;
 
+interface DragLayoutBounds {
+  minX?: number;
+  maxX?: number;
+  minY?: number;
+}
+
+function clampToBounds(value: number, min: number, max?: number) {
+  const withMin = Math.max(min, value);
+  return max === undefined ? withMin : Math.min(max, withMin);
+}
+
 function hasGapConflict(
   candidate: { x: number; y: number; width: number; height: number },
   other: { x: number; y: number; width: number; height: number },
@@ -23,9 +34,13 @@ function resolveGapConstrainedPosition(
   height: number,
   allBoxes: WorkspaceBox[],
   currentId: string,
+  layoutBounds: DragLayoutBounds = {},
 ) {
-  let nextX = Math.max(0, x);
-  let nextY = Math.max(0, y);
+  const minX = layoutBounds.minX ?? 0;
+  const minY = layoutBounds.minY ?? 0;
+  const maxX = layoutBounds.maxX;
+  let nextX = clampToBounds(x, minX, maxX);
+  let nextY = clampToBounds(y, minY);
 
   for (let pass = 0; pass < 4; pass += 1) {
     let moved = false;
@@ -48,8 +63,8 @@ function resolveGapConstrainedPosition(
       ]
         .map((position) => ({
           ...position,
-          x: Math.max(0, position.x),
-          y: Math.max(0, position.y),
+          x: clampToBounds(position.x, minX, maxX),
+          y: clampToBounds(position.y, minY),
         }))
         .sort((first, second) => first.distance - second.distance);
 
@@ -82,8 +97,8 @@ function resolveGapConstrainedPosition(
           continue;
         }
 
-        const candidateX = Math.max(0, nextX + dx * POSITION_GRID);
-        const candidateY = Math.max(0, nextY + dy * POSITION_GRID);
+        const candidateX = clampToBounds(nextX + dx * POSITION_GRID, minX, maxX);
+        const candidateY = clampToBounds(nextY + dy * POSITION_GRID, minY);
         positions.push({
           x: candidateX,
           y: candidateY,
@@ -108,8 +123,11 @@ function resolveGapConstrainedPosition(
   }
 
   return {
-    x: 0,
-    y: Math.max(0, ...allBoxes.map((other) => other.bounds.y + other.bounds.height + MIN_BOX_GAP)),
+    x: minX,
+    y: Math.max(
+      minY,
+      ...allBoxes.map((other) => other.bounds.y + other.bounds.height + MIN_BOX_GAP),
+    ),
   };
 }
 
@@ -118,11 +136,14 @@ export function computeBoxDragFrame(
   dragStart: { clientX: number; clientY: number; initialBoxX: number; initialBoxY: number },
   box: Pick<WorkspaceBox, 'id' | 'bounds'>,
   allBoxes: WorkspaceBox[],
+  layoutBounds: DragLayoutBounds = {},
 ) {
   const offsetX = moveEvent.clientX - dragStart.clientX;
   const offsetY = moveEvent.clientY - dragStart.clientY;
-  const newX = Math.max(0, dragStart.initialBoxX + offsetX);
-  const newY = Math.max(0, dragStart.initialBoxY + offsetY);
+  const minX = layoutBounds.minX ?? 0;
+  const minY = layoutBounds.minY ?? 0;
+  const newX = clampToBounds(dragStart.initialBoxX + offsetX, minX, layoutBounds.maxX);
+  const newY = clampToBounds(dragStart.initialBoxY + offsetY, minY);
   const snap = calculateSnap(newX, newY, box.bounds.width, box.bounds.height, allBoxes, box.id);
   const constrained = resolveGapConstrainedPosition(
     snap.x,
@@ -131,6 +152,7 @@ export function computeBoxDragFrame(
     box.bounds.height,
     allBoxes,
     box.id,
+    layoutBounds,
   );
 
   return {

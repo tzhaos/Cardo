@@ -7,7 +7,7 @@ import { createDesktopPorts } from './ports/createDesktopPorts';
 configureAppPorts(createDesktopPorts());
 
 renderRoot(
-  <div className="h-full min-h-0 overflow-hidden">
+  <div className="min-h-screen overflow-x-hidden">
     <KhaosBoxApp />
   </div>,
 );

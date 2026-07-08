@@ -1,3 +1,4 @@
+import type { BrowserBookmarksPort } from './BrowserBookmarksPort';
 import type { ClipboardPort } from './ClipboardPort';
 import type { FileExportPort } from './FileExportPort';
 import type { FileImportPort } from './FileImportPort';
@@ -8,6 +9,7 @@ import type { WebDavPort } from './WebDavPort';
 import type { WorkspaceStoragePort } from './WorkspaceStoragePort';
 
 export interface AppPorts {
+  browserBookmarks: BrowserBookmarksPort;
   workspaceStorage: WorkspaceStoragePort;
   clipboard: ClipboardPort;
   fileExport: FileExportPort;

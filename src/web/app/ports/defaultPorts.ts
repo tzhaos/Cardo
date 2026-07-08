@@ -1,4 +1,5 @@
 import type { AppPorts } from '../../../core/ports/AppPorts';
+import type { BrowserBookmarksPort } from '../../../core/ports/BrowserBookmarksPort';
 import type { ClipboardPort } from '../../../core/ports/ClipboardPort';
 import type { FileExportPort } from '../../../core/ports/FileExportPort';
 import type { FileImportPort } from '../../../core/ports/FileImportPort';
@@ -12,6 +13,12 @@ const memoryStorage = new Map<string, string>();
 
 function createDefaultAppPorts(): AppPorts {
   return {
+    browserBookmarks: {
+      isSupported: () => false,
+      requestTree: async () => {
+        throw new Error('Browser bookmarks port is not configured.');
+      },
+    },
     workspaceStorage: {
       getItem: (name) => memoryStorage.get(name) ?? null,
       setItem: (name, value) => {
@@ -78,6 +85,11 @@ export const workspaceStoragePort: WorkspaceStoragePort = {
   getItem: (name) => activePorts.workspaceStorage.getItem(name),
   setItem: (name, value) => activePorts.workspaceStorage.setItem(name, value),
   removeItem: (name) => activePorts.workspaceStorage.removeItem(name),
+};
+
+export const browserBookmarksPort: BrowserBookmarksPort = {
+  isSupported: () => activePorts.browserBookmarks.isSupported(),
+  requestTree: () => activePorts.browserBookmarks.requestTree(),
 };
 
 export const clipboardPort: ClipboardPort = {

@@ -1,6 +1,6 @@
 # KhaosBox
 
-KhaosBox is a multi-host TypeScript spatial workbench for organizing links, notes, files, folders, and lightweight workflows in template boxes such as collections, launchers, inboxes, and kanban boards.
+KhaosBox is a multi-host TypeScript spatial workbench for organizing links, notes, files, folders, website bookmarks, and quick-launch collections in freeform template boxes.
 
 ## Hosts
 

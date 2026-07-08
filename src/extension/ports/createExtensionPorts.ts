@@ -1,4 +1,5 @@
 import type { AppPorts } from '../../core/ports/AppPorts';
+import { browserBookmarksPort } from '../bookmarks/browserBookmarksPort';
 import { browserClipboardPort } from '../clipboard/browserClipboardPort';
 import { browserFileExportPort } from '../files/browserFileExportPort';
 import { browserFileImportPort } from '../files/browserFileImportPort';
@@ -13,6 +14,7 @@ import { extensionWebDavPort } from '../sync/extensionWebDavPort';
  */
 export function createExtensionPorts(): AppPorts {
   return {
+    browserBookmarks: browserBookmarksPort,
     workspaceStorage: extensionStateStorage,
     clipboard: browserClipboardPort,
     fileExport: browserFileExportPort,

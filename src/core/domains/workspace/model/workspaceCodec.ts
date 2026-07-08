@@ -23,6 +23,12 @@ import {
 import { createDefaultTemplateState } from './boxTemplates';
 
 const BOX_TEMPLATE_ID_SET = new Set<string>(BOX_TEMPLATE_IDS);
+const RETIRED_PRODUCT_TEMPLATE_IDS = new Set<string>([
+  'daily-desk',
+  'inbox',
+  'kanban',
+  'project-board',
+]);
 const LEGACY_WORKSPACE_SCHEMA_VERSIONS = new Set([5, 6]);
 const LEGACY_WORKSPACE_EXPORT_VERSIONS = new Set([3, 4]);
 const BOOKMARK_SOURCES = new Set<BookmarkSource>(['manual', 'import', 'item']);
@@ -58,6 +64,11 @@ function asBookmarkSource(value: unknown): BookmarkSource {
 
 function asTemplateId(value: unknown): BoxTemplateId {
   const templateId = asString(value)?.trim();
+
+  if (templateId && RETIRED_PRODUCT_TEMPLATE_IDS.has(templateId)) {
+    return DEFAULT_BOX_TEMPLATE_ID;
+  }
+
   return templateId && BOX_TEMPLATE_ID_SET.has(templateId)
     ? (templateId as BoxTemplateId)
     : DEFAULT_BOX_TEMPLATE_ID;

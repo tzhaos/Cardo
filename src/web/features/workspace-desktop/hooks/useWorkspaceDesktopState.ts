@@ -13,12 +13,8 @@ import {
 export type WorkspaceProductTabId = BoxTemplateId;
 
 const TEMPLATE_PAGE_ORDER: BoxTemplateId[] = [
-  'kanban',
   'collection',
   'launcher',
-  'inbox',
-  'project-board',
-  'daily-desk',
   'web-library',
   'frequent-sites',
   'reading-list',

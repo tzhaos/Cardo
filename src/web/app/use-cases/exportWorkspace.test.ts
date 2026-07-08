@@ -22,10 +22,9 @@ test('exportWorkspace calls fileExportPort with dated filename and valid JSON', 
   assert.equal(parsed.version, WORKSPACE_EXPORT_VERSION);
   assert.ok(Array.isArray(parsed.boxes));
   assert.ok(Array.isArray(parsed.items));
-  assert.equal(parsed.boxes.length, 20);
-  assert.ok(parsed.boxes.some((box) => box.templateId === 'inbox'));
-  assert.equal(
-    parsed.boxes.filter((box) => box.templateId === 'kanban').length,
-    4,
-  );
+  assert.equal(parsed.boxes.length, 10);
+  assert.equal(parsed.boxes.some((box) => box.templateId === 'inbox'), false);
+  assert.equal(parsed.boxes.some((box) => box.templateId === 'kanban'), false);
+  assert.equal(parsed.boxes.some((box) => box.templateId === 'project-board'), false);
+  assert.equal(parsed.boxes.some((box) => box.templateId === 'daily-desk'), false);
 });

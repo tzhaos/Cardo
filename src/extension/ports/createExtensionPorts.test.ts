@@ -4,6 +4,7 @@ import { createExtensionPorts } from './createExtensionPorts';
 
 test('createExtensionPorts returns a full port bundle', () => {
   const ports = createExtensionPorts();
+  assert.equal(typeof ports.browserBookmarks?.isSupported, 'function');
   assert.ok(ports.workspaceStorage?.getItem);
   assert.ok(ports.clipboard?.readText);
   assert.ok(ports.fileExport?.downloadJson);

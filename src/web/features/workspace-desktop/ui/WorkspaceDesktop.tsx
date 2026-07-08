@@ -21,7 +21,6 @@ import WorkspaceCommandCenter from './WorkspaceCommandCenter';
 const FREE_LAYOUT_GRID = 20;
 const FREE_LAYOUT_GAP = 28;
 const FREE_LAYOUT_MIN_HEIGHT = 860;
-const COMPACT_DEFAULT_KANBAN_HEIGHT = 280;
 const DEFAULT_SURFACE_WIDTH = 1440;
 
 interface WorkspaceProductTabsProps {
@@ -191,14 +190,6 @@ function isLegacyMasonrySlot(box: WorkspaceBox) {
   );
 }
 
-function isOversizedDefaultKanbanBox(box: WorkspaceBox) {
-  return (
-    box.templateId === 'kanban' &&
-    box.id.startsWith('default-kanban') &&
-    box.bounds.height > COMPACT_DEFAULT_KANBAN_HEIGHT + FREE_LAYOUT_GRID
-  );
-}
-
 function resolveFreeLayoutColumnCount(width: number) {
   if (width < 720) {
     return 1;
@@ -342,44 +333,6 @@ export default function WorkspaceDesktop() {
   );
 
   useEffect(() => {
-    const oversizedDefaultKanbanBoxes = visibleBoxes.filter(isOversizedDefaultKanbanBox);
-
-    if (oversizedDefaultKanbanBoxes.length > 0) {
-      const oversizedDefaultKanbanIds = new Set(oversizedDefaultKanbanBoxes.map((box) => box.id));
-      const compactBoxes = visibleBoxes.map((box) =>
-        isOversizedDefaultKanbanBox(box)
-          ? {
-              ...box,
-              bounds: {
-                ...box.bounds,
-                height: COMPACT_DEFAULT_KANBAN_HEIGHT,
-              },
-            }
-          : box,
-      );
-      const defaultPositions = getDefaultFreePositions(compactBoxes, surfaceWidth);
-
-      compactBoxes.forEach((box) => {
-        if (!oversizedDefaultKanbanIds.has(box.id)) {
-          return;
-        }
-
-        const defaultPosition = defaultPositions.get(box.id);
-
-        dispatch({
-          type: 'box.update',
-          boxId: box.id,
-          updates: {
-            bounds: {
-              height: COMPACT_DEFAULT_KANBAN_HEIGHT,
-              ...(defaultPosition ?? {}),
-            },
-          },
-        });
-      });
-      return;
-    }
-
     const legacyBoxes = visibleBoxes.filter(isLegacyMasonrySlot);
 
     if (legacyBoxes.length > 0) {
@@ -420,7 +373,10 @@ export default function WorkspaceDesktop() {
       const hasConflict = placedBoxes.some((placedBox) =>
         rectsHaveGapConflict(box.bounds, placedBox.bounds),
       );
-      const isOutsideSurface = box.bounds.x + box.bounds.width + FREE_LAYOUT_GAP > surfaceWidth;
+      const isOutsideSurface =
+        box.bounds.x < FREE_LAYOUT_GAP ||
+        box.bounds.y < 0 ||
+        box.bounds.x + box.bounds.width + FREE_LAYOUT_GAP > surfaceWidth;
 
       if (!hasConflict && !isOutsideSurface) {
         placedBoxes.push(box);
@@ -474,7 +430,7 @@ export default function WorkspaceDesktop() {
 
   return (
     <div
-      className="kb-desktop-root relative h-full w-full overflow-hidden"
+      className="kb-desktop-root relative min-h-screen w-full overflow-x-hidden"
       onPointerDown={(event) => {
         if (event.currentTarget === event.target) {
           clearActiveBox();
@@ -497,7 +453,7 @@ export default function WorkspaceDesktop() {
       <ToastViewport theme={theme} />
       <WorkspaceCommandCenter onSelectTemplatePage={setActiveTabId} onRevealBox={revealBoxCard} />
 
-      <main className="relative z-10 h-full overflow-hidden px-6 pb-6 pt-28">
+      <main className="relative z-10 min-h-screen overflow-x-hidden px-6 pb-12 pt-28">
         <div
           ref={surfaceRef}
           className="kb-free-workspace mx-auto w-[min(1500px,calc(100vw-3rem))]"

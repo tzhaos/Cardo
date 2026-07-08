@@ -9,6 +9,7 @@ import { hasEditingSession } from '../../../app/controllers/interactionControlle
 import { useCanvasStore } from '../../../app/stores/useCanvasStore';
 const RESIZE_GRID = 20;
 const MIN_BOX_GAP = 28;
+const EDGE_BOUNDARY_GAP = 28;
 
 interface UseBoxResizeOptions {
   box: WorkspaceBox;
@@ -34,8 +35,9 @@ function constrainResizedBoxDimensions(
   allBoxes: WorkspaceBox[],
   width: number,
   height: number,
+  maxWidth?: number,
 ) {
-  let nextWidth = width;
+  let nextWidth = maxWidth === undefined ? width : Math.min(width, maxWidth);
   let nextHeight = height;
 
   for (let pass = 0; pass < 3; pass += 1) {
@@ -80,6 +82,20 @@ function constrainResizedBoxDimensions(
   };
 }
 
+function getResizeMaxWidth(target: EventTarget | null, box: WorkspaceBox) {
+  if (!(target instanceof Element)) {
+    return undefined;
+  }
+
+  const boxNode = target.closest<HTMLElement>('[data-kb-box-id]');
+  const canvasNode = boxNode?.parentElement;
+  const canvasWidth = canvasNode?.clientWidth;
+
+  return canvasWidth === undefined
+    ? undefined
+    : Math.max(BOX_MIN_WIDTH, canvasWidth - box.bounds.x - EDGE_BOUNDARY_GAP);
+}
+
 export function useBoxResize({ box, allBoxes, onUpdate }: UseBoxResizeOptions) {
   const setInteractionMode = useCanvasStore((state) => state.setInteractionMode);
 
@@ -99,6 +115,7 @@ export function useBoxResize({ box, allBoxes, onUpdate }: UseBoxResizeOptions) {
       width: box.bounds.width,
       height: box.bounds.height,
     };
+    const maxWidth = getResizeMaxWidth(event.target, box);
 
     const onMouseMove = (moveEvent: MouseEvent) => {
       const { width, height } = computeResizedBoxDimensions(moveEvent, resizeStart, {
@@ -106,7 +123,7 @@ export function useBoxResize({ box, allBoxes, onUpdate }: UseBoxResizeOptions) {
         minHeight: BOX_MIN_HEIGHT,
         grid: RESIZE_GRID,
       });
-      onUpdate({ bounds: constrainResizedBoxDimensions(box, allBoxes, width, height) });
+      onUpdate({ bounds: constrainResizedBoxDimensions(box, allBoxes, width, height, maxWidth) });
     };
 
     const onMouseUp = () => {

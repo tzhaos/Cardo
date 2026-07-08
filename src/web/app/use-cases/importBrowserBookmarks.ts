@@ -1,5 +1,7 @@
 import { parseBrowserBookmarksHtml } from '../../../core/domains/bookmarks/services/browserBookmarksHtml';
-import { fileImportPort } from '../ports/defaultPorts';
+import type { BrowserBookmarksImportResult } from '../../../core/domains/bookmarks/services/browserBookmarksHtml';
+import { parseBrowserBookmarksTree } from '../../../core/domains/bookmarks/services/browserBookmarksTree';
+import { browserBookmarksPort, fileImportPort } from '../ports/defaultPorts';
 import { useWorkspaceStore } from '../stores/useWorkspaceStore';
 import { createId } from './createId';
 
@@ -10,11 +12,9 @@ export interface BrowserBookmarksImportSummary {
   folderCount: number;
 }
 
-export async function importBrowserBookmarks(
-  source: unknown,
-): Promise<BrowserBookmarksImportSummary> {
-  const html = await fileImportPort.readText(source);
-  const parsed = parseBrowserBookmarksHtml(html, createId);
+function importParsedBrowserBookmarks(
+  parsed: BrowserBookmarksImportResult,
+): BrowserBookmarksImportSummary {
   const snapshot = useWorkspaceStore.getState().snapshot;
   const knownUrls = new Set(
     Object.values(snapshot.bookmarksById).map((bookmark) => bookmark.normalizedUrl),
@@ -43,4 +43,20 @@ export async function importBrowserBookmarks(
     invalidUrlCount: parsed.invalidUrlCount,
     folderCount: parsed.folders.length,
   };
+}
+
+export async function importBrowserBookmarks(
+  source: unknown,
+): Promise<BrowserBookmarksImportSummary> {
+  const html = await fileImportPort.readText(source);
+  return importParsedBrowserBookmarks(parseBrowserBookmarksHtml(html, createId));
+}
+
+export function canImportBrowserBookmarksFromBrowser() {
+  return browserBookmarksPort.isSupported();
+}
+
+export async function importBrowserBookmarksFromBrowser(): Promise<BrowserBookmarksImportSummary> {
+  const tree = await browserBookmarksPort.requestTree();
+  return importParsedBrowserBookmarks(parseBrowserBookmarksTree(tree, createId));
 }

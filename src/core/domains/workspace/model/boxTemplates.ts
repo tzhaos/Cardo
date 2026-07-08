@@ -162,11 +162,7 @@ export const BOX_TEMPLATE_LIBRARY: BoxTemplateDefinition[] = [
   BOX_TEMPLATE_DEFINITIONS['web-library'],
   BOX_TEMPLATE_DEFINITIONS['frequent-sites'],
   BOX_TEMPLATE_DEFINITIONS['reading-list'],
-  BOX_TEMPLATE_DEFINITIONS['project-board'],
-  BOX_TEMPLATE_DEFINITIONS['daily-desk'],
-  BOX_TEMPLATE_DEFINITIONS.kanban,
   BOX_TEMPLATE_DEFINITIONS.launcher,
-  BOX_TEMPLATE_DEFINITIONS.inbox,
 ];
 
 export function getBoxTemplateDefinition(templateId: BoxTemplateId): BoxTemplateDefinition {

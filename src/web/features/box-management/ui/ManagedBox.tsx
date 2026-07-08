@@ -72,13 +72,9 @@ function ManagedBoxView({
       header={
         <BoxHeader
           box={box}
-          displayTitle={controller.displayTitle}
-          draftTitle={controller.draftTitle}
           isActive={controller.isActive}
           isHovering={controller.isHovering}
-          isEditing={controller.isEditing}
           isInteractionLocked={controller.isInteractionLocked}
-          inputRef={controller.inputRef}
           canDrag={placement === 'canvas' || Boolean(onMasonryDragStart)}
           canToggleLayout={!isKanbanTemplateId(box.templateId)}
           toggleLayoutLabel={controller.labels.toggleLayout}
@@ -95,12 +91,6 @@ function ManagedBoxView({
 
             controller.handleDragStart(event);
           }}
-          onStartEdit={(event) => {
-            event.stopPropagation();
-            controller.startTitleEdit();
-          }}
-          onTitleChange={controller.setDraftTitle}
-          onFinishEditing={controller.finishTitleEdit}
           onToggleLayout={controller.toggleLayout}
           onToggleLock={controller.toggleLock}
           onToggleCollapse={controller.toggleCollapse}

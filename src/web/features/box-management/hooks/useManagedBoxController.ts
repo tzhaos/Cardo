@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useI18n } from '../../../app/hooks/useI18n';
-import { clearEditingSessionIfActive } from '../../../app/controllers/interactionController';
 import { useInteractionStore } from '../../../app/stores/useInteractionStore';
 import { useCanvasStore } from '../../../app/stores/useCanvasStore';
 import { useViewportCamera } from '../../workspace-desktop';
@@ -17,7 +16,6 @@ import { useBoxResize } from './useBoxResize';
 
 type BoxUpdates = {
   bounds?: Partial<WorkspaceBox['bounds']>;
-  customTitle?: string | null;
   isLocked?: boolean;
   layout?: WorkspaceBox['layout'];
   isCollapsed?: boolean;
@@ -33,19 +31,13 @@ export function useManagedBoxController(box: WorkspaceBox) {
   const interactionMode = useCanvasStore((state) => state.interactionMode);
   const isPanModifierActive = useCanvasStore((state) => state.isPanModifierActive);
   const setActiveBox = useInteractionStore((state) => state.setActiveBox);
-  const setEditingSessionId = useInteractionStore((state) => state.setEditingSessionId);
   const [isHovering, setIsHovering] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [showAddMenu, setShowAddMenu] = useState(false);
-  const [draftTitle, setDraftTitle] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  const editorId = `box:${box.id}:title`;
   const isActive = activeBoxId === box.id;
-  const isEditing = editingSessionId === editorId;
-  const isInteractionLocked = Boolean(editingSessionId && editingSessionId !== editorId);
+  const isInteractionLocked = Boolean(editingSessionId);
   const displayTitle = getBoxDisplayTitle(box, t);
-  const fallbackTitle = getBoxDisplayTitle({ ...box, customTitle: null }, t);
 
   useEffect(() => {
     if (isActive) {
@@ -54,23 +46,6 @@ export function useManagedBoxController(box: WorkspaceBox) {
 
     setShowAddMenu(false);
   }, [isActive]);
-
-  useEffect(() => {
-    if (!isEditing) {
-      setDraftTitle(displayTitle);
-      return;
-    }
-
-    inputRef.current?.focus();
-    inputRef.current?.select();
-  }, [displayTitle, isEditing]);
-
-  useEffect(
-    () => () => {
-      clearEditingSessionIfActive(editorId);
-    },
-    [editorId],
-  );
 
   const focusBox = () => {
     dispatch({ type: 'box.bringToFront', boxId: box.id });
@@ -108,16 +83,13 @@ export function useManagedBoxController(box: WorkspaceBox) {
   });
 
   return {
-    inputRef,
     editingSessionId,
     isActive,
     isDragging,
     isHovering,
-    isEditing,
     isInteractionLocked,
     showAddMenu,
     setShowAddMenu,
-    draftTitle,
     displayTitle,
     labels: {
       toggleLayout: t('box.toggleLayout'),
@@ -135,27 +107,6 @@ export function useManagedBoxController(box: WorkspaceBox) {
     isCanvasTransforming: interactionMode === 'panning' || interactionMode === 'box-dragging',
     isPanModifierActive,
     camera,
-    startTitleEdit: () => {
-      if (isInteractionLocked) {
-        return;
-      }
-
-      setDraftTitle(displayTitle);
-      setEditingSessionId(editorId);
-    },
-    setDraftTitle,
-    finishTitleEdit: (shouldSave: boolean) => {
-      if (shouldSave) {
-        const nextTitle = draftTitle.trim();
-        updateBox({
-          customTitle: !nextTitle || nextTitle === fallbackTitle ? null : nextTitle,
-        });
-      } else {
-        setDraftTitle(displayTitle);
-      }
-
-      clearEditingSessionIfActive(editorId);
-    },
     toggleLayout: () => updateBox({ layout: box.layout === 'grid' ? 'list' : 'grid' }),
     toggleLock: () => updateBox({ isLocked: !box.isLocked }),
     toggleCollapse: handleToggleCollapse,

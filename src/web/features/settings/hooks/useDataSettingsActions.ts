@@ -7,7 +7,11 @@ import {
   runImportWorkspaceForUi,
 } from '../../../app/use-cases/runWorkspaceBackupFlow';
 import { exportBrowserBookmarks } from '../../../app/use-cases/exportBrowserBookmarks';
-import { importBrowserBookmarks } from '../../../app/use-cases/importBrowserBookmarks';
+import {
+  canImportBrowserBookmarksFromBrowser,
+  importBrowserBookmarks,
+  importBrowserBookmarksFromBrowser,
+} from '../../../app/use-cases/importBrowserBookmarks';
 import {
   buildCurrentWebDavConfig,
   downloadWorkspaceFromWebDav,
@@ -35,6 +39,7 @@ export interface DataSettingsCopy {
     invalidUrlCount: number,
   ) => string;
   bookmarkImportFailed: string;
+  browserBookmarkImportFailed: string;
 }
 
 export function useDataSettingsActions(t: TranslateFn, copy: DataSettingsCopy) {
@@ -137,6 +142,22 @@ export function useDataSettingsActions(t: TranslateFn, copy: DataSettingsCopy) {
         if (bookmarkImportInputRef.current) {
           bookmarkImportInputRef.current.value = '';
         }
+      }
+    },
+    canImportBrowserBookmarksFromBrowser: canImportBrowserBookmarksFromBrowser(),
+    handleBrowserBookmarkImport: async () => {
+      try {
+        const summary = await importBrowserBookmarksFromBrowser();
+        presentToastText(
+          'success',
+          copy.bookmarkImportSuccess(
+            summary.addedCount,
+            summary.duplicateCount,
+            summary.invalidUrlCount,
+          ),
+        );
+      } catch {
+        presentToastText('error', copy.browserBookmarkImportFailed);
       }
     },
     testConnection: () =>
