@@ -8,6 +8,9 @@ import ManagedBox from '../../box-management';
 import SettingsPanel from '../../settings';
 import { useWorkspaceGlobalEvents } from '../hooks/useWorkspaceGlobalEvents';
 import { useWorkspaceDesktopState } from '../hooks/useWorkspaceDesktopState';
+import { useCanvasMinimap } from '../hooks/useCanvasMinimap';
+import CanvasControls from './CanvasControls';
+import CanvasMinimap from './CanvasMinimap';
 import SnapOverlay from './SnapOverlay';
 import WorkspaceCommandCenter from './WorkspaceCommandCenter';
 
@@ -27,6 +30,7 @@ function WorkspaceSidebarSection({ title, children }: { title: string; children:
 export default function WorkspaceDesktop() {
   const { t } = useI18n();
   const state = useWorkspaceDesktopState();
+  const minimap = useCanvasMinimap();
 
   useWorkspaceGlobalEvents();
 
@@ -159,6 +163,13 @@ export default function WorkspaceDesktop() {
 
           <div className="kb-canvas-surface">
             <div className="kb-canvas-grid" />
+            <CanvasControls
+              isMinimapOpen={minimap.isOpen}
+              minimapLabel={minimap.labels.toggle}
+              onToggleMinimap={minimap.toggle}
+            />
+            <CanvasMinimap minimap={minimap} />
+
             {state.visibleBoxes.length === 0 ? (
               <div className="kb-empty-state">
                 <Sparkles size={20} />

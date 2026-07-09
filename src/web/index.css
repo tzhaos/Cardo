@@ -1222,3 +1222,14 @@ textarea {
     background: color-mix(in srgb, var(--color-win-card) 72%, transparent);
   }
 }
+
+@layer components {
+  .kb-canvas-surface .kb-floating-action {
+    color: var(--color-win-text-secondary);
+  }
+
+  .kb-canvas-surface .kb-floating-action:hover {
+    background: color-mix(in srgb, var(--color-win-hover) 88%, transparent);
+    color: var(--color-win-text);
+  }
+}
