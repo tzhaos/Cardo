@@ -80,18 +80,29 @@ export default function BoxHeader({
   onToggleCollapse,
   onClose,
 }: BoxHeaderProps) {
+  const isPrimary = box.bounds.width >= 360 || box.bounds.height >= 260;
+
   return (
     <div
       className={cn(
-        'kb-box-header group flex shrink-0 select-none items-center justify-between p-3 pb-2',
-        isInteractionLocked || !canDrag
-          ? 'cursor-default'
-          : 'cursor-grab active:cursor-grabbing',
+        'kb-box-header group flex shrink-0 select-none items-start justify-between gap-3 border-b border-[var(--color-win-border)]',
+        isPrimary ? 'px-4 pb-3 pt-3.5' : 'px-3 pb-2.5 pt-3',
+        isInteractionLocked || !canDrag ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
       )}
       onPointerDown={isInteractionLocked || !canDrag ? undefined : onDragStart}
     >
-      <div className="flex flex-1 items-center gap-2 overflow-hidden">
-        {getBoxIcon(box)}
+      <div className="flex min-w-0 flex-1 items-start gap-3 overflow-hidden">
+        <div className={cn('kb-box-icon-shell', isPrimary ? 'mt-0.5' : 'mt-px')}>
+          {getBoxIcon(box)}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-sm text-win-text">{box.customTitle?.trim() || 'Untitled Box'}</div>
+          <div className="mt-1 flex items-center gap-2 text-[11px] uppercase tracking-[0.08em] text-win-text-secondary">
+            <span>{box.templateId}</span>
+            <span className="kb-list-divider h-3 w-px" />
+            <span>{box.layout}</span>
+          </div>
+        </div>
       </div>
 
       <div
@@ -104,7 +115,7 @@ export default function BoxHeader({
         {canToggleLayout ? (
           <button
             onClick={onToggleLayout}
-            className="kb-icon-button rounded-md p-1.5 transition-colors"
+            className="kb-icon-button rounded-xl p-1.5 transition-colors"
             title={toggleLayoutLabel}
             onPointerDown={(event) => event.stopPropagation()}
           >
@@ -114,7 +125,7 @@ export default function BoxHeader({
 
         <button
           onClick={onToggleLock}
-          className="kb-icon-button rounded-md p-1.5 transition-colors"
+          className="kb-icon-button rounded-xl p-1.5 transition-colors"
           title={box.isLocked ? unlockPositionLabel : lockPositionLabel}
           onPointerDown={(event) => event.stopPropagation()}
         >
@@ -125,7 +136,7 @@ export default function BoxHeader({
 
         <button
           onClick={onToggleCollapse}
-          className="kb-icon-button rounded-md p-1.5 transition-colors"
+          className="kb-icon-button rounded-xl p-1.5 transition-colors"
           title={box.isCollapsed ? expandLabel : collapseLabel}
           onPointerDown={(event) => event.stopPropagation()}
         >
@@ -134,7 +145,7 @@ export default function BoxHeader({
 
         <button
           onClick={onClose}
-          className="kb-icon-button kb-icon-button-danger rounded-md p-1.5 transition-colors"
+          className="kb-icon-button kb-icon-button-danger rounded-xl p-1.5 transition-colors"
           title={closeLabel}
           onPointerDown={(event) => event.stopPropagation()}
         >

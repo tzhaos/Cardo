@@ -62,6 +62,10 @@ function getIconChipClassName(item: WorkspaceItem, layout: 'grid' | 'list') {
   );
 }
 
+function getItemTypeLabel(item: WorkspaceItem) {
+  return item.type === 'url' ? 'link' : item.type;
+}
+
 export default function ItemCard({
   item,
   layout,
@@ -146,7 +150,7 @@ export default function ItemCard({
         'group transition-all duration-200',
         layout === 'grid'
           ? 'kb-item-card-grid relative flex cursor-pointer flex-col items-center gap-2 rounded-2xl border border-transparent p-3'
-          : 'kb-item-card-list flex shrink-0 cursor-pointer items-center justify-between gap-3 rounded-2xl p-2 hover:bg-win-hover active:bg-win-active',
+          : 'kb-item-card-list flex shrink-0 cursor-pointer items-center justify-between gap-2 rounded-xl border border-transparent px-2.5 py-2',
         isFocused ? 'kb-item-focused' : '',
         isInteractionLocked ? 'cursor-default opacity-55' : '',
       )}
@@ -155,7 +159,7 @@ export default function ItemCard({
         className={cn(
           layout === 'grid'
             ? 'flex w-full flex-col items-center gap-2'
-            : 'flex flex-1 items-center gap-3 overflow-hidden',
+            : 'flex min-w-0 flex-1 items-center gap-2.5 overflow-hidden',
         )}
       >
         <div
@@ -177,13 +181,18 @@ export default function ItemCard({
         </div>
 
         {layout === 'grid' ? (
-          <span className="kb-item-title w-full break-words px-1 text-center text-xs font-medium leading-tight line-clamp-2">
+          <span className="kb-item-title w-full break-words px-1 text-center text-xs leading-tight line-clamp-2">
             {item.title}
           </span>
         ) : (
-          <div className="flex flex-col justify-center overflow-hidden">
-            <span className="truncate text-sm text-win-text">{item.title}</span>
-            <span className="mt-0.5 truncate text-xs text-win-text-secondary">{itemContent}</span>
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <div className="flex items-center gap-2 overflow-hidden">
+              <span className="truncate text-sm text-win-text">{item.title}</span>
+              <span className="shrink-0 rounded-full bg-win-hover px-1.5 py-0.5 text-[10px] uppercase tracking-[0.08em] text-win-text-secondary">
+                {getItemTypeLabel(item)}
+              </span>
+            </div>
+            <span className="mt-0.5 block truncate text-xs text-win-text-secondary">{itemContent}</span>
           </div>
         )}
       </div>
@@ -193,7 +202,7 @@ export default function ItemCard({
           'transition-opacity duration-200',
           layout === 'grid'
             ? 'absolute right-1 top-1 z-10 flex flex-col gap-1'
-            : 'ml-2 flex shrink-0 items-center gap-1',
+            : 'ml-2 flex shrink-0 items-center gap-0.5',
           isInteractionLocked
             ? 'pointer-events-none opacity-0'
             : 'opacity-0 group-hover:opacity-100',

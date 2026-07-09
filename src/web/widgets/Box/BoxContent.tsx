@@ -32,9 +32,9 @@ export default function BoxContent({
   return (
     <div
       className={cn(
-        'kb-scroll-hidden relative flex-1 overflow-y-auto p-2 pt-0 transition-colors duration-200',
-        layout === 'grid' ? 'grid grid-cols-3 content-start gap-2' : 'flex flex-col gap-1',
-        isDragOver && 'bg-win-hover',
+        'kb-scroll-hidden relative flex-1 overflow-y-auto px-3 pb-3 transition-colors duration-200',
+        layout === 'grid' ? 'grid grid-cols-2 content-start gap-2.5 pt-2' : 'flex flex-col gap-1 pt-2',
+        isDragOver ? 'bg-win-hover/60' : '',
       )}
       onPointerDown={onPointerDown}
       onDragEnter={onDragEnter}

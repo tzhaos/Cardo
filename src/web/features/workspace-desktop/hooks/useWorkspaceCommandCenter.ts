@@ -10,7 +10,6 @@ import { getBoxDisplayTitle } from '../../../../core/domains/workspace/model/box
 import { getBoxItems } from '../../../../core/domains/workspace/model/workspaceSelectors';
 import { useI18n } from '../../../app/hooks/useI18n';
 import { useInteractionStore } from '../../../app/stores/useInteractionStore';
-import { useSettingsPanelStore } from '../../../app/stores/useSettingsPanelStore';
 import {
   useVisibleBoxes,
   useWorkspaceDispatch,
@@ -19,6 +18,7 @@ import {
 import { openBookmark as openBookmarkUseCase } from '../../../app/use-cases/openBookmark';
 
 interface UseWorkspaceCommandCenterOptions {
+  onOpenSettings?: () => void;
   onSelectTemplatePage?: (templateId: BoxTemplateId) => void;
   onRevealBox?: (boxId: string, itemId?: string) => void;
 }
@@ -31,6 +31,7 @@ function getSearchText(box: WorkspaceBox, title: string) {
 }
 
 export function useWorkspaceCommandCenter({
+  onOpenSettings,
   onSelectTemplatePage,
   onRevealBox,
 }: UseWorkspaceCommandCenterOptions = {}) {
@@ -40,7 +41,6 @@ export function useWorkspaceCommandCenter({
   const dispatch = useWorkspaceDispatch();
   const setActiveBox = useInteractionStore((state) => state.setActiveBox);
   const setFocusedItemInfo = useInteractionStore((state) => state.setFocusedItemInfo);
-  const openSettings = useSettingsPanelStore((state) => state.open);
   const [query, setQuery] = useState('');
   const normalizedQuery = query.trim().toLowerCase();
   const boxRows = useMemo(
@@ -128,7 +128,7 @@ export function useWorkspaceCommandCenter({
       noItems: t('workspace.noItems'),
       noFrequentSites: t('workspace.noFrequentSites'),
     },
-    openSettings,
+    openSettings: () => onOpenSettings?.(),
     focusBox,
     focusItem,
     openBookmark: openBookmarkUseCase,

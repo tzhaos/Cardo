@@ -1,14 +1,14 @@
-import { useCallback, useMemo, useState } from 'react';
-import { useI18n } from '../../../app/hooks/useI18n';
-import { useInteractionStore } from '../../../app/stores/useInteractionStore';
 import { usePreferencesStore } from '../../../app/stores/usePreferencesStore';
-import { useVisibleBoxes, useWorkspaceDispatch } from '../../../app/stores/useWorkspaceSelectors';
-import { createWorkspaceBox } from '../../../app/use-cases/createWorkspaceBox';
+import { useCallback, useMemo, useState } from 'react';
 import { BOX_TEMPLATE_LIBRARY } from '../../../../core/domains/workspace/model/boxTemplates';
 import {
   MAX_WORKSPACE_BOXES,
   type BoxTemplateId,
 } from '../../../../core/domains/workspace/model/workspace';
+import { useI18n } from '../../../app/hooks/useI18n';
+import { useInteractionStore } from '../../../app/stores/useInteractionStore';
+import { useVisibleBoxes, useWorkspaceDispatch } from '../../../app/stores/useWorkspaceSelectors';
+import { createWorkspaceBox } from '../../../app/use-cases/createWorkspaceBox';
 
 export type WorkspaceProductTabId = BoxTemplateId;
 
@@ -26,12 +26,16 @@ export function useWorkspaceDesktopState() {
   const dispatch = useWorkspaceDispatch();
   const setActiveBox = useInteractionStore((state) => state.setActiveBox);
   const setFocusedItemInfo = useInteractionStore((state) => state.setFocusedItemInfo);
+  const activeBoxId = useInteractionStore((state) => state.activeBoxId);
+  const focusedItemInfo = useInteractionStore((state) => state.focusedItemInfo);
   const theme = usePreferencesStore((state) => state.theme);
   const [activeTabId, setActiveTabId] = useState<WorkspaceProductTabId>(
     TEMPLATE_PAGE_ORDER.find((templateId) =>
       visibleBoxes.some((box) => box.templateId === templateId),
     ) ?? TEMPLATE_PAGE_ORDER[0],
   );
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
   const tabs = useMemo(
     () =>
       TEMPLATE_PAGE_ORDER.map((templateId) =>
@@ -44,10 +48,34 @@ export function useWorkspaceDesktopState() {
         })),
     [t],
   );
+
   const visibleTabBoxes = useMemo(
     () => visibleBoxes.filter((box) => box.templateId === activeTabId),
     [activeTabId, visibleBoxes],
   );
+
+  const activeBox = useMemo(
+    () => visibleBoxes.find((box) => box.id === activeBoxId) ?? null,
+    [activeBoxId, visibleBoxes],
+  );
+
+  const focusedBox = useMemo(
+    () =>
+      (focusedItemInfo
+        ? visibleBoxes.find((box) => box.id === focusedItemInfo.boxId)
+        : null) ?? activeBox,
+    [activeBox, focusedItemInfo, visibleBoxes],
+  );
+
+  const boxCountsByTemplate = useMemo(
+    () =>
+      visibleBoxes.reduce<Record<BoxTemplateId, number>>((counts, box) => {
+        counts[box.templateId] = (counts[box.templateId] ?? 0) + 1;
+        return counts;
+      }, {} as Record<BoxTemplateId, number>),
+    [visibleBoxes],
+  );
+
   const createBoxForActiveTab = useCallback(
     (placement: { centerX: number; centerY: number }) => {
       const result = createWorkspaceBox({
@@ -70,18 +98,41 @@ export function useWorkspaceDesktopState() {
     [activeTabId, dispatch, setActiveBox, setFocusedItemInfo],
   );
 
+  const recentBoxes = useMemo(
+    () => [...visibleBoxes].sort((left, right) => right.zIndex - left.zIndex).slice(0, 6),
+    [visibleBoxes],
+  );
+
+  const pinnedBoxes = useMemo(
+    () => visibleBoxes.filter((box) => box.isLocked || box.isCollapsed).slice(0, 6),
+    [visibleBoxes],
+  );
+
   return {
-    brandLabel: t('app.brand'),
-    theme,
+    activeBox,
+    activeBoxId,
     activeTabId,
     boxCount: visibleBoxes.length,
-    hasReachedBoxLimit: visibleBoxes.length >= MAX_WORKSPACE_BOXES,
-    tabs,
-    pageEmptyLabel: t('workspace.pageEmpty'),
-    visibleBoxes: visibleTabBoxes,
+    boxCountsByTemplate,
+    brandLabel: t('app.brand'),
     clearActiveBox: () => setActiveBox(null),
+    closeSettings: () => setIsSettingsOpen(false),
     createBoxForActiveTab,
     dispatch,
+    focusedBox,
+    focusedItemInfo,
+    hasReachedBoxLimit: visibleBoxes.length >= MAX_WORKSPACE_BOXES,
+    isSettingsOpen,
+    openSettings: () => setIsSettingsOpen(true),
+    pageEmptyLabel: t('workspace.pageEmpty'),
+    pinnedBoxes,
+    recentBoxes,
     setActiveTabId,
+    tabs,
+    theme,
+    visibleBoxes: visibleTabBoxes,
   };
 }
+
+
+

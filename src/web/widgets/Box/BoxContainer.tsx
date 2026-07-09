@@ -37,6 +37,21 @@ interface BoxContainerProps {
 }
 
 const COLLAPSED_BOX_HEIGHT = 56;
+const PRIMARY_BOX_WIDTH = 360;
+const PRIMARY_BOX_HEIGHT = 260;
+
+function getBoxSurfaceClassName(box: BoxContainerProps['box'], isActive: boolean, isDragging: boolean) {
+  const isPrimary = box.bounds.width >= PRIMARY_BOX_WIDTH || box.bounds.height >= PRIMARY_BOX_HEIGHT;
+
+  return cn(
+    'kb-box relative flex flex-col overflow-hidden border transition-[background-color,border-color,color,box-shadow,opacity,transform] duration-200',
+    isPrimary ? 'kb-box-primary rounded-[18px]' : 'kb-box-secondary rounded-[14px]',
+    isActive ? 'kb-box-active' : 'kb-box-idle',
+    isDragging ? 'kb-box-dragging' : '',
+    box.isCollapsed ? 'kb-box-collapsed' : '',
+    box.isLocked ? 'kb-box-locked' : '',
+  );
+}
 
 export default function BoxContainer({
   placement = 'canvas',
@@ -63,6 +78,12 @@ export default function BoxContainer({
     duration: 0.18,
     ease: 'easeOut' as const,
   };
+  const className = getBoxSurfaceClassName(box, isActive, isDragging);
+  const sharedShadow = isDragging
+    ? 'var(--shadow-win-flyout)'
+    : isActive && !box.isLocked
+      ? 'var(--shadow-win-flyout)'
+      : 'var(--shadow-win-card)';
 
   if (placement === 'columns') {
     return (
@@ -74,13 +95,13 @@ export default function BoxContainer({
         initial={{
           height: renderedBounds.height,
           opacity: 0,
-          borderRadius: 10,
+          borderRadius: 16,
           scale: 0.98,
         }}
         animate={{
           height: renderedBounds.height,
           opacity: 1,
-          borderRadius: 10,
+          borderRadius: 16,
           scale: isDragging ? 1.01 : 1,
           filter: 'saturate(1)',
         }}
@@ -95,18 +116,9 @@ export default function BoxContainer({
           width: `min(100%, ${Math.max(BOX_MIN_WIDTH, renderedBounds.width)}px)`,
           minHeight: renderedBounds.height,
           zIndex: isActive ? 2 : 1,
-          boxShadow: isDragging
-            ? 'var(--shadow-win-flyout)'
-            : isActive && !box.isLocked
-              ? 'var(--shadow-win-flyout)'
-              : 'var(--shadow-win-card)',
+          boxShadow: sharedShadow,
         }}
-        className={cn(
-          'kb-box win-mica relative inline-flex break-inside-avoid flex-col overflow-hidden rounded-[10px] align-top transition-[background-color,border-color,color,box-shadow,opacity] duration-300',
-          box.isLocked ? 'ring-1 ring-red-500/50' : '',
-          isPanModifierActive ? 'pointer-events-none' : '',
-          isMasonryDragging ? 'opacity-35' : '',
-        )}
+        className={cn(className, isPanModifierActive ? 'pointer-events-none' : '', isMasonryDragging ? 'opacity-35' : '')}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
       >
@@ -119,11 +131,7 @@ export default function BoxContainer({
             <motion.div
               key="box-content"
               initial={{ opacity: 0, y: -6, scale: 0.98 }}
-              animate={{
-                opacity: 1,
-                y: 0,
-                scale: 1,
-              }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.96 }}
               transition={contentTransition}
               className="flex min-h-0 flex-1 overflow-hidden"
@@ -142,7 +150,7 @@ export default function BoxContainer({
               exit={{ opacity: 0 }}
               transition={contentTransition}
               className={cn(
-                'absolute bottom-0 right-0 h-4 w-4',
+                'absolute bottom-1 right-1 h-5 w-5 rounded-full',
                 editingSessionId ? 'cursor-not-allowed opacity-20' : 'cursor-se-resize',
               )}
               onMouseDown={onResizeStart}
@@ -173,7 +181,7 @@ export default function BoxContainer({
         width: renderedScreenBounds.width,
         height: renderedScreenBounds.height,
         opacity: 0,
-        borderRadius: 10,
+        borderRadius: 16,
         scale: 0.97,
       }}
       animate={{
@@ -182,7 +190,7 @@ export default function BoxContainer({
         width: renderedScreenBounds.width,
         height: renderedScreenBounds.height,
         opacity: 1,
-        borderRadius: 10,
+        borderRadius: 16,
         scale: isDragging ? 1.02 : 1,
         filter: 'saturate(1)',
       }}
@@ -195,28 +203,13 @@ export default function BoxContainer({
       style={{
         transformOrigin: 'center center',
         zIndex: box.zIndex,
-        boxShadow: isDragging
-          ? 'var(--shadow-win-flyout)'
-          : isActive && !box.isLocked
-            ? 'var(--shadow-win-flyout)'
-            : 'var(--shadow-win-card)',
+        boxShadow: sharedShadow,
       }}
-      className={cn(
-        'kb-box win-mica absolute flex flex-col overflow-hidden rounded-[10px] transition-[background-color,border-color,color,box-shadow] duration-300',
-        box.isLocked ? 'ring-1 ring-red-500/50' : '',
-        isPanModifierActive ? 'pointer-events-none' : '',
-      )}
+      className={cn(className, 'absolute', isPanModifierActive ? 'pointer-events-none' : '')}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      <motion.div
-        animate={{
-          y: 0,
-          opacity: 1,
-          scale: 1,
-        }}
-        transition={contentTransition}
-      >
+      <motion.div animate={{ y: 0, opacity: 1, scale: 1 }} transition={contentTransition}>
         {header}
       </motion.div>
 
@@ -225,11 +218,7 @@ export default function BoxContainer({
           <motion.div
             key="box-content"
             initial={{ opacity: 0, y: -6, scale: 0.98 }}
-            animate={{
-              opacity: 1,
-              y: 0,
-              scale: 1,
-            }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.96 }}
             transition={contentTransition}
             className="flex min-h-0 flex-1 overflow-hidden"
@@ -248,7 +237,7 @@ export default function BoxContainer({
             exit={{ opacity: 0 }}
             transition={contentTransition}
             className={cn(
-              'absolute bottom-0 right-0 h-4 w-4',
+              'absolute bottom-1 right-1 h-5 w-5 rounded-full',
               editingSessionId ? 'cursor-not-allowed opacity-20' : 'cursor-se-resize',
             )}
             onMouseDown={onResizeStart}

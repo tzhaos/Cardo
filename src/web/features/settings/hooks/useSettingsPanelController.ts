@@ -4,11 +4,18 @@ import { useSettingsPanelStore } from '../../../app/stores/useSettingsPanelStore
 
 export type SettingsTab = 'general' | 'theme' | 'data' | 'about';
 
-export function useSettingsPanelController() {
-  const isOpen = useSettingsPanelStore((state) => state.isOpen);
-  const close = useSettingsPanelStore((state) => state.close);
+interface UseSettingsPanelControllerOptions {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export function useSettingsPanelController(options: UseSettingsPanelControllerOptions = {}) {
+  const storeIsOpen = useSettingsPanelStore((state) => state.isOpen);
+  const storeClose = useSettingsPanelStore((state) => state.close);
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
   const { t, locale } = useI18n();
+  const isOpen = options.isOpen ?? storeIsOpen;
+  const close = options.onClose ?? storeClose;
 
   useEffect(() => {
     if (!isOpen) {
@@ -43,7 +50,7 @@ export function useSettingsPanelController() {
     tabLabels: {
       general: t('settings.general'),
       theme: t('settings.theme'),
-      data: locale === 'zh' ? '\u6570\u636e' : 'Data',
+      data: locale === 'zh' ? '数据' : 'Data',
       about: t('settings.about'),
     },
   };

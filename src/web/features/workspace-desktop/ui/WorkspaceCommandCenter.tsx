@@ -31,6 +31,7 @@ const TEMPLATE_ICONS = {
 } as const satisfies Record<BoxTemplateId, typeof Package>;
 
 interface WorkspaceCommandCenterProps {
+  onOpenSettings?: () => void;
   onSelectTemplatePage: (templateId: BoxTemplateId) => void;
   onRevealBox: (boxId: string, itemId?: string) => void;
 }
@@ -224,3 +225,4 @@ export default function WorkspaceCommandCenter({
     </div>
   );
 }
+
