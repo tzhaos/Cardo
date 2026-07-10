@@ -59,15 +59,12 @@ export function BottomToolbar() {
   const runWebSearch = () => {
     if (!webSearchUrl) return;
     openExternalUrl(webSearchUrl);
-    closeSearch();
   };
 
   return (
     <div className="wbn-bottom-shell">
       <AnimatePresence>
-        {isSearchActive && searchQuery.trim() ? (
-          <GlobalSearchPanel query={searchQuery} onClose={closeSearch} />
-        ) : null}
+        {isSearchActive && searchQuery.trim() ? <GlobalSearchPanel query={searchQuery} /> : null}
       </AnimatePresence>
       <div className="wbn-bottom-toolbar" aria-label={t('toolbar.workspaceTools')}>
         <IconButton

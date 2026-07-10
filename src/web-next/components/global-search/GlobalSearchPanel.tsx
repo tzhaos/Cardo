@@ -14,7 +14,7 @@ import {
 } from '../../platform/hostPlatform';
 import { recordBoxActivity, recordItemActivity } from '../../app/operationActivity';
 
-export function GlobalSearchPanel({ query, onClose }: { query: string; onClose: () => void }) {
+export function GlobalSearchPanel({ query }: { query: string }) {
   const snapshot = useWorkspaceStore((state) => state.snapshot);
   const setActivePage = useWorkspaceStore((state) => state.setActivePage);
   const selectBox = useUiStore((state) => state.selectBox);
@@ -38,7 +38,6 @@ export function GlobalSearchPanel({ query, onClose }: { query: string; onClose: 
     if (result.kind === 'page') {
       setActivePage(result.page.id, 'search');
       selectBox(null);
-      onClose();
       return;
     }
     if (result.kind === 'box') {
@@ -47,7 +46,6 @@ export function GlobalSearchPanel({ query, onClose }: { query: string; onClose: 
       focusFrame(result.page.id, result.box.frame);
       selectBox(result.box.id);
       highlightBox(result.box.id);
-      onClose();
       return;
     }
     await activateItem(result.item, result.id, result.box.id);
@@ -70,7 +68,6 @@ export function GlobalSearchPanel({ query, onClose }: { query: string; onClose: 
         await openLocalResource(item.path);
         recordItemActivity(boxId, item, 'item.open', 'search');
       }
-      onClose();
     } catch {
       return;
     }
