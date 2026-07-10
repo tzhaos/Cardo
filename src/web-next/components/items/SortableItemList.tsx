@@ -3,7 +3,6 @@ import type { ReactNode } from 'react';
 import { GripVertical } from 'lucide-react';
 import { AnimatePresence, Reorder, useDragControls } from 'motion/react';
 import type { PanInfo } from 'motion/react';
-import { useItemLayoutAnimationPolicy } from '../../app/motion/useItemLayoutAnimationPolicy';
 import { useStagedOrder } from '../../app/motion/useStagedOrder';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import type { BoxItem, WorkspaceBoxViewMode } from '../../domain/workspace';
@@ -23,13 +22,13 @@ export function SortableItemList<TItem extends BoxItem>({
 }) {
   const reorderItems = useWorkspaceStore((state) => state.reorderItems);
   const moveItemBetweenBoxes = useWorkspaceStore((state) => state.moveItemBetweenBoxes);
-  const itemLayoutAnimationsEnabled = useItemLayoutAnimationPolicy();
   const { orderedIds, startReordering, updateOrder, finishReordering, cancelReordering } =
     useStagedOrder(items, (orderedItemIds) => reorderItems(boxId, orderedItemIds));
   const itemsById = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
   const orderedItems = orderedIds
     .map((itemId) => itemsById.get(itemId))
     .filter((item): item is TItem => Boolean(item));
+  const layoutDependency = `${viewMode}:${orderedIds.join(':')}`;
   return (
     <Reorder.Group
       as="div"
@@ -62,7 +61,7 @@ export function SortableItemList<TItem extends BoxItem>({
               moveItemBetweenBoxes(boxId, drop.targetBoxId, item.id, drop.targetIndex);
               return true;
             }}
-            suspendLayout={!itemLayoutAnimationsEnabled}
+            layoutDependency={layoutDependency}
           >
             {renderItem(item)}
           </SortableItemEntry>
@@ -78,14 +77,14 @@ function SortableItemEntry({
   onReorderEnd,
   onReorderStart,
   onCrossBoxDrop,
-  suspendLayout,
+  layoutDependency,
 }: {
   itemId: string;
   children: ReactNode;
   onReorderEnd: () => void;
   onReorderStart: () => void;
   onCrossBoxDrop: (point: { x: number; y: number }) => boolean;
-  suspendLayout: boolean;
+  layoutDependency: string;
 }) {
   const controls = useDragControls();
   const [dragging, setDragging] = useState(false);
@@ -139,12 +138,12 @@ function SortableItemEntry({
       className={`wbn-item-reorder-entry${dragging ? ' wbn-item-reorder-entry-dragging' : ''}`}
       data-item-id={itemId}
       value={itemId}
-      layoutId={`workspace-item-${itemId}`}
       dragControls={controls}
       dragElastic={0.06}
       dragListener={false}
       dragMomentum={false}
-      layout={suspendLayout ? false : 'position'}
+      layout="position"
+      layoutDependency={layoutDependency}
       initial={{ opacity: 0, y: 8, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -6, scale: 0.97 }}

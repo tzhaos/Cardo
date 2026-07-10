@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
-import { AnimatePresence, LayoutGroup, motion, type Variants } from 'motion/react';
+import { AnimatePresence, motion, type Variants } from 'motion/react';
 import { Trash2 } from 'lucide-react';
 import { useCanvasPan } from '../../app/useCanvasPan';
 import { useCanvasViewport } from '../../app/useCanvasViewport';
@@ -109,11 +109,9 @@ export function WorkspaceCanvas() {
         >
           <CanvasWorld pageId={snapshot.activePageId}>
             <div className="wbn-canvas-boundary" style={boundaryStyle} />
-            <LayoutGroup id={`workspace-items-${snapshot.activePageId}`}>
-              {boxes.map((box) => (
-                <WorkspaceBoxRenderer box={box} key={box.id} skipEntryAnimation={isPageSwitch} />
-              ))}
-            </LayoutGroup>
+            {boxes.map((box) => (
+              <WorkspaceBoxRenderer box={box} key={box.id} skipEntryAnimation={isPageSwitch} />
+            ))}
           </CanvasWorld>
           <AnimatePresence>
             {isRecycleBin && boxes.length === 0 ? (
