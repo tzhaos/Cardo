@@ -7,7 +7,6 @@ import { CanvasToolsToolbar } from '../components/canvas/CanvasToolsToolbar';
 import { FloatingMenuLayer } from '../components/floating-menu/FloatingMenuLayer';
 import { FloatingMenuProvider } from '../components/floating-menu/useFloatingMenu';
 import { SettingsWindow } from '../components/settings/SettingsWindow';
-import { OperationJournalWindow } from '../components/operation-journal/OperationJournalWindow';
 import { HistoryToolbar } from '../components/history-toolbar/HistoryToolbar';
 import { TopBar } from '../components/top-bar/TopBar';
 import { applyWebNextTheme } from '../themes/themeRegistry';
@@ -42,7 +41,6 @@ export default function WebNextApp() {
         <BottomToolbar />
         <FloatingMenuLayer />
         <SettingsWindow />
-        <OperationJournalWindow />
       </div>
     </FloatingMenuProvider>
   );

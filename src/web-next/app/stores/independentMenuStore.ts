@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { webNextStorage } from '../../platform/hostPlatform';
 
-export type IndependentMenuId = 'settings' | 'journal';
+export type IndependentMenuId = 'settings';
 
 export interface IndependentMenuPosition {
   x: number;
@@ -22,7 +22,6 @@ interface IndependentMenuStore {
 }
 
 const SETTINGS_DEFAULT_SIZE = { width: 640, height: 430 };
-const JOURNAL_DEFAULT_SIZE = { width: 420, height: 600 };
 
 export const useIndependentMenuStore = create<IndependentMenuStore>()(
   persist(
@@ -85,7 +84,6 @@ export const useIndependentMenuStore = create<IndependentMenuStore>()(
 function createDefaultMenus(): IndependentMenuStore['menus'] {
   return {
     settings: { open: false, position: getInitialMenuPosition(SETTINGS_DEFAULT_SIZE) },
-    journal: { open: false, position: getInitialMenuPosition(JOURNAL_DEFAULT_SIZE) },
   };
 }
 

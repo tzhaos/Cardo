@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Globe2, History, Plus, Search, Settings } from 'lucide-react';
+import { Globe2, Plus, Search, Settings } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useIndependentMenuStore } from '../../app/stores/independentMenuStore';
 import { useCanvasStore } from '../../app/stores/canvasStore';
@@ -30,7 +30,6 @@ export function BottomToolbar() {
   const searchEngine = usePreferencesStore((state) => state.searchEngine);
   const customSearchTemplate = usePreferencesStore((state) => state.customSearchTemplate);
   const settingsOpen = useIndependentMenuStore((state) => state.menus.settings.open);
-  const journalOpen = useIndependentMenuStore((state) => state.menus.journal.open);
   const toggleIndependentMenu = useIndependentMenuStore((state) => state.toggleMenu);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -87,17 +86,6 @@ export function BottomToolbar() {
           <GlobalSearchPanel query={searchQuery} onClose={closeSearch} rootRef={searchPanelRef} />
         ) : null}
       </AnimatePresence>
-      <div className="wbn-journal-control">
-        <IconButton
-          className={journalOpen ? 'wbn-journal-control-active' : undefined}
-          onClick={() => toggleIndependentMenu('journal')}
-          aria-label={t('journal.title')}
-          title={t('journal.title')}
-          aria-expanded={journalOpen}
-        >
-          <History size={17} />
-        </IconButton>
-      </div>
       <div className="wbn-bottom-toolbar" aria-label={t('toolbar.workspaceTools')}>
         <IconButton
           className={`wbn-toolbar-button${settingsOpen ? ' wbn-toolbar-button-active' : ''}`}

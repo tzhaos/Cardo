@@ -5,6 +5,7 @@ import {
   CircleHelp,
   Database,
   Download,
+  FileDown,
   Globe2,
   Languages,
   Moon,
@@ -26,6 +27,7 @@ import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { extractPersistedWorkspaceSnapshot } from '../../domain/persistence';
 import type { WorkspaceSnapshot } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
+import { exportOperationJournal } from '../../app/stores/operationJournalStore';
 import { isValidCustomSearchTemplate, type WebSearchEngineId } from '../../domain/webSearch';
 
 type SettingsSection = 'general' | 'appearance' | 'data' | 'about';
@@ -193,6 +195,15 @@ function DataSettings() {
           <span>
             {t('settings.importData')}
             <small>{t('settings.importDataDescription')}</small>
+          </span>
+        </button>
+        <button type="button" onClick={exportOperationJournal}>
+          <IconFrame>
+            <FileDown size={18} />
+          </IconFrame>
+          <span>
+            {t('settings.exportLog')}
+            <small>{t('settings.exportLogDescription')}</small>
           </span>
         </button>
       </div>

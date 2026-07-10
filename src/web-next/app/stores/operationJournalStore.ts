@@ -34,7 +34,6 @@ export interface OperationDraft extends Omit<OperationEvent, 'id' | 'timestamp'>
 interface OperationJournalStore {
   events: OperationEvent[];
   append: (draft: OperationDraft) => string;
-  clear: () => void;
 }
 
 const MAX_EVENTS = 5000;
@@ -53,7 +52,6 @@ export const useOperationJournalStore = create<OperationJournalStore>()(
         set((state) => ({ events: retainEvents([...state.events, event]) }));
         return event.id;
       },
-      clear: () => set({ events: [] }),
     }),
     {
       name: 'khaosbox.web-next.operation-journal',
@@ -77,6 +75,33 @@ export const useOperationJournalStore = create<OperationJournalStore>()(
 
 export function recordOperation(draft: OperationDraft) {
   return useOperationJournalStore.getState().append(draft);
+}
+
+export function exportOperationJournal() {
+  const events = useOperationJournalStore.getState().events;
+  const exportedAt = new Date().toISOString();
+  const payload = {
+    format: 'khaosbox-operation-journal',
+    version: 1,
+    exportedAt,
+    privacy: 'redacted',
+    retention: { maximumEvents: MAX_EVENTS, maximumAgeDays: 90 },
+    events,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `khaosbox-operation-log-${exportedAt.slice(0, 10)}.json`;
+  link.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
+  recordOperation({
+    category: 'system',
+    action: 'journal.export',
+    source: 'system',
+    undoable: false,
+    details: { eventCount: events.length },
+  });
 }
 
 function retainEvents(events: OperationEvent[]) {
