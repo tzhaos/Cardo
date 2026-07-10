@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
+import { motion } from 'motion/react';
 
 function joinClassNames(...classNames: Array<string | undefined>) {
   return classNames.filter(Boolean).join(' ');
@@ -15,9 +16,15 @@ export function IconButton({
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & { children: ReactNode }) {
   return (
-    <button {...props} className={joinClassNames('wbn-icon-button', className)} type={type}>
+    <motion.button
+      {...props}
+      className={joinClassNames('wbn-icon-button', className)}
+      type={type}
+      whileTap={{ scale: 0.9 }}
+      transition={{ type: 'spring', stiffness: 520, damping: 30, mass: 0.45 }}
+    >
       {children}
-    </button>
+    </motion.button>
   );
 }
 

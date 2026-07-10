@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { PointerEventHandler } from 'react';
+import { motion } from 'motion/react';
 import {
   Activity,
   ChevronRight,
@@ -116,9 +117,14 @@ export function OperationJournalPanel({
           <strong>{t('journal.title')}</strong>
           <small>{t('journal.eventCount', { count: events.length })}</small>
         </span>
-        <button type="button" onClick={onClose} aria-label={t('common.close')}>
+        <motion.button
+          type="button"
+          onClick={onClose}
+          aria-label={t('common.close')}
+          whileTap={{ scale: 0.88, rotate: 8 }}
+        >
           <X size={16} />
-        </button>
+        </motion.button>
       </header>
       <div className="wbn-journal-search">
         <Search size={15} />
@@ -130,14 +136,15 @@ export function OperationJournalPanel({
       </div>
       <div className="wbn-journal-filters" aria-label={t('journal.filters')}>
         {(['all', 'mutation', 'activity', 'system'] as const).map((candidate) => (
-          <button
+          <motion.button
             className={candidate === filter ? 'wbn-journal-filter-active' : undefined}
             type="button"
             key={candidate}
             onClick={() => setFilter(candidate)}
+            whileTap={{ scale: 0.94 }}
           >
             {t(`journal.filter.${candidate}`)}
-          </button>
+          </motion.button>
         ))}
       </div>
       <div className="wbn-journal-events">
@@ -158,11 +165,12 @@ export function OperationJournalPanel({
                 {showDate ? (
                   <div className="wbn-journal-date">{formatDateHeading(date, locale, t)}</div>
                 ) : null}
-                <button
+                <motion.button
                   className="wbn-journal-event"
                   type="button"
                   disabled={!canLocate}
                   onClick={() => locateEvent(event)}
+                  whileTap={canLocate ? { scale: 0.985 } : undefined}
                 >
                   <span className={`wbn-journal-event-icon wbn-journal-${event.category}`}>
                     <CategoryIcon category={event.category} />
@@ -176,7 +184,7 @@ export function OperationJournalPanel({
                     <time>{formatEventTime(date, locale)}</time>
                   </span>
                   {canLocate ? <ChevronRight size={14} /> : null}
-                </button>
+                </motion.button>
               </div>
             );
           })
@@ -191,30 +199,45 @@ export function OperationJournalPanel({
         {confirmClear ? (
           <>
             <span>{t('journal.clearQuestion')}</span>
-            <button type="button" onClick={() => setConfirmClear(false)}>
+            <motion.button
+              type="button"
+              onClick={() => setConfirmClear(false)}
+              whileTap={{ scale: 0.94 }}
+            >
               {t('common.cancel')}
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               className="wbn-journal-clear-confirm"
               type="button"
               onClick={() => {
                 clear();
                 setConfirmClear(false);
               }}
+              whileTap={{ scale: 0.94 }}
             >
               {t('common.delete')}
-            </button>
+            </motion.button>
           </>
         ) : (
           <>
-            <button type="button" onClick={exportEvents} disabled={!events.length}>
+            <motion.button
+              type="button"
+              onClick={exportEvents}
+              disabled={!events.length}
+              whileTap={{ scale: 0.94 }}
+            >
               <Download size={14} />
               <span>{t('journal.export')}</span>
-            </button>
-            <button type="button" onClick={() => setConfirmClear(true)} disabled={!events.length}>
+            </motion.button>
+            <motion.button
+              type="button"
+              onClick={() => setConfirmClear(true)}
+              disabled={!events.length}
+              whileTap={{ scale: 0.94 }}
+            >
               <Trash2 size={14} />
               <span>{t('journal.clear')}</span>
-            </button>
+            </motion.button>
           </>
         )}
       </footer>
