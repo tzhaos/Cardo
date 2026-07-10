@@ -794,8 +794,15 @@ button.wbn-box-icon:focus-visible {
   flex: 0 0 auto;
   align-items: center;
   gap: 2px;
-  opacity: 1;
+  opacity: 0;
+  pointer-events: none;
   transition: opacity 160ms ease;
+}
+
+.wbn-box-header:hover .wbn-box-controls,
+.wbn-box-controls:focus-within {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .wbn-box-view-toggle {
@@ -825,11 +832,6 @@ button.wbn-box-icon:focus-visible {
 
 .wbn-box-compact .wbn-box-header {
   padding: 8px 12px;
-}
-
-.wbn-box-compact:not(:hover) .wbn-box-controls {
-  opacity: 0;
-  pointer-events: none;
 }
 
 .wbn-box-compact .wbn-box-content-folder,
