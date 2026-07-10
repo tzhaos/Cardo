@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 
 export function useItemRename(boxId: string, itemId: string, title: string) {
@@ -8,7 +8,7 @@ export function useItemRename(boxId: string, itemId: string, title: string) {
   const [renaming, setRenaming] = useState(false);
   const [draft, setDraft] = useState(title);
   const inputRef = useRef<HTMLInputElement>(null);
-  const cancelNextBlur = useRef(false);
+  const renameFinishedRef = useRef(false);
 
   useEffect(() => {
     if (!renaming) setDraft(title);
@@ -22,25 +22,41 @@ export function useItemRename(boxId: string, itemId: string, title: string) {
   }, [renaming]);
 
   const startRenaming = () => {
-    cancelNextBlur.current = false;
+    renameFinishedRef.current = false;
     setDraft(title);
     setRenaming(true);
   };
 
-  const commit = () => {
-    if (cancelNextBlur.current) {
-      cancelNextBlur.current = false;
+  const commit = useCallback(() => {
+    if (renameFinishedRef.current) {
       return;
     }
+    renameFinishedRef.current = true;
     renameItem(boxId, itemId, draft);
     setRenaming(false);
-  };
+  }, [boxId, draft, itemId, renameItem]);
 
   const cancel = () => {
-    cancelNextBlur.current = true;
+    renameFinishedRef.current = true;
     setDraft(title);
     setRenaming(false);
   };
+
+  useEffect(() => {
+    if (!renaming) return;
+
+    const commitOnOutsidePointer = (event: PointerEvent) => {
+      const input = inputRef.current;
+      const target = event.target;
+      if (!input || !(target instanceof Node) || input.contains(target)) {
+        return;
+      }
+      commit();
+    };
+
+    window.addEventListener('pointerdown', commitOnOutsidePointer, true);
+    return () => window.removeEventListener('pointerdown', commitOnOutsidePointer, true);
+  }, [commit, renaming]);
 
   return {
     renaming,
