@@ -122,18 +122,7 @@ export function BottomToolbar() {
               aria-pressed={isCanvasLocked}
               title={t(isCanvasLocked ? 'canvas.unlockViewport' : 'canvas.lockViewport')}
             >
-              <AnimatePresence initial={false} mode="popLayout">
-                <motion.span
-                  className="wbn-icon-frame"
-                  key={isCanvasLocked ? 'locked' : 'unlocked'}
-                  initial={{ opacity: 0, scale: 0.72, rotate: isCanvasLocked ? -18 : 18 }}
-                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                  exit={{ opacity: 0, scale: 0.72, rotate: isCanvasLocked ? 18 : -18 }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 30, mass: 0.5 }}
-                >
-                  {isCanvasLocked ? <Lock size={18} /> : <Unlock size={18} />}
-                </motion.span>
-              </AnimatePresence>
+              {isCanvasLocked ? <Lock size={18} /> : <Unlock size={18} />}
             </IconButton>
             <div className="wbn-toolbar-divider" />
           </>
