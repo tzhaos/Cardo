@@ -9,16 +9,19 @@ export function startWebNextApp() {
     import('./bootstrap'),
     import('./stores/preferencesStore'),
     import('./stores/workspaceStore'),
+    import('./stores/operationJournalStore'),
   ]).then(
     async ([
       { default: WebNextApp },
       { renderWebNextRoot },
       { usePreferencesStore },
       { useWorkspaceStore },
+      { useOperationJournalStore },
     ]) => {
       await Promise.all([
         usePreferencesStore.persist.rehydrate(),
         useWorkspaceStore.persist.rehydrate(),
+        useOperationJournalStore.persist.rehydrate(),
       ]);
       renderWebNextRoot(<WebNextApp />);
     },
