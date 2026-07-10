@@ -16,7 +16,6 @@ import { createBoxFrameCenteredAt } from '../../domain/placement';
 import { isRecycleBinPageId, type WorkspaceBoxType } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
-import { CanvasControls } from './CanvasControls';
 import { WorkspaceBoxRenderer } from './WorkspaceBoxRenderer';
 
 export function WorkspaceCanvas() {
@@ -91,8 +90,7 @@ export function WorkspaceCanvas() {
       onContextMenu={(event) => {
         if (
           isRecycleBin ||
-          (event.target instanceof Element &&
-            event.target.closest('[data-canvas-box], [data-canvas-controls]'))
+          (event.target instanceof Element && event.target.closest('[data-canvas-box]'))
         ) {
           return;
         }
@@ -111,7 +109,6 @@ export function WorkspaceCanvas() {
         });
       }}
     >
-      <CanvasControls pageId={snapshot.activePageId} />
       <AnimatePresence initial={false} mode="sync" custom={pageTransitionDirection}>
         <motion.section
           className="wbn-page-scene"

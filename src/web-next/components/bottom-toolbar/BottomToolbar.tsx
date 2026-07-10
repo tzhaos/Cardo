@@ -1,5 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import { Bookmark, Clipboard, Folder, Plus, Search, Settings } from 'lucide-react';
+import {
+  Bookmark,
+  Clipboard,
+  Folder,
+  LocateFixed,
+  Lock,
+  Plus,
+  Search,
+  Settings,
+  Unlock,
+} from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useIndependentMenuStore } from '../../app/stores/independentMenuStore';
 import { useCanvasStore } from '../../app/stores/canvasStore';
@@ -20,7 +30,10 @@ export function BottomToolbar() {
   const activePageId = useWorkspaceStore((state) => state.snapshot.activePageId);
   const panX = useCanvasStore((state) => state.pages[activePageId]?.camera.panX ?? 0);
   const panY = useCanvasStore((state) => state.pages[activePageId]?.camera.panY ?? 0);
+  const isCanvasLocked = useCanvasStore((state) => state.pages[activePageId]?.isLocked ?? false);
   const viewportSize = useCanvasStore((state) => state.viewportSize);
+  const resetCamera = useCanvasStore((state) => state.resetCamera);
+  const toggleCanvasLocked = useCanvasStore((state) => state.toggleLocked);
   const searchQuery = useUiStore((state) => state.searchQuery);
   const setSearchQuery = useUiStore((state) => state.setSearchQuery);
   const settingsOpen = useIndependentMenuStore((state) => state.menus.settings.open);
@@ -113,6 +126,36 @@ export function BottomToolbar() {
         ) : null}
       </AnimatePresence>
       <div className="wbn-bottom-toolbar" aria-label={t('toolbar.workspaceTools')}>
+        <IconButton
+          className="wbn-toolbar-canvas-control"
+          disabled={panX === 0 && panY === 0}
+          onClick={() => resetCamera(activePageId)}
+          aria-label={t('canvas.returnToOrigin')}
+          title={t('canvas.returnToOrigin')}
+        >
+          <LocateFixed size={18} />
+        </IconButton>
+        <IconButton
+          className={`wbn-toolbar-canvas-control${isCanvasLocked ? ' wbn-toolbar-button-active' : ''}`}
+          onClick={() => toggleCanvasLocked(activePageId)}
+          aria-label={t(isCanvasLocked ? 'canvas.unlockViewport' : 'canvas.lockViewport')}
+          aria-pressed={isCanvasLocked}
+          title={t(isCanvasLocked ? 'canvas.unlockViewport' : 'canvas.lockViewport')}
+        >
+          <AnimatePresence initial={false} mode="popLayout">
+            <motion.span
+              className="wbn-icon-frame"
+              key={isCanvasLocked ? 'locked' : 'unlocked'}
+              initial={{ opacity: 0, scale: 0.72, rotate: isCanvasLocked ? -18 : 18 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              exit={{ opacity: 0, scale: 0.72, rotate: isCanvasLocked ? 18 : -18 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 30, mass: 0.5 }}
+            >
+              {isCanvasLocked ? <Lock size={18} /> : <Unlock size={18} />}
+            </motion.span>
+          </AnimatePresence>
+        </IconButton>
+        <div className="wbn-toolbar-divider" />
         <IconButton
           className={`wbn-toolbar-button${settingsOpen ? ' wbn-toolbar-button-active' : ''}`}
           aria-controls="wbn-settings-window"

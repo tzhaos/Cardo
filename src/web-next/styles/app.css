@@ -375,41 +375,6 @@
   pointer-events: none;
 }
 
-.wbn-canvas-controls {
-  position: fixed;
-  z-index: 45;
-  top: 92px;
-  right: 24px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  border: 1px solid var(--wbn-border);
-  border-radius: 14px;
-  padding: 4px;
-  background: var(--wbn-surface);
-  box-shadow: var(--wbn-shadow);
-  backdrop-filter: blur(12px);
-}
-
-.wbn-app-desktop .wbn-canvas-controls {
-  top: 132px;
-}
-
-.wbn-canvas-controls button {
-  width: 36px;
-  height: 36px;
-}
-
-.wbn-canvas-controls button:disabled {
-  cursor: default;
-  opacity: 0.38;
-}
-
-.wbn-canvas-controls .wbn-canvas-control-active {
-  background: var(--wbn-active);
-  color: var(--wbn-blue);
-}
-
 .wbn-box {
   position: absolute;
   z-index: 10;
@@ -1642,6 +1607,11 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
   color: var(--wbn-text);
 }
 
+.wbn-bottom-toolbar .wbn-toolbar-canvas-control:disabled {
+  cursor: default;
+  opacity: 0.38;
+}
+
 .wbn-tab-pill-system button {
   width: 36px;
   padding: 0;
@@ -1772,12 +1742,6 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
 
   .wbn-bottom-shell {
     bottom: 14px;
-  }
-
-  .wbn-canvas-controls,
-  .wbn-app-desktop .wbn-canvas-controls {
-    top: 72px;
-    right: 10px;
   }
 
   .wbn-independent-menu {
