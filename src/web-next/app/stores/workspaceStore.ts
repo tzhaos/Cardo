@@ -38,12 +38,16 @@ import {
   setDefaultPage,
   setItemPinned,
   updateBoxFrame,
+  updatePageBoxFrames,
   updateItemContent,
   constrainWorkspaceFramesToViewport,
 } from '../../domain/reducers';
 
 interface WorkspaceStore {
   snapshot: WorkspaceSnapshot;
+  historyPast: WorkspaceHistoryEntry[];
+  historyFuture: WorkspaceHistoryEntry[];
+  historyNotice: { id: number; action: WorkspaceHistoryAction } | null;
   createPage: (title?: string) => string;
   renamePage: (pageId: string, title: string) => void;
   deletePage: (pageId: string) => void;
@@ -53,6 +57,10 @@ interface WorkspaceStore {
   createBox: (preset: WorkspaceBoxPreset, frame: BoxFrame, title?: string) => void;
   createTemporaryBox: (pageId: string, frame: BoxFrame) => string;
   updateBoxFrame: (boxId: string, frame: BoxFrame) => void;
+  applyPageBoxLayout: (pageId: string, frames: Record<string, BoxFrame>) => void;
+  undo: () => void;
+  redo: () => void;
+  dismissHistoryNotice: () => void;
   constrainFramesToViewport: (viewport: CanvasViewportSize) => void;
   renameBox: (boxId: string, title: string) => void;
   promoteTemporaryBox: (boxId: string, title: string) => void;
@@ -80,10 +88,30 @@ interface WorkspaceStore {
   deleteItem: (boxId: string, itemId: string) => void;
 }
 
+export type WorkspaceHistoryAction =
+  | 'deleteItem'
+  | 'deleteBox'
+  | 'moveBox'
+  | 'resizeBox'
+  | 'deletePage'
+  | 'moveBoxToPage'
+  | 'arrangeBoxes';
+
+interface WorkspaceHistoryEntry {
+  before: WorkspaceSnapshot;
+  after: WorkspaceSnapshot;
+  action: WorkspaceHistoryAction;
+}
+
+const HISTORY_LIMIT = 50;
+
 export const useWorkspaceStore = create<WorkspaceStore>()(
   persist(
     (set, get) => ({
       snapshot: createDefaultWorkspace(),
+      historyPast: [],
+      historyFuture: [],
+      historyNotice: null,
       createPage: (title = 'Untitled') => {
         let createdPageId = '';
         set((state) => {
@@ -95,7 +123,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       },
       renamePage: (pageId, title) =>
         set((state) => ({ snapshot: renamePage(state.snapshot, pageId, title) })),
-      deletePage: (pageId) => set((state) => ({ snapshot: deletePage(state.snapshot, pageId) })),
+      deletePage: (pageId) =>
+        set((state) => recordHistory(state, deletePage(state.snapshot, pageId), 'deletePage')),
       reorderPages: (orderedPageIds) =>
         set((state) => ({ snapshot: reorderPages(state.snapshot, orderedPageIds) })),
       setActivePage: (pageId) =>
@@ -116,7 +145,41 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         return createdBoxId;
       },
       updateBoxFrame: (boxId, frame) =>
-        set((state) => ({ snapshot: updateBoxFrame(state.snapshot, boxId, frame) })),
+        set((state) => {
+          const box = state.snapshot.boxes.find((candidate) => candidate.id === boxId);
+          const action =
+            box && (box.frame.width !== frame.width || box.frame.height !== frame.height)
+              ? 'resizeBox'
+              : 'moveBox';
+          return recordHistory(state, updateBoxFrame(state.snapshot, boxId, frame), action);
+        }),
+      applyPageBoxLayout: (pageId, frames) =>
+        set((state) =>
+          recordHistory(state, updatePageBoxFrames(state.snapshot, pageId, frames), 'arrangeBoxes'),
+        ),
+      undo: () =>
+        set((state) => {
+          const entry = state.historyPast.at(-1);
+          if (!entry) return state;
+          return {
+            snapshot: entry.before,
+            historyPast: state.historyPast.slice(0, -1),
+            historyFuture: [...state.historyFuture, entry].slice(-HISTORY_LIMIT),
+            historyNotice: null,
+          };
+        }),
+      redo: () =>
+        set((state) => {
+          const entry = state.historyFuture.at(-1);
+          if (!entry) return state;
+          return {
+            snapshot: entry.after,
+            historyPast: [...state.historyPast, entry].slice(-HISTORY_LIMIT),
+            historyFuture: state.historyFuture.slice(0, -1),
+            historyNotice: null,
+          };
+        }),
+      dismissHistoryNotice: () => set({ historyNotice: null }),
       constrainFramesToViewport: (viewport) => {
         const snapshot = get().snapshot;
         const nextSnapshot = constrainWorkspaceFramesToViewport(snapshot, viewport);
@@ -139,7 +202,13 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       setBoxViewMode: (boxId, viewMode) =>
         set((state) => ({ snapshot: setBoxViewMode(state.snapshot, boxId, viewMode) })),
       moveBoxToPage: (boxId, pageId, frame) =>
-        set((state) => ({ snapshot: moveBoxToPage(state.snapshot, boxId, pageId, frame) })),
+        set((state) =>
+          recordHistory(
+            state,
+            moveBoxToPage(state.snapshot, boxId, pageId, frame),
+            'moveBoxToPage',
+          ),
+        ),
       moveItemBetweenBoxes: (sourceBoxId, targetBoxId, itemId, targetIndex) =>
         set((state) => ({
           snapshot: moveItemBetweenBoxes(
@@ -150,7 +219,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             targetIndex,
           ),
         })),
-      deleteBox: (boxId) => set((state) => ({ snapshot: deleteBox(state.snapshot, boxId) })),
+      deleteBox: (boxId) =>
+        set((state) => recordHistory(state, deleteBox(state.snapshot, boxId), 'deleteBox')),
       createItem: (boxId, type, draft) => {
         const item = createItem(type, draft as never);
         set((state) => ({ snapshot: addItem(state.snapshot, boxId, item) }));
@@ -165,7 +235,9 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       reorderItems: (boxId, orderedItemIds) =>
         set((state) => ({ snapshot: reorderItems(state.snapshot, boxId, orderedItemIds) })),
       deleteItem: (boxId, itemId) =>
-        set((state) => ({ snapshot: deleteItem(state.snapshot, boxId, itemId) })),
+        set((state) =>
+          recordHistory(state, deleteItem(state.snapshot, boxId, itemId), 'deleteItem'),
+        ),
     }),
     {
       name: 'khaosbox.web-next.workspace',
@@ -183,3 +255,18 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
     },
   ),
 );
+
+function recordHistory(
+  state: WorkspaceStore,
+  nextSnapshot: WorkspaceSnapshot,
+  action: WorkspaceHistoryAction,
+): WorkspaceStore | Partial<WorkspaceStore> {
+  if (nextSnapshot === state.snapshot) return state;
+  const entry = { before: state.snapshot, after: nextSnapshot, action };
+  return {
+    snapshot: nextSnapshot,
+    historyPast: [...state.historyPast, entry].slice(-HISTORY_LIMIT),
+    historyFuture: [],
+    historyNotice: { id: Date.now(), action },
+  };
+}

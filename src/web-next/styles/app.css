@@ -10,6 +10,40 @@
     background-color 320ms ease;
 }
 
+.wbn-history-toast {
+  position: fixed;
+  z-index: 260;
+  bottom: 92px;
+  left: 50%;
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 18px;
+  border: 1px solid var(--wbn-border);
+  border-radius: 12px;
+  padding: 6px 7px 6px 14px;
+  background: var(--wbn-surface-strong);
+  box-shadow: var(--wbn-shadow-hover);
+  color: var(--wbn-soft-text);
+  font-size: 13px;
+  transform: translateX(-50%);
+  backdrop-filter: blur(16px);
+}
+
+.wbn-history-toast button {
+  display: inline-flex;
+  height: 30px;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 9px;
+  background: color-mix(in srgb, var(--wbn-blue) 11%, var(--wbn-hover));
+  color: var(--wbn-blue);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .wbn-desktop-titlebar {
   position: fixed;
   z-index: 220;

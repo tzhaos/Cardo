@@ -159,12 +159,29 @@ export function addBox(
 }
 
 export function updateBoxFrame(snapshot: WorkspaceSnapshot, boxId: string, frame: BoxFrame) {
+  const box = snapshot.boxes.find((candidate) => candidate.id === boxId);
+  if (!box || framesEqual(box.frame, frame)) return snapshot;
   return {
     ...snapshot,
-    boxes: snapshot.boxes.map((box) =>
-      box.id === boxId ? { ...box, frame, updatedAt: nowIso() } : box,
+    boxes: snapshot.boxes.map((candidate) =>
+      candidate.id === boxId ? { ...candidate, frame, updatedAt: nowIso() } : candidate,
     ),
   };
+}
+
+export function updatePageBoxFrames(
+  snapshot: WorkspaceSnapshot,
+  pageId: string,
+  frames: Record<string, BoxFrame>,
+) {
+  let changed = false;
+  const boxes = snapshot.boxes.map((box) => {
+    const frame = box.pageId === pageId ? frames[box.id] : undefined;
+    if (!frame || framesEqual(frame, box.frame)) return box;
+    changed = true;
+    return { ...box, frame, updatedAt: nowIso() };
+  });
+  return changed ? { ...snapshot, boxes } : snapshot;
 }
 
 export function constrainWorkspaceFramesToViewport(

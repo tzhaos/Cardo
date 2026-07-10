@@ -10,12 +10,15 @@ import { TopBar } from '../components/top-bar/TopBar';
 import { applyWebNextTheme } from '../themes/themeRegistry';
 import { useCancelActivePointerOnWindowExit } from './useCancelActivePointerOnWindowExit';
 import { usePasteIntoSelectedBox } from './usePasteIntoSelectedBox';
+import { useWorkspaceHistoryShortcuts } from './useWorkspaceHistoryShortcuts';
+import { HistoryToast } from '../components/history/HistoryToast';
 import { usePreferencesStore } from './stores/preferencesStore';
 import './styles.css';
 
 export default function WebNextApp() {
   useCancelActivePointerOnWindowExit();
   usePasteIntoSelectedBox();
+  useWorkspaceHistoryShortcuts();
   const colorMode = usePreferencesStore((state) => state.colorMode);
   const locale = usePreferencesStore((state) => state.locale);
   const themeId = usePreferencesStore((state) => state.themeId);
@@ -35,6 +38,7 @@ export default function WebNextApp() {
         <BottomToolbar />
         <FloatingMenuLayer />
         <SettingsWindow />
+        <HistoryToast />
       </div>
     </FloatingMenuProvider>
   );
