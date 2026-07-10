@@ -58,7 +58,7 @@ export function OperationJournalPanel({ onClose }: { onClose: () => void }) {
       ? snapshot.boxes.find((candidate) => candidate.id === target.boxId)
       : undefined;
     if (box) {
-      setActivePage(box.pageId);
+      setActivePage(box.pageId, 'journal');
       selectBox(box.id);
       onClose();
       return;
@@ -67,7 +67,7 @@ export function OperationJournalPanel({ onClose }: { onClose: () => void }) {
       ? snapshot.pages.find((candidate) => candidate.id === target.pageId)
       : undefined;
     if (page) {
-      setActivePage(page.id);
+      setActivePage(page.id, 'journal');
       selectBox(null);
       onClose();
     }
@@ -263,4 +263,8 @@ const ACTION_MESSAGE_KEYS: Record<string, Parameters<ReturnType<typeof useI18n>[
   'canvas.constrainFrames': 'journal.action.canvasConstrain',
   'history.undo': 'journal.action.undo',
   'history.redo': 'journal.action.redo',
+  'page.open': 'journal.action.pageOpen',
+  'box.preview': 'journal.action.boxPreview',
+  'item.open': 'journal.action.itemOpen',
+  'item.copy': 'journal.action.itemCopy',
 };

@@ -9,6 +9,7 @@ import { useItemRename } from './useItemRename';
 import { writeClipboardText } from '../../platform/hostPlatform';
 import { useI18n } from '../../i18n/useI18n';
 import { useItemContextMenu } from './useItemContextMenu';
+import { recordItemActivity } from '../../app/operationActivity';
 
 export function ClipboardItem({
   boxId,
@@ -38,6 +39,7 @@ export function ClipboardItem({
   const copyText = async () => {
     try {
       await writeClipboardText(item.text);
+      recordItemActivity(boxId, item, 'item.copy');
       setCopied(true);
       if (copyResetRef.current !== null) {
         window.clearTimeout(copyResetRef.current);

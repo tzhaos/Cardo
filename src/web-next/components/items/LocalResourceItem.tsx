@@ -10,6 +10,7 @@ import { ItemDeleteView } from './ItemDeleteView';
 import { ItemActions } from './ItemActions';
 import { useItemRename } from './useItemRename';
 import { useItemContextMenu } from './useItemContextMenu';
+import { recordItemActivity } from '../../app/operationActivity';
 
 type LocalResourceItemModel = FileItem | FolderItem | ShortcutItem;
 
@@ -27,13 +28,21 @@ export function LocalResourceItem({
   const [deleteView, setDeleteView] = useState(false);
   const [editView, setEditView] = useState(false);
   const { t } = useI18n();
+  const openItem = async () => {
+    try {
+      await openLocalResource(item.path);
+      recordItemActivity(boxId, item, 'item.open');
+    } catch {
+      return;
+    }
+  };
   const openContextMenu = useItemContextMenu({
     itemId: item.id,
     pinned: Boolean(item.isPinned),
     primaryAction: {
       label: t('item.open'),
       icon: <ExternalLink size={16} />,
-      onSelect: () => void openLocalResource(item.path),
+      onSelect: () => void openItem(),
     },
     onRename: rename.startRenaming,
     onEdit: () => setEditView(true),
@@ -73,11 +82,11 @@ export function LocalResourceItem({
               className="wbn-item-glyph"
               role="button"
               tabIndex={0}
-              onClick={() => void openLocalResource(item.path)}
+              onClick={() => void openItem()}
               onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault();
-                  void openLocalResource(item.path);
+                  void openItem();
                 }
               }}
             >

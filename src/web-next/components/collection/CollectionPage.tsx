@@ -23,6 +23,7 @@ import {
   writeClipboardText,
 } from '../../platform/hostPlatform';
 import { BoxAppearanceIcon } from '../boxes/boxIconRegistry';
+import { recordItemActivity } from '../../app/operationActivity';
 
 export function CollectionPage() {
   const snapshot = useWorkspaceStore((state) => state.snapshot);
@@ -51,10 +52,11 @@ export function CollectionPage() {
     [],
   );
 
-  const activateItem = async (item: BoxItem) => {
+  const activateItem = async (boxId: string, item: BoxItem) => {
     try {
       if (item.type === 'clipboard') {
         await writeClipboardText(item.text);
+        recordItemActivity(boxId, item, 'item.copy', 'collection');
         setCopiedItemId(item.id);
         if (copiedTimeoutRef.current !== null) window.clearTimeout(copiedTimeoutRef.current);
         copiedTimeoutRef.current = window.setTimeout(() => setCopiedItemId(null), 1200);
@@ -62,8 +64,10 @@ export function CollectionPage() {
       }
       if (item.type === 'bookmark') {
         openExternalUrl(item.url);
+        recordItemActivity(boxId, item, 'item.open', 'collection');
       } else {
         await openLocalResource(item.path);
+        recordItemActivity(boxId, item, 'item.open', 'collection');
       }
     } catch {
       return;
@@ -116,7 +120,11 @@ export function CollectionPage() {
                   <div className="wbn-collection-box-items">
                     {box.items.length ? (
                       box.items.map((item) => (
-                        <button type="button" key={item.id} onClick={() => void activateItem(item)}>
+                        <button
+                          type="button"
+                          key={item.id}
+                          onClick={() => void activateItem(box.id, item)}
+                        >
                           <span className="wbn-collection-item-icon">
                             <CollectionItemIcon item={item} />
                           </span>

@@ -32,6 +32,7 @@ import {
   writeClipboardText,
 } from '../../platform/hostPlatform';
 import { BoxAppearanceIcon } from '../boxes/boxIconRegistry';
+import { recordBoxActivity, recordItemActivity } from '../../app/operationActivity';
 
 export function GlobalSearchPanel({ query, onClose }: { query: string; onClose: () => void }) {
   const snapshot = useWorkspaceStore((state) => state.snapshot);
@@ -58,22 +59,24 @@ export function GlobalSearchPanel({ query, onClose }: { query: string; onClose: 
 
   const activateResult = async (result: GlobalSearchResult) => {
     if (result.kind === 'page') {
-      setActivePage(result.page.id);
+      setActivePage(result.page.id, 'search');
       selectBox(null);
       onClose();
       return;
     }
     if (result.kind === 'box') {
+      recordBoxActivity(result.box.id, 'box.preview', { origin: 'search' });
       setPreviewBoxId(result.box.id);
       return;
     }
-    await activateItem(result.item, result.id);
+    await activateItem(result.item, result.id, result.box.id);
   };
 
-  const activateItem = async (item: BoxItem, resultId: string) => {
+  const activateItem = async (item: BoxItem, resultId: string, boxId: string) => {
     try {
       if (item.type === 'clipboard') {
         await writeClipboardText(item.text);
+        recordItemActivity(boxId, item, 'item.copy', 'search');
         setCopiedResultId(resultId);
         if (copiedTimeoutRef.current !== null) window.clearTimeout(copiedTimeoutRef.current);
         copiedTimeoutRef.current = window.setTimeout(() => setCopiedResultId(null), 1200);
@@ -81,8 +84,10 @@ export function GlobalSearchPanel({ query, onClose }: { query: string; onClose: 
       }
       if (item.type === 'bookmark') {
         openExternalUrl(item.url);
+        recordItemActivity(boxId, item, 'item.open', 'search');
       } else {
         await openLocalResource(item.path);
+        recordItemActivity(boxId, item, 'item.open', 'search');
       }
       onClose();
     } catch {
@@ -174,7 +179,7 @@ export function GlobalSearchPanel({ query, onClose }: { query: string; onClose: 
           box={previewBox}
           pageTitle={previewPage.title}
           onClose={() => setPreviewBoxId(null)}
-          onActivateItem={(item) => void activateItem(item, `preview:${item.id}`)}
+          onActivateItem={(item) => void activateItem(item, `preview:${item.id}`, previewBox.id)}
           copiedItemId={copiedResultId}
         />
       ) : null}

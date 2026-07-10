@@ -10,6 +10,7 @@ import { useI18n } from '../../i18n/useI18n';
 import { openExternalUrl } from '../../platform/hostPlatform';
 import { IconFrame } from '../primitives/IconPrimitives';
 import { useItemContextMenu } from './useItemContextMenu';
+import { recordItemActivity } from '../../app/operationActivity';
 
 export function BookmarkItem({
   boxId,
@@ -24,13 +25,17 @@ export function BookmarkItem({
   const [deleteView, setDeleteView] = useState(false);
   const [editView, setEditView] = useState(false);
   const { t } = useI18n();
+  const openItem = () => {
+    openExternalUrl(item.url);
+    recordItemActivity(boxId, item, 'item.open');
+  };
   const openContextMenu = useItemContextMenu({
     itemId: item.id,
     pinned: Boolean(item.isPinned),
     primaryAction: {
       label: t('item.open'),
       icon: <ExternalLink size={16} />,
-      onSelect: () => void openExternalUrl(item.url),
+      onSelect: openItem,
     },
     onRename: rename.startRenaming,
     onEdit: () => setEditView(true),
@@ -71,12 +76,12 @@ export function BookmarkItem({
               role="button"
               tabIndex={0}
               onClick={() => {
-                void openExternalUrl(item.url);
+                openItem();
               }}
               onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault();
-                  void openExternalUrl(item.url);
+                  openItem();
                 }
               }}
             >
@@ -109,7 +114,7 @@ export function BookmarkItem({
                 rel="noreferrer"
                 onClick={(event) => {
                   event.preventDefault();
-                  openExternalUrl(item.url);
+                  openItem();
                 }}
               >
                 {item.url}

@@ -61,7 +61,7 @@ interface WorkspaceStore {
   renamePage: (pageId: string, title: string) => void;
   deletePage: (pageId: string) => void;
   reorderPages: (orderedPageIds: string[]) => void;
-  setActivePage: (pageId: string) => void;
+  setActivePage: (pageId: string, origin?: string) => void;
   setDefaultPage: (pageId: string) => void;
   createBox: (preset: WorkspaceBoxPreset, frame: BoxFrame, title?: string) => void;
   createTemporaryBox: (pageId: string, frame: BoxFrame) => string;
@@ -175,8 +175,17 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             operation('page.reorder', undefined, { count: orderedPageIds.length }),
           ),
         ),
-      setActivePage: (pageId) =>
-        set((state) => ({ snapshot: setActivePage(state.snapshot, pageId) })),
+      setActivePage: (pageId, origin = 'navigation') =>
+        set((state) => {
+          const nextSnapshot = setActivePage(state.snapshot, pageId);
+          if (nextSnapshot === state.snapshot || state.snapshot.activePageId === pageId)
+            return state;
+          recordOperation({
+            ...operation('page.open', getPageTarget(nextSnapshot, pageId), { origin }),
+            category: 'activity',
+          });
+          return { snapshot: nextSnapshot };
+        }),
       setDefaultPage: (pageId) =>
         set((state) =>
           recordMutation(
