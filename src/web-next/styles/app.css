@@ -3340,7 +3340,9 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
 }
 
 .wbn-floating-submenu {
+  position: fixed;
   display: block;
+  overflow-y: auto;
 }
 
 .wbn-menu-trailing {

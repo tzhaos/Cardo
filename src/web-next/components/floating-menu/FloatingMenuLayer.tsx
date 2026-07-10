@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import type { FloatingMenuItem } from './menuTypes';
 import { SubmenuChevron, useFloatingMenu } from './useFloatingMenu';
 import { IconFrame } from '../primitives/IconPrimitives';
@@ -6,11 +7,15 @@ import { IconFrame } from '../primitives/IconPrimitives';
 export function FloatingMenuLayer() {
   const { menu, closeMenu } = useFloatingMenu();
   const [submenuId, setSubmenuId] = useState<string | null>(null);
+  const [submenuAnchor, setSubmenuAnchor] = useState<DOMRect | null>(null);
+  const [submenuSize, setSubmenuSize] = useState({ width: 0, height: 0 });
   const [menuSize, setMenuSize] = useState({ width: 0, height: 0 });
   const menuRef = useRef<HTMLDivElement>(null);
+  const submenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setSubmenuId(null);
+    setSubmenuAnchor(null);
   }, [menu?.id]);
 
   useLayoutEffect(() => {
@@ -25,6 +30,19 @@ export function FloatingMenuLayer() {
     observer.observe(element);
     return () => observer.disconnect();
   }, [menu, submenuId]);
+
+  useLayoutEffect(() => {
+    const element = submenuRef.current;
+    if (!element) return;
+    const updateSize = () => {
+      const rect = element.getBoundingClientRect();
+      setSubmenuSize({ width: rect.width, height: rect.height });
+    };
+    updateSize();
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [submenuId]);
 
   useEffect(() => {
     if (!menu) {
@@ -78,6 +96,21 @@ export function FloatingMenuLayer() {
   }, [menu, menuSize.height, menuSize.width]);
 
   const submenu = menu?.items.find((item) => item.id === submenuId)?.children;
+  const submenuPosition = useMemo(() => {
+    if (!submenuAnchor || typeof window === 'undefined') return undefined;
+    const margin = 8;
+    const gap = 8;
+    const width = submenuSize.width || 220;
+    const height = submenuSize.height || Math.min(520, (submenu?.length ?? 1) * 52 + 16);
+    const openLeft = submenuAnchor.right + gap + width > window.innerWidth - margin;
+    return {
+      left: openLeft
+        ? Math.max(margin, submenuAnchor.left - gap - width)
+        : Math.min(submenuAnchor.right + gap, window.innerWidth - width - margin),
+      top: Math.max(margin, Math.min(submenuAnchor.top, window.innerHeight - height - margin)),
+      maxHeight: window.innerHeight - margin * 2,
+    } satisfies CSSProperties;
+  }, [submenu, submenuAnchor, submenuSize.height, submenuSize.width]);
 
   if (!menu) {
     return null;
@@ -88,11 +121,14 @@ export function FloatingMenuLayer() {
       <MenuPanel
         items={menu.items}
         closeMenu={closeMenu}
-        onHoverSubmenu={setSubmenuId}
+        onHoverSubmenu={(id, anchor) => {
+          setSubmenuId(id);
+          setSubmenuAnchor(anchor);
+        }}
         submenuId={submenuId}
       />
       {submenu ? (
-        <div className="wbn-floating-submenu">
+        <div className="wbn-floating-submenu" ref={submenuRef} style={submenuPosition}>
           <MenuPanel items={submenu} closeMenu={closeMenu} submenuId={submenuId} />
         </div>
       ) : null}
@@ -108,7 +144,7 @@ function MenuPanel({
 }: {
   items: FloatingMenuItem[];
   closeMenu: () => void;
-  onHoverSubmenu?: (id: string | null) => void;
+  onHoverSubmenu?: (id: string | null, anchor: DOMRect | null) => void;
   submenuId: string | null;
 }) {
   return (
@@ -118,8 +154,18 @@ function MenuPanel({
           className={`wbn-menu-row${item.danger ? ' wbn-menu-row-danger' : ''}${submenuId === item.id ? ' wbn-menu-row-open' : ''}`}
           disabled={item.disabled}
           key={item.id}
-          onFocus={() => onHoverSubmenu?.(item.children ? item.id : null)}
-          onMouseEnter={() => onHoverSubmenu?.(item.children ? item.id : null)}
+          onFocus={(event) =>
+            onHoverSubmenu?.(
+              item.children ? item.id : null,
+              item.children ? event.currentTarget.getBoundingClientRect() : null,
+            )
+          }
+          onMouseEnter={(event) =>
+            onHoverSubmenu?.(
+              item.children ? item.id : null,
+              item.children ? event.currentTarget.getBoundingClientRect() : null,
+            )
+          }
           onClick={() => {
             if (item.disabled || item.children) {
               return;
