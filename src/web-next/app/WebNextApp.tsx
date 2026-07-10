@@ -8,6 +8,7 @@ import { FloatingMenuLayer } from '../components/floating-menu/FloatingMenuLayer
 import { FloatingMenuProvider } from '../components/floating-menu/useFloatingMenu';
 import { SettingsWindow } from '../components/settings/SettingsWindow';
 import { OperationJournalWindow } from '../components/operation-journal/OperationJournalWindow';
+import { HistoryToolbar } from '../components/history-toolbar/HistoryToolbar';
 import { TopBar } from '../components/top-bar/TopBar';
 import { applyWebNextTheme } from '../themes/themeRegistry';
 import { useCancelActivePointerOnWindowExit } from './useCancelActivePointerOnWindowExit';
@@ -35,6 +36,7 @@ export default function WebNextApp() {
       <div className={`wbn-app${isDesktopHost ? ' wbn-app-desktop' : ''}`}>
         <DesktopTitleBar />
         <TopBar />
+        <HistoryToolbar />
         <WorkspaceCanvas />
         <CanvasToolsToolbar />
         <BottomToolbar />

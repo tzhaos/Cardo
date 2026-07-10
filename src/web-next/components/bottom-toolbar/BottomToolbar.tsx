@@ -1,16 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  Globe2,
-  History,
-  LocateFixed,
-  Lock,
-  Plus,
-  Search,
-  Settings,
-  Redo2,
-  Undo2,
-  Unlock,
-} from 'lucide-react';
+import { Globe2, History, LocateFixed, Lock, Plus, Search, Settings, Unlock } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useIndependentMenuStore } from '../../app/stores/independentMenuStore';
 import { useCanvasStore } from '../../app/stores/canvasStore';
@@ -33,10 +22,6 @@ import { openExternalUrl } from '../../platform/hostPlatform';
 export function BottomToolbar() {
   const createBox = useWorkspaceStore((state) => state.createBox);
   const activePageId = useWorkspaceStore((state) => state.snapshot.activePageId);
-  const undo = useWorkspaceStore((state) => state.undo);
-  const redo = useWorkspaceStore((state) => state.redo);
-  const canUndo = useWorkspaceStore((state) => state.historyPast.length > 0);
-  const canRedo = useWorkspaceStore((state) => state.historyFuture.length > 0);
   const panX = useCanvasStore((state) => state.pages[activePageId]?.camera.panX ?? 0);
   const panY = useCanvasStore((state) => state.pages[activePageId]?.camera.panY ?? 0);
   const isCanvasLocked = useCanvasStore((state) => state.pages[activePageId]?.isLocked ?? false);
@@ -115,24 +100,6 @@ export function BottomToolbar() {
           aria-expanded={journalOpen}
         >
           <History size={17} />
-        </IconButton>
-      </div>
-      <div className="wbn-history-controls" aria-label={t('history.controls')}>
-        <IconButton
-          disabled={!canUndo}
-          onClick={undo}
-          aria-label={t('history.undo')}
-          title={t('history.undo')}
-        >
-          <Undo2 size={17} />
-        </IconButton>
-        <IconButton
-          disabled={!canRedo}
-          onClick={redo}
-          aria-label={t('history.redo')}
-          title={t('history.redo')}
-        >
-          <Redo2 size={17} />
         </IconButton>
       </div>
       <div className="wbn-bottom-toolbar" aria-label={t('toolbar.workspaceTools')}>
