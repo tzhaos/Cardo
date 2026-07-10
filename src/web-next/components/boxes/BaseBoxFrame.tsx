@@ -116,6 +116,19 @@ export function BaseBoxFrame({
       titleInputRef.current?.select();
     }
   }, [renamingTitle]);
+  useEffect(() => {
+    if (!renamingTitle) return;
+
+    const commitOnOutsidePointer = (event: PointerEvent) => {
+      const input = titleInputRef.current;
+      const target = event.target;
+      if (!input || (target instanceof Node && input.contains(target))) return;
+      input.blur();
+    };
+
+    window.addEventListener('pointerdown', commitOnOutsidePointer, true);
+    return () => window.removeEventListener('pointerdown', commitOnOutsidePointer, true);
+  }, [renamingTitle]);
 
   const commitTitle = () => {
     if (titleDraft.trim()) {
