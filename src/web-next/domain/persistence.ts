@@ -89,6 +89,9 @@ function isWorkspaceBox(input: unknown): input is WorkspaceBox {
     typeof input.frame.height === 'number' &&
     Array.isArray(input.items) &&
     (input.viewMode === undefined || input.viewMode === 'list' || input.viewMode === 'grid') &&
+    (input.detailMode === undefined ||
+      input.detailMode === 'detailed' ||
+      input.detailMode === 'compact') &&
     typeof input.createdAt === 'string' &&
     typeof input.updatedAt === 'string'
   );

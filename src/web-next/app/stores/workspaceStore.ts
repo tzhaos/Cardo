@@ -6,6 +6,7 @@ import { restoreWorkspaceSnapshot } from '../../domain/persistence';
 import type {
   BoxFrame,
   BoxItem,
+  WorkspaceBoxDetailMode,
   WorkspaceBoxType,
   WorkspaceBoxViewMode,
   WorkspaceSnapshot,
@@ -25,6 +26,7 @@ import {
   reorderItems,
   reorderPages,
   setActivePage,
+  setBoxDetailMode,
   setBoxViewMode,
   setDefaultPage,
   updateBoxFrame,
@@ -43,6 +45,7 @@ interface WorkspaceStore {
   updateBoxFrame: (boxId: string, frame: BoxFrame) => void;
   constrainFramesToViewport: (viewport: CanvasViewportSize) => void;
   renameBox: (boxId: string, title: string) => void;
+  setBoxDetailMode: (boxId: string, detailMode: WorkspaceBoxDetailMode) => void;
   setBoxViewMode: (boxId: string, viewMode: WorkspaceBoxViewMode) => void;
   moveBoxToPage: (boxId: string, pageId: string, frame?: BoxFrame) => void;
   deleteBox: (boxId: string) => void;
@@ -89,6 +92,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       },
       renameBox: (boxId, title) =>
         set((state) => ({ snapshot: renameBox(state.snapshot, boxId, title) })),
+      setBoxDetailMode: (boxId, detailMode) =>
+        set((state) => ({ snapshot: setBoxDetailMode(state.snapshot, boxId, detailMode) })),
       setBoxViewMode: (boxId, viewMode) =>
         set((state) => ({ snapshot: setBoxViewMode(state.snapshot, boxId, viewMode) })),
       moveBoxToPage: (boxId, pageId, frame) =>

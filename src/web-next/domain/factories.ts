@@ -70,6 +70,7 @@ export function createWorkspaceBox(
     frame,
     items: [],
     viewMode: 'list',
+    detailMode: 'detailed',
     createdAt: timestamp,
     updatedAt: timestamp,
   };

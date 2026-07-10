@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
-import { LayoutGrid, List, Lock, Plus, SquarePen, Trash2, X } from 'lucide-react';
+import { Eye, EyeOff, LayoutGrid, List, Lock, Plus, SquarePen, Trash2, X } from 'lucide-react';
 import { animate as animateMotion, motion, useMotionValue, useSpring } from 'motion/react';
 import type { MotionStyle } from 'motion/react';
 import { isRecycleBinPageId, type WorkspaceBox } from '../../domain/workspace';
@@ -38,6 +38,7 @@ export function BaseBoxFrame({
 }: BaseBoxFrameProps) {
   const updateBoxFrame = useWorkspaceStore((state) => state.updateBoxFrame);
   const renameBox = useWorkspaceStore((state) => state.renameBox);
+  const setBoxDetailMode = useWorkspaceStore((state) => state.setBoxDetailMode);
   const setBoxViewMode = useWorkspaceStore((state) => state.setBoxViewMode);
   const deleteBox = useWorkspaceStore((state) => state.deleteBox);
   const beginBoxDrag = useUiStore((state) => state.beginBoxDrag);
@@ -181,6 +182,7 @@ export function BaseBoxFrame({
   const compactScale = Math.max(0.22, Math.min(0.46, 136 / box.frame.width, 86 / box.frame.height));
   const isInRecycleBin = isRecycleBinPageId(box.pageId);
   const viewMode = box.viewMode ?? 'list';
+  const detailMode = box.detailMode ?? 'detailed';
   const visualScale = draggingOverTopBar
     ? compactScale * (draggingOverTab ? 0.9 : 1)
     : dragging
@@ -193,6 +195,7 @@ export function BaseBoxFrame({
     draggingOverTab ? 'wbn-box-dragging-tab' : '',
     dropReleased ? 'wbn-box-drop-released' : '',
     selectedBoxId === box.id ? 'wbn-box-selected' : '',
+    detailMode === 'compact' ? 'wbn-box-compact' : '',
     addViewState?.mode || confirmDelete ? 'wbn-box-local-view' : '',
   ]
     .filter(Boolean)
@@ -339,6 +342,21 @@ export function BaseBoxFrame({
           )}
         </div>
         <div className="wbn-box-controls">
+          <motion.button
+            className="wbn-box-view-toggle wbn-icon-button"
+            type="button"
+            data-no-drag
+            onClick={() =>
+              setBoxDetailMode(box.id, detailMode === 'detailed' ? 'compact' : 'detailed')
+            }
+            aria-label={t(
+              detailMode === 'detailed' ? 'box.switchToCompact' : 'box.switchToDetailed',
+            )}
+            aria-pressed={detailMode === 'compact'}
+            title={t(detailMode === 'detailed' ? 'box.switchToCompact' : 'box.switchToDetailed')}
+          >
+            {detailMode === 'detailed' ? <EyeOff size={15} /> : <Eye size={15} />}
+          </motion.button>
           <motion.button
             className="wbn-box-view-toggle wbn-icon-button"
             type="button"

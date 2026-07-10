@@ -493,7 +493,7 @@
   border-radius: 999px;
   background: transparent;
   color: var(--wbn-muted);
-  opacity: 0;
+  opacity: 1;
   transition:
     opacity 160ms ease,
     color 160ms ease,
@@ -518,6 +518,8 @@
   flex: 0 0 auto;
   align-items: center;
   gap: 2px;
+  opacity: 1;
+  transition: opacity 160ms ease;
 }
 
 .wbn-box-view-toggle {
@@ -528,7 +530,7 @@
   padding: 0;
   background: transparent;
   color: var(--wbn-muted);
-  opacity: 0.58;
+  opacity: 1;
   transition:
     opacity 160ms ease,
     color 160ms ease,
@@ -543,6 +545,94 @@
 .wbn-box-view-toggle:hover {
   background: var(--wbn-hover);
   color: var(--wbn-soft-text);
+}
+
+.wbn-box-compact .wbn-box-header {
+  padding: 8px 12px;
+}
+
+.wbn-box-compact:not(:hover):not(:focus-within):not(.wbn-box-local-view) .wbn-box-controls {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.wbn-box-compact .wbn-box-content-folder,
+.wbn-box-compact .wbn-box-content-bookmark,
+.wbn-box-compact .wbn-box-content-clipboard {
+  gap: 2px;
+  padding: 5px;
+}
+
+.wbn-box-compact .wbn-item-list {
+  gap: 1px;
+}
+
+.wbn-box-compact .wbn-item-row {
+  min-height: 40px;
+  gap: 8px;
+  padding: 5px 6px 5px 24px;
+}
+
+.wbn-box-compact .wbn-item-view-content-row {
+  gap: 8px;
+}
+
+.wbn-box-compact .wbn-item-glyph {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+
+.wbn-box-compact .wbn-item-glyph svg {
+  width: 14px;
+  height: 14px;
+}
+
+.wbn-box-compact .wbn-item-secondary {
+  display: none;
+}
+
+.wbn-box-compact .wbn-item-row strong {
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.wbn-box-compact .wbn-item-drag-handle {
+  left: 1px;
+  height: 24px;
+}
+
+.wbn-box-compact .wbn-box-footer {
+  padding: 3px 6px;
+}
+
+.wbn-box-compact .wbn-box-footer button {
+  padding: 4px 6px;
+}
+
+.wbn-box-compact .wbn-item-list-grid {
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 4px;
+}
+
+.wbn-box-compact .wbn-item-list-grid .wbn-item-row,
+.wbn-box-compact .wbn-item-list-bookmark.wbn-item-list-grid .wbn-bookmark-item {
+  min-height: 80px;
+  padding: 7px 5px;
+}
+
+.wbn-box-compact .wbn-item-list-grid .wbn-item-view-content-row {
+  gap: 5px;
+}
+
+.wbn-box-compact .wbn-item-list-grid .wbn-item-glyph {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+
+.wbn-box-compact .wbn-item-list-bookmark.wbn-item-list-grid {
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
 }
 
 .wbn-box-content {

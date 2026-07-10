@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { setBoxViewMode } from './reducers';
+import { setBoxDetailMode, setBoxViewMode } from './reducers';
 import type { WorkspaceSnapshot } from './workspace';
 
 const snapshot: WorkspaceSnapshot = {
@@ -26,5 +26,13 @@ test('sets a box view mode without changing its content', () => {
   const nextSnapshot = setBoxViewMode(snapshot, 'box-a', 'grid');
 
   assert.equal(nextSnapshot.boxes[0]?.viewMode, 'grid');
+  assert.deepEqual(nextSnapshot.boxes[0]?.items, []);
+});
+
+test('sets a compact detail mode without changing box content or layout', () => {
+  const nextSnapshot = setBoxDetailMode(snapshot, 'box-a', 'compact');
+
+  assert.equal(nextSnapshot.boxes[0]?.detailMode, 'compact');
+  assert.equal(nextSnapshot.boxes[0]?.viewMode, 'list');
   assert.deepEqual(nextSnapshot.boxes[0]?.items, []);
 });

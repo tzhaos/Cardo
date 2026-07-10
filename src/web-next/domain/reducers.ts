@@ -2,6 +2,7 @@ import {
   isRecycleBinPageId,
   type BoxFrame,
   type BoxItem,
+  type WorkspaceBoxDetailMode,
   type WorkspaceBoxType,
   type WorkspaceBoxViewMode,
   type WorkspaceSnapshot,
@@ -188,6 +189,21 @@ export function setBoxViewMode(
     boxes: snapshot.boxes.map((box) =>
       box.id === boxId && box.viewMode !== viewMode
         ? { ...box, viewMode, updatedAt: nowIso() }
+        : box,
+    ),
+  };
+}
+
+export function setBoxDetailMode(
+  snapshot: WorkspaceSnapshot,
+  boxId: string,
+  detailMode: WorkspaceBoxDetailMode,
+) {
+  return {
+    ...snapshot,
+    boxes: snapshot.boxes.map((box) =>
+      box.id === boxId && box.detailMode !== detailMode
+        ? { ...box, detailMode, updatedAt: nowIso() }
         : box,
     ),
   };

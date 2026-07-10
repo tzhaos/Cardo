@@ -1,5 +1,6 @@
 export type WorkspaceBoxType = 'folder' | 'bookmark' | 'clipboard';
 export type WorkspaceBoxViewMode = 'list' | 'grid';
+export type WorkspaceBoxDetailMode = 'detailed' | 'compact';
 
 export const RECYCLE_BIN_PAGE_ID = 'khaosbox-recycle-bin';
 
@@ -57,6 +58,7 @@ export interface WorkspaceBox {
   frame: BoxFrame;
   items: BoxItem[];
   viewMode?: WorkspaceBoxViewMode;
+  detailMode?: WorkspaceBoxDetailMode;
   createdAt: string;
   updatedAt: string;
 }
