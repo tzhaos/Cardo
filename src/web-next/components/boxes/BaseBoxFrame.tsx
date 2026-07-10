@@ -409,7 +409,7 @@ export function BaseBoxFrame({
         </div>
       </header>
       <div
-        className={`wbn-box-content wbn-box-content-${box.type}${confirmDelete ? ' wbn-box-delete-view' : ''}`}
+        className={`wbn-box-content wbn-box-content-mixed${confirmDelete ? ' wbn-box-delete-view' : ''}`}
       >
         {confirmDelete ? (
           <motion.div
@@ -420,7 +420,7 @@ export function BaseBoxFrame({
             <p>
               {t(
                 isInRecycleBin ? 'box.deletePermanentlyQuestion' : 'box.moveToRecycleBinQuestion',
-                { type: getBoxTypeLabel(box.type, t) },
+                { type: getBoxTypeLabel(box.preset, t) },
               )}
             </p>
             <div className="wbn-box-delete-actions">
@@ -470,10 +470,12 @@ export function BaseBoxFrame({
   );
 }
 
-function getBoxTypeLabel(type: WorkspaceBox['type'], t: ReturnType<typeof useI18n>['t']) {
-  return type === 'folder'
+function getBoxTypeLabel(preset: WorkspaceBox['preset'], t: ReturnType<typeof useI18n>['t']) {
+  return preset === 'folder'
     ? t('box.folder')
-    : type === 'bookmark'
+    : preset === 'bookmark'
       ? t('box.bookmark')
-      : t('box.clipboard');
+      : preset === 'clipboard'
+        ? t('box.clipboard')
+        : t('box.general');
 }

@@ -1,11 +1,11 @@
-import type { WorkspaceBoxType } from '../../../domain/workspace';
+import type { WorkspaceItemType } from '../../../domain/workspace';
 import { useUiStore } from '../../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../../app/stores/workspaceStore';
 import { useI18n } from '../../../i18n/useI18n';
 
 interface AddViewShellProps {
   boxId: string;
-  type: WorkspaceBoxType;
+  type: WorkspaceItemType;
   title: string;
   children: React.ReactNode;
   canSubmit?: boolean;

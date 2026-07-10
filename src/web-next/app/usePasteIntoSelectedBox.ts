@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { createPasteDraftForBox } from '../domain/paste';
+import { createPasteItemDraft } from '../domain/paste';
 import { useUiStore } from './stores/uiStore';
 import { useWorkspaceStore } from './stores/workspaceStore';
 
@@ -25,13 +25,13 @@ export function usePasteIntoSelectedBox() {
         return;
       }
 
-      const draft = createPasteDraftForBox(box, text);
-      if (!draft) {
+      const pasteItem = createPasteItemDraft(text);
+      if (!pasteItem) {
         return;
       }
 
       event.preventDefault();
-      const item = useWorkspaceStore.getState().createItem(box.id, box.type, draft);
+      const item = useWorkspaceStore.getState().createItem(box.id, pasteItem.type, pasteItem.draft);
       useUiStore.getState().markCreated(box.id, item.id);
     };
 

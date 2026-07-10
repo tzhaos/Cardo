@@ -11,7 +11,7 @@ const snapshot: WorkspaceSnapshot = {
     {
       id: 'box-a',
       pageId: 'page-a',
-      type: 'bookmark',
+      preset: 'bookmark',
       title: 'Bookmarks',
       frame: { x: 0, y: 0, width: 320, height: 240 },
       items: [],

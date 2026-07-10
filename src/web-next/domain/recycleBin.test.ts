@@ -22,7 +22,7 @@ function createSnapshot(): WorkspaceSnapshot {
       {
         id: 'box-a',
         pageId: 'page-a',
-        type: 'folder',
+        preset: 'folder',
         title: 'A box',
         frame: { x: 0, y: 0, width: 320, height: 240 },
         items: [],

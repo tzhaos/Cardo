@@ -13,7 +13,7 @@ import {
   createCanvasWorldBounds,
 } from '../../domain/canvasGeometry';
 import { createBoxFrameCenteredAt } from '../../domain/placement';
-import { isRecycleBinPageId, type WorkspaceBoxType } from '../../domain/workspace';
+import { isRecycleBinPageId, type WorkspaceBoxPreset } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
 import { WorkspaceBoxRenderer } from './WorkspaceBoxRenderer';
@@ -104,11 +104,11 @@ export function WorkspaceCanvas() {
         const point = clientPointToCanvasWorld(event, rect, { panX, panY });
         openCanvasMenu(event.clientX, event.clientY, {
           createPage: () => createPage(t('page.untitled')),
-          createBox: (type: WorkspaceBoxType) =>
+          createBox: (preset: WorkspaceBoxPreset) =>
             createBox(
-              type,
+              preset,
               constrainBoxFrameToCanvas(createBoxFrameCenteredAt(point), canvasBounds),
-              getBoxTypeLabel(type, t),
+              getBoxPresetLabel(preset, t),
             ),
         });
       }}
@@ -178,10 +178,12 @@ const pageSceneVariants: Variants = {
   }),
 };
 
-function getBoxTypeLabel(type: WorkspaceBoxType, t: ReturnType<typeof useI18n>['t']) {
-  return type === 'folder'
-    ? t('box.folder')
-    : type === 'bookmark'
-      ? t('box.bookmark')
-      : t('box.clipboard');
+function getBoxPresetLabel(preset: WorkspaceBoxPreset, t: ReturnType<typeof useI18n>['t']) {
+  return preset === 'general'
+    ? t('box.general')
+    : preset === 'folder'
+      ? t('box.folder')
+      : preset === 'bookmark'
+        ? t('box.bookmark')
+        : t('box.clipboard');
 }

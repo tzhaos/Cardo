@@ -1,6 +1,15 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import { Bookmark, ChevronRight, Clipboard, Folder, PanelTop, Plus, RotateCcw } from 'lucide-react';
-import type { WorkspaceBoxType } from '../../domain/workspace';
+import {
+  Bookmark,
+  ChevronRight,
+  Clipboard,
+  Folder,
+  PackageOpen,
+  PanelTop,
+  Plus,
+  RotateCcw,
+} from 'lucide-react';
+import type { WorkspaceBoxPreset } from '../../domain/workspace';
 import type { FloatingMenuItem, FloatingMenuState } from './menuTypes';
 import { useI18n } from '../../i18n/useI18n';
 
@@ -8,13 +17,17 @@ interface FloatingMenuContextValue {
   menu: FloatingMenuState | null;
   openMenu: (menu: FloatingMenuState) => void;
   closeMenu: () => void;
-  openCreateBoxMenu: (x: number, y: number, createBox: (type: WorkspaceBoxType) => void) => void;
+  openCreateBoxMenu: (
+    x: number,
+    y: number,
+    createBox: (preset: WorkspaceBoxPreset) => void,
+  ) => void;
   openCanvasMenu: (
     x: number,
     y: number,
     actions: {
       createPage: () => void;
-      createBox: (type: WorkspaceBoxType) => void;
+      createBox: (preset: WorkspaceBoxPreset) => void;
       resetView?: () => void;
     },
   ) => void;
@@ -27,6 +40,7 @@ export function FloatingMenuProvider({ children }: { children: React.ReactNode }
   const { t } = useI18n();
   const boxRows = useMemo(
     () => [
+      { id: 'general' as const, label: t('box.general'), icon: <PackageOpen size={16} /> },
       { id: 'folder' as const, label: t('box.folder'), icon: <Folder size={16} /> },
       { id: 'bookmark' as const, label: t('box.bookmark'), icon: <Bookmark size={16} /> },
       { id: 'clipboard' as const, label: t('box.clipboard'), icon: <Clipboard size={16} /> },
@@ -34,7 +48,7 @@ export function FloatingMenuProvider({ children }: { children: React.ReactNode }
     [t],
   );
   const createBoxItems = useCallback(
-    (createBox: (type: WorkspaceBoxType) => void): FloatingMenuItem[] =>
+    (createBox: (preset: WorkspaceBoxPreset) => void): FloatingMenuItem[] =>
       boxRows.map((row) => ({
         id: row.id,
         label: row.label,
@@ -46,7 +60,7 @@ export function FloatingMenuProvider({ children }: { children: React.ReactNode }
   const closeMenu = useCallback(() => setMenu(null), []);
   const openMenu = useCallback((nextMenu: FloatingMenuState) => setMenu(nextMenu), []);
   const openCreateBoxMenu = useCallback(
-    (x: number, y: number, createBox: (type: WorkspaceBoxType) => void) => {
+    (x: number, y: number, createBox: (preset: WorkspaceBoxPreset) => void) => {
       setMenu({ id: 'create-box', x, y, items: createBoxItems(createBox) });
     },
     [createBoxItems],
@@ -57,7 +71,7 @@ export function FloatingMenuProvider({ children }: { children: React.ReactNode }
       y: number,
       actions: {
         createPage: () => void;
-        createBox: (type: WorkspaceBoxType) => void;
+        createBox: (preset: WorkspaceBoxPreset) => void;
         resetView?: () => void;
       },
     ) => {

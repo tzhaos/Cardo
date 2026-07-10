@@ -1,4 +1,5 @@
-export type WorkspaceBoxType = 'folder' | 'bookmark' | 'clipboard';
+export type WorkspaceItemType = 'folder' | 'bookmark' | 'clipboard';
+export type WorkspaceBoxPreset = 'general' | 'folder' | 'bookmark' | 'clipboard';
 export type WorkspaceBoxViewMode = 'list' | 'grid';
 export type WorkspaceBoxDetailMode = 'detailed' | 'compact';
 
@@ -25,7 +26,7 @@ export interface BoxFrame {
 
 export interface BaseBoxItem {
   id: string;
-  type: WorkspaceBoxType;
+  type: WorkspaceItemType;
   title: string;
   isPinned?: boolean;
   createdAt: string;
@@ -54,7 +55,7 @@ export type BoxItem = FolderItem | BookmarkItem | ClipboardItem;
 export interface WorkspaceBox {
   id: string;
   pageId: string;
-  type: WorkspaceBoxType;
+  preset: WorkspaceBoxPreset;
   title: string;
   frame: BoxFrame;
   items: BoxItem[];

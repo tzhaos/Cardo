@@ -30,13 +30,11 @@ export function SortableItemList<TItem extends BoxItem>({
   const orderedItems = orderedIds
     .map((itemId) => itemsById.get(itemId))
     .filter((item): item is TItem => Boolean(item));
-  const itemTypeClassName = items[0] ? ` wbn-item-list-${items[0].type}` : '';
-
   return (
     <Reorder.Group
       as="div"
       axis="y"
-      className={`wbn-item-list${itemTypeClassName}${viewMode === 'grid' ? ' wbn-item-list-grid' : ''}`}
+      className={`wbn-item-list${viewMode === 'grid' ? ' wbn-item-list-grid' : ''}`}
       values={orderedIds}
       onReorder={updateOrder}
     >

@@ -577,7 +577,8 @@
 
 .wbn-box-compact .wbn-box-content-folder,
 .wbn-box-compact .wbn-box-content-bookmark,
-.wbn-box-compact .wbn-box-content-clipboard {
+.wbn-box-compact .wbn-box-content-clipboard,
+.wbn-box-compact .wbn-box-content-mixed {
   gap: 2px;
   padding: 5px;
 }
@@ -669,7 +670,8 @@
 
 .wbn-box-content-folder,
 .wbn-box-content-bookmark,
-.wbn-box-content-clipboard {
+.wbn-box-content-clipboard,
+.wbn-box-content-mixed {
   flex-direction: column;
   gap: 4px;
   padding: 8px;

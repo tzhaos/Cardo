@@ -5,54 +5,51 @@ import {
   deriveFolderItemTitle,
   parseFolderPathInput,
 } from './itemMetadata';
-import type { WorkspaceBox, WorkspaceBoxType } from './workspace';
+import type { WorkspaceItemType } from './workspace';
 
-export function createPasteDraftForBox(
-  box: WorkspaceBox,
-  text: string,
-): Record<string, string> | null {
+export interface PasteItemDraft {
+  type: WorkspaceItemType;
+  draft: Record<string, string>;
+}
+
+export function createPasteItemDraft(text: string): PasteItemDraft | null {
   const value = text.trim();
   if (!value) {
     return null;
   }
 
-  switch (box.type) {
-    case 'folder': {
-      const path = parseFolderPathInput(value);
-      if (!path) {
-        return null;
-      }
-      return {
+  const path = parseFolderPathInput(value);
+  if (path) {
+    return {
+      type: 'folder',
+      draft: {
         title: deriveFolderItemTitle(path),
         path,
         kind: 'folder',
-      };
-    }
-    case 'bookmark':
-      if (!isUrlText(value)) {
-        return null;
-      }
-      return {
+      },
+    };
+  }
+
+  if (isUrlText(value)) {
+    return {
+      type: 'bookmark',
+      draft: {
         title: deriveBookmarkItemTitle(value),
         url: value,
-      };
-    case 'clipboard':
-      if (isUrlText(value) || parseLocalPathText(value)) {
-        return null;
-      }
-      return {
-        title: '',
-        text: value,
-      };
+      },
+    };
   }
+
+  if (parseLocalPathText(value)) {
+    return null;
+  }
+
+  return {
+    type: 'clipboard',
+    draft: { title: '', text: value },
+  };
 }
 
-export function boxTypeAcceptsPaste(type: WorkspaceBoxType, text: string) {
-  if (type === 'folder') {
-    return parseFolderPathInput(text) !== null;
-  }
-  if (type === 'bookmark') {
-    return isUrlText(text);
-  }
-  return !isUrlText(text) && parseLocalPathText(text) === null;
+export function boxAcceptsPaste(text: string) {
+  return createPasteItemDraft(text) !== null;
 }

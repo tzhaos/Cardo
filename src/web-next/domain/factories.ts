@@ -3,7 +3,8 @@ import type {
   BoxFrame,
   BoxItem,
   WorkspaceBox,
-  WorkspaceBoxType,
+  WorkspaceBoxPreset,
+  WorkspaceItemType,
   WorkspacePage,
   WorkspaceSnapshot,
 } from './workspace';
@@ -46,7 +47,7 @@ export function createRecycleBinPage(order: number): WorkspacePage {
   };
 }
 
-export function getDefaultFrame(type: WorkspaceBoxType, x: number, y: number): BoxFrame {
+export function getDefaultFrame(_preset: WorkspaceBoxPreset, x: number, y: number): BoxFrame {
   return {
     x,
     y,
@@ -57,15 +58,15 @@ export function getDefaultFrame(type: WorkspaceBoxType, x: number, y: number): B
 
 export function createWorkspaceBox(
   pageId: string,
-  type: WorkspaceBoxType,
+  preset: WorkspaceBoxPreset,
   frame: BoxFrame,
-  title = getDefaultBoxTitle(type),
+  title = getDefaultBoxTitle(preset),
 ): WorkspaceBox {
   const timestamp = nowIso();
   return {
     id: createId('box'),
     pageId,
-    type,
+    preset,
     title,
     frame,
     items: [],
@@ -97,8 +98,10 @@ export function createDefaultWorkspace(): WorkspaceSnapshot {
   };
 }
 
-export function getDefaultBoxTitle(type: WorkspaceBoxType) {
-  switch (type) {
+export function getDefaultBoxTitle(preset: WorkspaceBoxPreset) {
+  switch (preset) {
+    case 'general':
+      return 'New Box';
     case 'folder':
       return 'Folder Box';
     case 'bookmark':
@@ -108,7 +111,7 @@ export function getDefaultBoxTitle(type: WorkspaceBoxType) {
   }
 }
 
-export function createItem(type: WorkspaceBoxType, draft: Record<string, string>): BoxItem {
+export function createItem(type: WorkspaceItemType, draft: Record<string, string>): BoxItem {
   const timestamp = nowIso();
   const base = {
     id: createId('item'),

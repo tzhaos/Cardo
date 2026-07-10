@@ -6,6 +6,7 @@ import {
   LocateFixed,
   Lock,
   Plus,
+  PackageOpen,
   Search,
   Settings,
   Unlock,
@@ -19,7 +20,7 @@ import {
   getCanvasViewportCenter,
 } from '../../domain/canvasGeometry';
 import { createBoxFrameCenteredAt } from '../../domain/placement';
-import { isRecycleBinPageId, type WorkspaceBoxType } from '../../domain/workspace';
+import { isRecycleBinPageId, type WorkspaceBoxPreset } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { useI18n } from '../../i18n/useI18n';
@@ -86,13 +87,13 @@ export function BottomToolbar() {
     }
   }, [isRecycleBin]);
 
-  const handleAdd = (type: WorkspaceBoxType) => {
+  const handleAdd = (preset: WorkspaceBoxPreset) => {
     const center = getCanvasViewportCenter({ panX, panY }, viewportSize);
     const frame = constrainBoxFrameToCanvas(
       createBoxFrameCenteredAt(center),
       createCanvasWorldBounds(viewportSize),
     );
-    createBox(type, frame, getBoxTypeLabel(type, t));
+    createBox(preset, frame, getBoxPresetLabel(preset, t));
     setIsMenuOpen(false);
   };
 
@@ -111,6 +112,11 @@ export function BottomToolbar() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
           >
+            <MenuButton
+              icon={PackageOpen}
+              label={t('box.general')}
+              onClick={() => handleAdd('general')}
+            />
             <MenuButton icon={Folder} label={t('box.folder')} onClick={() => handleAdd('folder')} />
             <MenuButton
               icon={Bookmark}
@@ -247,10 +253,12 @@ function MenuButton({
   );
 }
 
-function getBoxTypeLabel(type: WorkspaceBoxType, t: ReturnType<typeof useI18n>['t']) {
-  return type === 'folder'
-    ? t('box.folder')
-    : type === 'bookmark'
-      ? t('box.bookmark')
-      : t('box.clipboard');
+function getBoxPresetLabel(preset: WorkspaceBoxPreset, t: ReturnType<typeof useI18n>['t']) {
+  return preset === 'general'
+    ? t('box.general')
+    : preset === 'folder'
+      ? t('box.folder')
+      : preset === 'bookmark'
+        ? t('box.bookmark')
+        : t('box.clipboard');
 }

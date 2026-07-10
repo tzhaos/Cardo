@@ -7,7 +7,8 @@ import type {
   BoxFrame,
   BoxItem,
   WorkspaceBoxDetailMode,
-  WorkspaceBoxType,
+  WorkspaceBoxPreset,
+  WorkspaceItemType,
   WorkspaceBoxViewMode,
   WorkspaceSnapshot,
 } from '../../domain/workspace';
@@ -44,7 +45,7 @@ interface WorkspaceStore {
   reorderPages: (orderedPageIds: string[]) => void;
   setActivePage: (pageId: string) => void;
   setDefaultPage: (pageId: string) => void;
-  createBox: (type: WorkspaceBoxType, frame: BoxFrame, title?: string) => void;
+  createBox: (preset: WorkspaceBoxPreset, frame: BoxFrame, title?: string) => void;
   updateBoxFrame: (boxId: string, frame: BoxFrame) => void;
   constrainFramesToViewport: (viewport: CanvasViewportSize) => void;
   renameBox: (boxId: string, title: string) => void;
@@ -53,7 +54,7 @@ interface WorkspaceStore {
   setBoxViewMode: (boxId: string, viewMode: WorkspaceBoxViewMode) => void;
   moveBoxToPage: (boxId: string, pageId: string, frame?: BoxFrame) => void;
   deleteBox: (boxId: string) => void;
-  createItem: (boxId: string, type: WorkspaceBoxType, draft: Record<string, string>) => BoxItem;
+  createItem: (boxId: string, type: WorkspaceItemType, draft: Record<string, string>) => BoxItem;
   renameItem: (boxId: string, itemId: string, title: string) => void;
   updateItemContent: (boxId: string, itemId: string, content: string) => void;
   setItemPinned: (boxId: string, itemId: string, isPinned: boolean) => void;
@@ -83,9 +84,9 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         set((state) => ({ snapshot: setActivePage(state.snapshot, pageId) })),
       setDefaultPage: (pageId) =>
         set((state) => ({ snapshot: setDefaultPage(state.snapshot, pageId) })),
-      createBox: (type, frame, title) =>
+      createBox: (preset, frame, title) =>
         set((state) => ({
-          snapshot: addBox(state.snapshot, state.snapshot.activePageId, type, frame, title),
+          snapshot: addBox(state.snapshot, state.snapshot.activePageId, preset, frame, title),
         })),
       updateBoxFrame: (boxId, frame) =>
         set((state) => ({ snapshot: updateBoxFrame(state.snapshot, boxId, frame) })),

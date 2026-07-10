@@ -3,7 +3,7 @@ import {
   type BoxFrame,
   type BoxItem,
   type WorkspaceBoxDetailMode,
-  type WorkspaceBoxType,
+  type WorkspaceBoxPreset,
   type WorkspaceBoxViewMode,
   type WorkspaceSnapshot,
 } from './workspace';
@@ -124,7 +124,7 @@ export function setDefaultPage(snapshot: WorkspaceSnapshot, pageId: string) {
 export function addBox(
   snapshot: WorkspaceSnapshot,
   pageId: string,
-  type: WorkspaceBoxType,
+  preset: WorkspaceBoxPreset,
   frame: BoxFrame,
   title?: string,
 ) {
@@ -134,7 +134,7 @@ export function addBox(
 
   return {
     ...snapshot,
-    boxes: [...snapshot.boxes, createWorkspaceBox(pageId, type, frame, title)],
+    boxes: [...snapshot.boxes, createWorkspaceBox(pageId, preset, frame, title)],
   };
 }
 

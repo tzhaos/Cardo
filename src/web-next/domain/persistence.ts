@@ -2,6 +2,7 @@ import { createRecycleBinPage } from './factories';
 import {
   isRecycleBinPageId,
   type WorkspaceBox,
+  type WorkspaceBoxPreset,
   type WorkspacePage,
   type WorkspaceSnapshot,
 } from './workspace';
@@ -49,9 +50,10 @@ export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null
     pages,
     activePageId: defaultPageId,
     defaultPageId,
-    boxes: input.boxes.filter(
-      (box): box is WorkspaceBox => isWorkspaceBox(box) && pageIds.has(box.pageId),
-    ),
+    boxes: input.boxes
+      .map(parseWorkspaceBox)
+      .filter((box): box is WorkspaceBox => box !== null)
+      .filter((box) => pageIds.has(box.pageId)),
   };
 }
 
@@ -75,27 +77,46 @@ function isWorkspacePage(input: unknown): input is WorkspacePage {
   );
 }
 
-function isWorkspaceBox(input: unknown): input is WorkspaceBox {
-  return (
-    isRecord(input) &&
-    typeof input.id === 'string' &&
-    typeof input.pageId === 'string' &&
-    (input.type === 'folder' || input.type === 'bookmark' || input.type === 'clipboard') &&
-    typeof input.title === 'string' &&
-    isRecord(input.frame) &&
-    typeof input.frame.x === 'number' &&
-    typeof input.frame.y === 'number' &&
-    typeof input.frame.width === 'number' &&
-    typeof input.frame.height === 'number' &&
-    Array.isArray(input.items) &&
-    (input.viewMode === undefined || input.viewMode === 'list' || input.viewMode === 'grid') &&
-    (input.detailMode === undefined ||
-      input.detailMode === 'detailed' ||
-      input.detailMode === 'compact') &&
-    (input.isPinned === undefined || typeof input.isPinned === 'boolean') &&
-    typeof input.createdAt === 'string' &&
-    typeof input.updatedAt === 'string'
-  );
+function parseWorkspaceBox(input: unknown): WorkspaceBox | null {
+  if (
+    !isRecord(input) ||
+    typeof input.id !== 'string' ||
+    typeof input.pageId !== 'string' ||
+    typeof input.title !== 'string' ||
+    !isRecord(input.frame) ||
+    typeof input.frame.x !== 'number' ||
+    typeof input.frame.y !== 'number' ||
+    typeof input.frame.width !== 'number' ||
+    typeof input.frame.height !== 'number' ||
+    !Array.isArray(input.items) ||
+    (input.viewMode !== undefined && input.viewMode !== 'list' && input.viewMode !== 'grid') ||
+    (input.detailMode !== undefined &&
+      input.detailMode !== 'detailed' &&
+      input.detailMode !== 'compact') ||
+    (input.isPinned !== undefined && typeof input.isPinned !== 'boolean') ||
+    typeof input.createdAt !== 'string' ||
+    typeof input.updatedAt !== 'string'
+  ) {
+    return null;
+  }
+
+  return {
+    id: input.id,
+    pageId: input.pageId,
+    preset: resolveBoxPreset(input.preset ?? input.type),
+    title: input.title,
+    frame: input.frame as WorkspaceBox['frame'],
+    items: input.items as WorkspaceBox['items'],
+    ...(input.viewMode ? { viewMode: input.viewMode } : {}),
+    ...(input.detailMode ? { detailMode: input.detailMode } : {}),
+    ...(typeof input.isPinned === 'boolean' ? { isPinned: input.isPinned } : {}),
+    createdAt: input.createdAt,
+    updatedAt: input.updatedAt,
+  };
+}
+
+function resolveBoxPreset(input: unknown): WorkspaceBoxPreset {
+  return input === 'folder' || input === 'bookmark' || input === 'clipboard' ? input : 'general';
 }
 
 function isRecord(input: unknown): input is Record<string, unknown> {

@@ -16,7 +16,7 @@ function createSnapshot(): WorkspaceSnapshot {
       {
         id: 'moving',
         pageId: 'source',
-        type: 'folder',
+        preset: 'folder',
         title: 'Moving',
         frame: { x: 20, y: 20, width: 280, height: 200 },
         items: [],
@@ -44,7 +44,7 @@ test('findPageLandingFrame chooses a nearby free position when center is occupie
   snapshot.boxes.push({
     id: 'occupied',
     pageId: 'target',
-    type: 'bookmark',
+    preset: 'bookmark',
     title: 'Occupied',
     frame: { x: 440, y: 280, width: 320, height: 240 },
     items: [],
