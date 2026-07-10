@@ -6,7 +6,6 @@ import { useCanvasPan } from '../../app/useCanvasPan';
 import { useCanvasViewport } from '../../app/useCanvasViewport';
 import { getPageCanvasState, useCanvasStore } from '../../app/stores/canvasStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
-import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import {
   clientPointToCanvasWorld,
   constrainBoxFrameToCanvas,
@@ -30,8 +29,6 @@ export function WorkspaceCanvas() {
   const createPage = useWorkspaceStore((state) => state.createPage);
   const viewportSize = useCanvasStore((state) => state.viewportSize);
   const resetCamera = useCanvasStore((state) => state.resetCamera);
-  const setZoom = useCanvasStore((state) => state.setZoom);
-  const canvasZoomEnabled = usePreferencesStore((state) => state.canvasZoomEnabled);
   const { openCanvasMenu } = useFloatingMenu();
   const { items: canvasLayoutItems } = useCanvasLayoutTools();
   const { t } = useI18n();
@@ -84,17 +81,6 @@ export function WorkspaceCanvas() {
       data-workspace-canvas
       ref={canvasRef}
       onPointerDownCapture={handlePointerDownCapture}
-      onWheel={(event) => {
-        if (!canvasZoomEnabled) return;
-        event.preventDefault();
-        const rect = event.currentTarget.getBoundingClientRect();
-        const currentZoom = getPageCanvasState(useCanvasStore.getState(), snapshot.activePageId)
-          .camera.zoom;
-        setZoom(snapshot.activePageId, currentZoom * Math.exp(-event.deltaY * 0.0015), {
-          x: event.clientX - rect.left,
-          y: event.clientY - rect.top,
-        });
-      }}
       onContextMenu={(event) => {
         if (event.target instanceof Element && event.target.closest('[data-canvas-box]')) {
           return;
@@ -195,7 +181,7 @@ function CanvasWorld({ pageId, children }: { pageId: string; children: ReactNode
 }
 
 function cameraTransform(camera: { panX: number; panY: number; zoom: number }) {
-  return `translate3d(${camera.panX}px, ${camera.panY}px, 0) scale(${camera.zoom})`;
+  return `translate3d(${camera.panX}px, ${camera.panY}px, 0)`;
 }
 
 const pageSceneVariants: Variants = {

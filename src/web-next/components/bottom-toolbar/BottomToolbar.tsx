@@ -35,7 +35,6 @@ export function BottomToolbar() {
   const canRedo = useWorkspaceStore((state) => state.historyFuture.length > 0);
   const panX = useCanvasStore((state) => state.pages[activePageId]?.camera.panX ?? 0);
   const panY = useCanvasStore((state) => state.pages[activePageId]?.camera.panY ?? 0);
-  const zoom = useCanvasStore((state) => state.pages[activePageId]?.camera.zoom ?? 1);
   const isCanvasLocked = useCanvasStore((state) => state.pages[activePageId]?.isLocked ?? false);
   const viewportSize = useCanvasStore((state) => state.viewportSize);
   const resetCamera = useCanvasStore((state) => state.resetCamera);
@@ -109,7 +108,7 @@ export function BottomToolbar() {
           <>
             <IconButton
               className="wbn-toolbar-canvas-control"
-              disabled={panX === 0 && panY === 0 && zoom === 1}
+              disabled={panX === 0 && panY === 0}
               onClick={() => resetCamera(activePageId)}
               aria-label={t('canvas.returnToOrigin')}
               title={t('canvas.returnToOrigin')}

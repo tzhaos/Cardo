@@ -4,7 +4,6 @@ import { BottomToolbar } from '../components/bottom-toolbar/BottomToolbar';
 import DesktopTitleBar from '../../desktop/DesktopTitleBar';
 import { WorkspaceCanvas } from '../components/canvas/WorkspaceCanvas';
 import { CanvasToolsToolbar } from '../components/canvas/CanvasToolsToolbar';
-import { ZoomToolbar } from '../components/canvas/ZoomToolbar';
 import { FloatingMenuLayer } from '../components/floating-menu/FloatingMenuLayer';
 import { FloatingMenuProvider } from '../components/floating-menu/useFloatingMenu';
 import { SettingsWindow } from '../components/settings/SettingsWindow';
@@ -38,7 +37,6 @@ export default function WebNextApp() {
         <TopBar />
         <WorkspaceCanvas />
         <CanvasToolsToolbar />
-        <ZoomToolbar />
         <BottomToolbar />
         <FloatingMenuLayer />
         <SettingsWindow />

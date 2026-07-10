@@ -1,8 +1,6 @@
 import { create } from 'zustand';
 import {
   constrainCanvasCamera,
-  MAX_CANVAS_ZOOM,
-  MIN_CANVAS_ZOOM,
   ORIGIN_CANVAS_CAMERA,
   panCanvasCamera,
   type CanvasCamera,
@@ -29,7 +27,6 @@ interface CanvasStore {
     pageId: string,
     frame: { x: number; y: number; width: number; height: number },
   ) => void;
-  setZoom: (pageId: string, zoom: number, anchor?: CanvasPoint, animate?: boolean) => void;
   resetCamera: (pageId: string) => void;
   fitFrames: (
     pageId: string,
@@ -91,8 +88,8 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
       const camera = constrainCanvasCamera(
         {
           ...page.camera,
-          panX: state.viewportSize.width / 2 - (frame.x + frame.width / 2) * page.camera.zoom,
-          panY: state.viewportSize.height / 2 - (frame.y + frame.height / 2) * page.camera.zoom,
+          panX: state.viewportSize.width / 2 - (frame.x + frame.width / 2),
+          panY: state.viewportSize.height / 2 - (frame.y + frame.height / 2),
         },
         state.viewportSize,
       );
@@ -104,35 +101,6 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
       };
     });
     finishCameraAnimation(set, pageId);
-  },
-  setZoom: (pageId, zoom, anchor, shouldAnimate = false) => {
-    set((state) => {
-      const page = getPageCanvasState(state, pageId);
-      const target = anchor ?? {
-        x: state.viewportSize.width / 2,
-        y: state.viewportSize.height / 2,
-      };
-      const currentZoom = page.camera.zoom || 1;
-      const worldPoint = {
-        x: (target.x - page.camera.panX) / currentZoom,
-        y: (target.y - page.camera.panY) / currentZoom,
-      };
-      const camera = constrainCanvasCamera(
-        {
-          zoom,
-          panX: target.x - worldPoint.x * zoom,
-          panY: target.y - worldPoint.y * zoom,
-        },
-        state.viewportSize,
-      );
-      return {
-        pages: {
-          ...state.pages,
-          [pageId]: { ...page, camera, isCameraAnimating: shouldAnimate },
-        },
-      };
-    });
-    if (shouldAnimate) finishCameraAnimation(set, pageId);
   },
   resetCamera: (pageId) => {
     set((state) => ({
@@ -152,28 +120,15 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
       if (!frames.length || state.viewportSize.width <= 0 || state.viewportSize.height <= 0) {
         return state;
       }
-      const padding = 80;
       const minX = Math.min(...frames.map((frame) => frame.x));
       const minY = Math.min(...frames.map((frame) => frame.y));
       const maxX = Math.max(...frames.map((frame) => frame.x + frame.width));
       const maxY = Math.max(...frames.map((frame) => frame.y + frame.height));
-      const contentWidth = Math.max(1, maxX - minX);
-      const contentHeight = Math.max(1, maxY - minY);
-      const zoom = Math.min(
-        MAX_CANVAS_ZOOM,
-        Math.max(
-          MIN_CANVAS_ZOOM,
-          Math.min(
-            (state.viewportSize.width - padding * 2) / contentWidth,
-            (state.viewportSize.height - padding * 2) / contentHeight,
-          ),
-        ),
-      );
       const camera = constrainCanvasCamera(
         {
-          zoom,
-          panX: state.viewportSize.width / 2 - ((minX + maxX) / 2) * zoom,
-          panY: state.viewportSize.height / 2 - ((minY + maxY) / 2) * zoom,
+          zoom: 1,
+          panX: state.viewportSize.width / 2 - (minX + maxX) / 2,
+          panY: state.viewportSize.height / 2 - (minY + maxY) / 2,
         },
         state.viewportSize,
       );

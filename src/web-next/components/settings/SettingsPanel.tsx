@@ -12,7 +12,6 @@ import {
   SlidersHorizontal,
   Sun,
   Upload,
-  ZoomIn,
   X,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -239,8 +238,6 @@ function GeneralSettings({
   setLocale: (locale: 'en' | 'zh') => void;
 }) {
   const { t } = useI18n();
-  const canvasZoomEnabled = usePreferencesStore((state) => state.canvasZoomEnabled);
-  const setCanvasZoomEnabled = usePreferencesStore((state) => state.setCanvasZoomEnabled);
 
   return (
     <>
@@ -264,25 +261,6 @@ function GeneralSettings({
             文
           </SegmentButton>
         </div>
-      </div>
-      <div className="wbn-settings-card">
-        <div className="wbn-settings-card-copy">
-          <ZoomIn size={17} />
-          <span>
-            {t('settings.canvasZoom')}
-            <small>{t('settings.canvasZoomDescription')}</small>
-          </span>
-        </div>
-        <button
-          className={`wbn-settings-switch${canvasZoomEnabled ? ' wbn-settings-switch-on' : ''}`}
-          type="button"
-          role="switch"
-          aria-checked={canvasZoomEnabled}
-          aria-label={t('settings.canvasZoom')}
-          onClick={() => setCanvasZoomEnabled(!canvasZoomEnabled)}
-        >
-          <motion.span layout transition={{ type: 'spring', stiffness: 520, damping: 32 }} />
-        </button>
       </div>
     </>
   );

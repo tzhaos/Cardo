@@ -8,18 +8,15 @@ interface StoredPreferences {
   colorMode: WebNextColorMode;
   locale: WebNextLocale;
   themeId: string;
-  canvasZoomEnabled: boolean;
 }
 
 interface PreferencesStore {
   colorMode: WebNextColorMode;
   locale: WebNextLocale;
   themeId: string;
-  canvasZoomEnabled: boolean;
   setColorMode: (colorMode: WebNextColorMode) => void;
   setLocale: (locale: WebNextLocale) => void;
   setThemeId: (themeId: string) => void;
-  setCanvasZoomEnabled: (enabled: boolean) => void;
   toggleColorMode: () => void;
   toggleLocale: () => void;
 }
@@ -37,7 +34,6 @@ export const usePreferencesStore = create<PreferencesStore>()(
           set({ themeId });
         }
       },
-      setCanvasZoomEnabled: (canvasZoomEnabled) => set({ canvasZoomEnabled }),
       toggleColorMode: () =>
         set((state) => ({ colorMode: state.colorMode === 'light' ? 'dark' : 'light' })),
       toggleLocale: () => set((state) => ({ locale: state.locale === 'en' ? 'zh' : 'en' })),
@@ -46,11 +42,10 @@ export const usePreferencesStore = create<PreferencesStore>()(
       name: STORAGE_KEY,
       storage: createJSONStorage(() => webNextStorage),
       skipHydration: true,
-      partialize: ({ colorMode, locale, themeId, canvasZoomEnabled }) => ({
+      partialize: ({ colorMode, locale, themeId }) => ({
         colorMode,
         locale,
         themeId,
-        canvasZoomEnabled,
       }),
       merge: (persistedState, currentState) => ({
         ...currentState,
@@ -71,7 +66,6 @@ function getInitialPreferences(): StoredPreferences {
         ? 'dark'
         : 'light',
     themeId: 'classic',
-    canvasZoomEnabled: true,
   };
 }
 
@@ -86,9 +80,5 @@ function normalizePreferences(input: unknown, fallback: StoredPreferences): Stor
         : (legacyColorMode ?? fallback.colorMode),
     locale: parsed.locale === 'zh' ? 'zh' : parsed.locale === 'en' ? 'en' : fallback.locale,
     themeId: isRegisteredWebNextTheme(parsed.themeId) ? parsed.themeId : fallback.themeId,
-    canvasZoomEnabled:
-      typeof parsed.canvasZoomEnabled === 'boolean'
-        ? parsed.canvasZoomEnabled
-        : fallback.canvasZoomEnabled,
   };
 }

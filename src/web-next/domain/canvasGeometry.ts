@@ -34,8 +34,6 @@ export interface CanvasWorldBounds {
 
 export const CANVAS_SCREEN_SPAN = 3;
 export const ORIGIN_CANVAS_CAMERA: CanvasCamera = { panX: 0, panY: 0, zoom: 1 };
-export const MIN_CANVAS_ZOOM = 0.35;
-export const MAX_CANVAS_ZOOM = 1.5;
 
 export function createCanvasWorldBounds(viewport: CanvasViewportSize): CanvasWorldBounds {
   const width = normalizeDimension(viewport.width);
@@ -73,7 +71,7 @@ export function constrainCanvasCamera(
     return camera;
   }
 
-  const zoom = clamp(camera.zoom || 1, MIN_CANVAS_ZOOM, MAX_CANVAS_ZOOM);
+  const zoom = 1;
   return {
     panX: clamp(camera.panX, width - width * 2 * zoom, width * zoom),
     panY: clamp(camera.panY, height - height * 2 * zoom, height * zoom),
