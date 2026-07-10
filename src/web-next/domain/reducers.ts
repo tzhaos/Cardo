@@ -181,6 +181,19 @@ export function renameBox(snapshot: WorkspaceSnapshot, boxId: string, title: str
   };
 }
 
+export function setBoxPreset(
+  snapshot: WorkspaceSnapshot,
+  boxId: string,
+  preset: WorkspaceBoxPreset,
+) {
+  return {
+    ...snapshot,
+    boxes: snapshot.boxes.map((box) =>
+      box.id === boxId && box.preset !== preset ? { ...box, preset, updatedAt: nowIso() } : box,
+    ),
+  };
+}
+
 export function promoteTemporaryBox(snapshot: WorkspaceSnapshot, boxId: string, title: string) {
   const nextTitle = title.trim();
   if (!nextTitle) return snapshot;

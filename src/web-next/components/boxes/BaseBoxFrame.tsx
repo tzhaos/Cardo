@@ -3,9 +3,13 @@ import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import {
   ChevronsDownUp,
   ChevronsUpDown,
+  Bookmark,
+  Clipboard,
+  Folder,
   LayoutGrid,
   List,
   PackageCheck,
+  PackageOpen,
   Pin,
   PinOff,
   Plus,
@@ -16,6 +20,7 @@ import {
 import { animate as animateMotion, motion, useMotionValue } from 'motion/react';
 import type { MotionStyle } from 'motion/react';
 import { isRecycleBinPageId, type WorkspaceBox } from '../../domain/workspace';
+import type { WorkspaceBoxPreset } from '../../domain/workspace';
 import { useCanvasStore } from '../../app/stores/canvasStore';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
@@ -53,6 +58,7 @@ export function BaseBoxFrame({
   const promoteTemporaryBox = useWorkspaceStore((state) => state.promoteTemporaryBox);
   const setBoxDetailMode = useWorkspaceStore((state) => state.setBoxDetailMode);
   const setBoxPinned = useWorkspaceStore((state) => state.setBoxPinned);
+  const setBoxPreset = useWorkspaceStore((state) => state.setBoxPreset);
   const setBoxViewMode = useWorkspaceStore((state) => state.setBoxViewMode);
   const deleteBox = useWorkspaceStore((state) => state.deleteBox);
   const beginBoxDrag = useUiStore((state) => state.beginBoxDrag);
@@ -345,7 +351,25 @@ export function BaseBoxFrame({
       ) : (
         <header className="wbn-box-header" onPointerDown={beginDrag}>
           <div className="wbn-box-title-group">
-            <span className="wbn-box-icon wbn-icon-frame">{icon}</span>
+            <button
+              className="wbn-box-icon wbn-icon-frame"
+              type="button"
+              data-no-drag
+              title={t('box.changePreset')}
+              aria-label={t('box.changePreset')}
+              onClick={(event) => {
+                openMenu({
+                  id: `box-preset-${box.id}`,
+                  x: event.clientX,
+                  y: event.clientY,
+                  items: getBoxPresetMenuItems(box.preset, t, (preset) =>
+                    setBoxPreset(box.id, preset),
+                  ),
+                });
+              }}
+            >
+              {icon}
+            </button>
             {renamingTitle ? (
               <input
                 ref={titleInputRef}
@@ -509,4 +533,23 @@ function getBoxTypeLabel(preset: WorkspaceBox['preset'], t: ReturnType<typeof us
       : preset === 'clipboard'
         ? t('box.clipboard')
         : t('box.general');
+}
+
+function getBoxPresetMenuItems(
+  currentPreset: WorkspaceBoxPreset,
+  t: ReturnType<typeof useI18n>['t'],
+  onSelect: (preset: WorkspaceBoxPreset) => void,
+) {
+  return [
+    { preset: 'general' as const, label: t('box.general'), icon: <PackageOpen size={16} /> },
+    { preset: 'folder' as const, label: t('box.folder'), icon: <Folder size={16} /> },
+    { preset: 'bookmark' as const, label: t('box.bookmark'), icon: <Bookmark size={16} /> },
+    { preset: 'clipboard' as const, label: t('box.clipboard'), icon: <Clipboard size={16} /> },
+  ].map(({ preset, label, icon }) => ({
+    id: `preset-${preset}`,
+    label,
+    icon,
+    disabled: preset === currentPreset,
+    onSelect: () => onSelect(preset),
+  }));
 }

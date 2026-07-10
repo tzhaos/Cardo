@@ -566,6 +566,27 @@
   line-height: 1;
 }
 
+button.wbn-box-icon {
+  border: 0;
+  border-radius: 5px;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    transform 120ms ease;
+}
+
+button.wbn-box-icon:hover {
+  background: color-mix(in srgb, var(--box-accent) 10%, transparent);
+  transform: scale(1.08);
+}
+
+button.wbn-box-icon:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--box-accent) 28%, transparent);
+  outline-offset: 2px;
+}
+
 .wbn-box-title {
   overflow: hidden;
   color: var(--wbn-soft-text);

@@ -30,6 +30,7 @@ import {
   setActivePage,
   setBoxDetailMode,
   setBoxPinned,
+  setBoxPreset,
   setBoxViewMode,
   setDefaultPage,
   setItemPinned,
@@ -54,6 +55,7 @@ interface WorkspaceStore {
   promoteTemporaryBox: (boxId: string, title: string) => void;
   setBoxDetailMode: (boxId: string, detailMode: WorkspaceBoxDetailMode) => void;
   setBoxPinned: (boxId: string, isPinned: boolean) => void;
+  setBoxPreset: (boxId: string, preset: WorkspaceBoxPreset) => void;
   setBoxViewMode: (boxId: string, viewMode: WorkspaceBoxViewMode) => void;
   moveBoxToPage: (boxId: string, pageId: string, frame?: BoxFrame) => void;
   deleteBox: (boxId: string) => void;
@@ -117,6 +119,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         set((state) => ({ snapshot: setBoxDetailMode(state.snapshot, boxId, detailMode) })),
       setBoxPinned: (boxId, isPinned) =>
         set((state) => ({ snapshot: setBoxPinned(state.snapshot, boxId, isPinned) })),
+      setBoxPreset: (boxId, preset) =>
+        set((state) => ({ snapshot: setBoxPreset(state.snapshot, boxId, preset) })),
       setBoxViewMode: (boxId, viewMode) =>
         set((state) => ({ snapshot: setBoxViewMode(state.snapshot, boxId, viewMode) })),
       moveBoxToPage: (boxId, pageId, frame) =>
