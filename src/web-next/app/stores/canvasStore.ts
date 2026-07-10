@@ -15,6 +15,7 @@ export type CanvasInteractionMode = 'idle' | 'panning';
 export interface PageCanvasState {
   camera: CanvasCamera;
   isLocked: boolean;
+  isCameraAnimating?: boolean;
 }
 
 interface CanvasStore {
@@ -38,6 +39,8 @@ const DEFAULT_PAGE_CANVAS_STATE: PageCanvasState = {
   camera: ORIGIN_CANVAS_CAMERA,
   isLocked: false,
 };
+
+const cameraAnimationTimeouts = new Map<string, number>();
 
 export const useCanvasStore = create<CanvasStore>((set) => ({
   pages: {},
@@ -72,17 +75,23 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
       return {
         pages: {
           ...state.pages,
-          [pageId]: { ...page, camera },
+          [pageId]: { ...page, camera, isCameraAnimating: false },
         },
       };
     }),
-  resetCamera: (pageId) =>
+  resetCamera: (pageId) => {
     set((state) => ({
       pages: {
         ...state.pages,
-        [pageId]: { ...getPageCanvasState(state, pageId), camera: ORIGIN_CANVAS_CAMERA },
+        [pageId]: {
+          ...getPageCanvasState(state, pageId),
+          camera: ORIGIN_CANVAS_CAMERA,
+          isCameraAnimating: true,
+        },
       },
-    })),
+    }));
+    finishCameraAnimation(set, pageId);
+  },
   fitFrames: (pageId, frames) =>
     set((state) => {
       if (!frames.length || state.viewportSize.width <= 0 || state.viewportSize.height <= 0) {
@@ -113,12 +122,18 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
         },
         state.viewportSize,
       );
-      return {
+      const nextState = {
         pages: {
           ...state.pages,
-          [pageId]: { ...getPageCanvasState(state, pageId), camera },
+          [pageId]: {
+            ...getPageCanvasState(state, pageId),
+            camera,
+            isCameraAnimating: true,
+          },
         },
       };
+      finishCameraAnimation(set, pageId);
+      return nextState;
     }),
   toggleLocked: (pageId) =>
     set((state) => {
@@ -133,6 +148,24 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
   setInteractionMode: (interactionMode) => set({ interactionMode }),
   setPanModifierActive: (isPanModifierActive) => set({ isPanModifierActive }),
 }));
+
+function finishCameraAnimation(
+  set: (partial: Partial<CanvasStore> | ((state: CanvasStore) => Partial<CanvasStore>)) => void,
+  pageId: string,
+) {
+  const currentTimeout = cameraAnimationTimeouts.get(pageId);
+  if (currentTimeout !== undefined) window.clearTimeout(currentTimeout);
+  const timeoutId = window.setTimeout(() => {
+    cameraAnimationTimeouts.delete(pageId);
+    set((state) => ({
+      pages: {
+        ...state.pages,
+        [pageId]: { ...getPageCanvasState(state, pageId), isCameraAnimating: false },
+      },
+    }));
+  }, 360);
+  cameraAnimationTimeouts.set(pageId, timeoutId);
+}
 
 export function getPageCanvasState(
   state: Pick<CanvasStore, 'pages'>,

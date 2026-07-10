@@ -396,6 +396,10 @@
   will-change: transform;
 }
 
+.wbn-canvas-world-animating {
+  transition: transform 340ms cubic-bezier(0.22, 0.82, 0.2, 1);
+}
+
 .wbn-canvas-boundary {
   position: absolute;
   z-index: 0;
