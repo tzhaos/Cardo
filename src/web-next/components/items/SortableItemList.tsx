@@ -37,6 +37,16 @@ export function SortableItemList<TItem extends BoxItem>({
       className={`wbn-item-list${viewMode === 'grid' ? ' wbn-item-list-grid' : ''}`}
       values={orderedIds}
       onReorder={updateOrder}
+      onCopy={(event) => {
+        const target = event.target;
+        if (
+          target instanceof Element &&
+          target.closest('.wbn-item-view-content') &&
+          !target.closest('input,textarea,[contenteditable="true"]')
+        ) {
+          event.preventDefault();
+        }
+      }}
     >
       <AnimatePresence initial={false}>
         {orderedItems.map((item) => (

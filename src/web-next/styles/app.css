@@ -1044,6 +1044,22 @@ button.wbn-box-icon:focus-visible {
 .wbn-item-view-content {
   width: 100%;
   min-width: 0;
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.wbn-item-view-content :where(strong, small, p, a) {
+  caret-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.wbn-item-view-content :where(input, textarea, [contenteditable='true']) {
+  cursor: text;
+  caret-color: auto;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .wbn-item-view-content-row {
@@ -2425,6 +2441,7 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
   margin: 0;
   padding: 1px 94px 0 2px;
   color: var(--wbn-soft-text) !important;
+  cursor: copy;
   font-size: 13px !important;
   line-height: 18px;
   text-overflow: ellipsis;
