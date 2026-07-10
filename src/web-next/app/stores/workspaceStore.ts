@@ -126,6 +126,7 @@ interface WorkspaceHistoryEntry {
   after: WorkspaceSnapshot;
   action: WorkspaceHistoryAction;
   eventId: string;
+  redoNavigationPageId?: string;
 }
 
 const HISTORY_LIMIT = 50;
@@ -317,7 +318,10 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           return {
             snapshot: entry.before,
             historyPast: state.historyPast.slice(0, -1),
-            historyFuture: [...state.historyFuture, entry].slice(-HISTORY_LIMIT),
+            historyFuture: [
+              ...state.historyFuture,
+              { ...entry, redoNavigationPageId: state.snapshot.activePageId },
+            ].slice(-HISTORY_LIMIT),
           };
         }),
       redo: () =>
@@ -329,7 +333,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             relatedEventId: entry.eventId,
           });
           return {
-            snapshot: entry.after,
+            snapshot: restoreHistoryNavigation(entry.after, entry.redoNavigationPageId),
             historyPast: [...state.historyPast, entry].slice(-HISTORY_LIMIT),
             historyFuture: state.historyFuture.slice(0, -1),
           };
@@ -553,6 +557,12 @@ function recordHistory(
     historyPast: [...state.historyPast, entry].slice(-HISTORY_LIMIT),
     historyFuture: [],
   };
+}
+
+function restoreHistoryNavigation(snapshot: WorkspaceSnapshot, pageId?: string) {
+  return pageId && snapshot.pages.some((page) => page.id === pageId)
+    ? { ...snapshot, activePageId: pageId }
+    : snapshot;
 }
 
 function recordMutation(
