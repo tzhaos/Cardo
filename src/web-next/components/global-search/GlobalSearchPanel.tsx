@@ -3,13 +3,13 @@ import type { CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import {
   AppWindow,
-  Bookmark,
   Box,
   Clipboard,
   Copy,
   ExternalLink,
   File,
   Folder,
+  Globe2,
   PanelTop,
   Search,
   X,
@@ -270,7 +270,7 @@ function ItemTypeIcon({ item }: { item: BoxItem }) {
     case 'shortcut':
       return <AppWindow size={17} />;
     case 'bookmark':
-      return <Bookmark size={17} />;
+      return <Globe2 size={17} />;
     case 'clipboard':
       return <Clipboard size={17} />;
   }
