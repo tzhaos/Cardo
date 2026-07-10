@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import { ChevronRight, PanelTop, Plus, Wrench } from 'lucide-react';
+import { ChevronRight, PanelTop, Plus } from 'lucide-react';
 import type { WorkspaceBoxPreset } from '../../domain/workspace';
 import type { FloatingMenuItem, FloatingMenuState } from './menuTypes';
 import { useI18n } from '../../i18n/useI18n';
@@ -61,13 +61,13 @@ export function FloatingMenuProvider({ children }: { children: React.ReactNode }
                 },
               ]
             : []),
-          {
-            id: 'canvas-tools',
-            label: t('canvas.layoutTools'),
-            icon: <Wrench size={16} />,
-            disabled: !actions.canvasTools?.length,
-            children: actions.canvasTools,
-          },
+          ...(actions.canvasTools ?? []).map((item, index) => ({
+            ...item,
+            separatorBefore:
+              index === 0 && Boolean(actions.createPage || actions.createBox)
+                ? true
+                : item.separatorBefore,
+          })),
         ],
       });
     },
