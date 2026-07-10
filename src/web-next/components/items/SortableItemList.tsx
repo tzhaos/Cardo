@@ -87,6 +87,7 @@ function SortableItemEntry({
       className={`wbn-item-reorder-entry${dragging ? ' wbn-item-reorder-entry-dragging' : ''}`}
       data-item-id={itemId}
       value={itemId}
+      layoutId={`workspace-item-${itemId}`}
       dragControls={controls}
       dragElastic={0.06}
       dragListener={false}
@@ -101,7 +102,7 @@ function SortableItemEntry({
         boxShadow: '0 14px 30px rgba(15, 23, 42, 0.14)',
       }}
       transition={{
-        layout: { type: 'spring', stiffness: 520, damping: 42, mass: 0.7 },
+        layout: { type: 'spring', stiffness: 360, damping: 30, mass: 0.72 },
         opacity: { duration: 0.16 },
         scale: { type: 'spring', stiffness: 520, damping: 38, mass: 0.62 },
       }}
