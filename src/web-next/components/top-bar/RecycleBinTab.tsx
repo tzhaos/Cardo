@@ -1,7 +1,7 @@
 import { Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { WorkspacePage } from '../../domain/workspace';
-import { useI18n } from '../../i18n/useI18n';
+import { TabPill } from './TabPill';
 
 interface RecycleBinTabProps {
   page: WorkspacePage;
@@ -18,13 +18,10 @@ export function RecycleBinTab({
   released,
   onActivate,
 }: RecycleBinTabProps) {
-  const { t } = useI18n();
-
   return (
     <motion.div
       className={[
         'wbn-recycle-bin-tab',
-        active ? 'wbn-recycle-bin-tab-active' : '',
         highlighted ? 'wbn-box-drop-target' : '',
         released ? 'wbn-box-drop-released' : '',
       ]
@@ -34,15 +31,19 @@ export function RecycleBinTab({
       layout="position"
       transition={{ layout: { type: 'spring', stiffness: 460, damping: 38, mass: 0.72 } }}
     >
-      <button
-        type="button"
-        aria-current={active ? 'page' : undefined}
-        aria-label={t('page.recycleBin')}
-        title={t('page.recycleBin')}
-        onClick={onActivate}
-      >
-        <Trash2 size={16} />
-      </button>
+      <TabPill
+        active={active}
+        canDelete={false}
+        defaultPage={false}
+        editing={false}
+        icon={<Trash2 size={16} />}
+        page={page}
+        systemPage
+        onActivate={onActivate}
+        onDelete={() => undefined}
+        onRename={() => undefined}
+        onSetDefault={() => undefined}
+      />
     </motion.div>
   );
 }

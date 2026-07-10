@@ -253,16 +253,16 @@ export function TopBar() {
                   </Reorder.Item>
                 ))}
               </AnimatePresence>
+              {recycleBinPage ? (
+                <RecycleBinTab
+                  active={recycleBinPage.id === snapshot.activePageId}
+                  highlighted={boxDropPageId === recycleBinPage.id}
+                  page={recycleBinPage}
+                  released={boxDropRelease?.pageId === recycleBinPage.id}
+                  onActivate={() => setActivePage(recycleBinPage.id)}
+                />
+              ) : null}
             </Reorder.Group>
-            {recycleBinPage ? (
-              <RecycleBinTab
-                active={recycleBinPage.id === snapshot.activePageId}
-                highlighted={boxDropPageId === recycleBinPage.id}
-                page={recycleBinPage}
-                released={boxDropRelease?.pageId === recycleBinPage.id}
-                onActivate={() => setActivePage(recycleBinPage.id)}
-              />
-            ) : null}
             <motion.div className="wbn-top-actions" layout="position">
               <motion.button
                 className="wbn-icon-button"

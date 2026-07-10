@@ -1555,56 +1555,9 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
   color: var(--wbn-text);
 }
 
-.wbn-recycle-bin-tab {
-  position: relative;
-  display: inline-flex;
+.wbn-tab-pill-system button {
   width: 36px;
-  height: 36px;
-  flex: 0 0 auto;
-  align-items: center;
-  margin-left: 6px;
-  border-left: 1px solid var(--wbn-divider);
-  padding-left: 6px;
-}
-
-.wbn-recycle-bin-tab button {
-  position: absolute;
-  inset: 0;
-  display: inline-flex;
-  width: 36px;
-  height: 36px;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  border-radius: 999px;
   padding: 0;
-  background: transparent;
-  color: var(--wbn-secondary-text);
-  transition:
-    color 180ms ease,
-    background 180ms ease,
-    box-shadow 180ms ease,
-    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.wbn-recycle-bin-tab button:hover,
-.wbn-recycle-bin-tab button:focus-visible {
-  background: var(--wbn-hover);
-  color: var(--wbn-text);
-  transform: scale(1.12);
-}
-
-.wbn-recycle-bin-tab-active button {
-  background: var(--wbn-active);
-  color: var(--wbn-text);
-}
-
-.wbn-recycle-bin-tab.wbn-box-drop-target button {
-  background: color-mix(in srgb, var(--wbn-blue) 12%, var(--wbn-active));
-  box-shadow:
-    inset 0 1px 2px rgba(15, 23, 42, 0.08),
-    0 0 0 3px color-mix(in srgb, var(--wbn-blue) 11%, transparent);
-  transform: scale(1.08);
 }
 
 .wbn-settings-trigger-icon {
