@@ -13,6 +13,7 @@ export interface DesktopBridge {
   openLocalResource(resourcePath: string): Promise<{ ok: true } | { ok: false; error: string }>;
   saveJson(filename: string, payload: string): Promise<void>;
   saveText(filename: string, payload: string): Promise<void>;
+  resolveWebsiteIcon(url: string): Promise<string | null>;
 }
 
 declare global {

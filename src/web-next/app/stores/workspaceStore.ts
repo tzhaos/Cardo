@@ -46,6 +46,7 @@ import {
   setBoxViewMode,
   setDefaultPage,
   setItemPinned,
+  setBookmarkFavicon,
   updateBoxFrame,
   updatePageBoxFrames,
   updateCollectionBoxView,
@@ -102,6 +103,7 @@ interface WorkspaceStore {
   renameItem: (boxId: string, itemId: string, title: string) => void;
   updateItemContent: (boxId: string, itemId: string, content: string) => void;
   setItemPinned: (boxId: string, itemId: string, isPinned: boolean) => void;
+  setBookmarkFavicon: (boxId: string, itemId: string, favicon: string) => void;
   reorderItems: (boxId: string, orderedItemIds: string[]) => void;
   deleteItem: (boxId: string, itemId: string) => void;
 }
@@ -506,6 +508,11 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             operation('item.setPinned', getItemTarget(state.snapshot, boxId, itemId), { isPinned }),
           ),
         ),
+      setBookmarkFavicon: (boxId, itemId, favicon) =>
+        set((state) => {
+          const nextSnapshot = setBookmarkFavicon(state.snapshot, boxId, itemId, favicon);
+          return nextSnapshot === state.snapshot ? state : { snapshot: nextSnapshot };
+        }),
       reorderItems: (boxId, orderedItemIds) =>
         set((state) =>
           recordMutation(

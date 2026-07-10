@@ -68,5 +68,8 @@ export function createDesktopPorts(): AppPorts {
       },
     },
     webDav: fetchWebDavPort,
+    websiteIcons: {
+      resolve: (url) => getDesktopBridge().resolveWebsiteIcon(url),
+    },
   };
 }

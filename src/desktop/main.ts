@@ -290,6 +290,28 @@ async function writeStateFile(state: Record<string, string>) {
   await fsPromises.writeFile(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
 }
 
+async function resolveWebsiteIcon(urlValue: string) {
+  try {
+    const pageUrl = new URL(urlValue);
+    if (pageUrl.protocol !== 'http:' && pageUrl.protocol !== 'https:') return null;
+    const response = await fetch(new URL('/favicon.ico', pageUrl), {
+      redirect: 'follow',
+      signal: AbortSignal.timeout(6000),
+      headers: { 'User-Agent': 'KhaosBox/1.0' },
+    });
+    if (!response.ok) return null;
+    const declaredSize = Number(response.headers.get('content-length') ?? 0);
+    if (declaredSize > 256 * 1024) return null;
+    const buffer = Buffer.from(await response.arrayBuffer());
+    if (!buffer.length || buffer.length > 256 * 1024) return null;
+    const image = nativeImage.createFromBuffer(buffer);
+    if (image.isEmpty()) return null;
+    return image.resize({ width: 32, height: 32, quality: 'best' }).toDataURL();
+  } catch {
+    return null;
+  }
+}
+
 function registerIpcHandlers() {
   const getSenderWindow = (event: IpcMainInvokeEvent) =>
     BrowserWindow.fromWebContents(event.sender);
@@ -340,6 +362,7 @@ function registerIpcHandlers() {
   ipcMain.handle('clipboard:read-text', () => clipboard.readText());
   ipcMain.handle('clipboard:write-text', (_event, text: string) => clipboard.writeText(text));
   ipcMain.handle('shell:open-external', (_event, url: string) => shell.openExternal(url));
+  ipcMain.handle('website-icon:resolve', (_event, url: string) => resolveWebsiteIcon(url));
   ipcMain.handle('shell:open-local-resource', async (_event, resourcePath: string) => {
     const normalized = normalizeLocalResourcePath(resourcePath);
 

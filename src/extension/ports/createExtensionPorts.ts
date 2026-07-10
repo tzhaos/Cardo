@@ -8,6 +8,7 @@ import { browserTabsPort } from '../navigation/browserTabsPort';
 import { browserRuntimeDocumentPort } from '../runtime/browserRuntimeDocumentPort';
 import { extensionStateStorage } from '../storage/stateStorage';
 import { extensionWebDavPort } from '../sync/extensionWebDavPort';
+import { browserWebsiteIconPort } from '../website-icons/browserWebsiteIconPort';
 
 /**
  * Canonical port bundle for the Manifest V3 extension runtime.
@@ -23,5 +24,6 @@ export function createExtensionPorts(): AppPorts {
     runtimeDocument: browserRuntimeDocumentPort,
     localResource: nativeMessagingLocalResourcePort,
     webDav: extensionWebDavPort,
+    websiteIcons: browserWebsiteIconPort,
   };
 }

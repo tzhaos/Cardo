@@ -498,7 +498,7 @@ export function updateItemContent(
               if (item.type === 'folder' || item.type === 'file' || item.type === 'shortcut')
                 return { ...item, path: nextContent, updatedAt: timestamp };
               if (item.type === 'bookmark')
-                return { ...item, url: nextContent, updatedAt: timestamp };
+                return { ...item, url: nextContent, favicon: undefined, updatedAt: timestamp };
               return { ...item, text: nextContent, updatedAt: timestamp };
             }),
             updatedAt: timestamp,
@@ -506,6 +506,26 @@ export function updateItemContent(
         : box,
     ),
   };
+}
+
+export function setBookmarkFavicon(
+  snapshot: WorkspaceSnapshot,
+  boxId: string,
+  itemId: string,
+  favicon: string,
+) {
+  if (!favicon.startsWith('data:image/')) return snapshot;
+  let changed = false;
+  const boxes = snapshot.boxes.map((box) => {
+    if (box.id !== boxId) return box;
+    const items = box.items.map((item) => {
+      if (item.id !== itemId || item.type !== 'bookmark' || item.favicon === favicon) return item;
+      changed = true;
+      return { ...item, favicon };
+    });
+    return changed ? { ...box, items } : box;
+  });
+  return changed ? { ...snapshot, boxes } : snapshot;
 }
 
 export function setItemPinned(

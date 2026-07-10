@@ -171,7 +171,11 @@ function ItemTypeIcon({ item }: { item: BoxItem }) {
     case 'shortcut':
       return <AppWindow size={17} />;
     case 'bookmark':
-      return <Globe size={17} />;
+      return item.favicon ? (
+        <img className="wbn-website-icon" src={item.favicon} alt="" />
+      ) : (
+        <Globe size={17} />
+      );
     case 'clipboard':
       return <Clipboard size={17} />;
   }

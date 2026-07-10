@@ -22,3 +22,15 @@ export async function openLocalResource(path: string) {
 export async function writeClipboardText(text: string) {
   await getAppPorts().clipboard.writeText(text);
 }
+
+const websiteIconRequests = new Map<string, Promise<string | null>>();
+
+export function resolveWebsiteIcon(url: string) {
+  const cached = websiteIconRequests.get(url);
+  if (cached) return cached;
+  const request = getAppPorts()
+    .websiteIcons.resolve(url)
+    .catch(() => null);
+  websiteIconRequests.set(url, request);
+  return request;
+}

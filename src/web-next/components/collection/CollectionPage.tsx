@@ -435,7 +435,11 @@ function CollectionItemIcon({ item }: { item: BoxItem }) {
     case 'shortcut':
       return <AppWindow size={16} />;
     case 'bookmark':
-      return <Globe size={16} />;
+      return item.favicon ? (
+        <img className="wbn-website-icon" src={item.favicon} alt="" />
+      ) : (
+        <Globe size={16} />
+      );
     case 'clipboard':
       return <Clipboard size={16} />;
   }

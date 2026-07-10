@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ExternalLink, Globe } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { BookmarkItem as BookmarkItemModel } from '../../domain/workspace';
@@ -11,6 +11,8 @@ import { openExternalUrl } from '../../platform/hostPlatform';
 import { IconFrame } from '../primitives/IconPrimitives';
 import { useItemContextMenu } from './useItemContextMenu';
 import { recordItemActivity } from '../../app/operationActivity';
+import { useWorkspaceStore } from '../../app/stores/workspaceStore';
+import { resolveWebsiteIcon } from '../../platform/hostPlatform';
 
 export function BookmarkItem({
   boxId,
@@ -24,6 +26,7 @@ export function BookmarkItem({
   const rename = useItemRename(boxId, item.id, item.title);
   const [deleteView, setDeleteView] = useState(false);
   const [editView, setEditView] = useState(false);
+  const setBookmarkFavicon = useWorkspaceStore((state) => state.setBookmarkFavicon);
   const { t } = useI18n();
   const openItem = () => {
     openExternalUrl(item.url);
@@ -42,6 +45,17 @@ export function BookmarkItem({
     onPin: () => rename.setPinned(!item.isPinned),
     onDelete: () => setDeleteView(true),
   });
+
+  useEffect(() => {
+    if (item.favicon) return;
+    let active = true;
+    void resolveWebsiteIcon(item.url).then((favicon) => {
+      if (active && favicon) setBookmarkFavicon(boxId, item.id, favicon);
+    });
+    return () => {
+      active = false;
+    };
+  }, [boxId, item.favicon, item.id, item.url, setBookmarkFavicon]);
 
   return (
     <div
@@ -85,7 +99,11 @@ export function BookmarkItem({
                 }
               }}
             >
-              <Globe size={16} />
+              {item.favicon ? (
+                <img className="wbn-website-icon" src={item.favicon} alt="" />
+              ) : (
+                <Globe size={16} />
+              )}
             </IconFrame>
             <div className="wbn-item-main">
               {rename.renaming ? (

@@ -42,6 +42,7 @@ type ChromeLikeRuntime = {
   permissions?: ChromePermissionsApi;
   tabs?: ChromeTabsApi;
   runtime?: {
+    getURL?: (path: string) => string;
     lastError?: {
       message?: string;
     };

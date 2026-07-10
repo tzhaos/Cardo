@@ -59,6 +59,9 @@ function createDefaultAppPorts(): AppPorts {
         throw new Error('WebDAV port is not configured.');
       },
     },
+    websiteIcons: {
+      resolve: async () => null,
+    },
   };
 }
 

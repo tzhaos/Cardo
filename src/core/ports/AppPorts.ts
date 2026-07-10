@@ -7,6 +7,7 @@ import type { RuntimeDocumentPort } from './RuntimeDocumentPort';
 import type { TabsPort } from './TabsPort';
 import type { WebDavPort } from './WebDavPort';
 import type { WorkspaceStoragePort } from './WorkspaceStoragePort';
+import type { WebsiteIconPort } from './WebsiteIconPort';
 
 export interface AppPorts {
   browserBookmarks: BrowserBookmarksPort;
@@ -18,4 +19,5 @@ export interface AppPorts {
   runtimeDocument: RuntimeDocumentPort;
   localResource: LocalResourcePort;
   webDav: WebDavPort;
+  websiteIcons: WebsiteIconPort;
 }

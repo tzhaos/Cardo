@@ -1885,6 +1885,14 @@ button.wbn-box-icon:focus-visible {
   outline-offset: 1px;
 }
 
+.wbn-website-icon {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
 .wbn-item-row div {
   min-width: 0;
 }

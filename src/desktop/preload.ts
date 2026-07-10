@@ -27,6 +27,8 @@ const bridge: DesktopBridge = {
     ipcRenderer.invoke('dialog:save-json', filename, payload) as Promise<void>,
   saveText: (filename, payload) =>
     ipcRenderer.invoke('dialog:save-text', filename, payload) as Promise<void>,
+  resolveWebsiteIcon: (url) =>
+    ipcRenderer.invoke('website-icon:resolve', url) as Promise<string | null>,
 };
 
 contextBridge.exposeInMainWorld('khaosboxDesktop', bridge);
