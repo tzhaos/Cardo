@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { AnimatePresence, motion, type Variants } from 'motion/react';
-import { Trash2 } from 'lucide-react';
+import { House, Trash2 } from 'lucide-react';
 import { useCanvasPan } from '../../app/useCanvasPan';
 import { useCanvasViewport } from '../../app/useCanvasViewport';
 import { getPageCanvasState, useCanvasStore } from '../../app/stores/canvasStore';
@@ -27,6 +27,7 @@ export function WorkspaceCanvas() {
   const snapshot = useWorkspaceStore((state) => state.snapshot);
   const createBox = useWorkspaceStore((state) => state.createBox);
   const createPage = useWorkspaceStore((state) => state.createPage);
+  const setDefaultPage = useWorkspaceStore((state) => state.setDefaultPage);
   const viewportSize = useCanvasStore((state) => state.viewportSize);
   const { openCanvasMenu } = useFloatingMenu();
   const { items: canvasTools } = useCanvasTools();
@@ -101,7 +102,24 @@ export function WorkspaceCanvas() {
                     getBoxPresetLabel(preset, t),
                   ),
               }),
-          canvasTools,
+          canvasTools: [
+            ...(!isRecycleBin && !isCollection
+              ? [
+                  {
+                    id: 'set-default-page',
+                    label: t(
+                      snapshot.activePageId === snapshot.defaultPageId
+                        ? 'page.default'
+                        : 'page.setDefault',
+                    ),
+                    icon: <House size={16} />,
+                    disabled: snapshot.activePageId === snapshot.defaultPageId,
+                    onSelect: () => setDefaultPage(snapshot.activePageId),
+                  },
+                ]
+              : []),
+            ...canvasTools,
+          ],
         });
       }}
     >
