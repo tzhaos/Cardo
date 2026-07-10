@@ -409,7 +409,7 @@ export function BaseBoxFrame({
               aria-pressed={Boolean(box.isLocked)}
               title={t(box.isLocked ? 'box.unlock' : 'box.lock')}
             >
-              {box.isLocked ? <Unlock size={15} /> : <Lock size={15} />}
+              {box.isLocked ? <Lock size={15} /> : <Unlock size={15} />}
             </motion.button>
             <motion.button
               className="wbn-box-view-toggle wbn-icon-button"
