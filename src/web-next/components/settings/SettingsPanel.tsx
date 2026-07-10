@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import type { PointerEventHandler } from 'react';
 import {
   Check,
   CircleHelp,
@@ -19,7 +20,13 @@ import { ColorModeStateIcon, LanguageStateIcon } from './StateIcons';
 
 type SettingsSection = 'general' | 'appearance' | 'about';
 
-export function SettingsPanel({ onClose }: { onClose: () => void }) {
+export function SettingsPanel({
+  onClose,
+  onHeaderPointerDown,
+}: {
+  onClose: () => void;
+  onHeaderPointerDown?: PointerEventHandler<HTMLElement>;
+}) {
   const [section, setSection] = useState<SettingsSection>('general');
   const colorMode = usePreferencesStore((state) => state.colorMode);
   const locale = usePreferencesStore((state) => state.locale);
@@ -37,12 +44,12 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="wbn-settings-panel" role="dialog" aria-label={t('settings.title')}>
-      <header className="wbn-settings-header">
+      <header className="wbn-settings-header" onPointerDown={onHeaderPointerDown}>
         <div>
           <Settings size={17} />
           <span>{t('settings.title')}</span>
         </div>
-        <button type="button" onClick={onClose} aria-label={t('common.close')}>
+        <button data-no-menu-drag type="button" onClick={onClose} aria-label={t('common.close')}>
           <X size={16} />
         </button>
       </header>

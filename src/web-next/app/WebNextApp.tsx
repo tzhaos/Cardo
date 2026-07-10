@@ -4,6 +4,7 @@ import { BottomToolbar } from '../components/bottom-toolbar/BottomToolbar';
 import { WorkspaceCanvas } from '../components/canvas/WorkspaceCanvas';
 import { FloatingMenuLayer } from '../components/floating-menu/FloatingMenuLayer';
 import { FloatingMenuProvider } from '../components/floating-menu/useFloatingMenu';
+import { SettingsWindow } from '../components/settings/SettingsWindow';
 import { TopBar } from '../components/top-bar/TopBar';
 import { usePasteIntoSelectedBox } from './usePasteIntoSelectedBox';
 import { usePreferencesStore } from './stores/preferencesStore';
@@ -28,6 +29,7 @@ export default function WebNextApp() {
         <WorkspaceCanvas />
         <BottomToolbar />
         <FloatingMenuLayer />
+        <SettingsWindow />
       </div>
     </FloatingMenuProvider>
   );

@@ -668,19 +668,18 @@
   backdrop-filter: blur(18px);
 }
 
-.wbn-settings-popover {
-  position: absolute;
-  bottom: 78px;
-  left: 50%;
+.wbn-independent-menu {
+  position: fixed;
+  z-index: 180;
   width: min(640px, calc(100vw - 32px));
-  height: min(430px, calc(100vh - 150px));
+  height: min(430px, calc(100vh - 32px));
   overflow: hidden;
   border: 1px solid var(--wbn-border);
   border-radius: 22px;
   background: var(--wbn-surface-strong);
-  box-shadow: var(--wbn-shadow);
+  box-shadow: var(--wbn-shadow-hover);
   backdrop-filter: blur(18px);
-  transform: translateX(-50%);
+  will-change: left, top, transform;
 }
 
 .wbn-settings-panel {
@@ -699,6 +698,14 @@
   justify-content: space-between;
   border-bottom: 1px solid var(--wbn-border);
   padding: 0 14px 0 18px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.wbn-settings-header:active,
+.wbn-independent-menu-dragging {
+  cursor: grabbing;
 }
 
 .wbn-settings-header > div {
@@ -723,6 +730,8 @@
   transition:
     color 160ms ease,
     background 160ms ease;
+  cursor: pointer;
+  touch-action: auto;
 }
 
 .wbn-settings-header button:hover {
@@ -1149,6 +1158,13 @@
   color: var(--wbn-text);
 }
 
+.wbn-settings-trigger-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center;
+}
+
 .wbn-language-state-icon,
 .wbn-theme-state-icon {
   position: relative;
@@ -1269,9 +1285,9 @@
     bottom: 14px;
   }
 
-  .wbn-settings-popover {
+  .wbn-independent-menu {
     width: calc(100vw - 20px);
-    height: min(440px, calc(100vh - 110px));
+    height: min(440px, calc(100vh - 20px));
   }
 }
 

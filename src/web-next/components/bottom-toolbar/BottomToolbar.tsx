@@ -1,18 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { Bookmark, Clipboard, Folder, Plus, Search, Settings } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
+import { useIndependentMenuStore } from '../../app/stores/independentMenuStore';
 import type { WorkspaceBoxType } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
 import { getViewportCenterFrame, useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { useI18n } from '../../i18n/useI18n';
-import { SettingsPanel } from '../settings/SettingsPanel';
 
 export function BottomToolbar() {
   const createBox = useWorkspaceStore((state) => state.createBox);
   const searchQuery = useUiStore((state) => state.searchQuery);
   const setSearchQuery = useUiStore((state) => state.setSearchQuery);
+  const settingsOpen = useIndependentMenuStore((state) => state.menus.settings.open);
+  const toggleIndependentMenu = useIndependentMenuStore((state) => state.toggleMenu);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const shellRef = useRef<HTMLDivElement>(null);
@@ -25,7 +26,7 @@ export function BottomToolbar() {
   }, [isSearchActive]);
 
   useEffect(() => {
-    if (!isMenuOpen && !isSettingsOpen) {
+    if (!isMenuOpen) {
       return;
     }
 
@@ -35,13 +36,11 @@ export function BottomToolbar() {
         return;
       }
       setIsMenuOpen(false);
-      setIsSettingsOpen(false);
     };
 
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setIsMenuOpen(false);
-        setIsSettingsOpen(false);
       }
     };
 
@@ -53,7 +52,7 @@ export function BottomToolbar() {
       window.removeEventListener('contextmenu', closeOnOutsidePointer, true);
       window.removeEventListener('keydown', closeOnEscape);
     };
-  }, [isMenuOpen, isSettingsOpen]);
+  }, [isMenuOpen]);
 
   const handleAdd = (type: WorkspaceBoxType) => {
     createBox(type, getViewportCenterFrame(type), getBoxTypeLabel(type, t));
@@ -89,31 +88,26 @@ export function BottomToolbar() {
           </motion.div>
         ) : null}
       </AnimatePresence>
-      <AnimatePresence>
-        {isSettingsOpen ? (
-          <motion.div
-            className="wbn-settings-popover"
-            initial={{ opacity: 0, y: 20, scale: 0.94 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.94 }}
-          >
-            <SettingsPanel onClose={() => setIsSettingsOpen(false)} />
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
-
       <div className="wbn-bottom-toolbar" aria-label={t('toolbar.workspaceTools')}>
         <button
-          className={isSettingsOpen ? 'wbn-toolbar-button-active' : ''}
+          className={settingsOpen ? 'wbn-toolbar-button-active' : ''}
           type="button"
+          aria-controls="wbn-settings-window"
+          aria-expanded={settingsOpen}
           onClick={() => {
             setIsMenuOpen(false);
-            setIsSettingsOpen((value) => !value);
+            toggleIndependentMenu('settings');
           }}
           title={t('toolbar.settings')}
           aria-label={t('toolbar.settings')}
         >
-          <Settings size={18} />
+          <motion.span
+            className="wbn-settings-trigger-icon"
+            animate={{ rotate: settingsOpen ? 120 : 0, scale: settingsOpen ? 1.08 : 1 }}
+            transition={{ type: 'spring', stiffness: 330, damping: 22 }}
+          >
+            <Settings size={18} />
+          </motion.span>
         </button>
         <div className="wbn-toolbar-divider" />
         <motion.div className="wbn-search-pill" animate={{ width: isSearchActive ? 240 : 40 }}>
@@ -121,7 +115,6 @@ export function BottomToolbar() {
             type="button"
             onClick={() => {
               setIsMenuOpen(false);
-              setIsSettingsOpen(false);
               setIsSearchActive((value) => !value);
             }}
             aria-label={t('toolbar.search')}
@@ -149,7 +142,6 @@ export function BottomToolbar() {
           className="wbn-toolbar-create"
           type="button"
           onClick={() => {
-            setIsSettingsOpen(false);
             setIsMenuOpen((value) => !value);
           }}
           aria-label={t('toolbar.newBox')}

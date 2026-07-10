@@ -179,6 +179,7 @@ It should contain core ambient actions such as:
 - create box
 
 Language and color-mode controls live inside Settings rather than occupying permanent toolbar slots.
+Settings is a root-level independent menu, not a toolbar drop menu, canvas box, or canvas child. It can remain open while the workspace is used and can be moved by dragging its header.
 
 The create button is a dark circular button on the right. When the create menu is open, the button changes to an `×` state.
 
