@@ -1,5 +1,21 @@
-import { useEffect, useRef, useState } from 'react';
-import { LocateFixed, Lock, Plus, Search, Settings, Unlock } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  AlignHorizontalDistributeCenter,
+  AlignVerticalDistributeCenter,
+  Boxes,
+  Grid3X3,
+  LayoutDashboard,
+  Layers3,
+  LocateFixed,
+  Lock,
+  Maximize2,
+  Plus,
+  ScanSearch,
+  Search,
+  Settings,
+  Undo2,
+  Unlock,
+} from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useIndependentMenuStore } from '../../app/stores/independentMenuStore';
 import { useCanvasStore } from '../../app/stores/canvasStore';
@@ -7,6 +23,7 @@ import {
   constrainBoxFrameToCanvas,
   createCanvasWorldBounds,
   getCanvasViewportCenter,
+  getVisibleCanvasWorldBounds,
 } from '../../domain/canvasGeometry';
 import { createBoxFrameCenteredAt } from '../../domain/placement';
 import { isRecycleBinPageId } from '../../domain/workspace';
@@ -14,15 +31,34 @@ import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { useI18n } from '../../i18n/useI18n';
 import { IconButton } from '../primitives/IconPrimitives';
+import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
+import {
+  arrangePageBoxes,
+  distributePageBoxes,
+  groupPageBoxesByContent,
+  recoverOffscreenBoxes,
+  resolvePageBoxOverlaps,
+  snapPageBoxesToGrid,
+} from '../../domain/boxLayout';
 
 export function BottomToolbar() {
   const createBox = useWorkspaceStore((state) => state.createBox);
-  const activePageId = useWorkspaceStore((state) => state.snapshot.activePageId);
+  const snapshot = useWorkspaceStore((state) => state.snapshot);
+  const boxes = useMemo(
+    () => snapshot.boxes.filter((box) => box.pageId === snapshot.activePageId),
+    [snapshot.activePageId, snapshot.boxes],
+  );
+  const applyPageBoxLayout = useWorkspaceStore((state) => state.applyPageBoxLayout);
+  const undo = useWorkspaceStore((state) => state.undo);
+  const canUndo = useWorkspaceStore((state) => state.historyPast.length > 0);
+  const activePageId = snapshot.activePageId;
   const panX = useCanvasStore((state) => state.pages[activePageId]?.camera.panX ?? 0);
   const panY = useCanvasStore((state) => state.pages[activePageId]?.camera.panY ?? 0);
+  const zoom = useCanvasStore((state) => state.pages[activePageId]?.camera.zoom ?? 1);
   const isCanvasLocked = useCanvasStore((state) => state.pages[activePageId]?.isLocked ?? false);
   const viewportSize = useCanvasStore((state) => state.viewportSize);
   const resetCamera = useCanvasStore((state) => state.resetCamera);
+  const fitFrames = useCanvasStore((state) => state.fitFrames);
   const toggleCanvasLocked = useCanvasStore((state) => state.toggleLocked);
   const searchQuery = useUiStore((state) => state.searchQuery);
   const setSearchQuery = useUiStore((state) => state.setSearchQuery);
@@ -31,6 +67,7 @@ export function BottomToolbar() {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { t } = useI18n();
+  const { openMenu } = useFloatingMenu();
   const isRecycleBin = isRecycleBinPageId(activePageId);
 
   useEffect(() => {
@@ -53,18 +90,144 @@ export function BottomToolbar() {
     setSearchQuery('');
   };
 
+  const camera = { panX, panY, zoom };
+  const visibleBounds = getVisibleCanvasWorldBounds(camera, viewportSize);
+  const canvasBounds = createCanvasWorldBounds(viewportSize);
+  const movableBoxCount = boxes.filter((box) => !box.isLocked).length;
+
   return (
     <div className="wbn-bottom-shell">
       <div className="wbn-bottom-toolbar" aria-label={t('toolbar.workspaceTools')}>
         <IconButton
           className="wbn-toolbar-canvas-control"
-          disabled={panX === 0 && panY === 0}
+          disabled={panX === 0 && panY === 0 && zoom === 1}
           onClick={() => resetCamera(activePageId)}
           aria-label={t('canvas.returnToOrigin')}
           title={t('canvas.returnToOrigin')}
         >
           <LocateFixed size={18} />
         </IconButton>
+        {!isRecycleBin ? (
+          <IconButton
+            className="wbn-toolbar-canvas-control"
+            onClick={(event) =>
+              openMenu({
+                id: 'box-layout-tools',
+                x: event.clientX,
+                y: event.clientY,
+                items: [
+                  {
+                    id: 'auto-arrange',
+                    label: t('canvas.autoArrange'),
+                    icon: <LayoutDashboard size={16} />,
+                    disabled: movableBoxCount < 2,
+                    onSelect: () =>
+                      applyPageBoxLayout(
+                        activePageId,
+                        arrangePageBoxes(boxes, visibleBounds, canvasBounds),
+                      ),
+                  },
+                  {
+                    id: 'snap-grid',
+                    label: t('canvas.snapToGrid'),
+                    icon: <Grid3X3 size={16} />,
+                    disabled: movableBoxCount === 0,
+                    onSelect: () =>
+                      applyPageBoxLayout(activePageId, snapPageBoxesToGrid(boxes, canvasBounds)),
+                  },
+                  {
+                    id: 'distribute',
+                    label: t('canvas.distribute'),
+                    icon: <AlignHorizontalDistributeCenter size={16} />,
+                    disabled: movableBoxCount < 3,
+                    children: [
+                      {
+                        id: 'distribute-horizontal',
+                        label: t('canvas.distributeHorizontal'),
+                        icon: <AlignHorizontalDistributeCenter size={16} />,
+                        onSelect: () =>
+                          applyPageBoxLayout(
+                            activePageId,
+                            distributePageBoxes(boxes, 'horizontal', canvasBounds),
+                          ),
+                      },
+                      {
+                        id: 'distribute-vertical',
+                        label: t('canvas.distributeVertical'),
+                        icon: <AlignVerticalDistributeCenter size={16} />,
+                        onSelect: () =>
+                          applyPageBoxLayout(
+                            activePageId,
+                            distributePageBoxes(boxes, 'vertical', canvasBounds),
+                          ),
+                      },
+                    ],
+                  },
+                  {
+                    id: 'avoid-overlap',
+                    label: t('canvas.avoidOverlap'),
+                    icon: <Boxes size={16} />,
+                    disabled: movableBoxCount < 2,
+                    onSelect: () =>
+                      applyPageBoxLayout(activePageId, resolvePageBoxOverlaps(boxes, canvasBounds)),
+                  },
+                  {
+                    id: 'group-content',
+                    label: t('canvas.groupByContent'),
+                    icon: <Layers3 size={16} />,
+                    disabled: movableBoxCount < 2,
+                    onSelect: () =>
+                      applyPageBoxLayout(
+                        activePageId,
+                        groupPageBoxesByContent(boxes, visibleBounds, canvasBounds),
+                      ),
+                  },
+                  {
+                    id: 'recover-offscreen',
+                    label: t('canvas.recoverOffscreen'),
+                    icon: <ScanSearch size={16} />,
+                    disabled: boxes.every(
+                      (box) =>
+                        box.frame.x < visibleBounds.maxX &&
+                        box.frame.x + box.frame.width > visibleBounds.minX &&
+                        box.frame.y < visibleBounds.maxY &&
+                        box.frame.y + box.frame.height > visibleBounds.minY,
+                    ),
+                    separatorBefore: true,
+                    onSelect: () =>
+                      applyPageBoxLayout(
+                        activePageId,
+                        recoverOffscreenBoxes(boxes, visibleBounds, canvasBounds),
+                      ),
+                  },
+                  {
+                    id: 'fit-all',
+                    label: t('canvas.fitAll'),
+                    icon: <Maximize2 size={16} />,
+                    disabled: boxes.length === 0,
+                    onSelect: () =>
+                      fitFrames(
+                        activePageId,
+                        boxes.map((box) => box.frame),
+                      ),
+                  },
+                  {
+                    id: 'undo-layout',
+                    label: t('canvas.undoLayout'),
+                    icon: <Undo2 size={16} />,
+                    disabled: !canUndo,
+                    separatorBefore: true,
+                    onSelect: undo,
+                  },
+                ],
+              })
+            }
+            aria-label={t('canvas.layoutTools')}
+            title={t('canvas.layoutTools')}
+          >
+            <LayoutDashboard size={18} />
+          </IconButton>
+        ) : null}
         <IconButton
           className={`wbn-toolbar-canvas-control${isCanvasLocked ? ' wbn-toolbar-button-active' : ''}`}
           onClick={() => toggleCanvasLocked(activePageId)}

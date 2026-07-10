@@ -163,8 +163,10 @@ export function WorkspaceCanvas() {
 function CanvasWorld({ pageId, children }: { pageId: string; children: ReactNode }) {
   const panX = useCanvasStore((state) => state.pages[pageId]?.camera.panX ?? 0);
   const panY = useCanvasStore((state) => state.pages[pageId]?.camera.panY ?? 0);
+  const zoom = useCanvasStore((state) => state.pages[pageId]?.camera.zoom ?? 1);
   const style = {
-    transform: `translate3d(${panX}px, ${panY}px, 0)`,
+    transform: `translate3d(${panX}px, ${panY}px, 0) scale(${zoom})`,
+    transformOrigin: '0 0',
   } satisfies CSSProperties;
 
   return (

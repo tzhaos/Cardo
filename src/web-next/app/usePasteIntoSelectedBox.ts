@@ -36,7 +36,7 @@ export function usePasteIntoSelectedBox() {
 
         if (!targetBox) {
           const canvas = useCanvasStore.getState();
-          const camera = canvas.pages[pageId]?.camera ?? { panX: 0, panY: 0 };
+          const camera = canvas.pages[pageId]?.camera ?? { panX: 0, panY: 0, zoom: 1 };
           const bounds = createCanvasWorldBounds(canvas.viewportSize);
           const center = getCanvasViewportCenter(camera, canvas.viewportSize);
           const frame = findNewBoxFrame(snapshot, pageId, center, bounds);

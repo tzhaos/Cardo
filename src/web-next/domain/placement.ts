@@ -64,10 +64,11 @@ export function findPageLandingFrame(
   return findAvailableFrame(preferredFrame, occupiedFrames, bounds) ?? preferredFrame;
 }
 
-function findAvailableFrame(
+export function findAvailableFrame(
   preferredFrame: BoxFrame,
   occupiedFrames: BoxFrame[],
   bounds: CanvasWorldBounds,
+  gap = BOX_GAP,
 ) {
   const visited = new Set<string>();
   const maximumRadius = Math.ceil(Math.max(bounds.width, bounds.height) / SEARCH_STEP);
@@ -88,7 +89,7 @@ function findAvailableFrame(
       }
       visited.add(key);
 
-      if (occupiedFrames.every((frame) => !framesOverlap(candidate, frame, BOX_GAP))) {
+      if (occupiedFrames.every((frame) => !framesOverlap(candidate, frame, gap))) {
         return candidate;
       }
     }

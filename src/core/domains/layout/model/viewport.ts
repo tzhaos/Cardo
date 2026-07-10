@@ -1,6 +1,7 @@
 export interface ViewportCamera {
   panX: number;
   panY: number;
+  zoom?: number;
 }
 
 export interface ScreenPoint {
@@ -14,16 +15,18 @@ export interface WorldPoint {
 }
 
 export function screenToWorld(point: ScreenPoint, camera: ViewportCamera): WorldPoint {
+  const zoom = camera.zoom ?? 1;
   return {
-    x: point.clientX - camera.panX,
-    y: point.clientY - camera.panY,
+    x: (point.clientX - camera.panX) / zoom,
+    y: (point.clientY - camera.panY) / zoom,
   };
 }
 
 export function worldToScreen(point: WorldPoint, camera: ViewportCamera): WorldPoint {
+  const zoom = camera.zoom ?? 1;
   return {
-    x: point.x + camera.panX,
-    y: point.y + camera.panY,
+    x: point.x * zoom + camera.panX,
+    y: point.y * zoom + camera.panY,
   };
 }
 

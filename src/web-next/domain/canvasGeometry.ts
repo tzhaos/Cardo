@@ -33,7 +33,9 @@ export interface CanvasWorldBounds {
 }
 
 export const CANVAS_SCREEN_SPAN = 3;
-export const ORIGIN_CANVAS_CAMERA: CanvasCamera = { panX: 0, panY: 0 };
+export const ORIGIN_CANVAS_CAMERA: CanvasCamera = { panX: 0, panY: 0, zoom: 1 };
+export const MIN_CANVAS_ZOOM = 0.35;
+export const MAX_CANVAS_ZOOM = 1.5;
 
 export function createCanvasWorldBounds(viewport: CanvasViewportSize): CanvasWorldBounds {
   const width = normalizeDimension(viewport.width);
@@ -55,7 +57,7 @@ export function panCanvasCamera(
   viewport: CanvasViewportSize,
 ): CanvasCamera {
   return constrainCanvasCamera(
-    { panX: camera.panX + delta.x, panY: camera.panY + delta.y },
+    { ...camera, panX: camera.panX + delta.x, panY: camera.panY + delta.y },
     viewport,
   );
 }
@@ -71,9 +73,24 @@ export function constrainCanvasCamera(
     return camera;
   }
 
+  const zoom = clamp(camera.zoom || 1, MIN_CANVAS_ZOOM, MAX_CANVAS_ZOOM);
   return {
-    panX: clamp(camera.panX, -width, width),
-    panY: clamp(camera.panY, -height, height),
+    panX: clamp(camera.panX, width - width * 2 * zoom, width * zoom),
+    panY: clamp(camera.panY, height - height * 2 * zoom, height * zoom),
+    zoom,
+  };
+}
+
+export function getVisibleCanvasWorldBounds(camera: CanvasCamera, viewport: CanvasViewportSize) {
+  const topLeft = screenToWorld({ clientX: 0, clientY: 0 }, camera);
+  const bottomRight = screenToWorld({ clientX: viewport.width, clientY: viewport.height }, camera);
+  return {
+    minX: topLeft.x,
+    minY: topLeft.y,
+    maxX: bottomRight.x,
+    maxY: bottomRight.y,
+    width: bottomRight.x - topLeft.x,
+    height: bottomRight.y - topLeft.y,
   };
 }
 

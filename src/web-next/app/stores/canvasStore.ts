@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import {
   constrainCanvasCamera,
+  MAX_CANVAS_ZOOM,
+  MIN_CANVAS_ZOOM,
   ORIGIN_CANVAS_CAMERA,
   panCanvasCamera,
   type CanvasCamera,
@@ -23,6 +25,10 @@ interface CanvasStore {
   setViewportSize: (viewportSize: CanvasViewportSize) => void;
   panBy: (pageId: string, delta: CanvasPoint) => void;
   resetCamera: (pageId: string) => void;
+  fitFrames: (
+    pageId: string,
+    frames: Array<{ x: number; y: number; width: number; height: number }>,
+  ) => void;
   toggleLocked: (pageId: string) => void;
   setInteractionMode: (interactionMode: CanvasInteractionMode) => void;
   setPanModifierActive: (isPanModifierActive: boolean) => void;
@@ -77,6 +83,43 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
         [pageId]: { ...getPageCanvasState(state, pageId), camera: ORIGIN_CANVAS_CAMERA },
       },
     })),
+  fitFrames: (pageId, frames) =>
+    set((state) => {
+      if (!frames.length || state.viewportSize.width <= 0 || state.viewportSize.height <= 0) {
+        return state;
+      }
+      const padding = 80;
+      const minX = Math.min(...frames.map((frame) => frame.x));
+      const minY = Math.min(...frames.map((frame) => frame.y));
+      const maxX = Math.max(...frames.map((frame) => frame.x + frame.width));
+      const maxY = Math.max(...frames.map((frame) => frame.y + frame.height));
+      const contentWidth = Math.max(1, maxX - minX);
+      const contentHeight = Math.max(1, maxY - minY);
+      const zoom = Math.min(
+        MAX_CANVAS_ZOOM,
+        Math.max(
+          MIN_CANVAS_ZOOM,
+          Math.min(
+            (state.viewportSize.width - padding * 2) / contentWidth,
+            (state.viewportSize.height - padding * 2) / contentHeight,
+          ),
+        ),
+      );
+      const camera = constrainCanvasCamera(
+        {
+          zoom,
+          panX: state.viewportSize.width / 2 - ((minX + maxX) / 2) * zoom,
+          panY: state.viewportSize.height / 2 - ((minY + maxY) / 2) * zoom,
+        },
+        state.viewportSize,
+      );
+      return {
+        pages: {
+          ...state.pages,
+          [pageId]: { ...getPageCanvasState(state, pageId), camera },
+        },
+      };
+    }),
   toggleLocked: (pageId) =>
     set((state) => {
       const page = getPageCanvasState(state, pageId);

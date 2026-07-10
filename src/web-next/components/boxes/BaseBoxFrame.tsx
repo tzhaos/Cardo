@@ -135,11 +135,12 @@ export function BaseBoxFrame({
     const session = startWindowPointerSession({
       pointerId: event.pointerId,
       onMove: (moveEvent) => {
+        const zoom = useCanvasStore.getState().pages[box.pageId]?.camera.zoom ?? 1;
         latestFrame = constrainBoxFrameToCanvas(
           {
             ...startFrame,
-            x: Math.round(startFrame.x + moveEvent.clientX - startX),
-            y: Math.round(startFrame.y + moveEvent.clientY - startY),
+            x: Math.round(startFrame.x + (moveEvent.clientX - startX) / zoom),
+            y: Math.round(startFrame.y + (moveEvent.clientY - startY) / zoom),
           },
           createCanvasWorldBounds(useCanvasStore.getState().viewportSize),
         );
@@ -177,11 +178,18 @@ export function BaseBoxFrame({
     const session = startWindowPointerSession({
       pointerId: event.pointerId,
       onMove: (moveEvent) => {
+        const zoom = useCanvasStore.getState().pages[box.pageId]?.camera.zoom ?? 1;
         latestFrame = constrainBoxResizeToCanvas(
           {
             ...startFrame,
-            width: Math.max(240, Math.round(startFrame.width + moveEvent.clientX - startX)),
-            height: Math.max(170, Math.round(startFrame.height + moveEvent.clientY - startY)),
+            width: Math.max(
+              240,
+              Math.round(startFrame.width + (moveEvent.clientX - startX) / zoom),
+            ),
+            height: Math.max(
+              170,
+              Math.round(startFrame.height + (moveEvent.clientY - startY) / zoom),
+            ),
           },
           createCanvasWorldBounds(useCanvasStore.getState().viewportSize),
           { width: 240, height: 170 },
