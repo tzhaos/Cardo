@@ -1,27 +1,13 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import {
-  Bookmark,
-  ChevronRight,
-  Clipboard,
-  Folder,
-  PackageOpen,
-  PanelTop,
-  Plus,
-  RotateCcw,
-} from 'lucide-react';
+import { ChevronRight, PanelTop, Plus, RotateCcw } from 'lucide-react';
 import type { WorkspaceBoxPreset } from '../../domain/workspace';
-import type { FloatingMenuItem, FloatingMenuState } from './menuTypes';
+import type { FloatingMenuState } from './menuTypes';
 import { useI18n } from '../../i18n/useI18n';
 
 interface FloatingMenuContextValue {
   menu: FloatingMenuState | null;
   openMenu: (menu: FloatingMenuState) => void;
   closeMenu: () => void;
-  openCreateBoxMenu: (
-    x: number,
-    y: number,
-    createBox: (preset: WorkspaceBoxPreset) => void,
-  ) => void;
   openCanvasMenu: (
     x: number,
     y: number,
@@ -38,33 +24,8 @@ const FloatingMenuContext = createContext<FloatingMenuContextValue | null>(null)
 export function FloatingMenuProvider({ children }: { children: React.ReactNode }) {
   const [menu, setMenu] = useState<FloatingMenuState | null>(null);
   const { t } = useI18n();
-  const boxRows = useMemo(
-    () => [
-      { id: 'general' as const, label: t('box.general'), icon: <PackageOpen size={16} /> },
-      { id: 'folder' as const, label: t('box.folder'), icon: <Folder size={16} /> },
-      { id: 'bookmark' as const, label: t('box.bookmark'), icon: <Bookmark size={16} /> },
-      { id: 'clipboard' as const, label: t('box.clipboard'), icon: <Clipboard size={16} /> },
-    ],
-    [t],
-  );
-  const createBoxItems = useCallback(
-    (createBox: (preset: WorkspaceBoxPreset) => void): FloatingMenuItem[] =>
-      boxRows.map((row) => ({
-        id: row.id,
-        label: row.label,
-        icon: row.icon,
-        onSelect: () => createBox(row.id),
-      })),
-    [boxRows],
-  );
   const closeMenu = useCallback(() => setMenu(null), []);
   const openMenu = useCallback((nextMenu: FloatingMenuState) => setMenu(nextMenu), []);
-  const openCreateBoxMenu = useCallback(
-    (x: number, y: number, createBox: (preset: WorkspaceBoxPreset) => void) => {
-      setMenu({ id: 'create-box', x, y, items: createBoxItems(createBox) });
-    },
-    [createBoxItems],
-  );
   const openCanvasMenu = useCallback(
     (
       x: number,
@@ -90,7 +51,7 @@ export function FloatingMenuProvider({ children }: { children: React.ReactNode }
             id: 'new-box',
             label: t('menu.newBox'),
             icon: <Plus size={16} />,
-            children: createBoxItems(actions.createBox),
+            onSelect: () => actions.createBox('general'),
           },
           {
             id: 'reset-view',
@@ -102,12 +63,12 @@ export function FloatingMenuProvider({ children }: { children: React.ReactNode }
         ],
       });
     },
-    [createBoxItems, t],
+    [t],
   );
 
   const value = useMemo(
-    () => ({ menu, openMenu, closeMenu, openCreateBoxMenu, openCanvasMenu }),
-    [closeMenu, menu, openCanvasMenu, openCreateBoxMenu, openMenu],
+    () => ({ menu, openMenu, closeMenu, openCanvasMenu }),
+    [closeMenu, menu, openCanvasMenu, openMenu],
   );
 
   return <FloatingMenuContext.Provider value={value}>{children}</FloatingMenuContext.Provider>;

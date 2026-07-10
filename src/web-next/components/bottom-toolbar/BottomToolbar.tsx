@@ -1,16 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  Bookmark,
-  Clipboard,
-  Folder,
-  LocateFixed,
-  Lock,
-  Plus,
-  PackageOpen,
-  Search,
-  Settings,
-  Unlock,
-} from 'lucide-react';
+import { LocateFixed, Lock, Plus, Search, Settings, Unlock } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useIndependentMenuStore } from '../../app/stores/independentMenuStore';
 import { useCanvasStore } from '../../app/stores/canvasStore';
@@ -20,11 +9,11 @@ import {
   getCanvasViewportCenter,
 } from '../../domain/canvasGeometry';
 import { createBoxFrameCenteredAt } from '../../domain/placement';
-import { isRecycleBinPageId, type WorkspaceBoxPreset } from '../../domain/workspace';
+import { isRecycleBinPageId } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { useI18n } from '../../i18n/useI18n';
-import { IconButton, IconFrame } from '../primitives/IconPrimitives';
+import { IconButton } from '../primitives/IconPrimitives';
 
 export function BottomToolbar() {
   const createBox = useWorkspaceStore((state) => state.createBox);
@@ -39,10 +28,8 @@ export function BottomToolbar() {
   const setSearchQuery = useUiStore((state) => state.setSearchQuery);
   const settingsOpen = useIndependentMenuStore((state) => state.menus.settings.open);
   const toggleIndependentMenu = useIndependentMenuStore((state) => state.toggleMenu);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const shellRef = useRef<HTMLDivElement>(null);
   const { t } = useI18n();
   const isRecycleBin = isRecycleBinPageId(activePageId);
 
@@ -52,49 +39,13 @@ export function BottomToolbar() {
     }
   }, [isSearchActive]);
 
-  useEffect(() => {
-    if (!isMenuOpen) {
-      return;
-    }
-
-    const closeOnOutsidePointer = (event: Event) => {
-      const target = event.target as Node | null;
-      if (target && shellRef.current?.contains(target)) {
-        return;
-      }
-      setIsMenuOpen(false);
-    };
-
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsMenuOpen(false);
-      }
-    };
-
-    window.addEventListener('pointerdown', closeOnOutsidePointer, true);
-    window.addEventListener('contextmenu', closeOnOutsidePointer, true);
-    window.addEventListener('keydown', closeOnEscape);
-    return () => {
-      window.removeEventListener('pointerdown', closeOnOutsidePointer, true);
-      window.removeEventListener('contextmenu', closeOnOutsidePointer, true);
-      window.removeEventListener('keydown', closeOnEscape);
-    };
-  }, [isMenuOpen]);
-
-  useEffect(() => {
-    if (isRecycleBin) {
-      setIsMenuOpen(false);
-    }
-  }, [isRecycleBin]);
-
-  const handleAdd = (preset: WorkspaceBoxPreset) => {
+  const handleAdd = () => {
     const center = getCanvasViewportCenter({ panX, panY }, viewportSize);
     const frame = constrainBoxFrameToCanvas(
       createBoxFrameCenteredAt(center),
       createCanvasWorldBounds(viewportSize),
     );
-    createBox(preset, frame, getBoxPresetLabel(preset, t));
-    setIsMenuOpen(false);
+    createBox('general', frame, t('box.general'));
   };
 
   const closeSearch = () => {
@@ -103,34 +54,7 @@ export function BottomToolbar() {
   };
 
   return (
-    <div className="wbn-bottom-shell" ref={shellRef}>
-      <AnimatePresence>
-        {isMenuOpen && !isRecycleBin ? (
-          <motion.div
-            className="wbn-create-popover"
-            initial={{ opacity: 0, y: 20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-          >
-            <MenuButton
-              icon={PackageOpen}
-              label={t('box.general')}
-              onClick={() => handleAdd('general')}
-            />
-            <MenuButton icon={Folder} label={t('box.folder')} onClick={() => handleAdd('folder')} />
-            <MenuButton
-              icon={Bookmark}
-              label={t('box.bookmark')}
-              onClick={() => handleAdd('bookmark')}
-            />
-            <MenuButton
-              icon={Clipboard}
-              label={t('box.clipboard')}
-              onClick={() => handleAdd('clipboard')}
-            />
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+    <div className="wbn-bottom-shell">
       <div className="wbn-bottom-toolbar" aria-label={t('toolbar.workspaceTools')}>
         <IconButton
           className="wbn-toolbar-canvas-control"
@@ -167,7 +91,6 @@ export function BottomToolbar() {
           aria-controls="wbn-settings-window"
           aria-expanded={settingsOpen}
           onClick={() => {
-            setIsMenuOpen(false);
             toggleIndependentMenu('settings');
           }}
           title={t('toolbar.settings')}
@@ -185,7 +108,6 @@ export function BottomToolbar() {
         <motion.div className="wbn-search-pill" animate={{ width: isSearchActive ? 240 : 40 }}>
           <IconButton
             onClick={() => {
-              setIsMenuOpen(false);
               setIsSearchActive((value) => !value);
             }}
             aria-label={t('toolbar.search')}
@@ -213,17 +135,11 @@ export function BottomToolbar() {
             <div className="wbn-toolbar-divider" />
             <IconButton
               className="wbn-toolbar-create"
-              onClick={() => {
-                setIsMenuOpen((value) => !value);
-              }}
+              onClick={handleAdd}
               aria-label={t('toolbar.newBox')}
               title={t('toolbar.newBox')}
             >
-              <motion.span
-                className="wbn-icon-frame"
-                animate={{ rotate: isMenuOpen ? 45 : 0 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              >
+              <motion.span className="wbn-icon-frame" whileTap={{ scale: 0.82, rotate: 90 }}>
                 <Plus size={20} />
               </motion.span>
             </IconButton>
@@ -232,33 +148,4 @@ export function BottomToolbar() {
       </div>
     </div>
   );
-}
-
-function MenuButton({
-  icon: Icon,
-  label,
-  onClick,
-}: {
-  icon: React.ComponentType<{ size?: number }>;
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <button className="wbn-create-menu-button" type="button" onClick={onClick}>
-      <IconFrame>
-        <Icon size={16} />
-      </IconFrame>
-      <span>{label}</span>
-    </button>
-  );
-}
-
-function getBoxPresetLabel(preset: WorkspaceBoxPreset, t: ReturnType<typeof useI18n>['t']) {
-  return preset === 'general'
-    ? t('box.general')
-    : preset === 'folder'
-      ? t('box.folder')
-      : preset === 'bookmark'
-        ? t('box.bookmark')
-        : t('box.clipboard');
 }
