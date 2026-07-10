@@ -91,7 +91,7 @@ export function TopBar() {
     if (!boxDropRelease) {
       return;
     }
-    const timeoutId = window.setTimeout(clearBoxDropRelease, 680);
+    const timeoutId = window.setTimeout(clearBoxDropRelease, 1400);
     return () => window.clearTimeout(timeoutId);
   }, [boxDropRelease, clearBoxDropRelease]);
 
@@ -148,8 +148,28 @@ export function TopBar() {
               getCanvasViewportCenter(targetPageCanvas.camera, canvasState.viewportSize),
               getVisibleCanvasWorldBounds(targetPageCanvas.camera, canvasState.viewportSize),
             );
-            finishBoxDrop(draggedBoxId, targetPageId);
-            moveBoxToPage(draggedBoxId, targetPageId, landingFrame ?? undefined);
+            const targetFrame = landingFrame ?? movingBox.frame;
+            const visibleBounds = getVisibleCanvasWorldBounds(
+              targetPageCanvas.camera,
+              canvasState.viewportSize,
+            );
+            const pointerRatio = Math.max(
+              0,
+              Math.min(1, event.clientX / Math.max(1, canvasState.viewportSize.width)),
+            );
+            const entryFrame = {
+              ...targetFrame,
+              x: Math.max(
+                visibleBounds.minX,
+                Math.min(
+                  visibleBounds.maxX - targetFrame.width,
+                  visibleBounds.minX + visibleBounds.width * pointerRatio - targetFrame.width / 2,
+                ),
+              ),
+              y: visibleBounds.minY + 28 / targetPageCanvas.camera.zoom,
+            };
+            finishBoxDrop(draggedBoxId, targetPageId, entryFrame);
+            moveBoxToPage(draggedBoxId, targetPageId, targetFrame);
           }
         }
         endBoxDrag();

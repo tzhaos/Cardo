@@ -83,11 +83,13 @@ export function BaseBoxFrame({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [appearanceAnchor, setAppearanceAnchor] = useState<DOMRect | null>(null);
   const [dragTransformOrigin, setDragTransformOrigin] = useState('50% 50%');
+  const [dropLandingStarted, setDropLandingStarted] = useState(false);
   const [titleDraft, setTitleDraft] = useState(box.title);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const pointerSessionRef = useRef<WindowPointerSession | null>(null);
-  const boxLeft = useMotionValue(box.frame.x);
-  const boxTop = useMotionValue(box.frame.y);
+  const initialDropFrame = boxDropRelease?.boxId === box.id ? boxDropRelease.entryFrame : box.frame;
+  const boxLeft = useMotionValue(initialDropFrame.x);
+  const boxTop = useMotionValue(initialDropFrame.y);
   const boxWidth = useMotionValue(box.frame.width);
   const boxHeight = useMotionValue(box.frame.height);
   const dragTiltTarget = useMotionValue(0);
@@ -243,11 +245,14 @@ export function BaseBoxFrame({
   const isTemporary = box.kind === 'temporary';
   const viewMode = isTemporary ? 'list' : (box.viewMode ?? 'list');
   const detailMode = isTemporary ? 'detailed' : (box.detailMode ?? 'detailed');
-  const visualScale = draggingOverTopBar
-    ? compactScale * (draggingOverTab ? 0.9 : 1)
-    : dragging
-      ? 1.028
-      : 1;
+  const visualScale =
+    dropReleased && !dropLandingStarted
+      ? compactScale
+      : draggingOverTopBar
+        ? compactScale * (draggingOverTab ? 0.9 : 1)
+        : dragging
+          ? 1.028
+          : 1;
   const visualClassName = [
     'wbn-box',
     dragging ? 'wbn-box-dragging' : '',
@@ -271,13 +276,23 @@ export function BaseBoxFrame({
     }
 
     const positionTransition = dropReleased
-      ? { type: 'spring' as const, damping: 23, stiffness: 250, mass: 0.86 }
+      ? { type: 'spring' as const, damping: 24, stiffness: 150, mass: 1.05 }
       : { type: 'spring' as const, damping: 28, stiffness: 260 };
-    const leftAnimation = animateMotion(boxLeft, box.frame.x, positionTransition);
-    const topAnimation = animateMotion(boxTop, box.frame.y, positionTransition);
+    let leftAnimation: ReturnType<typeof animateMotion> | undefined;
+    let topAnimation: ReturnType<typeof animateMotion> | undefined;
+    const startLanding = () => {
+      if (dropReleased) setDropLandingStarted(true);
+      leftAnimation = animateMotion(boxLeft, box.frame.x, positionTransition);
+      topAnimation = animateMotion(boxTop, box.frame.y, positionTransition);
+    };
+    const delayId = dropReleased ? window.setTimeout(startLanding, 220) : null;
+    if (!dropReleased) {
+      startLanding();
+    }
     return () => {
-      leftAnimation.stop();
-      topAnimation.stop();
+      if (delayId !== null) window.clearTimeout(delayId);
+      leftAnimation?.stop();
+      topAnimation?.stop();
     };
   }, [
     box.frame.height,
@@ -307,7 +322,7 @@ export function BaseBoxFrame({
       transition={{
         y: { type: 'spring', damping: 30, stiffness: 420, mass: 0.55 },
         scale: dropReleased
-          ? { type: 'spring', damping: 19, stiffness: 285, mass: 0.78 }
+          ? { type: 'spring', damping: 22, stiffness: 170, mass: 0.94 }
           : { type: 'spring', damping: 28, stiffness: 380, mass: 0.6 },
         borderRadius: { duration: 0.2 },
         opacity: { duration: 0.16 },

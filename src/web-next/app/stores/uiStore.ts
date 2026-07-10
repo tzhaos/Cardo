@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { WorkspaceItemType } from '../../domain/workspace';
+import type { BoxFrame, WorkspaceItemType } from '../../domain/workspace';
 
 export interface AddDraftState {
   mode: boolean;
@@ -13,7 +13,7 @@ interface UiStore {
   draggedBoxId: string | null;
   boxDragOverTopBar: boolean;
   boxDropPageId: string | null;
-  boxDropRelease: { boxId: string; pageId: string } | null;
+  boxDropRelease: { boxId: string; pageId: string; entryFrame: BoxFrame } | null;
   selectedBoxId: string | null;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
@@ -26,7 +26,7 @@ interface UiStore {
   beginBoxDrag: (boxId: string) => void;
   setBoxDragOverTopBar: (overTopBar: boolean) => void;
   setBoxDropPage: (pageId: string | null) => void;
-  finishBoxDrop: (boxId: string, pageId: string) => void;
+  finishBoxDrop: (boxId: string, pageId: string, entryFrame: BoxFrame) => void;
   clearBoxDropRelease: () => void;
   endBoxDrag: () => void;
 }
@@ -92,7 +92,8 @@ export const useUiStore = create<UiStore>((set) => ({
     set((state) =>
       state.draggedBoxId && state.boxDropPageId !== pageId ? { boxDropPageId: pageId } : state,
     ),
-  finishBoxDrop: (boxId, pageId) => set({ boxDropRelease: { boxId, pageId } }),
+  finishBoxDrop: (boxId, pageId, entryFrame) =>
+    set({ boxDropRelease: { boxId, pageId, entryFrame } }),
   clearBoxDropRelease: () => set({ boxDropRelease: null }),
   endBoxDrag: () => set({ draggedBoxId: null, boxDragOverTopBar: false, boxDropPageId: null }),
 }));
