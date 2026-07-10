@@ -3,7 +3,6 @@ import { useCanvasStore } from '../../app/stores/canvasStore';
 import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { MAX_CANVAS_ZOOM, MIN_CANVAS_ZOOM } from '../../domain/canvasGeometry';
-import { isCollectionPageId } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { IconButton } from '../primitives/IconPrimitives';
 
@@ -16,7 +15,7 @@ export function ZoomToolbar() {
   const setZoom = useCanvasStore((state) => state.setZoom);
   const { t } = useI18n();
 
-  if (!enabled || isCollectionPageId(activePageId)) return null;
+  if (!enabled) return null;
 
   const updateZoom = (nextZoom: number) => setZoom(activePageId, nextZoom, undefined, true);
 

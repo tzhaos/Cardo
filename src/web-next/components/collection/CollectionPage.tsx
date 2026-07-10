@@ -265,12 +265,13 @@ function CollectionBox({
     onViewChange({ order: maxOrder + 1 });
     const start = { x: event.clientX, y: event.clientY };
     const startFrame = view.frame;
+    const zoom = useCanvasStore.getState().pages['khaosbox-collection']?.camera.zoom ?? 1;
     let latestFrame = startFrame;
     const session = startWindowPointerSession({
       pointerId: event.pointerId,
       onMove: (moveEvent) => {
-        const dx = moveEvent.clientX - start.x;
-        const dy = moveEvent.clientY - start.y;
+        const dx = (moveEvent.clientX - start.x) / zoom;
+        const dy = (moveEvent.clientY - start.y) / zoom;
         latestFrame = constrainCollectionFrame(
           mode === 'move'
             ? { ...startFrame, x: startFrame.x + dx, y: startFrame.y + dy }
@@ -296,6 +297,7 @@ function CollectionBox({
 
   return (
     <motion.article
+      data-canvas-box
       className={`wbn-collection-box${view.viewMode === 'grid' ? ' wbn-collection-box-grid' : ''}${view.detailMode === 'compact' ? ' wbn-collection-box-compact' : ''}`}
       style={
         {

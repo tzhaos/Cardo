@@ -402,6 +402,26 @@ export function updateCollectionBoxView(
   };
 }
 
+export function updateCollectionBoxFrames(
+  snapshot: WorkspaceSnapshot,
+  frames: Record<string, BoxFrame>,
+) {
+  const entries = Object.entries(frames).filter(([boxId]) =>
+    (snapshot.collectionBoxIds ?? []).includes(boxId),
+  );
+  if (!entries.length) return snapshot;
+  const collectionViews = { ...(snapshot.collectionViews ?? {}) };
+  for (const [boxId, frame] of entries) {
+    const box = snapshot.boxes.find((candidate) => candidate.id === boxId);
+    if (!box) continue;
+    const current =
+      collectionViews[boxId] ??
+      createCollectionView(box, (snapshot.collectionBoxIds ?? []).indexOf(boxId));
+    collectionViews[boxId] = { ...current, frame };
+  }
+  return { ...snapshot, collectionViews };
+}
+
 function createCollectionView(box: WorkspaceBox, index: number) {
   return {
     boxId: box.id,

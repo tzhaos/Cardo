@@ -83,9 +83,9 @@ export function WorkspaceCanvas() {
       className={canvasClassName}
       data-workspace-canvas
       ref={canvasRef}
-      onPointerDownCapture={isCollection ? undefined : handlePointerDownCapture}
+      onPointerDownCapture={handlePointerDownCapture}
       onWheel={(event) => {
-        if (!canvasZoomEnabled || isCollection) return;
+        if (!canvasZoomEnabled) return;
         event.preventDefault();
         const rect = event.currentTarget.getBoundingClientRect();
         const currentZoom = getPageCanvasState(useCanvasStore.getState(), snapshot.activePageId)
@@ -96,10 +96,7 @@ export function WorkspaceCanvas() {
         });
       }}
       onContextMenu={(event) => {
-        if (
-          isCollection ||
-          (event.target instanceof Element && event.target.closest('[data-canvas-box]'))
-        ) {
+        if (event.target instanceof Element && event.target.closest('[data-canvas-box]')) {
           return;
         }
 
@@ -108,7 +105,7 @@ export function WorkspaceCanvas() {
         const camera = getPageCanvasState(useCanvasStore.getState(), snapshot.activePageId).camera;
         const point = clientPointToCanvasWorld(event, rect, camera);
         openCanvasMenu(event.clientX, event.clientY, {
-          ...(isRecycleBin
+          ...(isRecycleBin || isCollection
             ? {}
             : {
                 createPage: () => createPage(t('page.untitled')),
@@ -135,7 +132,10 @@ export function WorkspaceCanvas() {
           exit="exit"
         >
           {isCollection ? (
-            <CollectionPage />
+            <CanvasWorld pageId={snapshot.activePageId}>
+              <div className="wbn-canvas-boundary" style={boundaryStyle} />
+              <CollectionPage />
+            </CanvasWorld>
           ) : (
             <CanvasWorld pageId={snapshot.activePageId}>
               <div className="wbn-canvas-boundary" style={boundaryStyle} />

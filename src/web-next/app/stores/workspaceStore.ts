@@ -49,6 +49,7 @@ import {
   updateBoxFrame,
   updatePageBoxFrames,
   updateCollectionBoxView,
+  updateCollectionBoxFrames,
   updateItemContent,
   constrainWorkspaceFramesToViewport,
 } from '../../domain/reducers';
@@ -73,6 +74,7 @@ interface WorkspaceStore {
     patch: { viewMode?: WorkspaceBoxViewMode; detailMode?: WorkspaceBoxDetailMode; order?: number },
   ) => void;
   applyPageBoxLayout: (pageId: string, frames: Record<string, BoxFrame>) => void;
+  applyCollectionBoxLayout: (frames: Record<string, BoxFrame>) => void;
   undo: () => void;
   redo: () => void;
   constrainFramesToViewport: (viewport: CanvasViewportSize) => void;
@@ -112,6 +114,7 @@ export type WorkspaceHistoryAction =
   | 'deletePage'
   | 'moveBoxToPage'
   | 'arrangeBoxes'
+  | 'arrangeCollectionBoxes'
   | 'collectBox'
   | 'removeCollectedBox'
   | 'moveCollectionBox'
@@ -292,6 +295,15 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             operation('canvas.arrange', getPageTarget(state.snapshot, pageId), {
               count: Object.keys(frames).length,
             }),
+          ),
+        ),
+      applyCollectionBoxLayout: (frames) =>
+        set((state) =>
+          recordHistory(
+            state,
+            updateCollectionBoxFrames(state.snapshot, frames),
+            'arrangeCollectionBoxes',
+            operation('collection.arrange', undefined, { count: Object.keys(frames).length }),
           ),
         ),
       undo: () =>

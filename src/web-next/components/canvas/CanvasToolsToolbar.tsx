@@ -1,19 +1,14 @@
 import { useState } from 'react';
 import { LayoutDashboard, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { useWorkspaceStore } from '../../app/stores/workspaceStore';
-import { isCollectionPageId } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { IconButton } from '../primitives/IconPrimitives';
 import { useCanvasLayoutTools } from './useCanvasLayoutTools';
 
 export function CanvasToolsToolbar() {
   const [expanded, setExpanded] = useState(false);
-  const activePageId = useWorkspaceStore((state) => state.snapshot.activePageId);
   const { items } = useCanvasLayoutTools();
   const { t } = useI18n();
-
-  if (isCollectionPageId(activePageId)) return null;
 
   return (
     <aside className="wbn-canvas-tools" aria-label={t('canvas.layoutTools')}>
