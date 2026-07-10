@@ -4,9 +4,11 @@ import {
   type BoxItem,
   type WorkspaceBoxType,
   type WorkspaceBoxViewMode,
+  type WorkspaceViewport,
   type WorkspaceSnapshot,
 } from './workspace';
 import { createPage, createWorkspaceBox, nowIso } from './factories';
+import { adaptWorkspaceToViewport } from './responsiveLayout';
 
 export function renamePage(snapshot: WorkspaceSnapshot, pageId: string, title: string) {
   if (isRecycleBinPageId(pageId)) {
@@ -139,6 +141,10 @@ export function updateBoxFrame(snapshot: WorkspaceSnapshot, boxId: string, frame
       box.id === boxId ? { ...box, frame, updatedAt: nowIso() } : box,
     ),
   };
+}
+
+export function updateWorkspaceViewport(snapshot: WorkspaceSnapshot, viewport: WorkspaceViewport) {
+  return adaptWorkspaceToViewport(snapshot, viewport);
 }
 
 export function renameBox(snapshot: WorkspaceSnapshot, boxId: string, title: string) {

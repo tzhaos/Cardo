@@ -3,6 +3,7 @@ import { AnimatePresence, motion, type Variants } from 'motion/react';
 import { SearchX, Trash2 } from 'lucide-react';
 import { isRecycleBinPageId, type WorkspaceBoxType } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
+import { useResponsiveWorkspaceLayout } from '../../app/useResponsiveWorkspaceLayout';
 import { getViewportCenterFrame, useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
 import { WorkspaceBoxRenderer } from './WorkspaceBoxRenderer';
@@ -31,6 +32,8 @@ export function WorkspaceCanvas() {
   const isSearchFiltering = Boolean(deferredSearchQuery.trim());
   const isRecycleBin = isRecycleBinPageId(snapshot.activePageId);
   const previousActivePageIdRef = useRef(snapshot.activePageId);
+  const canvasRef = useRef<HTMLElement>(null);
+  useResponsiveWorkspaceLayout(canvasRef);
   const pageOrder = useMemo(
     () => [...snapshot.pages].sort((first, second) => first.order - second.order),
     [snapshot.pages],
@@ -49,6 +52,7 @@ export function WorkspaceCanvas() {
   return (
     <main
       className="wbn-canvas"
+      ref={canvasRef}
       onContextMenu={(event) => {
         if (isRecycleBin) {
           return;

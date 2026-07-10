@@ -9,6 +9,7 @@ import type {
   WorkspaceBoxType,
   WorkspaceBoxViewMode,
   WorkspaceSnapshot,
+  WorkspaceViewport,
 } from '../../domain/workspace';
 import {
   addBox,
@@ -27,6 +28,7 @@ import {
   setBoxViewMode,
   setDefaultPage,
   updateBoxFrame,
+  updateWorkspaceViewport,
 } from '../../domain/reducers';
 
 interface WorkspaceStore {
@@ -39,6 +41,7 @@ interface WorkspaceStore {
   setDefaultPage: (pageId: string) => void;
   createBox: (type: WorkspaceBoxType, frame: BoxFrame, title?: string) => void;
   updateBoxFrame: (boxId: string, frame: BoxFrame) => void;
+  updateViewport: (viewport: WorkspaceViewport) => void;
   renameBox: (boxId: string, title: string) => void;
   setBoxViewMode: (boxId: string, viewMode: WorkspaceBoxViewMode) => void;
   moveBoxToPage: (boxId: string, pageId: string, frame?: BoxFrame) => void;
@@ -77,6 +80,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         })),
       updateBoxFrame: (boxId, frame) =>
         set((state) => ({ snapshot: updateBoxFrame(state.snapshot, boxId, frame) })),
+      updateViewport: (viewport) =>
+        set((state) => ({ snapshot: updateWorkspaceViewport(state.snapshot, viewport) })),
       renameBox: (boxId, title) =>
         set((state) => ({ snapshot: renameBox(state.snapshot, boxId, title) })),
       setBoxViewMode: (boxId, viewMode) =>
