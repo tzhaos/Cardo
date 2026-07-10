@@ -20,7 +20,7 @@ import {
 import { useI18n } from '../../i18n/useI18n';
 import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
 import { WorkspaceBoxRenderer } from './WorkspaceBoxRenderer';
-import { useCanvasLayoutTools } from './useCanvasLayoutTools';
+import { useCanvasTools } from './useCanvasTools';
 import { CollectionPage } from '../collection/CollectionPage';
 
 export function WorkspaceCanvas() {
@@ -28,9 +28,8 @@ export function WorkspaceCanvas() {
   const createBox = useWorkspaceStore((state) => state.createBox);
   const createPage = useWorkspaceStore((state) => state.createPage);
   const viewportSize = useCanvasStore((state) => state.viewportSize);
-  const resetCamera = useCanvasStore((state) => state.resetCamera);
   const { openCanvasMenu } = useFloatingMenu();
-  const { items: canvasLayoutItems } = useCanvasLayoutTools();
+  const { items: canvasTools } = useCanvasTools();
   const { t } = useI18n();
   const boxes = useMemo(
     () => snapshot.boxes.filter((box) => box.pageId === snapshot.activePageId),
@@ -102,8 +101,7 @@ export function WorkspaceCanvas() {
                     getBoxPresetLabel(preset, t),
                   ),
               }),
-          layoutItems: canvasLayoutItems,
-          resetView: () => resetCamera(snapshot.activePageId),
+          canvasTools,
         });
       }}
     >

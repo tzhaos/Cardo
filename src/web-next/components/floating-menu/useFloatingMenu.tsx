@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import { ChevronRight, LayoutDashboard, PanelTop, Plus, RotateCcw } from 'lucide-react';
+import { ChevronRight, PanelTop, Plus, Wrench } from 'lucide-react';
 import type { WorkspaceBoxPreset } from '../../domain/workspace';
 import type { FloatingMenuItem, FloatingMenuState } from './menuTypes';
 import { useI18n } from '../../i18n/useI18n';
@@ -14,8 +14,7 @@ interface FloatingMenuContextValue {
     actions: {
       createPage?: () => void;
       createBox?: (preset: WorkspaceBoxPreset) => void;
-      resetView?: () => void;
-      layoutItems?: FloatingMenuItem[];
+      canvasTools?: FloatingMenuItem[];
     },
   ) => void;
 }
@@ -34,8 +33,7 @@ export function FloatingMenuProvider({ children }: { children: React.ReactNode }
       actions: {
         createPage?: () => void;
         createBox?: (preset: WorkspaceBoxPreset) => void;
-        resetView?: () => void;
-        layoutItems?: FloatingMenuItem[];
+        canvasTools?: FloatingMenuItem[];
       },
     ) => {
       setMenu({
@@ -64,18 +62,11 @@ export function FloatingMenuProvider({ children }: { children: React.ReactNode }
               ]
             : []),
           {
-            id: 'layout-tools',
+            id: 'canvas-tools',
             label: t('canvas.layoutTools'),
-            icon: <LayoutDashboard size={16} />,
-            disabled: !actions.layoutItems?.length,
-            children: actions.layoutItems,
-          },
-          {
-            id: 'reset-view',
-            label: t('menu.resetView'),
-            icon: <RotateCcw size={16} />,
-            disabled: !actions.resetView,
-            onSelect: actions.resetView,
+            icon: <Wrench size={16} />,
+            disabled: !actions.canvasTools?.length,
+            children: actions.canvasTools,
           },
         ],
       });

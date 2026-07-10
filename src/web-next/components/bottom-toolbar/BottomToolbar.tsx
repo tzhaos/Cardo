@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Globe2, History, LocateFixed, Lock, Plus, Search, Settings, Unlock } from 'lucide-react';
+import { Globe2, History, Plus, Search, Settings } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useIndependentMenuStore } from '../../app/stores/independentMenuStore';
 import { useCanvasStore } from '../../app/stores/canvasStore';
@@ -9,7 +9,7 @@ import {
   getCanvasViewportCenter,
 } from '../../domain/canvasGeometry';
 import { createBoxFrameCenteredAt } from '../../domain/placement';
-import { isCollectionPageId, isSystemPageId } from '../../domain/workspace';
+import { isSystemPageId } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
 import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
@@ -24,10 +24,7 @@ export function BottomToolbar() {
   const activePageId = useWorkspaceStore((state) => state.snapshot.activePageId);
   const panX = useCanvasStore((state) => state.pages[activePageId]?.camera.panX ?? 0);
   const panY = useCanvasStore((state) => state.pages[activePageId]?.camera.panY ?? 0);
-  const isCanvasLocked = useCanvasStore((state) => state.pages[activePageId]?.isLocked ?? false);
   const viewportSize = useCanvasStore((state) => state.viewportSize);
-  const resetCamera = useCanvasStore((state) => state.resetCamera);
-  const toggleCanvasLocked = useCanvasStore((state) => state.toggleLocked);
   const searchQuery = useUiStore((state) => state.searchQuery);
   const setSearchQuery = useUiStore((state) => state.setSearchQuery);
   const searchEngine = usePreferencesStore((state) => state.searchEngine);
@@ -40,7 +37,6 @@ export function BottomToolbar() {
   const searchPillRef = useRef<HTMLDivElement>(null);
   const searchPanelRef = useRef<HTMLDivElement>(null);
   const { t } = useI18n();
-  const isCollection = isCollectionPageId(activePageId);
 
   useEffect(() => {
     if (isSearchActive) {
@@ -103,29 +99,6 @@ export function BottomToolbar() {
         </IconButton>
       </div>
       <div className="wbn-bottom-toolbar" aria-label={t('toolbar.workspaceTools')}>
-        {!isCollection ? (
-          <>
-            <IconButton
-              className="wbn-toolbar-canvas-control"
-              disabled={panX === 0 && panY === 0}
-              onClick={() => resetCamera(activePageId)}
-              aria-label={t('canvas.returnToOrigin')}
-              title={t('canvas.returnToOrigin')}
-            >
-              <LocateFixed size={18} />
-            </IconButton>
-            <IconButton
-              className={`wbn-toolbar-canvas-control${isCanvasLocked ? ' wbn-toolbar-button-active' : ''}`}
-              onClick={() => toggleCanvasLocked(activePageId)}
-              aria-label={t(isCanvasLocked ? 'canvas.unlockViewport' : 'canvas.lockViewport')}
-              aria-pressed={isCanvasLocked}
-              title={t(isCanvasLocked ? 'canvas.unlockViewport' : 'canvas.lockViewport')}
-            >
-              {isCanvasLocked ? <Lock size={18} /> : <Unlock size={18} />}
-            </IconButton>
-            <div className="wbn-toolbar-divider" />
-          </>
-        ) : null}
         <IconButton
           className={`wbn-toolbar-button${settingsOpen ? ' wbn-toolbar-button-active' : ''}`}
           aria-controls="wbn-settings-window"
