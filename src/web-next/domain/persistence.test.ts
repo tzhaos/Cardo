@@ -1,20 +1,18 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { extractPersistedWorkspaceSnapshot, restoreWorkspaceSnapshot } from './persistence';
-import { RECYCLE_BIN_PAGE_ID, type WorkspaceSnapshot } from './workspace';
+import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID, type WorkspaceSnapshot } from './workspace';
 
 const fallback: WorkspaceSnapshot = {
   activePageId: 'fallback',
-  defaultPageId: 'fallback',
   pages: [{ id: 'fallback', title: 'Fallback', order: 0, createdAt: '', updatedAt: '' }],
   boxes: [],
 };
 
-test('restored workspaces open the configured default page', () => {
+test('restored workspaces open the collection page', () => {
   const restored = restoreWorkspaceSnapshot(
     {
       activePageId: 'page-a',
-      defaultPageId: 'page-b',
       pages: [
         { id: 'page-b', title: 'B', order: 1, createdAt: '', updatedAt: '' },
         { id: 'page-a', title: 'A', order: 0, createdAt: '', updatedAt: '' },
@@ -24,15 +22,14 @@ test('restored workspaces open the configured default page', () => {
     fallback,
   );
 
-  assert.equal(restored.activePageId, 'page-b');
-  assert.equal(restored.defaultPageId, 'page-b');
+  assert.equal(restored.activePageId, COLLECTION_PAGE_ID);
   assert.deepEqual(
     restored.pages.map((page) => page.id),
-    ['page-a', 'page-b', RECYCLE_BIN_PAGE_ID],
+    [COLLECTION_PAGE_ID, 'page-a', 'page-b', RECYCLE_BIN_PAGE_ID],
   );
 });
 
-test('legacy workspaces use their active page as the initial default', () => {
+test('persisted active pages do not override the collection start page', () => {
   const restored = restoreWorkspaceSnapshot(
     {
       activePageId: 'page-b',
@@ -45,8 +42,7 @@ test('legacy workspaces use their active page as the initial default', () => {
     fallback,
   );
 
-  assert.equal(restored.activePageId, 'page-b');
-  assert.equal(restored.defaultPageId, 'page-b');
+  assert.equal(restored.activePageId, COLLECTION_PAGE_ID);
 });
 
 test('invalid persisted workspaces fall back safely', () => {
@@ -58,14 +54,13 @@ test('extracts a workspace from the persisted Zustand envelope', () => {
     state: {
       snapshot: {
         activePageId: 'page-a',
-        defaultPageId: 'page-a',
         pages: [{ id: 'page-a', title: 'A', order: 0, createdAt: '', updatedAt: '' }],
         boxes: [],
       },
     },
   });
 
-  assert.equal(snapshot?.activePageId, 'page-a');
-  assert.equal(snapshot?.pages.length, 2);
+  assert.equal(snapshot?.activePageId, COLLECTION_PAGE_ID);
+  assert.equal(snapshot?.pages.length, 3);
   assert.equal(snapshot?.pages.at(-1)?.id, RECYCLE_BIN_PAGE_ID);
 });

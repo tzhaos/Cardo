@@ -287,7 +287,6 @@ const ACTION_MESSAGE_KEYS: Record<string, Parameters<ReturnType<typeof useI18n>[
   'page.rename': 'journal.action.pageRename',
   'page.delete': 'journal.action.pageDelete',
   'page.reorder': 'journal.action.pageReorder',
-  'page.setDefault': 'journal.action.pageSetDefault',
   'box.create': 'journal.action.boxCreate',
   'box.temporary.create': 'journal.action.temporaryBoxCreate',
   'box.move': 'journal.action.boxMove',

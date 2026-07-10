@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { deleteBox, deletePage, moveBoxToPage, reorderPages } from './reducers';
-import { RECYCLE_BIN_PAGE_ID, type WorkspaceSnapshot } from './workspace';
+import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID, type WorkspaceSnapshot } from './workspace';
 
 function createSnapshot(): WorkspaceSnapshot {
   return {
     activePageId: 'page-a',
-    defaultPageId: 'page-a',
     pages: [
+      { id: COLLECTION_PAGE_ID, title: 'Collection', order: -1, createdAt: '', updatedAt: '' },
       { id: 'page-a', title: 'A', order: 0, createdAt: '', updatedAt: '' },
       { id: 'page-b', title: 'B', order: 1, createdAt: '', updatedAt: '' },
       {
@@ -54,7 +54,7 @@ test('the recycle bin remains fixed when workspace pages are reordered', () => {
 
   assert.deepEqual(
     reordered.pages.map((page) => page.id),
-    ['page-b', 'page-a', RECYCLE_BIN_PAGE_ID],
+    [COLLECTION_PAGE_ID, 'page-b', 'page-a', RECYCLE_BIN_PAGE_ID],
   );
 });
 
@@ -62,5 +62,5 @@ test('deleting a workspace page moves its boxes to the recycle bin', () => {
   const nextSnapshot = deletePage(createSnapshot(), 'page-a');
 
   assert.equal(nextSnapshot.boxes[0]?.pageId, RECYCLE_BIN_PAGE_ID);
-  assert.equal(nextSnapshot.activePageId, 'page-b');
+  assert.equal(nextSnapshot.activePageId, COLLECTION_PAGE_ID);
 });

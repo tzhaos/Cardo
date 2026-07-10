@@ -1,5 +1,6 @@
 import { Star } from 'lucide-react';
 import { motion } from 'motion/react';
+import type { MouseEventHandler } from 'react';
 import type { WorkspacePage } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { TabPill } from './TabPill';
@@ -10,6 +11,7 @@ interface CollectionTabProps {
   highlighted: boolean;
   released: boolean;
   onActivate: () => void;
+  onContextMenu: MouseEventHandler<HTMLElement>;
 }
 
 export function CollectionTab({
@@ -18,6 +20,7 @@ export function CollectionTab({
   highlighted,
   released,
   onActivate,
+  onContextMenu,
 }: CollectionTabProps) {
   const { t } = useI18n();
   return (
@@ -32,19 +35,15 @@ export function CollectionTab({
       data-page-drop-id={page.id}
       layout="position"
       transition={{ layout: { type: 'spring', stiffness: 460, damping: 38, mass: 0.72 } }}
+      onContextMenu={onContextMenu}
     >
       <TabPill
         active={active}
-        canDelete={false}
-        defaultPage={false}
-        editing={false}
         icon={<Star size={16} />}
         page={{ ...page, title: t('page.collection') }}
         systemPage
         onActivate={onActivate}
-        onDelete={() => undefined}
         onRename={() => undefined}
-        onSetDefault={() => undefined}
       />
     </motion.div>
   );

@@ -71,11 +71,8 @@ export function deletePage(snapshot: WorkspaceSnapshot, pageId: string) {
   if (recycleBinPage) {
     pages.push({ ...recycleBinPage, order: remainingWorkspacePages.length });
   }
-  const defaultPageId =
-    snapshot.defaultPageId === pageId
-      ? (remainingWorkspacePages[0]?.id ?? '')
-      : snapshot.defaultPageId;
-  const activePageId = snapshot.activePageId === pageId ? defaultPageId : snapshot.activePageId;
+  const collectionPageId = collectionPage?.id ?? snapshot.activePageId;
+  const activePageId = snapshot.activePageId === pageId ? collectionPageId : snapshot.activePageId;
   const removedBoxIds = new Set(
     snapshot.boxes.filter((box) => box.pageId === pageId).map((box) => box.id),
   );
@@ -83,7 +80,6 @@ export function deletePage(snapshot: WorkspaceSnapshot, pageId: string) {
   return {
     pages,
     activePageId,
-    defaultPageId,
     boxes: recycleBinPage
       ? snapshot.boxes.map((box) =>
           box.pageId === pageId ? { ...box, pageId: recycleBinPage.id, updatedAt: nowIso() } : box,
@@ -135,12 +131,6 @@ export function reorderPages(snapshot: WorkspaceSnapshot, orderedPageIds: string
 export function setActivePage(snapshot: WorkspaceSnapshot, pageId: string) {
   return snapshot.pages.some((page) => page.id === pageId)
     ? { ...snapshot, activePageId: pageId }
-    : snapshot;
-}
-
-export function setDefaultPage(snapshot: WorkspaceSnapshot, pageId: string) {
-  return snapshot.pages.some((page) => page.id === pageId && !isSystemPageId(page.id))
-    ? { ...snapshot, defaultPageId: pageId }
     : snapshot;
 }
 

@@ -42,18 +42,7 @@ export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null
   ];
 
   const pageIds = new Set(pages.map((page) => page.id));
-  const legacyActivePageId =
-    typeof input.activePageId === 'string' && pageIds.has(input.activePageId)
-      ? input.activePageId
-      : null;
-  const defaultPageId =
-    typeof input.defaultPageId === 'string' &&
-    pageIds.has(input.defaultPageId) &&
-    !isSystemPageId(input.defaultPageId)
-      ? input.defaultPageId
-      : legacyActivePageId && !isSystemPageId(legacyActivePageId)
-        ? legacyActivePageId
-        : workspacePages[0].id;
+  const collectionPageId = pages.find((page) => isCollectionPageId(page.id))!.id;
 
   const boxes = input.boxes
     .map(parseWorkspaceBox)
@@ -77,8 +66,7 @@ export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null
 
   return {
     pages,
-    activePageId: legacyActivePageId ?? defaultPageId,
-    defaultPageId,
+    activePageId: collectionPageId,
     boxes,
     collectionBoxIds,
     collectionViews,

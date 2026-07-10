@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { WorkspacePage } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
@@ -8,43 +7,36 @@ import { useI18n } from '../../i18n/useI18n';
 interface TabPillProps {
   page: WorkspacePage;
   active: boolean;
-  defaultPage: boolean;
-  editing: boolean;
-  canDelete: boolean;
   icon?: ReactNode;
   systemPage?: boolean;
+  renameRequested?: boolean;
   onActivate: () => void;
-  onSetDefault: () => void;
   onRename: (title: string) => void;
-  onDelete: () => void;
+  onRenameRequestHandled?: () => void;
 }
 
 export function TabPill({
   page,
   active,
-  defaultPage,
-  editing,
-  canDelete,
   icon,
   systemPage = false,
+  renameRequested = false,
   onActivate,
-  onSetDefault,
   onRename,
-  onDelete,
+  onRenameRequestHandled,
 }: TabPillProps) {
   const [renaming, setRenaming] = useState(false);
   const [draft, setDraft] = useState(page.title);
   const inputRef = useRef<HTMLInputElement>(null);
   const { t } = useI18n();
-  const editable = editing && !systemPage;
 
   useEffect(() => setDraft(page.title), [page.title]);
   useEffect(() => {
-    if (editable && renaming) {
-      setDraft(page.title);
-      setRenaming(false);
-    }
-  }, [editable, page.title, renaming]);
+    if (!renameRequested || systemPage) return;
+    setDraft(page.title);
+    setRenaming(true);
+    onRenameRequestHandled?.();
+  }, [onRenameRequestHandled, page.title, renameRequested, systemPage]);
   useEffect(() => {
     if (renaming) {
       inputRef.current?.focus();
@@ -53,42 +45,29 @@ export function TabPill({
   }, [renaming]);
 
   const commitRename = () => {
-    if (draft.trim()) {
-      onRename(draft);
-    }
+    if (draft.trim()) onRename(draft);
     setRenaming(false);
   };
 
   return (
     <motion.div
-      layout
+      layout="position"
       transition={{ layout: { type: 'spring', stiffness: 500, damping: 40, mass: 0.68 } }}
-      className={`wbn-tab-pill${active ? ' wbn-tab-pill-active' : ''}${defaultPage ? ' wbn-tab-pill-default' : ''}${editable ? ' wbn-tab-pill-editing' : ''}${renaming ? ' wbn-tab-pill-renaming' : ''}${systemPage ? ' wbn-tab-pill-system' : ''}`}
+      className={`wbn-tab-pill${active ? ' wbn-tab-pill-active' : ''}${renaming ? ' wbn-tab-pill-renaming' : ''}${systemPage ? ' wbn-tab-pill-system' : ''}`}
     >
       <button
         type="button"
-        aria-current={!editable && active ? 'page' : undefined}
+        aria-current={active ? 'page' : undefined}
         title={systemPage ? page.title : undefined}
-        aria-label={
-          systemPage
-            ? page.title
-            : editable
-              ? t('page.setDefault', { title: page.title })
-              : defaultPage
-                ? `${page.title}, ${t('page.default')}`
-                : page.title
-        }
-        aria-pressed={editable ? defaultPage : undefined}
-        onClick={editable ? onSetDefault : onActivate}
+        aria-label={page.title}
+        onClick={onActivate}
         onDoubleClick={(event) => {
           event.stopPropagation();
-          if (!editable && !systemPage) {
-            setRenaming(true);
-          }
+          if (!systemPage) setRenaming(true);
         }}
       >
         <AnimatePresence initial={false}>
-          {active && !editable ? (
+          {active ? (
             <motion.span
               className="wbn-active-tab-indicator"
               layoutId="active-tab-indicator"
@@ -99,42 +78,7 @@ export function TabPill({
             />
           ) : null}
         </AnimatePresence>
-        <span className="wbn-tab-label">
-          {icon ?? page.title}
-          <AnimatePresence initial={false}>
-            {editable && defaultPage ? (
-              <motion.span
-                aria-hidden="true"
-                className="wbn-default-page-indicator"
-                layoutId="default-page-indicator"
-                initial={{ opacity: 0, scaleX: 0.35, y: -2 }}
-                animate={{ opacity: 1, scaleX: 1, y: 0 }}
-                exit={{ opacity: 0, scaleX: 0.35, y: -2 }}
-                transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.55 }}
-              />
-            ) : null}
-          </AnimatePresence>
-        </span>
-        <AnimatePresence initial={false}>
-          {editable && canDelete ? (
-            <motion.span
-              className="wbn-tab-delete wbn-icon-frame"
-              role="button"
-              tabIndex={0}
-              aria-label={t('page.delete', { title: page.title })}
-              initial={{ opacity: 0, scale: 0.76 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.76 }}
-              transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.52 }}
-              onClick={(event) => {
-                event.stopPropagation();
-                onDelete();
-              }}
-            >
-              <X size={14} />
-            </motion.span>
-          ) : null}
-        </AnimatePresence>
+        <span className="wbn-tab-label">{icon ?? page.title}</span>
       </button>
       {renaming ? (
         <div className="wbn-tab-rename-layer">
@@ -146,9 +90,7 @@ export function TabPill({
             onChange={(event) => setDraft(event.target.value)}
             onBlur={commitRename}
             onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                commitRename();
-              }
+              if (event.key === 'Enter') event.currentTarget.blur();
               if (event.key === 'Escape') {
                 setDraft(page.title);
                 setRenaming(false);

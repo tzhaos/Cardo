@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Check, Pencil, Plus } from 'lucide-react';
+import type { MouseEvent as ReactMouseEvent } from 'react';
+import { Plus, SquarePen, Trash2 } from 'lucide-react';
 import { AnimatePresence, motion, Reorder } from 'motion/react';
 import { useUiStore } from '../../app/stores/uiStore';
 import { getPageCanvasState, useCanvasStore } from '../../app/stores/canvasStore';
@@ -18,7 +19,8 @@ import { useI18n } from '../../i18n/useI18n';
 import { CollectionTab } from './CollectionTab';
 import { RecycleBinTab } from './RecycleBinTab';
 import { TabDeleteConfirmView } from './TabDeleteConfirmView';
-import { TabPill } from './TabPill';
+import { SortablePageTab } from './SortablePageTab';
+import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
 
 export function TopBar() {
   const snapshot = useWorkspaceStore((state) => state.snapshot);
@@ -27,7 +29,6 @@ export function TopBar() {
   const deletePage = useWorkspaceStore((state) => state.deletePage);
   const reorderPages = useWorkspaceStore((state) => state.reorderPages);
   const setActivePage = useWorkspaceStore((state) => state.setActivePage);
-  const setDefaultPage = useWorkspaceStore((state) => state.setDefaultPage);
   const moveBoxToPage = useWorkspaceStore((state) => state.moveBoxToPage);
   const addBoxToCollection = useWorkspaceStore((state) => state.addBoxToCollection);
   const draggedBoxId = useUiStore((state) => state.draggedBoxId);
@@ -39,8 +40,9 @@ export function TopBar() {
   const finishBoxDrop = useUiStore((state) => state.finishBoxDrop);
   const clearBoxDropRelease = useUiStore((state) => state.clearBoxDropRelease);
   const endBoxDrag = useUiStore((state) => state.endBoxDrag);
-  const [editing, setEditing] = useState(false);
   const [deletePageId, setDeletePageId] = useState<string | null>(null);
+  const [renamePageId, setRenamePageId] = useState<string | null>(null);
+  const { openMenu } = useFloatingMenu();
   const { t } = useI18n();
 
   const persistedPages = useMemo(
@@ -243,8 +245,47 @@ export function TopBar() {
     .filter(Boolean)
     .join(' ');
 
+  const openNewPage = () => createPage(t('page.untitled'));
+  const openPageMenu = (
+    event: ReactMouseEvent<HTMLElement>,
+    page?: (typeof workspacePages)[number],
+  ) => {
+    event.preventDefault();
+    openMenu({
+      id: page ? `page-${page.id}` : 'system-page',
+      x: event.clientX,
+      y: event.clientY,
+      items: [
+        {
+          id: 'new-page',
+          label: t('menu.newPage'),
+          icon: <Plus size={16} />,
+          onSelect: openNewPage,
+        },
+        ...(page
+          ? [
+              {
+                id: 'rename-page',
+                label: t('menu.rename'),
+                icon: <SquarePen size={16} />,
+                onSelect: () => setRenamePageId(page.id),
+              },
+              {
+                id: 'delete-page',
+                label: t('page.delete', { title: page.title }),
+                icon: <Trash2 size={16} />,
+                danger: true,
+                disabled: workspacePages.length <= 1,
+                onSelect: () => setDeletePageId(page.id),
+              },
+            ]
+          : []),
+      ],
+    });
+  };
+
   return (
-    <header className={topBarClassName} data-editing={editing || undefined} data-top-bar>
+    <header className={topBarClassName} data-top-bar>
       <AnimatePresence mode="popLayout">
         {pageToDelete ? (
           <motion.div
@@ -291,49 +332,29 @@ export function TopBar() {
                     useUiStore.getState().selectBox(null);
                     setActivePage(collectionPage.id);
                   }}
+                  onContextMenu={(event) => openPageMenu(event)}
                 />
               ) : null}
               <AnimatePresence mode="popLayout">
                 {pages.map((page) => (
-                  <Reorder.Item
-                    as="div"
+                  <SortablePageTab
+                    active={page.id === snapshot.activePageId}
                     className={[
                       boxDropPageId === page.id ? 'wbn-box-drop-target' : '',
                       boxDropRelease?.pageId === page.id ? 'wbn-box-drop-released' : '',
                     ]
                       .filter(Boolean)
                       .join(' ')}
-                    data-page-drop-id={page.id}
                     key={page.id}
-                    value={page.id}
-                    dragListener={editing}
-                    layout="position"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8, width: 0 }}
-                    whileDrag={{ opacity: 0.68, scale: 1.03, zIndex: 80 }}
-                    transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
-                    onDragStart={startReordering}
-                    onDragEnd={finishReordering}
-                  >
-                    <TabPill
-                      active={page.id === snapshot.activePageId}
-                      canDelete={pages.length > 1}
-                      defaultPage={page.id === snapshot.defaultPageId}
-                      editing={editing}
-                      page={page}
-                      onActivate={() => setActivePage(page.id)}
-                      onSetDefault={() => setDefaultPage(page.id)}
-                      onRename={(title) => renamePage(page.id, title)}
-                      onDelete={() => {
-                        if (snapshot.boxes.some((box) => box.pageId === page.id)) {
-                          setDeletePageId(page.id);
-                        } else {
-                          deletePage(page.id);
-                        }
-                      }}
-                    />
-                  </Reorder.Item>
+                    page={page}
+                    renameRequested={renamePageId === page.id}
+                    onActivate={() => setActivePage(page.id)}
+                    onContextMenu={(event) => openPageMenu(event, page)}
+                    onRename={(title) => renamePage(page.id, title)}
+                    onRenameRequestHandled={() => setRenamePageId(null)}
+                    onReorderStart={startReordering}
+                    onReorderEnd={finishReordering}
+                  />
                 ))}
               </AnimatePresence>
               {recycleBinPage ? (
@@ -343,6 +364,7 @@ export function TopBar() {
                   page={recycleBinPage}
                   released={boxDropRelease?.pageId === recycleBinPage.id}
                   onActivate={() => setActivePage(recycleBinPage.id)}
+                  onContextMenu={(event) => openPageMenu(event)}
                 />
               ) : null}
             </Reorder.Group>
@@ -350,35 +372,11 @@ export function TopBar() {
               <motion.button
                 className="wbn-icon-button"
                 type="button"
-                onClick={() => createPage(t('page.untitled'))}
+                onClick={openNewPage}
                 aria-label={t('page.add')}
                 whileTap={{ scale: 0.9 }}
               >
                 <Plus size={18} />
-              </motion.button>
-              <motion.button
-                className={`wbn-icon-button${editing ? ' wbn-check-button' : ''}`}
-                type="button"
-                onClick={() => setEditing((value) => !value)}
-                aria-label={editing ? t('page.finishEditing') : t('page.edit')}
-                whileTap={{ scale: 0.9 }}
-              >
-                <span className="wbn-top-action-icon-stack" aria-hidden="true">
-                  <motion.span
-                    className="wbn-top-action-icon wbn-icon-frame"
-                    animate={{ opacity: editing ? 0 : 1, scale: editing ? 0.72 : 1 }}
-                    transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.52 }}
-                  >
-                    <Pencil size={18} />
-                  </motion.span>
-                  <motion.span
-                    className="wbn-top-action-icon wbn-icon-frame"
-                    animate={{ opacity: editing ? 1 : 0, scale: editing ? 1 : 0.72 }}
-                    transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.52 }}
-                  >
-                    <Check size={18} />
-                  </motion.span>
-                </span>
               </motion.button>
             </motion.div>
           </motion.div>

@@ -5,7 +5,6 @@ import type { WorkspaceSnapshot } from './workspace';
 
 const snapshot: WorkspaceSnapshot = {
   activePageId: 'page-a',
-  defaultPageId: 'page-a',
   pages: [{ id: 'page-a', title: 'A', order: 0, createdAt: '', updatedAt: '' }],
   boxes: [
     {

@@ -511,19 +511,6 @@
   position: relative;
 }
 
-.wbn-default-page-indicator {
-  position: absolute;
-  bottom: -5px;
-  left: 50%;
-  width: 16px;
-  height: 2px;
-  margin-left: -8px;
-  border-radius: 999px;
-  background: var(--wbn-blue);
-  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.28);
-  opacity: 1;
-}
-
 .wbn-tab-pill input {
   max-width: 150px;
   padding: 0 12px;
@@ -531,38 +518,6 @@
   font-size: 14px;
   font-weight: 500;
   box-shadow: inset 0 -1px 0 var(--wbn-blue);
-}
-
-.wbn-tab-pill-editing {
-  background: transparent;
-  cursor: grab;
-}
-
-.wbn-tab-pill-editing:active {
-  cursor: grabbing;
-}
-
-.wbn-tab-delete {
-  position: absolute;
-  top: 9px;
-  right: 5px;
-  z-index: 2;
-  display: inline-flex;
-  width: 18px;
-  min-height: 18px;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  margin: 0;
-  padding: 0 !important;
-  border-radius: 999px;
-  color: var(--wbn-muted) !important;
-}
-
-.wbn-tab-delete:hover {
-  color: var(--wbn-red) !important;
-  background: var(--wbn-hover) !important;
 }
 
 .wbn-top-actions {
@@ -598,29 +553,6 @@
 .wbn-bottom-toolbar button:hover {
   background: var(--wbn-hover);
   color: var(--wbn-text);
-}
-
-.wbn-check-button {
-  background: rgba(59, 130, 246, 0.12) !important;
-  color: var(--wbn-blue) !important;
-  box-shadow: none;
-}
-
-.wbn-top-action-icon {
-  position: absolute;
-  inset: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.wbn-top-action-icon-stack {
-  position: relative;
-  display: inline-flex;
-  width: 18px;
-  height: 18px;
-  align-items: center;
-  justify-content: center;
 }
 
 .wbn-tab-confirm {
@@ -686,10 +618,7 @@
   transform: translateY(1px) scale(0.965);
 }
 
-.wbn-box-drop-target
-  .wbn-tab-pill
-  button
-  > span:not(.wbn-active-tab-indicator):not(.wbn-tab-delete) {
+.wbn-box-drop-target .wbn-tab-pill button > span:not(.wbn-active-tab-indicator) {
   color: var(--wbn-text);
   font-weight: 600;
 }
@@ -3485,42 +3414,11 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
   line-height: 20px;
 }
 
-.wbn-tab-pill button > span:not(.wbn-active-tab-indicator):not(.wbn-tab-delete) {
+.wbn-tab-pill button > span:not(.wbn-active-tab-indicator) {
   position: relative;
   z-index: 1;
   display: inline-flex;
   align-items: center;
-}
-
-.wbn-tab-pill-editing button {
-  padding-right: 42px;
-}
-
-.wbn-tab-pill-editing:not(.wbn-tab-pill-renaming) button:hover {
-  background: transparent;
-}
-
-.wbn-tab-delete {
-  position: absolute;
-  top: 9px;
-  right: 5px;
-  z-index: 2;
-  display: inline-flex;
-  height: 18px;
-  min-width: 18px;
-  min-height: 18px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  color: var(--wbn-muted);
-  transition:
-    color 160ms ease,
-    background 160ms ease;
-}
-
-.wbn-tab-delete:hover {
-  background: var(--wbn-hover);
-  color: var(--wbn-red);
 }
 
 .wbn-tab-rename-layer {

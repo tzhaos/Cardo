@@ -44,7 +44,6 @@ import {
   setBoxLocked,
   setBoxPreset,
   setBoxViewMode,
-  setDefaultPage,
   setItemPinned,
   setBookmarkFavicon,
   updateBoxFrame,
@@ -65,7 +64,6 @@ interface WorkspaceStore {
   deletePage: (pageId: string) => void;
   reorderPages: (orderedPageIds: string[]) => void;
   setActivePage: (pageId: string, origin?: string) => void;
-  setDefaultPage: (pageId: string) => void;
   createBox: (preset: WorkspaceBoxPreset, frame: BoxFrame, title?: string) => void;
   createTemporaryBox: (pageId: string, frame: BoxFrame) => string;
   updateBoxFrame: (boxId: string, frame: BoxFrame) => void;
@@ -200,14 +198,6 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           });
           return { snapshot: nextSnapshot };
         }),
-      setDefaultPage: (pageId) =>
-        set((state) =>
-          recordMutation(
-            state,
-            setDefaultPage(state.snapshot, pageId),
-            operation('page.setDefault', getPageTarget(state.snapshot, pageId)),
-          ),
-        ),
       createBox: (preset, frame, title) =>
         set((state) => {
           const nextSnapshot = addBox(

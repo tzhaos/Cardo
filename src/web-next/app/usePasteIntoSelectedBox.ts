@@ -30,8 +30,11 @@ export function usePasteIntoSelectedBox() {
 
       if (!targetBox) {
         const pageId = isSystemPageId(snapshot.activePageId)
-          ? snapshot.defaultPageId
+          ? [...snapshot.pages]
+              .filter((page) => !isSystemPageId(page.id))
+              .sort((first, second) => first.order - second.order)[0]?.id
           : snapshot.activePageId;
+        if (!pageId) return;
         targetBox = snapshot.boxes.find(
           (candidate) => candidate.pageId === pageId && candidate.kind === 'temporary',
         );
