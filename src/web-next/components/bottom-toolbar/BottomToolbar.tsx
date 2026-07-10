@@ -181,10 +181,6 @@ export function BottomToolbar() {
             onClick={runWebSearch}
             aria-label={t('search.web')}
             title={t('search.web')}
-            style={{
-              opacity: isSearchActive ? 1 : 0,
-              pointerEvents: isSearchActive ? 'auto' : 'none',
-            }}
           >
             <Globe2 size={17} />
           </IconButton>
