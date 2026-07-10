@@ -52,6 +52,11 @@ export function useStagedOrder<TItem extends { id: string }>(
         commitOrderRef.current(orderRef.current);
       }
     },
+    cancelReordering: () => {
+      isStagingRef.current = false;
+      orderRef.current = persistedOrderRef.current;
+      setOrderedIds(persistedOrderRef.current);
+    },
   };
 }
 

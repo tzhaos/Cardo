@@ -21,6 +21,7 @@ import {
   deleteItem,
   deletePage,
   moveBoxToPage,
+  moveItemBetweenBoxes,
   promoteTemporaryBox,
   renameBox,
   renameItem,
@@ -58,6 +59,12 @@ interface WorkspaceStore {
   setBoxPreset: (boxId: string, preset: WorkspaceBoxPreset) => void;
   setBoxViewMode: (boxId: string, viewMode: WorkspaceBoxViewMode) => void;
   moveBoxToPage: (boxId: string, pageId: string, frame?: BoxFrame) => void;
+  moveItemBetweenBoxes: (
+    sourceBoxId: string,
+    targetBoxId: string,
+    itemId: string,
+    targetIndex?: number,
+  ) => void;
   deleteBox: (boxId: string) => void;
   createItem: (boxId: string, type: WorkspaceItemType, draft: Record<string, string>) => BoxItem;
   renameItem: (boxId: string, itemId: string, title: string) => void;
@@ -125,6 +132,16 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         set((state) => ({ snapshot: setBoxViewMode(state.snapshot, boxId, viewMode) })),
       moveBoxToPage: (boxId, pageId, frame) =>
         set((state) => ({ snapshot: moveBoxToPage(state.snapshot, boxId, pageId, frame) })),
+      moveItemBetweenBoxes: (sourceBoxId, targetBoxId, itemId, targetIndex) =>
+        set((state) => ({
+          snapshot: moveItemBetweenBoxes(
+            state.snapshot,
+            sourceBoxId,
+            targetBoxId,
+            itemId,
+            targetIndex,
+          ),
+        })),
       deleteBox: (boxId) => set((state) => ({ snapshot: deleteBox(state.snapshot, boxId) })),
       createItem: (boxId, type, draft) => {
         const item = createItem(type, draft as never);

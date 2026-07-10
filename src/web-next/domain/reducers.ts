@@ -404,6 +404,59 @@ export function reorderItems(snapshot: WorkspaceSnapshot, boxId: string, ordered
   };
 }
 
+export function moveItemBetweenBoxes(
+  snapshot: WorkspaceSnapshot,
+  sourceBoxId: string,
+  targetBoxId: string,
+  itemId: string,
+  targetIndex?: number,
+) {
+  if (sourceBoxId === targetBoxId) return snapshot;
+
+  const sourceBox = snapshot.boxes.find((box) => box.id === sourceBoxId);
+  const targetBox = snapshot.boxes.find((box) => box.id === targetBoxId);
+  const item = sourceBox?.items.find((candidate) => candidate.id === itemId);
+  if (
+    !sourceBox ||
+    !targetBox ||
+    !item ||
+    targetBox.items.some((candidate) => candidate.id === itemId)
+  ) {
+    return snapshot;
+  }
+
+  const timestamp = nowIso();
+  const targetItems = [...targetBox.items];
+  const insertionIndex = Math.max(
+    0,
+    Math.min(targetIndex ?? targetItems.length, targetItems.length),
+  );
+  targetItems.splice(insertionIndex, 0, item);
+  const groupedTargetItems = [
+    ...targetItems.filter((candidate) => candidate.isPinned),
+    ...targetItems.filter((candidate) => !candidate.isPinned),
+  ];
+
+  const boxes = snapshot.boxes.map((box) => {
+    if (box.id === sourceBoxId) {
+      return {
+        ...box,
+        items: box.items.filter((candidate) => candidate.id !== itemId),
+        updatedAt: timestamp,
+      };
+    }
+    if (box.id === targetBoxId) {
+      return { ...box, items: groupedTargetItems, updatedAt: timestamp };
+    }
+    return box;
+  });
+
+  return {
+    ...snapshot,
+    boxes: boxes.filter((box) => box.kind !== 'temporary' || box.items.length > 0),
+  };
+}
+
 export function deleteItem(snapshot: WorkspaceSnapshot, boxId: string, itemId: string) {
   const boxes = snapshot.boxes.map((box) =>
     box.id === boxId

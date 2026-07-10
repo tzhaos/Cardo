@@ -844,6 +844,7 @@ button.wbn-box-icon:focus-visible {
 
 .wbn-item-reorder-entry-dragging {
   z-index: 30;
+  pointer-events: none;
 }
 
 .wbn-item-reorder-entry-dragging .wbn-item-row {

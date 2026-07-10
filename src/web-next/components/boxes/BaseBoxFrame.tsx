@@ -258,6 +258,7 @@ export function BaseBoxFrame({
     <motion.article
       className={visualClassName}
       data-canvas-box
+      data-box-id={box.id}
       initial={skipEntryAnimation ? false : { scale: 0.8, opacity: 0 }}
       animate={{
         y: dragging && !draggingOverTopBar ? -7 : 0,
