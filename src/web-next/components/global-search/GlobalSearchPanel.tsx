@@ -118,55 +118,57 @@ export function GlobalSearchPanel({ query, onClose }: { query: string; onClose: 
 
   return (
     <>
-      <motion.div
-        className="wbn-global-search-panel"
-        initial={{ opacity: 0, y: 12, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 8, scale: 0.985 }}
-        transition={{ duration: 0.16 }}
-      >
-        {!query.trim() ? (
-          <div className="wbn-global-search-empty">
-            <Search size={20} />
-            <span>{t('search.globalHint')}</span>
-          </div>
-        ) : results.length ? (
-          <div className="wbn-global-search-results" role="listbox">
-            {results.map((result, index) => (
-              <button
-                className={`wbn-global-search-result${index === selectedIndex ? ' wbn-global-search-result-active' : ''}`}
-                type="button"
-                role="option"
-                aria-selected={index === selectedIndex}
-                key={result.id}
-                onMouseEnter={() => setSelectedIndex(index)}
-                onClick={() => void activateResult(result)}
-              >
-                <ResultIcon result={result} />
-                <span className="wbn-global-search-copy">
-                  <span className="wbn-global-search-title">
-                    {copiedResultId === result.id ? t('item.copied') : result.title}
-                  </span>
-                  <span className="wbn-global-search-path">{result.path}</span>
-                  {result.detail ? (
-                    <span className="wbn-global-search-detail">
-                      {result.kind === 'box'
-                        ? t('search.itemCount', { count: result.box.items.length })
-                        : result.detail}
+      <div className="wbn-global-search-panel-wrap">
+        <motion.div
+          className="wbn-global-search-panel"
+          initial={{ opacity: 0, y: 12, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 8, scale: 0.985 }}
+          transition={{ duration: 0.16 }}
+        >
+          {!query.trim() ? (
+            <div className="wbn-global-search-empty">
+              <Search size={20} />
+              <span>{t('search.globalHint')}</span>
+            </div>
+          ) : results.length ? (
+            <div className="wbn-global-search-results" role="listbox">
+              {results.map((result, index) => (
+                <button
+                  className={`wbn-global-search-result${index === selectedIndex ? ' wbn-global-search-result-active' : ''}`}
+                  type="button"
+                  role="option"
+                  aria-selected={index === selectedIndex}
+                  key={result.id}
+                  onMouseEnter={() => setSelectedIndex(index)}
+                  onClick={() => void activateResult(result)}
+                >
+                  <ResultIcon result={result} />
+                  <span className="wbn-global-search-copy">
+                    <span className="wbn-global-search-title">
+                      {copiedResultId === result.id ? t('item.copied') : result.title}
                     </span>
-                  ) : null}
-                </span>
-                <span className="wbn-global-search-kind">{t(`search.kind.${result.kind}`)}</span>
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className="wbn-global-search-empty">
-            <Search size={20} />
-            <span>{t('search.noGlobalResults')}</span>
-          </div>
-        )}
-      </motion.div>
+                    <span className="wbn-global-search-path">{result.path}</span>
+                    {result.detail ? (
+                      <span className="wbn-global-search-detail">
+                        {result.kind === 'box'
+                          ? t('search.itemCount', { count: result.box.items.length })
+                          : result.detail}
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="wbn-global-search-kind">{t(`search.kind.${result.kind}`)}</span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="wbn-global-search-empty">
+              <Search size={20} />
+              <span>{t('search.noGlobalResults')}</span>
+            </div>
+          )}
+        </motion.div>
+      </div>
       <AnimatePresence>
         {previewBox && previewPage
           ? createPortal(

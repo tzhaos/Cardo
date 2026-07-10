@@ -1693,18 +1693,22 @@ button.wbn-box-icon:focus-visible {
   transform: translateX(-50%);
 }
 
-.wbn-global-search-panel {
+.wbn-global-search-panel-wrap {
   position: absolute;
   bottom: 64px;
   left: 50%;
   width: min(620px, calc(100vw - 32px));
+  transform: translateX(-50%);
+}
+
+.wbn-global-search-panel {
+  width: 100%;
   max-height: min(560px, calc(100vh - 150px));
   overflow: hidden;
   border: 1px solid var(--wbn-border);
   border-radius: 16px;
   background: var(--wbn-surface-strong);
   box-shadow: var(--wbn-shadow-hover);
-  transform: translateX(-50%);
   transform-origin: bottom center;
   backdrop-filter: blur(20px);
 }
