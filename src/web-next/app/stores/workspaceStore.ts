@@ -1,5 +1,8 @@
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import type { StateStorage } from 'zustand/middleware';
 import { createDefaultWorkspace, createItem } from '../../domain/factories';
+import { restoreWorkspaceSnapshot } from '../../domain/persistence';
 import type {
   BoxFrame,
   BoxItem,
@@ -19,6 +22,7 @@ import {
   renamePage,
   reorderPages,
   setActivePage,
+  setDefaultPage,
   updateBoxFrame,
 } from '../../domain/reducers';
 
@@ -29,6 +33,7 @@ interface WorkspaceStore {
   deletePage: (pageId: string) => void;
   reorderPages: (orderedPageIds: string[]) => void;
   setActivePage: (pageId: string) => void;
+  setDefaultPage: (pageId: string) => void;
   createBox: (type: WorkspaceBoxType, frame: BoxFrame, title?: string) => void;
   updateBoxFrame: (boxId: string, frame: BoxFrame) => void;
   renameBox: (boxId: string, title: string) => void;
@@ -39,44 +44,72 @@ interface WorkspaceStore {
   deleteItem: (boxId: string, itemId: string) => void;
 }
 
-export const useWorkspaceStore = create<WorkspaceStore>((set) => ({
-  snapshot: createDefaultWorkspace(),
-  createPage: (title = 'Untitled') => {
-    let createdPageId = '';
-    set((state) => {
-      const nextSnapshot = addPage(state.snapshot, title);
-      createdPageId = nextSnapshot.activePageId;
-      return { snapshot: nextSnapshot };
-    });
-    return createdPageId;
-  },
-  renamePage: (pageId, title) =>
-    set((state) => ({ snapshot: renamePage(state.snapshot, pageId, title) })),
-  deletePage: (pageId) => set((state) => ({ snapshot: deletePage(state.snapshot, pageId) })),
-  reorderPages: (orderedPageIds) =>
-    set((state) => ({ snapshot: reorderPages(state.snapshot, orderedPageIds) })),
-  setActivePage: (pageId) => set((state) => ({ snapshot: setActivePage(state.snapshot, pageId) })),
-  createBox: (type, frame, title) =>
-    set((state) => ({
-      snapshot: addBox(state.snapshot, state.snapshot.activePageId, type, frame, title),
-    })),
-  updateBoxFrame: (boxId, frame) =>
-    set((state) => ({ snapshot: updateBoxFrame(state.snapshot, boxId, frame) })),
-  renameBox: (boxId, title) =>
-    set((state) => ({ snapshot: renameBox(state.snapshot, boxId, title) })),
-  moveBoxToPage: (boxId, pageId, frame) =>
-    set((state) => ({ snapshot: moveBoxToPage(state.snapshot, boxId, pageId, frame) })),
-  deleteBox: (boxId) => set((state) => ({ snapshot: deleteBox(state.snapshot, boxId) })),
-  createItem: (boxId, type, draft) => {
-    const item = createItem(type, draft as never);
-    set((state) => ({ snapshot: addItem(state.snapshot, boxId, item) }));
-    return item;
-  },
-  renameItem: (boxId, itemId, title) =>
-    set((state) => ({ snapshot: renameItem(state.snapshot, boxId, itemId, title) })),
-  deleteItem: (boxId, itemId) =>
-    set((state) => ({ snapshot: deleteItem(state.snapshot, boxId, itemId) })),
-}));
+const emptyStorage: StateStorage = {
+  getItem: () => null,
+  setItem: () => undefined,
+  removeItem: () => undefined,
+};
+
+export const useWorkspaceStore = create<WorkspaceStore>()(
+  persist(
+    (set) => ({
+      snapshot: createDefaultWorkspace(),
+      createPage: (title = 'Untitled') => {
+        let createdPageId = '';
+        set((state) => {
+          const nextSnapshot = addPage(state.snapshot, title);
+          createdPageId = nextSnapshot.activePageId;
+          return { snapshot: nextSnapshot };
+        });
+        return createdPageId;
+      },
+      renamePage: (pageId, title) =>
+        set((state) => ({ snapshot: renamePage(state.snapshot, pageId, title) })),
+      deletePage: (pageId) => set((state) => ({ snapshot: deletePage(state.snapshot, pageId) })),
+      reorderPages: (orderedPageIds) =>
+        set((state) => ({ snapshot: reorderPages(state.snapshot, orderedPageIds) })),
+      setActivePage: (pageId) =>
+        set((state) => ({ snapshot: setActivePage(state.snapshot, pageId) })),
+      setDefaultPage: (pageId) =>
+        set((state) => ({ snapshot: setDefaultPage(state.snapshot, pageId) })),
+      createBox: (type, frame, title) =>
+        set((state) => ({
+          snapshot: addBox(state.snapshot, state.snapshot.activePageId, type, frame, title),
+        })),
+      updateBoxFrame: (boxId, frame) =>
+        set((state) => ({ snapshot: updateBoxFrame(state.snapshot, boxId, frame) })),
+      renameBox: (boxId, title) =>
+        set((state) => ({ snapshot: renameBox(state.snapshot, boxId, title) })),
+      moveBoxToPage: (boxId, pageId, frame) =>
+        set((state) => ({ snapshot: moveBoxToPage(state.snapshot, boxId, pageId, frame) })),
+      deleteBox: (boxId) => set((state) => ({ snapshot: deleteBox(state.snapshot, boxId) })),
+      createItem: (boxId, type, draft) => {
+        const item = createItem(type, draft as never);
+        set((state) => ({ snapshot: addItem(state.snapshot, boxId, item) }));
+        return item;
+      },
+      renameItem: (boxId, itemId, title) =>
+        set((state) => ({ snapshot: renameItem(state.snapshot, boxId, itemId, title) })),
+      deleteItem: (boxId, itemId) =>
+        set((state) => ({ snapshot: deleteItem(state.snapshot, boxId, itemId) })),
+    }),
+    {
+      name: 'khaosbox.web-next.workspace',
+      version: 1,
+      storage: createJSONStorage(() =>
+        typeof window === 'undefined' ? emptyStorage : window.localStorage,
+      ),
+      partialize: ({ snapshot }) => ({ snapshot }),
+      merge: (persistedState, currentState) => {
+        const persistedSnapshot = (persistedState as Partial<WorkspaceStore> | undefined)?.snapshot;
+        return {
+          ...currentState,
+          snapshot: restoreWorkspaceSnapshot(persistedSnapshot, currentState.snapshot),
+        };
+      },
+    },
+  ),
+);
 
 export function getViewportCenterFrame(
   type: WorkspaceBoxType,

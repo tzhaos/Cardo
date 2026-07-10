@@ -1,0 +1,54 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { restoreWorkspaceSnapshot } from './persistence';
+import type { WorkspaceSnapshot } from './workspace';
+
+const fallback: WorkspaceSnapshot = {
+  activePageId: 'fallback',
+  defaultPageId: 'fallback',
+  pages: [{ id: 'fallback', title: 'Fallback', order: 0, createdAt: '', updatedAt: '' }],
+  boxes: [],
+};
+
+test('restored workspaces open the configured default page', () => {
+  const restored = restoreWorkspaceSnapshot(
+    {
+      activePageId: 'page-a',
+      defaultPageId: 'page-b',
+      pages: [
+        { id: 'page-b', title: 'B', order: 1, createdAt: '', updatedAt: '' },
+        { id: 'page-a', title: 'A', order: 0, createdAt: '', updatedAt: '' },
+      ],
+      boxes: [],
+    },
+    fallback,
+  );
+
+  assert.equal(restored.activePageId, 'page-b');
+  assert.equal(restored.defaultPageId, 'page-b');
+  assert.deepEqual(
+    restored.pages.map((page) => page.id),
+    ['page-a', 'page-b'],
+  );
+});
+
+test('legacy workspaces use their active page as the initial default', () => {
+  const restored = restoreWorkspaceSnapshot(
+    {
+      activePageId: 'page-b',
+      pages: [
+        { id: 'page-a', title: 'A', order: 0, createdAt: '', updatedAt: '' },
+        { id: 'page-b', title: 'B', order: 1, createdAt: '', updatedAt: '' },
+      ],
+      boxes: [],
+    },
+    fallback,
+  );
+
+  assert.equal(restored.activePageId, 'page-b');
+  assert.equal(restored.defaultPageId, 'page-b');
+});
+
+test('invalid persisted workspaces fall back safely', () => {
+  assert.equal(restoreWorkspaceSnapshot({ pages: [], boxes: [] }, fallback), fallback);
+});

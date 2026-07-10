@@ -15,6 +15,7 @@ export function TopBar() {
   const deletePage = useWorkspaceStore((state) => state.deletePage);
   const reorderPages = useWorkspaceStore((state) => state.reorderPages);
   const setActivePage = useWorkspaceStore((state) => state.setActivePage);
+  const setDefaultPage = useWorkspaceStore((state) => state.setDefaultPage);
   const moveBoxToPage = useWorkspaceStore((state) => state.moveBoxToPage);
   const draggedBoxId = useUiStore((state) => state.draggedBoxId);
   const boxDropPageId = useUiStore((state) => state.boxDropPageId);
@@ -149,9 +150,11 @@ export function TopBar() {
                     <TabPill
                       active={page.id === snapshot.activePageId}
                       canDelete={pages.length > 1}
+                      defaultPage={page.id === snapshot.defaultPageId}
                       editing={editing}
                       page={page}
                       onActivate={() => setActivePage(page.id)}
+                      onSetDefault={() => setDefaultPage(page.id)}
                       onRename={(title) => renamePage(page.id, title)}
                       onDelete={() => {
                         if (snapshot.boxes.some((box) => box.pageId === page.id)) {

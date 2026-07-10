@@ -87,6 +87,33 @@
   color: var(--wbn-text);
 }
 
+.wbn-tab-label {
+  position: relative;
+}
+
+.wbn-default-page-indicator {
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  width: 12px;
+  height: 2px;
+  margin-left: -6px;
+  border-radius: 999px;
+  background: var(--wbn-blue);
+  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.28);
+  opacity: 0.56;
+  transition:
+    width 160ms ease,
+    margin-left 160ms ease,
+    opacity 160ms ease;
+}
+
+.wbn-tab-pill-editing .wbn-default-page-indicator {
+  width: 16px;
+  margin-left: -8px;
+  opacity: 1;
+}
+
 .wbn-tab-pill input {
   max-width: 150px;
   padding: 0 12px;

@@ -56,5 +56,6 @@ export interface WorkspaceBox {
 export interface WorkspaceSnapshot {
   pages: WorkspacePage[];
   activePageId: string;
+  defaultPageId: string;
   boxes: WorkspaceBox[];
 }

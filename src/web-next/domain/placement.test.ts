@@ -6,6 +6,7 @@ import type { WorkspaceSnapshot } from './workspace';
 function createSnapshot(): WorkspaceSnapshot {
   return {
     activePageId: 'source',
+    defaultPageId: 'source',
     pages: [
       { id: 'source', title: 'Source', order: 0, createdAt: '', updatedAt: '' },
       { id: 'target', title: 'Target', order: 1, createdAt: '', updatedAt: '' },

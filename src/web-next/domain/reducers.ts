@@ -32,12 +32,14 @@ export function deletePage(snapshot: WorkspaceSnapshot, pageId: string) {
   const pages = snapshot.pages
     .filter((page) => page.id !== pageId)
     .map((page, order) => ({ ...page, order }));
-  const activePageId =
-    snapshot.activePageId === pageId ? (pages[0]?.id ?? '') : snapshot.activePageId;
+  const defaultPageId =
+    snapshot.defaultPageId === pageId ? (pages[0]?.id ?? '') : snapshot.defaultPageId;
+  const activePageId = snapshot.activePageId === pageId ? defaultPageId : snapshot.activePageId;
 
   return {
     pages,
     activePageId,
+    defaultPageId,
     boxes: snapshot.boxes.filter((box) => box.pageId !== pageId),
   };
 }
@@ -72,6 +74,12 @@ export function reorderPages(snapshot: WorkspaceSnapshot, orderedPageIds: string
 export function setActivePage(snapshot: WorkspaceSnapshot, pageId: string) {
   return snapshot.pages.some((page) => page.id === pageId)
     ? { ...snapshot, activePageId: pageId }
+    : snapshot;
+}
+
+export function setDefaultPage(snapshot: WorkspaceSnapshot, pageId: string) {
+  return snapshot.pages.some((page) => page.id === pageId)
+    ? { ...snapshot, defaultPageId: pageId }
     : snapshot;
 }
 

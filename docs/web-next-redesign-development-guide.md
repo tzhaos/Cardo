@@ -55,6 +55,7 @@ interface WorkspacePage {
 interface WorkspaceSnapshot {
   pages: WorkspacePage[];
   activePageId: string;
+  defaultPageId: string;
   boxes: WorkspaceBox[];
 }
 
@@ -320,6 +321,8 @@ Capabilities in edit state:
 - Add tab inside the bar.
 - Delete tab.
 - Drag-sort tabs.
+- Clicking a page sets it as the default startup page instead of activating it.
+- The default page has a small blue indicator below its label.
 - Confirm/exit edit mode with the rightmost blue check button.
 - Keep at least one tab.
 

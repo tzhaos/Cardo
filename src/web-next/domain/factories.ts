@@ -67,6 +67,7 @@ export function createDefaultWorkspace(): WorkspaceSnapshot {
   return {
     pages,
     activePageId: firstPageId,
+    defaultPageId: firstPageId,
     boxes: [
       createWorkspaceBox(firstPageId, 'folder', getDefaultFrame('folder', 120, 130)),
       createWorkspaceBox(firstPageId, 'bookmark', getDefaultFrame('bookmark', 500, 165)),

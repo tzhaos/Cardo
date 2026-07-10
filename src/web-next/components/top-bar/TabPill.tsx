@@ -7,9 +7,11 @@ import { useI18n } from '../../i18n/useI18n';
 interface TabPillProps {
   page: WorkspacePage;
   active: boolean;
+  defaultPage: boolean;
   editing: boolean;
   canDelete: boolean;
   onActivate: () => void;
+  onSetDefault: () => void;
   onRename: (title: string) => void;
   onDelete: () => void;
 }
@@ -17,9 +19,11 @@ interface TabPillProps {
 export function TabPill({
   page,
   active,
+  defaultPage,
   editing,
   canDelete,
   onActivate,
+  onSetDefault,
   onRename,
   onDelete,
 }: TabPillProps) {
@@ -51,12 +55,20 @@ export function TabPill({
 
   return (
     <div
-      className={`wbn-tab-pill${active ? ' wbn-tab-pill-active' : ''}${editing ? ' wbn-tab-pill-editing' : ''}${renaming ? ' wbn-tab-pill-renaming' : ''}`}
+      className={`wbn-tab-pill${active ? ' wbn-tab-pill-active' : ''}${defaultPage ? ' wbn-tab-pill-default' : ''}${editing ? ' wbn-tab-pill-editing' : ''}${renaming ? ' wbn-tab-pill-renaming' : ''}`}
     >
       <button
         type="button"
-        aria-label={page.title}
-        onClick={onActivate}
+        aria-current={!editing && active ? 'page' : undefined}
+        aria-label={
+          editing
+            ? t('page.setDefault', { title: page.title })
+            : defaultPage
+              ? `${page.title}, ${t('page.default')}`
+              : page.title
+        }
+        aria-pressed={editing ? defaultPage : undefined}
+        onClick={editing ? onSetDefault : onActivate}
         onDoubleClick={(event) => {
           event.stopPropagation();
           if (!editing) {
@@ -71,7 +83,17 @@ export function TabPill({
             transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
           />
         ) : null}
-        <span>{page.title}</span>
+        <span className="wbn-tab-label">
+          {page.title}
+          {defaultPage ? (
+            <motion.span
+              aria-hidden="true"
+              className="wbn-default-page-indicator"
+              layoutId="default-page-indicator"
+              transition={{ type: 'spring', bounce: 0.16, duration: 0.46 }}
+            />
+          ) : null}
+        </span>
         {editing && canDelete ? (
           <span
             className="wbn-tab-delete"
