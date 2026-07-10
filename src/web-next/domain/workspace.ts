@@ -18,9 +18,18 @@ export type WorkspaceBoxIcon =
   | 'heart';
 
 export const RECYCLE_BIN_PAGE_ID = 'khaosbox-recycle-bin';
+export const COLLECTION_PAGE_ID = 'khaosbox-collection';
 
 export function isRecycleBinPageId(pageId: string) {
   return pageId === RECYCLE_BIN_PAGE_ID;
+}
+
+export function isCollectionPageId(pageId: string) {
+  return pageId === COLLECTION_PAGE_ID;
+}
+
+export function isSystemPageId(pageId: string) {
+  return isCollectionPageId(pageId) || isRecycleBinPageId(pageId);
 }
 
 export interface WorkspacePage {
@@ -98,4 +107,5 @@ export interface WorkspaceSnapshot {
   activePageId: string;
   defaultPageId: string;
   boxes: WorkspaceBox[];
+  collectionBoxIds?: string[];
 }

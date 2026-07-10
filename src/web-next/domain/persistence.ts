@@ -1,6 +1,8 @@
-import { createRecycleBinPage } from './factories';
+import { createCollectionPage, createRecycleBinPage } from './factories';
 import {
+  isCollectionPageId,
   isRecycleBinPageId,
+  isSystemPageId,
   type BoxItem,
   type WorkspaceBox,
   type WorkspaceBoxPreset,
@@ -22,12 +24,16 @@ export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null
     .filter(isWorkspacePage)
     .sort((first, second) => first.order - second.order)
     .map((page, order) => ({ ...page, order }));
-  const workspacePages = parsedPages.filter((page) => !isRecycleBinPageId(page.id));
+  const workspacePages = parsedPages.filter((page) => !isSystemPageId(page.id));
   if (workspacePages.length === 0) {
     return null;
   }
   const existingRecycleBin = parsedPages.find((page) => isRecycleBinPageId(page.id));
+  const existingCollection = parsedPages.find((page) => isCollectionPageId(page.id));
   const pages = [
+    existingCollection
+      ? { ...existingCollection, title: 'Collection', order: -1 }
+      : createCollectionPage(),
     ...workspacePages.map((page, order) => ({ ...page, order })),
     existingRecycleBin
       ? { ...existingRecycleBin, title: 'Recycle Bin', order: workspacePages.length }
@@ -42,20 +48,31 @@ export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null
   const defaultPageId =
     typeof input.defaultPageId === 'string' &&
     pageIds.has(input.defaultPageId) &&
-    !isRecycleBinPageId(input.defaultPageId)
+    !isSystemPageId(input.defaultPageId)
       ? input.defaultPageId
-      : legacyActivePageId && !isRecycleBinPageId(legacyActivePageId)
+      : legacyActivePageId && !isSystemPageId(legacyActivePageId)
         ? legacyActivePageId
         : workspacePages[0].id;
 
+  const boxes = input.boxes
+    .map(parseWorkspaceBox)
+    .filter((box): box is WorkspaceBox => box !== null)
+    .filter((box) => pageIds.has(box.pageId) && !isCollectionPageId(box.pageId));
+  const collectableBoxIds = new Set(
+    boxes.filter((box) => !isRecycleBinPageId(box.pageId)).map((box) => box.id),
+  );
+  const collectionBoxIds = Array.isArray(input.collectionBoxIds)
+    ? [
+        ...new Set(input.collectionBoxIds.filter((id): id is string => typeof id === 'string')),
+      ].filter((id) => collectableBoxIds.has(id))
+    : [];
+
   return {
     pages,
-    activePageId: defaultPageId,
+    activePageId: legacyActivePageId ?? defaultPageId,
     defaultPageId,
-    boxes: input.boxes
-      .map(parseWorkspaceBox)
-      .filter((box): box is WorkspaceBox => box !== null)
-      .filter((box) => pageIds.has(box.pageId)),
+    boxes,
+    collectionBoxIds,
   };
 }
 

@@ -12,11 +12,16 @@ import {
   createCanvasWorldBounds,
 } from '../../domain/canvasGeometry';
 import { createBoxFrameCenteredAt } from '../../domain/placement';
-import { isRecycleBinPageId, type WorkspaceBoxPreset } from '../../domain/workspace';
+import {
+  isCollectionPageId,
+  isRecycleBinPageId,
+  type WorkspaceBoxPreset,
+} from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
 import { WorkspaceBoxRenderer } from './WorkspaceBoxRenderer';
 import { useCanvasLayoutTools } from './useCanvasLayoutTools';
+import { CollectionPage } from '../collection/CollectionPage';
 
 export function WorkspaceCanvas() {
   const snapshot = useWorkspaceStore((state) => state.snapshot);
@@ -31,6 +36,7 @@ export function WorkspaceCanvas() {
     [snapshot.activePageId, snapshot.boxes],
   );
   const isRecycleBin = isRecycleBinPageId(snapshot.activePageId);
+  const isCollection = isCollectionPageId(snapshot.activePageId);
   const previousActivePageIdRef = useRef(snapshot.activePageId);
   const canvasRef = useRef<HTMLElement>(null);
   const { handlePointerDownCapture, isLocked, isPanModifierActive, isPanning } = useCanvasPan(
@@ -50,6 +56,7 @@ export function WorkspaceCanvas() {
   const isPageSwitch = previousActivePageIdRef.current !== snapshot.activePageId;
   const canvasClassName = [
     'wbn-canvas',
+    isCollection ? 'wbn-canvas-collection' : '',
     isLocked ? 'wbn-canvas-locked' : '',
     isPanModifierActive && !isLocked ? 'wbn-canvas-pan-ready' : '',
     isPanning ? 'wbn-canvas-panning' : '',
@@ -72,9 +79,10 @@ export function WorkspaceCanvas() {
       className={canvasClassName}
       data-workspace-canvas
       ref={canvasRef}
-      onPointerDownCapture={handlePointerDownCapture}
+      onPointerDownCapture={isCollection ? undefined : handlePointerDownCapture}
       onContextMenu={(event) => {
         if (
+          isCollection ||
           isRecycleBin ||
           (event.target instanceof Element && event.target.closest('[data-canvas-box]'))
         ) {
@@ -107,12 +115,16 @@ export function WorkspaceCanvas() {
           animate="center"
           exit="exit"
         >
-          <CanvasWorld pageId={snapshot.activePageId}>
-            <div className="wbn-canvas-boundary" style={boundaryStyle} />
-            {boxes.map((box) => (
-              <WorkspaceBoxRenderer box={box} key={box.id} skipEntryAnimation={isPageSwitch} />
-            ))}
-          </CanvasWorld>
+          {isCollection ? (
+            <CollectionPage />
+          ) : (
+            <CanvasWorld pageId={snapshot.activePageId}>
+              <div className="wbn-canvas-boundary" style={boundaryStyle} />
+              {boxes.map((box) => (
+                <WorkspaceBoxRenderer box={box} key={box.id} skipEntryAnimation={isPageSwitch} />
+              ))}
+            </CanvasWorld>
+          )}
           <AnimatePresence>
             {isRecycleBin && boxes.length === 0 ? (
               <motion.div

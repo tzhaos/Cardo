@@ -19,7 +19,7 @@ import {
   getCanvasViewportCenter,
 } from '../../domain/canvasGeometry';
 import { createBoxFrameCenteredAt } from '../../domain/placement';
-import { isRecycleBinPageId } from '../../domain/workspace';
+import { isCollectionPageId, isRecycleBinPageId, isSystemPageId } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { useI18n } from '../../i18n/useI18n';
@@ -50,6 +50,7 @@ export function BottomToolbar() {
   const { t } = useI18n();
   const { openCanvasLayoutTools } = useCanvasLayoutTools();
   const isRecycleBin = isRecycleBinPageId(activePageId);
+  const isCollection = isCollectionPageId(activePageId);
 
   useEffect(() => {
     if (isSearchActive) {
@@ -95,49 +96,53 @@ export function BottomToolbar() {
         </IconButton>
       </div>
       <div className="wbn-bottom-toolbar" aria-label={t('toolbar.workspaceTools')}>
-        <IconButton
-          className="wbn-toolbar-canvas-control"
-          disabled={panX === 0 && panY === 0 && zoom === 1}
-          onClick={() => resetCamera(activePageId)}
-          aria-label={t('canvas.returnToOrigin')}
-          title={t('canvas.returnToOrigin')}
-        >
-          <LocateFixed size={18} />
-        </IconButton>
-        {!isRecycleBin ? (
-          <IconButton
-            className="wbn-toolbar-canvas-control"
-            onClick={(event) => {
-              const triggerRect = event.currentTarget.getBoundingClientRect();
-              openCanvasLayoutTools(triggerRect.left, triggerRect.top - 8);
-            }}
-            aria-label={t('canvas.layoutTools')}
-            title={t('canvas.layoutTools')}
-          >
-            <LayoutDashboard size={18} />
-          </IconButton>
-        ) : null}
-        <IconButton
-          className={`wbn-toolbar-canvas-control${isCanvasLocked ? ' wbn-toolbar-button-active' : ''}`}
-          onClick={() => toggleCanvasLocked(activePageId)}
-          aria-label={t(isCanvasLocked ? 'canvas.unlockViewport' : 'canvas.lockViewport')}
-          aria-pressed={isCanvasLocked}
-          title={t(isCanvasLocked ? 'canvas.unlockViewport' : 'canvas.lockViewport')}
-        >
-          <AnimatePresence initial={false} mode="popLayout">
-            <motion.span
-              className="wbn-icon-frame"
-              key={isCanvasLocked ? 'locked' : 'unlocked'}
-              initial={{ opacity: 0, scale: 0.72, rotate: isCanvasLocked ? -18 : 18 }}
-              animate={{ opacity: 1, scale: 1, rotate: 0 }}
-              exit={{ opacity: 0, scale: 0.72, rotate: isCanvasLocked ? 18 : -18 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 30, mass: 0.5 }}
+        {!isCollection ? (
+          <>
+            <IconButton
+              className="wbn-toolbar-canvas-control"
+              disabled={panX === 0 && panY === 0 && zoom === 1}
+              onClick={() => resetCamera(activePageId)}
+              aria-label={t('canvas.returnToOrigin')}
+              title={t('canvas.returnToOrigin')}
             >
-              {isCanvasLocked ? <Lock size={18} /> : <Unlock size={18} />}
-            </motion.span>
-          </AnimatePresence>
-        </IconButton>
-        <div className="wbn-toolbar-divider" />
+              <LocateFixed size={18} />
+            </IconButton>
+            {!isRecycleBin ? (
+              <IconButton
+                className="wbn-toolbar-canvas-control"
+                onClick={(event) => {
+                  const triggerRect = event.currentTarget.getBoundingClientRect();
+                  openCanvasLayoutTools(triggerRect.left, triggerRect.top - 8);
+                }}
+                aria-label={t('canvas.layoutTools')}
+                title={t('canvas.layoutTools')}
+              >
+                <LayoutDashboard size={18} />
+              </IconButton>
+            ) : null}
+            <IconButton
+              className={`wbn-toolbar-canvas-control${isCanvasLocked ? ' wbn-toolbar-button-active' : ''}`}
+              onClick={() => toggleCanvasLocked(activePageId)}
+              aria-label={t(isCanvasLocked ? 'canvas.unlockViewport' : 'canvas.lockViewport')}
+              aria-pressed={isCanvasLocked}
+              title={t(isCanvasLocked ? 'canvas.unlockViewport' : 'canvas.lockViewport')}
+            >
+              <AnimatePresence initial={false} mode="popLayout">
+                <motion.span
+                  className="wbn-icon-frame"
+                  key={isCanvasLocked ? 'locked' : 'unlocked'}
+                  initial={{ opacity: 0, scale: 0.72, rotate: isCanvasLocked ? -18 : 18 }}
+                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                  exit={{ opacity: 0, scale: 0.72, rotate: isCanvasLocked ? 18 : -18 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30, mass: 0.5 }}
+                >
+                  {isCanvasLocked ? <Lock size={18} /> : <Unlock size={18} />}
+                </motion.span>
+              </AnimatePresence>
+            </IconButton>
+            <div className="wbn-toolbar-divider" />
+          </>
+        ) : null}
         <IconButton
           className={`wbn-toolbar-button${settingsOpen ? ' wbn-toolbar-button-active' : ''}`}
           aria-controls="wbn-settings-window"
@@ -178,7 +183,7 @@ export function BottomToolbar() {
             }}
           />
         </motion.div>
-        {!isRecycleBin ? (
+        {!isSystemPageId(activePageId) ? (
           <>
             <div className="wbn-toolbar-divider" />
             <IconButton

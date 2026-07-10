@@ -13,8 +13,9 @@ import {
   getCanvasViewportCenter,
   getVisibleCanvasWorldBounds,
 } from '../../domain/canvasGeometry';
-import { isRecycleBinPageId } from '../../domain/workspace';
+import { isCollectionPageId, isRecycleBinPageId, isSystemPageId } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
+import { CollectionTab } from './CollectionTab';
 import { RecycleBinTab } from './RecycleBinTab';
 import { TabDeleteConfirmView } from './TabDeleteConfirmView';
 import { TabPill } from './TabPill';
@@ -28,6 +29,7 @@ export function TopBar() {
   const setActivePage = useWorkspaceStore((state) => state.setActivePage);
   const setDefaultPage = useWorkspaceStore((state) => state.setDefaultPage);
   const moveBoxToPage = useWorkspaceStore((state) => state.moveBoxToPage);
+  const addBoxToCollection = useWorkspaceStore((state) => state.addBoxToCollection);
   const draggedBoxId = useUiStore((state) => state.draggedBoxId);
   const boxDragOverTopBar = useUiStore((state) => state.boxDragOverTopBar);
   const boxDropPageId = useUiStore((state) => state.boxDropPageId);
@@ -46,9 +48,10 @@ export function TopBar() {
     [snapshot.pages],
   );
   const workspacePages = useMemo(
-    () => persistedPages.filter((page) => !isRecycleBinPageId(page.id)),
+    () => persistedPages.filter((page) => !isSystemPageId(page.id)),
     [persistedPages],
   );
+  const collectionPage = persistedPages.find((page) => isCollectionPageId(page.id));
   const recycleBinPage = persistedPages.find((page) => isRecycleBinPageId(page.id));
   const {
     orderedIds: pageIds,
@@ -143,6 +146,24 @@ export function TopBar() {
             resolveDropPageId(event.clientX, event.clientY) ?? useUiStore.getState().boxDropPageId;
           const movingBox = currentSnapshot.boxes.find((box) => box.id === draggedBoxId);
           if (targetPageId && movingBox && movingBox.pageId !== targetPageId) {
+            if (isCollectionPageId(targetPageId)) {
+              if (isRecycleBinPageId(movingBox.pageId)) {
+                endBoxDrag();
+                return;
+              }
+              finishBoxDrop(
+                draggedBoxId,
+                targetPageId,
+                movingBox.frame,
+                1,
+                `${movingBox.frame.width / 2}px ${movingBox.frame.height / 2}px`,
+              );
+              addBoxToCollection(draggedBoxId);
+              useUiStore.getState().selectBox(null);
+              setActivePage(targetPageId);
+              endBoxDrag();
+              return;
+            }
             const canvasState = useCanvasStore.getState();
             const targetPageCanvas = getPageCanvasState(canvasState, targetPageId);
             const landingFrame = findPageLandingFrame(
@@ -205,9 +226,11 @@ export function TopBar() {
     };
   }, [
     draggedBoxId,
+    addBoxToCollection,
     endBoxDrag,
     finishBoxDrop,
     moveBoxToPage,
+    setActivePage,
     setBoxDragOverTopBar,
     setBoxDropPage,
   ]);
@@ -258,6 +281,18 @@ export function TopBar() {
               onReorder={updateOrder}
               aria-label={t('page.workspacePages')}
             >
+              {collectionPage ? (
+                <CollectionTab
+                  active={collectionPage.id === snapshot.activePageId}
+                  highlighted={boxDropPageId === collectionPage.id}
+                  page={collectionPage}
+                  released={boxDropRelease?.pageId === collectionPage.id}
+                  onActivate={() => {
+                    useUiStore.getState().selectBox(null);
+                    setActivePage(collectionPage.id);
+                  }}
+                />
+              ) : null}
               <AnimatePresence mode="popLayout">
                 {pages.map((page) => (
                   <Reorder.Item

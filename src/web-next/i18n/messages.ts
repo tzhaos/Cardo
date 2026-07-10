@@ -1,6 +1,7 @@
 export const WEB_NEXT_MESSAGES = {
   en: {
     'page.recycleBin': 'Recycle Bin',
+    'page.collection': 'Favorites',
     'page.recycleBinEmpty':
       'Deleted boxes appear here. Drag one to a workspace page to restore it.',
     'page.untitled': 'Untitled',
@@ -34,6 +35,8 @@ export const WEB_NEXT_MESSAGES = {
     'history.deletePage': 'Page deleted',
     'history.moveBoxToPage': 'Box moved to another page',
     'history.arrangeBoxes': 'Boxes arranged',
+    'history.collectBox': 'Box added to Favorites',
+    'history.removeCollectedBox': 'Box removed from Favorites',
     'desktop.minimize': 'Minimize',
     'desktop.maximize': 'Maximize',
     'desktop.restore': 'Restore',
@@ -125,6 +128,10 @@ export const WEB_NEXT_MESSAGES = {
     'box.color': 'Theme color',
     'box.colorPicker': 'Open color picker',
     'box.colorCode': 'Hex color code',
+    'collection.remove': 'Remove {title} from Favorites',
+    'collection.emptyTitle': 'No favorite boxes yet',
+    'collection.emptyDescription':
+      'Drag a box onto the Favorites tab to add a synced read-only view.',
     'box.emptyFolder': 'Empty folder',
     'box.emptyBookmark': 'Empty bookmark',
     'box.emptyClipboard': 'Empty clipboard',
@@ -180,6 +187,7 @@ export const WEB_NEXT_MESSAGES = {
   },
   zh: {
     'page.recycleBin': '回收站',
+    'page.collection': '收藏',
     'page.recycleBinEmpty': '已删除的盒子会出现在这里。拖回任一工作页面即可恢复。',
     'page.deleteWithRecycleBinQuestion': '删除“{title}”？其中 {count} 个{boxes}将移至回收站。',
     'common.moveToRecycleBin': '移至回收站',
@@ -227,6 +235,8 @@ export const WEB_NEXT_MESSAGES = {
     'history.deletePage': '已删除页面',
     'history.moveBoxToPage': '已将盒子移至其他页面',
     'history.arrangeBoxes': '已整理盒子',
+    'history.collectBox': '已将盒子添加到收藏',
+    'history.removeCollectedBox': '已从收藏移除盒子',
     'toolbar.workspaceTools': '工作区工具',
     'toolbar.toggleLanguage': '切换语言',
     'toolbar.toggleTheme': '切换主题',
@@ -312,6 +322,9 @@ export const WEB_NEXT_MESSAGES = {
     'box.color': '主题色',
     'box.colorPicker': '打开调色板',
     'box.colorCode': '十六进制色号',
+    'collection.remove': '从收藏中移除“{title}”',
+    'collection.emptyTitle': '还没有收藏盒子',
+    'collection.emptyDescription': '将盒子拖到顶部“收藏”，即可添加持续同步的只读视图。',
     'box.emptyFolder': '暂无文件夹项目',
     'box.emptyBookmark': '暂无书签',
     'box.emptyClipboard': '暂无剪贴板内容',

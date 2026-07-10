@@ -1,5 +1,5 @@
 import {
-  isRecycleBinPageId,
+  isSystemPageId,
   type BoxItem,
   type WorkspaceBox,
   type WorkspacePage,
@@ -44,7 +44,7 @@ export type GlobalSearchResult =
 export function searchWorkspace(snapshot: WorkspaceSnapshot, query: string, limit = 60) {
   const normalizedQuery = normalize(query);
   if (!normalizedQuery) return [];
-  const pages = snapshot.pages.filter((page) => !isRecycleBinPageId(page.id));
+  const pages = snapshot.pages.filter((page) => !isSystemPageId(page.id));
   const pagesById = new Map(pages.map((page) => [page.id, page]));
   const results: GlobalSearchResult[] = [];
 

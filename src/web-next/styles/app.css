@@ -141,6 +141,13 @@
   gap: 0;
 }
 
+.wbn-collection-tab {
+  display: flex;
+  margin-right: 6px;
+  border-right: 1px solid var(--wbn-divider);
+  padding-right: 6px;
+}
+
 .wbn-tab-pill {
   position: relative;
   display: flex;
@@ -375,6 +382,277 @@
 
 .wbn-canvas-locked {
   cursor: default;
+}
+
+.wbn-canvas-collection {
+  cursor: default;
+}
+
+.wbn-collection-page {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  padding: 92px 34px 108px;
+  scrollbar-color: var(--wbn-scrollbar) transparent;
+  scrollbar-width: thin;
+}
+
+.wbn-collection-grid {
+  display: grid;
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  align-items: start;
+  gap: 20px;
+}
+
+.wbn-collection-box {
+  display: flex;
+  min-width: 0;
+  min-height: 240px;
+  max-height: 420px;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px dashed color-mix(in srgb, var(--box-accent) 38%, var(--wbn-border));
+  border-radius: 16px;
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--wbn-panel) 95%, var(--box-accent)),
+    var(--wbn-panel-bottom)
+  );
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+.wbn-collection-box-header {
+  position: relative;
+  display: flex;
+  min-height: 48px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 9px;
+  border-bottom: 1px dashed color-mix(in srgb, var(--box-accent) 22%, var(--wbn-border-subtle));
+  padding: 9px 10px 9px 14px;
+  background: color-mix(in srgb, var(--wbn-panel-chrome) 94%, var(--box-accent));
+}
+
+.wbn-collection-box-grip {
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  width: 28px;
+  height: 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--wbn-muted) 28%, transparent);
+  transform: translateX(-50%);
+}
+
+.wbn-collection-box-icon,
+.wbn-collection-item-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  color: var(--box-accent);
+}
+
+.wbn-collection-box-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--box-accent) 10%, transparent);
+}
+
+.wbn-collection-box-heading {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wbn-collection-box-heading strong,
+.wbn-collection-box-heading small,
+.wbn-collection-box-items strong,
+.wbn-collection-box-items small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wbn-collection-box-heading strong {
+  color: var(--wbn-soft-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.wbn-collection-box-heading small {
+  color: var(--wbn-muted);
+  font-size: 10px;
+}
+
+.wbn-collection-readonly {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 3px 6px;
+  background: color-mix(in srgb, var(--box-accent) 9%, transparent);
+  color: var(--box-accent);
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.wbn-collection-box-header > button {
+  display: inline-flex;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--wbn-muted);
+  opacity: 0;
+  transition:
+    opacity 140ms ease,
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.wbn-collection-box:hover .wbn-collection-box-header > button,
+.wbn-collection-box-header > button:focus-visible {
+  opacity: 1;
+}
+
+.wbn-collection-box-header > button:hover {
+  background: var(--wbn-hover);
+  color: var(--wbn-red);
+}
+
+.wbn-collection-box-items {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  overflow: auto;
+  padding: 8px;
+  scrollbar-color: var(--wbn-scrollbar) transparent;
+  scrollbar-width: thin;
+}
+
+.wbn-collection-box-items > button {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  align-items: center;
+  gap: 9px;
+  border: 0;
+  border-radius: 10px;
+  padding: 7px 9px;
+  background: transparent;
+  color: var(--wbn-text);
+  text-align: left;
+  transition:
+    background 140ms ease,
+    transform 120ms ease;
+}
+
+.wbn-collection-box-items > button:hover {
+  background: color-mix(in srgb, var(--box-accent) 8%, var(--wbn-hover));
+  transform: translateY(-1px);
+}
+
+.wbn-collection-box-items > button > span:nth-child(2) {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wbn-collection-box-items strong {
+  color: var(--wbn-soft-text);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.wbn-collection-box-items small {
+  color: var(--wbn-muted);
+  font-size: 10px;
+}
+
+.wbn-collection-box-items > button > svg {
+  flex: 0 0 auto;
+  color: var(--wbn-muted);
+}
+
+.wbn-collection-box-grid .wbn-collection-box-items {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-content: start;
+}
+
+.wbn-collection-box-grid .wbn-collection-box-items > button {
+  min-height: 86px;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+.wbn-collection-box-grid .wbn-collection-box-items > button > svg,
+.wbn-collection-box-grid .wbn-collection-box-items small {
+  display: none;
+}
+
+.wbn-collection-box-compact .wbn-collection-box-items > button {
+  min-height: 34px;
+  padding-block: 5px;
+}
+
+.wbn-collection-box-compact .wbn-collection-box-items small {
+  display: none;
+}
+
+.wbn-collection-box-empty,
+.wbn-collection-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--wbn-muted);
+  text-align: center;
+}
+
+.wbn-collection-box-empty {
+  min-height: 120px;
+  flex: 1;
+  font-size: 12px;
+}
+
+.wbn-collection-empty {
+  width: min(420px, calc(100% - 40px));
+  min-height: 260px;
+  margin: 8vh auto 0;
+  flex-direction: column;
+  gap: 9px;
+  border: 1px dashed var(--wbn-border);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--wbn-panel) 76%, transparent);
+}
+
+.wbn-collection-empty svg {
+  color: var(--wbn-blue);
+}
+
+.wbn-collection-empty strong {
+  color: var(--wbn-soft-text);
+  font-size: 14px;
+}
+
+.wbn-collection-empty span {
+  max-width: 300px;
+  font-size: 12px;
+  line-height: 1.6;
 }
 
 .wbn-canvas-panning,

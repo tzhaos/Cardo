@@ -1,5 +1,7 @@
 import {
+  isCollectionPageId,
   isRecycleBinPageId,
+  isSystemPageId,
   type BoxFrame,
   type BoxItem,
   type WorkspaceBox,
@@ -18,7 +20,7 @@ import {
 } from './canvasGeometry';
 
 export function renamePage(snapshot: WorkspaceSnapshot, pageId: string, title: string) {
-  if (isRecycleBinPageId(pageId)) {
+  if (isSystemPageId(pageId)) {
     return snapshot;
   }
 
@@ -38,7 +40,7 @@ export function renamePage(snapshot: WorkspaceSnapshot, pageId: string, title: s
 export function addPage(snapshot: WorkspaceSnapshot, title = 'Untitled') {
   const page = createPage(
     title,
-    snapshot.pages.filter((candidate) => !isRecycleBinPageId(candidate.id)).length,
+    snapshot.pages.filter((candidate) => !isSystemPageId(candidate.id)).length,
   );
   return {
     ...snapshot,
@@ -48,25 +50,35 @@ export function addPage(snapshot: WorkspaceSnapshot, title = 'Untitled') {
 }
 
 export function deletePage(snapshot: WorkspaceSnapshot, pageId: string) {
-  const workspacePages = snapshot.pages.filter((page) => !isRecycleBinPageId(page.id));
+  const workspacePages = snapshot.pages.filter((page) => !isSystemPageId(page.id));
+  const collectionPage = snapshot.pages.find((page) => isCollectionPageId(page.id));
   const recycleBinPage = snapshot.pages.find((page) => isRecycleBinPageId(page.id));
   if (
-    isRecycleBinPageId(pageId) ||
+    isSystemPageId(pageId) ||
     workspacePages.length <= 1 ||
     !workspacePages.some((page) => page.id === pageId)
   ) {
     return snapshot;
   }
 
-  const pages = workspacePages
+  const remainingWorkspacePages = workspacePages
     .filter((page) => page.id !== pageId)
     .map((page, order) => ({ ...page, order }));
+  const pages = [
+    ...(collectionPage ? [{ ...collectionPage, order: -1 }] : []),
+    ...remainingWorkspacePages,
+  ];
   if (recycleBinPage) {
-    pages.push({ ...recycleBinPage, order: pages.length });
+    pages.push({ ...recycleBinPage, order: remainingWorkspacePages.length });
   }
   const defaultPageId =
-    snapshot.defaultPageId === pageId ? (pages[0]?.id ?? '') : snapshot.defaultPageId;
+    snapshot.defaultPageId === pageId
+      ? (remainingWorkspacePages[0]?.id ?? '')
+      : snapshot.defaultPageId;
   const activePageId = snapshot.activePageId === pageId ? defaultPageId : snapshot.activePageId;
+  const removedBoxIds = new Set(
+    snapshot.boxes.filter((box) => box.pageId === pageId).map((box) => box.id),
+  );
 
   return {
     pages,
@@ -77,11 +89,15 @@ export function deletePage(snapshot: WorkspaceSnapshot, pageId: string) {
           box.pageId === pageId ? { ...box, pageId: recycleBinPage.id, updatedAt: nowIso() } : box,
         )
       : snapshot.boxes.filter((box) => box.pageId !== pageId),
+    collectionBoxIds: (snapshot.collectionBoxIds ?? []).filter(
+      (boxId) => !removedBoxIds.has(boxId),
+    ),
   };
 }
 
 export function reorderPages(snapshot: WorkspaceSnapshot, orderedPageIds: string[]) {
-  const workspacePages = snapshot.pages.filter((page) => !isRecycleBinPageId(page.id));
+  const workspacePages = snapshot.pages.filter((page) => !isSystemPageId(page.id));
+  const collectionPage = snapshot.pages.find((page) => isCollectionPageId(page.id));
   const recycleBinPage = snapshot.pages.find((page) => isRecycleBinPageId(page.id));
   if (
     orderedPageIds.length !== workspacePages.length ||
@@ -102,6 +118,7 @@ export function reorderPages(snapshot: WorkspaceSnapshot, orderedPageIds: string
   return {
     ...snapshot,
     pages: [
+      ...(collectionPage ? [{ ...collectionPage, order: -1 }] : []),
       ...orderedPageIds.map((pageId, order) => ({
         ...pagesById.get(pageId)!,
         order,
@@ -119,7 +136,7 @@ export function setActivePage(snapshot: WorkspaceSnapshot, pageId: string) {
 }
 
 export function setDefaultPage(snapshot: WorkspaceSnapshot, pageId: string) {
-  return snapshot.pages.some((page) => page.id === pageId && !isRecycleBinPageId(page.id))
+  return snapshot.pages.some((page) => page.id === pageId && !isSystemPageId(page.id))
     ? { ...snapshot, defaultPageId: pageId }
     : snapshot;
 }
@@ -132,7 +149,7 @@ export function addBox(
   title?: string,
   kind: WorkspaceBoxKind = 'normal',
 ) {
-  if (isRecycleBinPageId(pageId)) {
+  if (isSystemPageId(pageId)) {
     return snapshot;
   }
 
@@ -320,12 +337,38 @@ export function deleteBox(snapshot: WorkspaceSnapshot, boxId: string) {
           ? { ...candidate, pageId: recycleBinPage.id, updatedAt: nowIso() }
           : candidate,
       ),
+      collectionBoxIds: (snapshot.collectionBoxIds ?? []).filter((id) => id !== boxId),
     };
   }
 
   return {
     ...snapshot,
     boxes: snapshot.boxes.filter((box) => box.id !== boxId),
+    collectionBoxIds: (snapshot.collectionBoxIds ?? []).filter((id) => id !== boxId),
+  };
+}
+
+export function addBoxToCollection(snapshot: WorkspaceSnapshot, boxId: string) {
+  const box = snapshot.boxes.find((candidate) => candidate.id === boxId);
+  if (!box || isRecycleBinPageId(box.pageId) || (snapshot.collectionBoxIds ?? []).includes(boxId)) {
+    return snapshot;
+  }
+
+  return {
+    ...snapshot,
+    activePageId: snapshot.pages.some((page) => isCollectionPageId(page.id))
+      ? snapshot.pages.find((page) => isCollectionPageId(page.id))!.id
+      : snapshot.activePageId,
+    collectionBoxIds: [...(snapshot.collectionBoxIds ?? []), boxId],
+  };
+}
+
+export function removeBoxFromCollection(snapshot: WorkspaceSnapshot, boxId: string) {
+  const collectionBoxIds = snapshot.collectionBoxIds ?? [];
+  if (!collectionBoxIds.includes(boxId)) return snapshot;
+  return {
+    ...snapshot,
+    collectionBoxIds: collectionBoxIds.filter((id) => id !== boxId),
   };
 }
 
@@ -536,7 +579,7 @@ export function moveBoxToPage(
   pageId: string,
   frame?: BoxFrame,
 ) {
-  if (!snapshot.pages.some((page) => page.id === pageId)) {
+  if (isCollectionPageId(pageId) || !snapshot.pages.some((page) => page.id === pageId)) {
     return snapshot;
   }
 
@@ -550,9 +593,11 @@ export function moveBoxToPage(
 }
 
 function insertWorkspacePage(snapshot: WorkspaceSnapshot, page: ReturnType<typeof createPage>) {
+  const collectionPage = snapshot.pages.find((candidate) => isCollectionPageId(candidate.id));
   const recycleBinPage = snapshot.pages.find((candidate) => isRecycleBinPageId(candidate.id));
-  const workspacePages = snapshot.pages.filter((candidate) => !isRecycleBinPageId(candidate.id));
+  const workspacePages = snapshot.pages.filter((candidate) => !isSystemPageId(candidate.id));
   return [
+    ...(collectionPage ? [{ ...collectionPage, order: -1 }] : []),
     ...workspacePages,
     page,
     ...(recycleBinPage ? [{ ...recycleBinPage, order: workspacePages.length + 1 }] : []),

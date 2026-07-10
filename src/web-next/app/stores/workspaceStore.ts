@@ -15,6 +15,7 @@ import type {
 } from '../../domain/workspace';
 import type { CanvasViewportSize } from '../../domain/canvasGeometry';
 import {
+  addBoxToCollection,
   addBox,
   addItem,
   addPage,
@@ -23,6 +24,7 @@ import {
   deletePage,
   moveBoxToPage,
   moveItemBetweenBoxes,
+  removeBoxFromCollection,
   promoteTemporaryBox,
   renameBox,
   renameItem,
@@ -72,6 +74,8 @@ interface WorkspaceStore {
   setBoxPreset: (boxId: string, preset: WorkspaceBoxPreset) => void;
   setBoxViewMode: (boxId: string, viewMode: WorkspaceBoxViewMode) => void;
   moveBoxToPage: (boxId: string, pageId: string, frame?: BoxFrame) => void;
+  addBoxToCollection: (boxId: string) => void;
+  removeBoxFromCollection: (boxId: string) => void;
   moveItemBetweenBoxes: (
     sourceBoxId: string,
     targetBoxId: string,
@@ -95,6 +99,8 @@ export type WorkspaceHistoryAction =
   | 'deletePage'
   | 'moveBoxToPage'
   | 'arrangeBoxes'
+  | 'collectBox'
+  | 'removeCollectedBox'
   | 'importData';
 
 interface WorkspaceHistoryEntry {
@@ -204,6 +210,18 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             state,
             moveBoxToPage(state.snapshot, boxId, pageId, frame),
             'moveBoxToPage',
+          ),
+        ),
+      addBoxToCollection: (boxId) =>
+        set((state) =>
+          recordHistory(state, addBoxToCollection(state.snapshot, boxId), 'collectBox'),
+        ),
+      removeBoxFromCollection: (boxId) =>
+        set((state) =>
+          recordHistory(
+            state,
+            removeBoxFromCollection(state.snapshot, boxId),
+            'removeCollectedBox',
           ),
         ),
       moveItemBetweenBoxes: (sourceBoxId, targetBoxId, itemId, targetIndex) =>

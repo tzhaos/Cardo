@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { createCanvasWorldBounds, getCanvasViewportCenter } from '../domain/canvasGeometry';
 import { createPasteItemDraft } from '../domain/paste';
 import { findNewBoxFrame } from '../domain/placement';
-import { isRecycleBinPageId } from '../domain/workspace';
+import { isSystemPageId } from '../domain/workspace';
 import { useCanvasStore } from './stores/canvasStore';
 import { useUiStore } from './stores/uiStore';
 import { useWorkspaceStore } from './stores/workspaceStore';
@@ -22,12 +22,14 @@ export function usePasteIntoSelectedBox() {
       const selectedBoxId = useUiStore.getState().selectedBoxId;
       const workspaceStore = useWorkspaceStore.getState();
       const snapshot = workspaceStore.snapshot;
-      let targetBox = selectedBoxId
-        ? snapshot.boxes.find((candidate) => candidate.id === selectedBoxId)
-        : undefined;
+      let targetBox =
+        selectedBoxId && !isSystemPageId(snapshot.activePageId)
+          ? snapshot.boxes.find((candidate) => candidate.id === selectedBoxId)
+          : undefined;
+      if (targetBox?.pageId !== snapshot.activePageId) targetBox = undefined;
 
       if (!targetBox) {
-        const pageId = isRecycleBinPageId(snapshot.activePageId)
+        const pageId = isSystemPageId(snapshot.activePageId)
           ? snapshot.defaultPageId
           : snapshot.activePageId;
         targetBox = snapshot.boxes.find(

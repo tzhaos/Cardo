@@ -1,4 +1,4 @@
-import { RECYCLE_BIN_PAGE_ID } from './workspace';
+import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID } from './workspace';
 import type {
   BoxFrame,
   BoxItem,
@@ -49,6 +49,17 @@ export function createRecycleBinPage(order: number): WorkspacePage {
   };
 }
 
+export function createCollectionPage(): WorkspacePage {
+  const timestamp = nowIso();
+  return {
+    id: COLLECTION_PAGE_ID,
+    title: 'Collection',
+    order: -1,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  };
+}
+
 export function getDefaultFrame(_preset: WorkspaceBoxPreset, x: number, y: number): BoxFrame {
   return {
     x,
@@ -88,7 +99,11 @@ export function createDefaultWorkspace(): WorkspaceSnapshot {
   const workspacePages = ['Workspaces', 'Personal', 'Inspiration'].map((title, index) =>
     createPage(title, index),
   );
-  const pages = [...workspacePages, createRecycleBinPage(workspacePages.length)];
+  const pages = [
+    createCollectionPage(),
+    ...workspacePages,
+    createRecycleBinPage(workspacePages.length),
+  ];
 
   const firstPageId = workspacePages[0]?.id ?? createId('page');
 
@@ -96,6 +111,7 @@ export function createDefaultWorkspace(): WorkspaceSnapshot {
     pages,
     activePageId: firstPageId,
     defaultPageId: firstPageId,
+    collectionBoxIds: [],
     boxes: [
       createWorkspaceBox(firstPageId, 'folder', getDefaultFrame('folder', 120, 130)),
       createWorkspaceBox(firstPageId, 'bookmark', getDefaultFrame('bookmark', 500, 165)),

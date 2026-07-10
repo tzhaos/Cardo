@@ -235,7 +235,7 @@ export function BaseBoxFrame({
   const dragging = draggedBoxId === box.id;
   const draggingOverTopBar = dragging && boxDragOverTopBar;
   const draggingOverTab = draggingOverTopBar && boxDropPageId !== null;
-  const dropReleased = boxDropRelease?.boxId === box.id;
+  const dropReleased = boxDropRelease?.boxId === box.id && boxDropRelease.pageId === box.pageId;
   const compactScale = Math.max(0.22, Math.min(0.46, 136 / box.frame.width, 86 / box.frame.height));
   const isInRecycleBin = isRecycleBinPageId(box.pageId);
   const isTemporary = box.kind === 'temporary';
