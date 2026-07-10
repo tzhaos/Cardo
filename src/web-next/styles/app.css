@@ -1114,6 +1114,36 @@
   scrollbar-width: thin;
 }
 
+.wbn-item-type-picker {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 5px;
+  padding-bottom: 2px;
+}
+
+.wbn-item-type-picker button {
+  display: inline-flex;
+  min-width: 0;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--wbn-neutral-button);
+  color: var(--wbn-muted);
+}
+
+.wbn-item-type-picker button:hover {
+  background: var(--wbn-hover);
+  color: var(--wbn-soft-text);
+}
+
+.wbn-item-type-picker .wbn-item-type-active {
+  border-color: color-mix(in srgb, var(--box-accent) 28%, var(--wbn-border-subtle));
+  background: color-mix(in srgb, var(--box-accent) 10%, var(--wbn-panel-content));
+  color: var(--box-accent);
+}
+
 .wbn-add-view header {
   display: flex;
   align-items: center;

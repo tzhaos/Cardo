@@ -4,7 +4,13 @@ import { useUiStore } from '../../../app/stores/uiStore';
 import { AddViewShell } from './AddViewShell';
 import { useI18n } from '../../../i18n/useI18n';
 
-export function BookmarkAddView({ boxId }: { boxId: string }) {
+export function BookmarkAddView({
+  boxId,
+  typePicker,
+}: {
+  boxId: string;
+  typePicker?: React.ReactNode;
+}) {
   const draftState = useUiStore((state) => state.addDrafts[boxId]);
   const draft = useMemo(() => draftState?.draft ?? {}, [draftState?.draft]);
   const updateDraft = useUiStore((state) => state.updateDraft);
@@ -19,6 +25,7 @@ export function BookmarkAddView({ boxId }: { boxId: string }) {
       type="bookmark"
       title={t('add.bookmarkTitle')}
       canSubmit={validUrl}
+      typePicker={typePicker}
     >
       <input
         autoFocus

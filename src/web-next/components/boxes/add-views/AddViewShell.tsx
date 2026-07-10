@@ -8,6 +8,7 @@ interface AddViewShellProps {
   type: WorkspaceItemType;
   title: string;
   children: React.ReactNode;
+  typePicker?: React.ReactNode;
   canSubmit?: boolean;
   primaryLabel?: string;
 }
@@ -17,6 +18,7 @@ export function AddViewShell({
   type,
   title,
   children,
+  typePicker,
   canSubmit = true,
   primaryLabel,
 }: AddViewShellProps) {
@@ -39,6 +41,7 @@ export function AddViewShell({
         markCreated(boxId, item.id);
       }}
     >
+      {typePicker}
       {children}
       <div className="wbn-add-actions">
         <button className="wbn-add-cancel" type="button" onClick={() => closeAddView(boxId)}>

@@ -3,7 +3,13 @@ import { useUiStore } from '../../../app/stores/uiStore';
 import { AddViewShell } from './AddViewShell';
 import { useI18n } from '../../../i18n/useI18n';
 
-export function ClipboardAddView({ boxId }: { boxId: string }) {
+export function ClipboardAddView({
+  boxId,
+  typePicker,
+}: {
+  boxId: string;
+  typePicker?: React.ReactNode;
+}) {
   const draftState = useUiStore((state) => state.addDrafts[boxId]);
   const draft = useMemo(() => draftState?.draft ?? {}, [draftState?.draft]);
   const updateDraft = useUiStore((state) => state.updateDraft);
@@ -16,6 +22,7 @@ export function ClipboardAddView({ boxId }: { boxId: string }) {
       type="clipboard"
       title={t('add.clipboardTitle')}
       canSubmit={text.trim().length > 0}
+      typePicker={typePicker}
     >
       <textarea
         autoFocus

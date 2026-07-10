@@ -5,9 +5,7 @@ import { BookmarkItem } from '../items/BookmarkItem';
 import { ClipboardItem } from '../items/ClipboardItem';
 import { LocalResourceItem } from '../items/LocalResourceItem';
 import { SortableItemList } from '../items/SortableItemList';
-import { BookmarkAddView } from './add-views/BookmarkAddView';
-import { ClipboardAddView } from './add-views/ClipboardAddView';
-import { FolderAddView } from './add-views/FolderAddView';
+import { UniversalAddView } from './add-views/UniversalAddView';
 import { BaseBoxFrame } from './BaseBoxFrame';
 import { useI18n } from '../../i18n/useI18n';
 
@@ -29,11 +27,11 @@ export function UniversalBox({
       box={box}
       icon={appearance.icon}
       accent={appearance.accent}
-      onAddItem={() => openAddView(box.id)}
+      onAddItem={() => openAddView(box.id, preferredItemType)}
       skipEntryAnimation={skipEntryAnimation}
     >
       {draftState?.mode ? (
-        renderAddView(box.id, preferredItemType)
+        <UniversalAddView boxId={box.id} defaultType={preferredItemType} />
       ) : box.items.length ? (
         <SortableItemList
           boxId={box.id}
@@ -59,12 +57,6 @@ function renderItem(boxId: string, item: WorkspaceBox['items'][number], highligh
     case 'clipboard':
       return <ClipboardItem boxId={boxId} item={item} highlight={highlight} />;
   }
-}
-
-function renderAddView(boxId: string, type: WorkspaceItemType) {
-  if (type === 'folder') return <FolderAddView boxId={boxId} />;
-  if (type === 'bookmark') return <BookmarkAddView boxId={boxId} />;
-  return <ClipboardAddView boxId={boxId} />;
 }
 
 function getPreferredItemType(preset: WorkspaceBox['preset']): WorkspaceItemType {

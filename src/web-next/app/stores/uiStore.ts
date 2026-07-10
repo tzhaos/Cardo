@@ -1,7 +1,9 @@
 import { create } from 'zustand';
+import type { WorkspaceItemType } from '../../domain/workspace';
 
 export interface AddDraftState {
   mode: boolean;
+  itemType?: WorkspaceItemType;
   draft: Record<string, string>;
   highlightItemId?: string;
 }
@@ -16,7 +18,8 @@ interface UiStore {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   selectBox: (boxId: string | null) => void;
-  openAddView: (boxId: string) => void;
+  openAddView: (boxId: string, itemType?: WorkspaceItemType) => void;
+  selectAddItemType: (boxId: string, itemType: WorkspaceItemType) => void;
   updateDraft: (boxId: string, patch: Record<string, string>) => void;
   closeAddView: (boxId: string) => void;
   markCreated: (boxId: string, itemId: string) => void;
@@ -40,12 +43,19 @@ export const useUiStore = create<UiStore>((set) => ({
   searchQuery: '',
   setSearchQuery: (query) => set({ searchQuery: query }),
   selectBox: (boxId) => set({ selectedBoxId: boxId }),
-  openAddView: (boxId) =>
+  openAddView: (boxId, itemType) =>
     set((state) => ({
       selectedBoxId: boxId,
       addDrafts: {
         ...state.addDrafts,
-        [boxId]: { ...(state.addDrafts[boxId] ?? emptyDraft), mode: true },
+        [boxId]: { ...(state.addDrafts[boxId] ?? emptyDraft), mode: true, itemType },
+      },
+    })),
+  selectAddItemType: (boxId, itemType) =>
+    set((state) => ({
+      addDrafts: {
+        ...state.addDrafts,
+        [boxId]: { mode: true, itemType, draft: {} },
       },
     })),
   updateDraft: (boxId, patch) =>
@@ -84,6 +94,5 @@ export const useUiStore = create<UiStore>((set) => ({
     ),
   finishBoxDrop: (boxId, pageId) => set({ boxDropRelease: { boxId, pageId } }),
   clearBoxDropRelease: () => set({ boxDropRelease: null }),
-  endBoxDrag: () =>
-    set({ draggedBoxId: null, boxDragOverTopBar: false, boxDropPageId: null }),
+  endBoxDrag: () => set({ draggedBoxId: null, boxDragOverTopBar: false, boxDropPageId: null }),
 }));
