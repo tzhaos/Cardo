@@ -14,7 +14,7 @@ export function ItemActions({
   pinned?: boolean;
   onCopy?: () => void | Promise<void>;
   onPin: () => void;
-  onEdit: () => void;
+  onEdit?: () => void;
   onDelete: () => void;
 }) {
   const { t } = useI18n();
@@ -38,9 +38,11 @@ export function ItemActions({
           {copied ? <Check size={14} /> : <Copy size={14} />}
         </IconButton>
       ) : null}
-      <IconButton aria-label={t('item.rename')} onClick={onEdit}>
-        <Edit2 size={14} />
-      </IconButton>
+      {onEdit ? (
+        <IconButton aria-label={t('item.rename')} onClick={onEdit}>
+          <Edit2 size={14} />
+        </IconButton>
+      ) : null}
       <IconButton className="wbn-item-delete" aria-label={t('item.delete')} onClick={onDelete}>
         <Trash2 size={14} />
       </IconButton>

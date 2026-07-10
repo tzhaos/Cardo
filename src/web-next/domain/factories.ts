@@ -142,7 +142,7 @@ export function createItem(type: WorkspaceBoxType, draft: Record<string, string>
       return {
         ...base,
         type,
-        title: explicitTitle,
+        title: '',
         text: draft.text?.trim() ?? '',
       };
   }

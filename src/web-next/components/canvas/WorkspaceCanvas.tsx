@@ -38,7 +38,11 @@ export function WorkspaceCanvas() {
     return activeBoxes.filter(
       (box) =>
         box.title.toLowerCase().includes(query) ||
-        box.items.some((item) => item.title.toLowerCase().includes(query)),
+        box.items.some(
+          (item) =>
+            item.title.toLowerCase().includes(query) ||
+            (item.type === 'clipboard' && item.text.toLowerCase().includes(query)),
+        ),
     );
   }, [deferredSearchQuery, snapshot.activePageId, snapshot.boxes]);
   const isSearchFiltering = Boolean(deferredSearchQuery.trim());
