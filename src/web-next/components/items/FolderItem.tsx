@@ -5,6 +5,7 @@ import type { FolderItem as FolderItemModel } from '../../domain/workspace';
 import { ItemDeleteView } from './ItemDeleteView';
 import { ItemActions } from './ItemActions';
 import { useItemRename } from './useItemRename';
+import { useI18n } from '../../i18n/useI18n';
 
 export function FolderItem({
   boxId,
@@ -18,6 +19,7 @@ export function FolderItem({
   const Icon = item.kind === 'folder' ? Folder : item.kind === 'file' ? File : Link;
   const rename = useItemRename(boxId, item.id, item.title);
   const [deleteView, setDeleteView] = useState(false);
+  const { t } = useI18n();
 
   return (
     <div
@@ -56,9 +58,14 @@ export function FolderItem({
                   }}
                 />
               ) : (
-                <strong onDoubleClick={rename.startRenaming}>{item.title}</strong>
+                <strong
+                  className={item.title ? undefined : 'wbn-item-title-placeholder'}
+                  onDoubleClick={rename.startRenaming}
+                >
+                  {item.title || t('item.untitled')}
+                </strong>
               )}
-              <small>{item.path}</small>
+              <small className="wbn-item-secondary">{item.path}</small>
             </div>
             <ItemActions
               onEdit={rename.startRenaming}

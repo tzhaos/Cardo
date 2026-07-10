@@ -22,17 +22,17 @@ export function BookmarkAddView({ boxId }: { boxId: string }) {
     >
       <input
         autoFocus
+        placeholder={t('field.title')}
+        value={draft.title ?? ''}
+        onChange={(event) => updateDraft(boxId, { title: event.target.value })}
+      />
+      <input
         aria-invalid={showInvalidUrl}
         placeholder={t('field.pasteUrl')}
         value={url}
         onChange={(event) => updateDraft(boxId, { url: event.target.value })}
       />
       {showInvalidUrl ? <small className="wbn-field-error">{t('field.urlError')}</small> : null}
-      <input
-        placeholder={t('field.title')}
-        value={draft.title ?? ''}
-        onChange={(event) => updateDraft(boxId, { title: event.target.value })}
-      />
     </AddViewShell>
   );
 }

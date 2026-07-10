@@ -5,6 +5,7 @@ import type { BookmarkItem as BookmarkItemModel } from '../../domain/workspace';
 import { ItemDeleteView } from './ItemDeleteView';
 import { ItemActions } from './ItemActions';
 import { useItemRename } from './useItemRename';
+import { useI18n } from '../../i18n/useI18n';
 
 export function BookmarkItem({
   boxId,
@@ -17,6 +18,7 @@ export function BookmarkItem({
 }) {
   const rename = useItemRename(boxId, item.id, item.title);
   const [deleteView, setDeleteView] = useState(false);
+  const { t } = useI18n();
 
   return (
     <div
@@ -54,7 +56,7 @@ export function BookmarkItem({
                     if (event.key === 'Escape') rename.cancel();
                   }}
                 />
-              ) : (
+              ) : item.title ? (
                 <a
                   href={item.url}
                   target="_blank"
@@ -63,9 +65,16 @@ export function BookmarkItem({
                 >
                   <strong>{item.title}</strong>
                 </a>
+              ) : (
+                <strong
+                  className="wbn-item-title-placeholder"
+                  onDoubleClick={rename.startRenaming}
+                >
+                  {t('item.untitled')}
+                </strong>
               )}
               <a
-                className="wbn-item-subtitle-link"
+                className="wbn-item-secondary wbn-item-subtitle-link"
                 href={item.url}
                 target="_blank"
                 rel="noreferrer"

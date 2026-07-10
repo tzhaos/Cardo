@@ -18,12 +18,12 @@ export function ClipboardAddView({ boxId }: { boxId: string }) {
       canSubmit={text.trim().length > 0}
     >
       <input
+        autoFocus
         placeholder={t('field.clipTitle')}
         value={draft.title ?? ''}
         onChange={(event) => updateDraft(boxId, { title: event.target.value })}
       />
       <textarea
-        autoFocus
         placeholder={t('field.clipText')}
         value={text}
         onChange={(event) => updateDraft(boxId, { text: event.target.value })}

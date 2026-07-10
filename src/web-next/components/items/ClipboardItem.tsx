@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import { Clipboard } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { ClipboardItem as ClipboardItemModel } from '../../domain/workspace';
+import { useI18n } from '../../i18n/useI18n';
 import { ItemDeleteView } from './ItemDeleteView';
 import { ItemActions } from './ItemActions';
 import { useItemRename } from './useItemRename';
@@ -18,6 +20,7 @@ export function ClipboardItem({
   const [copied, setCopied] = useState(false);
   const [deleteView, setDeleteView] = useState(false);
   const copyResetRef = useRef<number | null>(null);
+  const { t } = useI18n();
 
   useEffect(
     () => () => {
@@ -43,7 +46,7 @@ export function ClipboardItem({
 
   return (
     <div
-      className={`wbn-clipboard-card${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}`}
+      className={`wbn-item-row wbn-clipboard-item${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}`}
     >
       <AnimatePresence initial={false} mode="wait">
         {deleteView ? (
@@ -54,29 +57,39 @@ export function ClipboardItem({
           />
         ) : (
           <motion.div
-            className="wbn-item-view-content wbn-item-view-content-clipboard"
+            className="wbn-item-view-content wbn-item-view-content-row"
             key="content"
             initial={{ opacity: 0, x: -6 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -6 }}
             transition={{ duration: 0.15 }}
           >
-            {rename.renaming ? (
-              <input
-                ref={rename.inputRef}
-                className="wbn-inline-rename wbn-item-title-input"
-                value={rename.draft}
-                onChange={(event) => rename.setDraft(event.target.value)}
-                onBlur={rename.commit}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') event.currentTarget.blur();
-                  if (event.key === 'Escape') rename.cancel();
-                }}
-              />
-            ) : item.title ? (
-              <strong onDoubleClick={rename.startRenaming}>{item.title}</strong>
-            ) : null}
-            <p>{item.text}</p>
+            <span className="wbn-item-glyph">
+              <Clipboard size={16} />
+            </span>
+            <div className="wbn-item-main">
+              {rename.renaming ? (
+                <input
+                  ref={rename.inputRef}
+                  className="wbn-inline-rename wbn-item-title-input"
+                  value={rename.draft}
+                  onChange={(event) => rename.setDraft(event.target.value)}
+                  onBlur={rename.commit}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') event.currentTarget.blur();
+                    if (event.key === 'Escape') rename.cancel();
+                  }}
+                />
+              ) : (
+                <strong
+                  className={item.title ? undefined : 'wbn-item-title-placeholder'}
+                  onDoubleClick={rename.startRenaming}
+                >
+                  {item.title || t('item.untitled')}
+                </strong>
+              )}
+              <p className="wbn-item-secondary wbn-clipboard-text">{item.text}</p>
+            </div>
             <ItemActions
               copied={copied}
               onCopy={copyText}

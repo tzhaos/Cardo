@@ -22,6 +22,11 @@ export function FolderAddView({ boxId }: { boxId: string }) {
     >
       <input
         autoFocus
+        placeholder={t('field.name')}
+        value={draft.title ?? ''}
+        onChange={(event) => updateDraft(boxId, { title: event.target.value })}
+      />
+      <input
         aria-invalid={showInvalidPath}
         placeholder={t('field.folderPath')}
         value={path}

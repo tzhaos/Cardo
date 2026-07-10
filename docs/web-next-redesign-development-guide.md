@@ -316,7 +316,8 @@ Draft behavior:
 
 Type-specific create rules:
 
-- Folder items accept only a local drive folder path or UNC/NAS folder path; no type selector is shown, and the title is derived from the final path segment.
+- Every add view places its optional title/name field first and its type-specific content field second.
+- Folder items accept an optional name plus a local drive folder path or UNC/NAS folder path; no type selector is shown, and an omitted name is derived from the final path segment.
 - Bookmark titles are optional; when omitted, derive the second-to-last hostname label, such as `yyy` from `xxx.yyy.zzz/nnn`.
 - Clipboard titles are optional and may remain empty; clipboard cards expose a right-side copy action without a redundant type label.
 
@@ -325,6 +326,12 @@ Item ordering:
 - Items are drag-sortable only within their owning box, and the resulting array order is persisted with the workspace.
 - A quiet grip handle appears on hover/focus; dragging lifts the item while sibling items settle with spring layout motion.
 - Item controls remain local to the item and do not initiate a drag.
+
+Item row hierarchy:
+
+- Folder, bookmark, and clipboard items share the same minimum-height two-line row geometry.
+- The first line is always the item title; an empty stored title renders only a muted `Untitled` placeholder.
+- The second line is always type-specific content: folder path, bookmark URL, or clipboard text.
 
 Item-local destructive flow:
 
