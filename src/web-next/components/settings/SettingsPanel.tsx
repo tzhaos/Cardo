@@ -5,6 +5,7 @@ import {
   CircleHelp,
   Database,
   Download,
+  Globe2,
   Languages,
   Moon,
   Palette,
@@ -25,6 +26,7 @@ import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { extractPersistedWorkspaceSnapshot } from '../../domain/persistence';
 import type { WorkspaceSnapshot } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
+import { isValidCustomSearchTemplate, type WebSearchEngineId } from '../../domain/webSearch';
 
 type SettingsSection = 'general' | 'appearance' | 'data' | 'about';
 
@@ -42,6 +44,10 @@ export function SettingsPanel({
   const setLocale = usePreferencesStore((state) => state.setLocale);
   const setThemeId = usePreferencesStore((state) => state.setThemeId);
   const themeId = usePreferencesStore((state) => state.themeId);
+  const searchEngine = usePreferencesStore((state) => state.searchEngine);
+  const customSearchTemplate = usePreferencesStore((state) => state.customSearchTemplate);
+  const setSearchEngine = usePreferencesStore((state) => state.setSearchEngine);
+  const setCustomSearchTemplate = usePreferencesStore((state) => state.setCustomSearchTemplate);
   const { t } = useI18n();
   const themes = useMemo(() => getRegisteredWebNextThemes(), []);
   const sections = [
@@ -97,7 +103,14 @@ export function SettingsPanel({
               transition={{ duration: 0.16 }}
             >
               {section === 'general' ? (
-                <GeneralSettings locale={locale} setLocale={setLocale} />
+                <GeneralSettings
+                  locale={locale}
+                  setLocale={setLocale}
+                  searchEngine={searchEngine}
+                  customSearchTemplate={customSearchTemplate}
+                  setSearchEngine={setSearchEngine}
+                  setCustomSearchTemplate={setCustomSearchTemplate}
+                />
               ) : null}
               {section === 'appearance' ? (
                 <AppearanceSettings
@@ -233,9 +246,17 @@ function DataSettings() {
 function GeneralSettings({
   locale,
   setLocale,
+  searchEngine,
+  customSearchTemplate,
+  setSearchEngine,
+  setCustomSearchTemplate,
 }: {
   locale: 'en' | 'zh';
   setLocale: (locale: 'en' | 'zh') => void;
+  searchEngine: WebSearchEngineId;
+  customSearchTemplate: string;
+  setSearchEngine: (searchEngine: WebSearchEngineId) => void;
+  setCustomSearchTemplate: (customSearchTemplate: string) => void;
 }) {
   const { t } = useI18n();
 
@@ -262,6 +283,45 @@ function GeneralSettings({
           </SegmentButton>
         </div>
       </div>
+      <div className="wbn-settings-subheading">
+        <span>{t('settings.searchEngine')}</span>
+        <small>{t('settings.searchEngineDescription')}</small>
+      </div>
+      <div className="wbn-settings-card wbn-search-engine-settings">
+        <div className="wbn-settings-card-copy">
+          <IconFrame>
+            <Globe2 size={18} />
+          </IconFrame>
+          <span>{t('settings.searchEngine')}</span>
+        </div>
+        <select
+          aria-label={t('settings.searchEngine')}
+          value={searchEngine}
+          onChange={(event) => setSearchEngine(event.target.value as WebSearchEngineId)}
+        >
+          <option value="bing-cn">{t('settings.searchEngine.bingCn')}</option>
+          <option value="bing">{t('settings.searchEngine.bing')}</option>
+          <option value="baidu">{t('settings.searchEngine.baidu')}</option>
+          <option value="google">{t('settings.searchEngine.google')}</option>
+          <option value="custom">{t('settings.searchEngine.custom')}</option>
+        </select>
+      </div>
+      {searchEngine === 'custom' ? (
+        <label className="wbn-custom-search-template">
+          <span>{t('settings.customSearchTemplate')}</span>
+          <input
+            className={
+              customSearchTemplate && !isValidCustomSearchTemplate(customSearchTemplate)
+                ? 'wbn-custom-search-template-invalid'
+                : undefined
+            }
+            value={customSearchTemplate}
+            onChange={(event) => setCustomSearchTemplate(event.target.value)}
+            placeholder={t('settings.customSearchTemplatePlaceholder')}
+          />
+          <small>{t('settings.customSearchTemplateHint')}</small>
+        </label>
+      ) : null}
     </>
   );
 }

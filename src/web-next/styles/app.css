@@ -2865,6 +2865,57 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
   font-weight: 600;
 }
 
+.wbn-search-engine-settings select {
+  min-width: 132px;
+  height: 34px;
+  border: 1px solid var(--wbn-border);
+  border-radius: 9px;
+  padding: 0 30px 0 10px;
+  background: var(--wbn-surface-strong);
+  color: var(--wbn-text);
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.wbn-search-engine-settings select:focus {
+  border-color: color-mix(in srgb, var(--wbn-blue) 55%, var(--wbn-border));
+}
+
+.wbn-custom-search-template {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+  color: var(--wbn-secondary-text);
+  font-size: 12px;
+}
+
+.wbn-custom-search-template input {
+  width: 100%;
+  height: 36px;
+  border: 1px solid var(--wbn-border);
+  border-radius: 9px;
+  padding: 0 10px;
+  background: var(--wbn-panel-content);
+  color: var(--wbn-text);
+  font: inherit;
+  outline: none;
+}
+
+.wbn-custom-search-template input:focus {
+  border-color: color-mix(in srgb, var(--wbn-blue) 55%, var(--wbn-border));
+}
+
+.wbn-custom-search-template .wbn-custom-search-template-invalid {
+  border-color: color-mix(in srgb, var(--wbn-red) 62%, var(--wbn-border));
+}
+
+.wbn-custom-search-template small {
+  color: var(--wbn-muted);
+  font-size: 11px;
+}
+
 .wbn-theme-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3165,17 +3216,28 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
   background: var(--wbn-hover);
 }
 
-.wbn-search-pill button {
+.wbn-search-pill .wbn-search-local-trigger {
   position: absolute;
   inset: 0 auto 0 0;
   z-index: 1;
+}
+
+.wbn-search-pill .wbn-search-web-trigger {
+  position: absolute;
+  z-index: 1;
+  inset: 0 0 0 auto;
+}
+
+.wbn-search-pill .wbn-search-web-trigger:disabled {
+  cursor: default;
+  opacity: 0.32 !important;
 }
 
 .wbn-search-pill input {
   width: 100%;
   height: 100%;
   border: 0;
-  padding: 0 16px 0 40px;
+  padding: 0 48px 0 40px;
   background: transparent;
   color: var(--wbn-text);
   font-size: 14px;

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { AppWindow, Box, Clipboard, File, Folder, Globe, PanelTop, Search } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useCanvasStore } from '../../app/stores/canvasStore';
@@ -14,7 +14,15 @@ import {
 } from '../../platform/hostPlatform';
 import { recordBoxActivity, recordItemActivity } from '../../app/operationActivity';
 
-export function GlobalSearchPanel({ query, onClose }: { query: string; onClose: () => void }) {
+export function GlobalSearchPanel({
+  query,
+  onClose,
+  rootRef,
+}: {
+  query: string;
+  onClose: () => void;
+  rootRef: RefObject<HTMLDivElement | null>;
+}) {
   const snapshot = useWorkspaceStore((state) => state.snapshot);
   const setActivePage = useWorkspaceStore((state) => state.setActivePage);
   const selectBox = useUiStore((state) => state.selectBox);
@@ -91,18 +99,13 @@ export function GlobalSearchPanel({ query, onClose }: { query: string; onClose: 
           return (current + delta + results.length) % results.length;
         });
       }
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        const result = results[selectedIndex];
-        if (result) void activateResult(result);
-      }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   });
 
   return (
-    <div className="wbn-global-search-panel-wrap">
+    <div ref={rootRef} className="wbn-global-search-panel-wrap">
       <motion.div
         className="wbn-global-search-panel"
         initial={{ opacity: 0, y: 12, scale: 0.98 }}

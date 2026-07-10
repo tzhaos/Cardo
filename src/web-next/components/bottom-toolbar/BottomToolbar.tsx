@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
+  Globe2,
   History,
   LocateFixed,
   Lock,
@@ -21,10 +22,13 @@ import {
 import { createBoxFrameCenteredAt } from '../../domain/placement';
 import { isCollectionPageId, isSystemPageId } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
+import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { useI18n } from '../../i18n/useI18n';
 import { IconButton } from '../primitives/IconPrimitives';
 import { GlobalSearchPanel } from '../global-search/GlobalSearchPanel';
+import { createWebSearchUrl } from '../../domain/webSearch';
+import { openExternalUrl } from '../../platform/hostPlatform';
 
 export function BottomToolbar() {
   const createBox = useWorkspaceStore((state) => state.createBox);
@@ -41,11 +45,15 @@ export function BottomToolbar() {
   const toggleCanvasLocked = useCanvasStore((state) => state.toggleLocked);
   const searchQuery = useUiStore((state) => state.searchQuery);
   const setSearchQuery = useUiStore((state) => state.setSearchQuery);
+  const searchEngine = usePreferencesStore((state) => state.searchEngine);
+  const customSearchTemplate = usePreferencesStore((state) => state.customSearchTemplate);
   const settingsOpen = useIndependentMenuStore((state) => state.menus.settings.open);
   const journalOpen = useIndependentMenuStore((state) => state.menus.journal.open);
   const toggleIndependentMenu = useIndependentMenuStore((state) => state.toggleMenu);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchPillRef = useRef<HTMLDivElement>(null);
+  const searchPanelRef = useRef<HTMLDivElement>(null);
   const { t } = useI18n();
   const isCollection = isCollectionPageId(activePageId);
 
@@ -69,10 +77,34 @@ export function BottomToolbar() {
     setSearchQuery('');
   };
 
+  useEffect(() => {
+    if (!isSearchActive) return;
+
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (searchPillRef.current?.contains(target) || searchPanelRef.current?.contains(target))
+        return;
+      closeSearch();
+    };
+
+    window.addEventListener('pointerdown', closeOnOutsidePointer, true);
+    return () => window.removeEventListener('pointerdown', closeOnOutsidePointer, true);
+  }, [isSearchActive]);
+
+  const webSearchUrl = createWebSearchUrl(searchEngine, customSearchTemplate, searchQuery);
+  const runWebSearch = () => {
+    if (!webSearchUrl) return;
+    openExternalUrl(webSearchUrl);
+    closeSearch();
+  };
+
   return (
     <div className="wbn-bottom-shell">
       <AnimatePresence>
-        {isSearchActive ? <GlobalSearchPanel query={searchQuery} onClose={closeSearch} /> : null}
+        {isSearchActive ? (
+          <GlobalSearchPanel query={searchQuery} onClose={closeSearch} rootRef={searchPanelRef} />
+        ) : null}
       </AnimatePresence>
       <div className="wbn-journal-control">
         <IconButton
@@ -146,8 +178,13 @@ export function BottomToolbar() {
           </motion.span>
         </IconButton>
         <div className="wbn-toolbar-divider" />
-        <motion.div className="wbn-search-pill" animate={{ width: isSearchActive ? 320 : 40 }}>
+        <motion.div
+          ref={searchPillRef}
+          className={`wbn-search-pill${isSearchActive ? ' wbn-search-pill-active' : ''}`}
+          animate={{ width: isSearchActive ? 360 : 40 }}
+        >
           <IconButton
+            className="wbn-search-local-trigger"
             onClick={() => {
               if (isSearchActive) closeSearch();
               else setIsSearchActive(true);
@@ -160,12 +197,30 @@ export function BottomToolbar() {
             ref={searchInputRef}
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key !== 'Enter') return;
+              event.preventDefault();
+              runWebSearch();
+            }}
             placeholder={t('toolbar.searchPlaceholder')}
             style={{
               opacity: isSearchActive ? 1 : 0,
               pointerEvents: isSearchActive ? 'auto' : 'none',
             }}
           />
+          <IconButton
+            className="wbn-search-web-trigger"
+            disabled={!webSearchUrl}
+            onClick={runWebSearch}
+            aria-label={t('search.web')}
+            title={t('search.web')}
+            style={{
+              opacity: isSearchActive ? 1 : 0,
+              pointerEvents: isSearchActive ? 'auto' : 'none',
+            }}
+          >
+            <Globe2 size={17} />
+          </IconButton>
         </motion.div>
         {!isSystemPageId(activePageId) ? (
           <>
