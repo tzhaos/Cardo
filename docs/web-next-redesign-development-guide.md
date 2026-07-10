@@ -175,6 +175,7 @@ Cross-page box drag sequence:
 - Entering the page bar smoothly compresses the box into a compact card silhouette while non-header content fades away.
 - Hovering a page tab slightly depresses the tab, strengthens its label, and runs a quiet drop-ready pulse.
 - Releasing on another page plays a tab release ripple while the box springs from its compact state into the destination landing frame.
+- Box movement and resize update MotionValues directly during the pointer session and persist only the final frame; descendant item layout projection is suspended while the parent box moves so internal UI never visually detaches.
 
 ### Bottom toolbar
 

@@ -297,6 +297,15 @@
   cursor: grabbing;
 }
 
+.wbn-box-dragging .wbn-item-reorder-entry {
+  transition: none !important;
+  transform: none !important;
+}
+
+.wbn-box-dragging .wbn-item-drag-handle {
+  pointer-events: none;
+}
+
 .wbn-box.wbn-box-dragging-bar {
   box-shadow:
     0 20px 42px rgba(15, 23, 42, 0.2),

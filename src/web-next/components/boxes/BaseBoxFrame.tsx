@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { Lock, Plus, SquarePen, Trash2, X } from 'lucide-react';
-import { motion, useMotionValue, useSpring } from 'motion/react';
+import { animate as animateMotion, motion, useMotionValue, useSpring } from 'motion/react';
+import type { MotionStyle } from 'motion/react';
 import type { WorkspaceBox } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
@@ -40,6 +41,10 @@ export function BaseBoxFrame({ box, icon, accent, children, onAddItem }: BaseBox
   const [titleDraft, setTitleDraft] = useState(box.title);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const pointerSessionRef = useRef<WindowPointerSession | null>(null);
+  const boxLeft = useMotionValue(box.frame.x);
+  const boxTop = useMotionValue(box.frame.y);
+  const boxWidth = useMotionValue(box.frame.width);
+  const boxHeight = useMotionValue(box.frame.height);
   const dragTilt = useMotionValue(0);
   const smoothDragTilt = useSpring(dragTilt, { stiffness: 420, damping: 34, mass: 0.42 });
   const { t } = useI18n();
@@ -85,6 +90,7 @@ export function BaseBoxFrame({ box, icon, accent, children, onAddItem }: BaseBox
     const startX = event.clientX;
     const startY = event.clientY;
     const startFrame = box.frame;
+    let latestFrame = startFrame;
     const session = startWindowPointerSession({
       onMove: (moveEvent) => {
         const overTopBar = useUiStore.getState().boxDragOverTopBar;
@@ -93,14 +99,17 @@ export function BaseBoxFrame({ box, icon, accent, children, onAddItem }: BaseBox
             ? 0
             : Math.min(2.2, Math.max(-2.2, (moveEvent.clientX - startX) * 0.012)),
         );
-        updateBoxFrame(box.id, {
+        latestFrame = {
           ...startFrame,
           x: Math.max(8, Math.round(startFrame.x + moveEvent.clientX - startX)),
           y: Math.max(8, Math.round(startFrame.y + moveEvent.clientY - startY)),
-        });
+        };
+        boxLeft.set(latestFrame.x);
+        boxTop.set(latestFrame.y);
       },
       onEnd: (reason) => {
         dragTilt.set(0);
+        updateBoxFrame(box.id, latestFrame);
         if (pointerSessionRef.current === session) {
           pointerSessionRef.current = null;
         }
@@ -122,15 +131,19 @@ export function BaseBoxFrame({ box, icon, accent, children, onAddItem }: BaseBox
     const startX = event.clientX;
     const startY = event.clientY;
     const startFrame = box.frame;
+    let latestFrame = startFrame;
     const session = startWindowPointerSession({
       onMove: (moveEvent) => {
-        updateBoxFrame(box.id, {
+        latestFrame = {
           ...startFrame,
           width: Math.max(240, Math.round(startFrame.width + moveEvent.clientX - startX)),
           height: Math.max(170, Math.round(startFrame.height + moveEvent.clientY - startY)),
-        });
+        };
+        boxWidth.set(latestFrame.width);
+        boxHeight.set(latestFrame.height);
       },
       onEnd: () => {
+        updateBoxFrame(box.id, latestFrame);
         if (pointerSessionRef.current === session) {
           pointerSessionRef.current = null;
         }
@@ -165,6 +178,35 @@ export function BaseBoxFrame({ box, icon, accent, children, onAddItem }: BaseBox
     .join(' ');
 
   useEffect(() => {
+    boxWidth.set(box.frame.width);
+    boxHeight.set(box.frame.height);
+    if (dragging) {
+      return;
+    }
+
+    const positionTransition = dropReleased
+      ? { type: 'spring' as const, damping: 23, stiffness: 250, mass: 0.86 }
+      : { type: 'spring' as const, damping: 28, stiffness: 260 };
+    const leftAnimation = animateMotion(boxLeft, box.frame.x, positionTransition);
+    const topAnimation = animateMotion(boxTop, box.frame.y, positionTransition);
+    return () => {
+      leftAnimation.stop();
+      topAnimation.stop();
+    };
+  }, [
+    box.frame.height,
+    box.frame.width,
+    box.frame.x,
+    box.frame.y,
+    boxHeight,
+    boxLeft,
+    boxTop,
+    boxWidth,
+    dragging,
+    dropReleased,
+  ]);
+
+  useEffect(() => {
     if (draggingOverTopBar) {
       dragTilt.set(0);
     }
@@ -173,10 +215,8 @@ export function BaseBoxFrame({ box, icon, accent, children, onAddItem }: BaseBox
   return (
     <motion.article
       className={visualClassName}
-      initial={{ left: box.frame.x, top: box.frame.y, scale: 0.8, opacity: 0 }}
+      initial={{ scale: 0.8, opacity: 0 }}
       animate={{
-        left: box.frame.x,
-        top: box.frame.y,
         y: dragging && !draggingOverTopBar ? -7 : 0,
         scale: visualScale,
         opacity: draggingOverTopBar ? 0.94 : dragging ? 0.97 : 1,
@@ -184,18 +224,6 @@ export function BaseBoxFrame({ box, icon, accent, children, onAddItem }: BaseBox
       }}
       exit={{ scale: 0.8, opacity: 0 }}
       transition={{
-        left:
-          dragging
-            ? { duration: 0 }
-            : dropReleased
-              ? { type: 'spring', damping: 23, stiffness: 250, mass: 0.86 }
-              : { type: 'spring', damping: 28, stiffness: 260 },
-        top:
-          dragging
-            ? { duration: 0 }
-            : dropReleased
-              ? { type: 'spring', damping: 23, stiffness: 250, mass: 0.86 }
-              : { type: 'spring', damping: 28, stiffness: 260 },
         y: { type: 'spring', damping: 30, stiffness: 420, mass: 0.55 },
         scale: dropReleased
           ? { type: 'spring', damping: 19, stiffness: 285, mass: 0.78 }
@@ -246,14 +274,16 @@ export function BaseBoxFrame({ box, icon, accent, children, onAddItem }: BaseBox
       }}
       style={
         {
-          width: box.frame.width,
-          height: box.frame.height,
+          left: boxLeft,
+          top: boxTop,
+          width: boxWidth,
+          height: boxHeight,
           minWidth: 240,
           minHeight: 170,
           rotateZ: smoothDragTilt,
           transformOrigin: '50% 18%',
           '--box-accent': accent,
-        } as React.CSSProperties
+        } as MotionStyle & { '--box-accent': string }
       }
     >
       <header className="wbn-box-header" onPointerDown={beginDrag}>
