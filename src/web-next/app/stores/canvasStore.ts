@@ -29,6 +29,7 @@ interface CanvasStore {
     pageId: string,
     frame: { x: number; y: number; width: number; height: number },
   ) => void;
+  setZoom: (pageId: string, zoom: number, anchor?: CanvasPoint, animate?: boolean) => void;
   resetCamera: (pageId: string) => void;
   fitFrames: (
     pageId: string,
@@ -103,6 +104,35 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
       };
     });
     finishCameraAnimation(set, pageId);
+  },
+  setZoom: (pageId, zoom, anchor, shouldAnimate = false) => {
+    set((state) => {
+      const page = getPageCanvasState(state, pageId);
+      const target = anchor ?? {
+        x: state.viewportSize.width / 2,
+        y: state.viewportSize.height / 2,
+      };
+      const currentZoom = page.camera.zoom || 1;
+      const worldPoint = {
+        x: (target.x - page.camera.panX) / currentZoom,
+        y: (target.y - page.camera.panY) / currentZoom,
+      };
+      const camera = constrainCanvasCamera(
+        {
+          zoom,
+          panX: target.x - worldPoint.x * zoom,
+          panY: target.y - worldPoint.y * zoom,
+        },
+        state.viewportSize,
+      );
+      return {
+        pages: {
+          ...state.pages,
+          [pageId]: { ...page, camera, isCameraAnimating: shouldAnimate },
+        },
+      };
+    });
+    if (shouldAnimate) finishCameraAnimation(set, pageId);
   },
   resetCamera: (pageId) => {
     set((state) => ({

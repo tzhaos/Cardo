@@ -6,6 +6,7 @@ import { useCanvasPan } from '../../app/useCanvasPan';
 import { useCanvasViewport } from '../../app/useCanvasViewport';
 import { getPageCanvasState, useCanvasStore } from '../../app/stores/canvasStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
+import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import {
   clientPointToCanvasWorld,
   constrainBoxFrameToCanvas,
@@ -29,6 +30,8 @@ export function WorkspaceCanvas() {
   const createPage = useWorkspaceStore((state) => state.createPage);
   const viewportSize = useCanvasStore((state) => state.viewportSize);
   const resetCamera = useCanvasStore((state) => state.resetCamera);
+  const setZoom = useCanvasStore((state) => state.setZoom);
+  const canvasZoomEnabled = usePreferencesStore((state) => state.canvasZoomEnabled);
   const { openCanvasMenu } = useFloatingMenu();
   const { items: canvasLayoutItems } = useCanvasLayoutTools();
   const { t } = useI18n();
@@ -81,6 +84,17 @@ export function WorkspaceCanvas() {
       data-workspace-canvas
       ref={canvasRef}
       onPointerDownCapture={isCollection ? undefined : handlePointerDownCapture}
+      onWheel={(event) => {
+        if (!canvasZoomEnabled || isCollection) return;
+        event.preventDefault();
+        const rect = event.currentTarget.getBoundingClientRect();
+        const currentZoom = getPageCanvasState(useCanvasStore.getState(), snapshot.activePageId)
+          .camera.zoom;
+        setZoom(snapshot.activePageId, currentZoom * Math.exp(-event.deltaY * 0.0015), {
+          x: event.clientX - rect.left,
+          y: event.clientY - rect.top,
+        });
+      }}
       onContextMenu={(event) => {
         if (
           isCollection ||
