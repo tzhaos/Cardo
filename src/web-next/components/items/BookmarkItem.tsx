@@ -53,8 +53,16 @@ export function BookmarkItem({
           >
             <IconFrame
               className="wbn-item-glyph"
+              role="button"
+              tabIndex={0}
               onClick={() => {
                 void openExternalUrl(item.url);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  void openExternalUrl(item.url);
+                }
               }}
             >
               <Bookmark size={16} />

@@ -54,8 +54,16 @@ export function FolderItem({
           >
             <IconFrame
               className="wbn-item-glyph"
-              onDoubleClick={() => {
+              role="button"
+              tabIndex={0}
+              onClick={() => {
                 void openLocalResource(item.path);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  void openLocalResource(item.path);
+                }
               }}
             >
               <Icon size={16} />

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Check } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { ClipboardItem as ClipboardItemModel } from '../../domain/workspace';
 import { ItemDeleteView } from './ItemDeleteView';
@@ -6,6 +7,7 @@ import { ItemContentEditView } from './ItemContentEditView';
 import { ItemActions } from './ItemActions';
 import { useItemRename } from './useItemRename';
 import { writeClipboardText } from '../../platform/hostPlatform';
+import { useI18n } from '../../i18n/useI18n';
 
 export function ClipboardItem({
   boxId,
@@ -21,6 +23,7 @@ export function ClipboardItem({
   const [deleteView, setDeleteView] = useState(false);
   const [editView, setEditView] = useState(false);
   const copyResetRef = useRef<number | null>(null);
+  const { t } = useI18n();
 
   useEffect(
     () => () => {
@@ -47,6 +50,18 @@ export function ClipboardItem({
   return (
     <div
       className={`wbn-item-row wbn-clipboard-item${item.isPinned ? ' wbn-item-pinned' : ''}${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}${editView ? ' wbn-item-edit-state' : ''}`}
+      title={!deleteView && !editView ? t('item.copy') : undefined}
+      onClick={(event) => {
+        if (
+          deleteView ||
+          editView ||
+          (event.target instanceof Element &&
+            event.target.closest('button,input,textarea,form,.wbn-item-drag-handle'))
+        ) {
+          return;
+        }
+        void copyText();
+      }}
     >
       <AnimatePresence initial={false} mode="wait">
         {deleteView ? (
@@ -72,10 +87,22 @@ export function ClipboardItem({
             transition={{ duration: 0.15 }}
           >
             <p className="wbn-clipboard-body">{item.text}</p>
+            <AnimatePresence>
+              {copied ? (
+                <motion.span
+                  className="wbn-clipboard-copied"
+                  initial={{ opacity: 0, scale: 0.94 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ duration: 0.16 }}
+                >
+                  <Check size={15} />
+                  <span>{t('item.copied')}</span>
+                </motion.span>
+              ) : null}
+            </AnimatePresence>
             <ItemActions
-              copied={copied}
               pinned={Boolean(item.isPinned)}
-              onCopy={copyText}
               onPin={() => rename.setPinned(!item.isPinned)}
               onEdit={() => setEditView(true)}
               onDelete={() => setDeleteView(true)}
