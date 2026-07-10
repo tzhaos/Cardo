@@ -43,6 +43,18 @@ export function TabPill({
       inputRef.current?.select();
     }
   }, [renaming]);
+  useEffect(() => {
+    if (!renaming) return;
+
+    const commitOnOutsidePointer = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Element && target.closest('[data-top-bar]')) return;
+      inputRef.current?.blur();
+    };
+
+    window.addEventListener('pointerdown', commitOnOutsidePointer, true);
+    return () => window.removeEventListener('pointerdown', commitOnOutsidePointer, true);
+  }, [renaming]);
 
   const commitRename = () => {
     if (draft.trim()) onRename(draft);
