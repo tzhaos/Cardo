@@ -59,9 +59,6 @@ export function TopBar() {
     .filter((page): page is (typeof persistedPages)[number] => Boolean(page));
   const pageToDelete = workspacePages.find((page) => page.id === deletePageId);
   const deleteBoxCount = snapshot.boxes.filter((box) => box.pageId === deletePageId).length;
-  const recycleBinBoxCount = recycleBinPage
-    ? snapshot.boxes.filter((box) => box.pageId === recycleBinPage.id).length
-    : 0;
 
   useEffect(() => {
     if (!deletePageId) {
@@ -260,7 +257,6 @@ export function TopBar() {
             {recycleBinPage ? (
               <RecycleBinTab
                 active={recycleBinPage.id === snapshot.activePageId}
-                boxCount={recycleBinBoxCount}
                 highlighted={boxDropPageId === recycleBinPage.id}
                 page={recycleBinPage}
                 released={boxDropRelease?.pageId === recycleBinPage.id}

@@ -6,7 +6,6 @@ import { useI18n } from '../../i18n/useI18n';
 interface RecycleBinTabProps {
   page: WorkspacePage;
   active: boolean;
-  boxCount: number;
   highlighted: boolean;
   released: boolean;
   onActivate: () => void;
@@ -15,7 +14,6 @@ interface RecycleBinTabProps {
 export function RecycleBinTab({
   page,
   active,
-  boxCount,
   highlighted,
   released,
   onActivate,
@@ -55,19 +53,6 @@ export function RecycleBinTab({
           ) : null}
         </AnimatePresence>
         <Trash2 size={15} />
-        <span>{t('page.recycleBin')}</span>
-        <AnimatePresence initial={false}>
-          {boxCount > 0 ? (
-            <motion.span
-              className="wbn-recycle-bin-count"
-              initial={{ opacity: 0, scale: 0.72 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.72 }}
-            >
-              {boxCount}
-            </motion.span>
-          ) : null}
-        </AnimatePresence>
       </button>
     </motion.div>
   );

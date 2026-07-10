@@ -104,10 +104,9 @@
   display: inline-flex;
   min-height: 36px;
   align-items: center;
-  gap: 6px;
   border: 0;
   border-radius: 999px;
-  padding: 0 12px;
+  padding: 0 10px;
   background: transparent;
   color: var(--wbn-secondary-text);
   font-size: 13px;
@@ -128,20 +127,6 @@
 .wbn-recycle-bin-tab button:hover,
 .wbn-recycle-bin-tab-active button {
   color: var(--wbn-text);
-}
-
-.wbn-recycle-bin-count {
-  display: inline-flex;
-  min-width: 18px;
-  height: 18px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  padding: 0 5px;
-  background: var(--wbn-hover);
-  color: var(--wbn-secondary-text);
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
 }
 
 .wbn-recycle-bin-tab.wbn-box-drop-target button {
