@@ -5,6 +5,7 @@ import {
   isSystemPageId,
   type BoxItem,
   type WorkspaceBox,
+  type CollectionBoxView,
   type WorkspaceBoxPreset,
   type WorkspacePage,
   type WorkspaceSnapshot,
@@ -66,6 +67,13 @@ export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null
         ...new Set(input.collectionBoxIds.filter((id): id is string => typeof id === 'string')),
       ].filter((id) => collectableBoxIds.has(id))
     : [];
+  const storedCollectionViews = isRecord(input.collectionViews) ? input.collectionViews : {};
+  const collectionViews = Object.fromEntries(
+    collectionBoxIds.map((boxId, index) => {
+      const box = boxes.find((candidate) => candidate.id === boxId)!;
+      return [boxId, parseCollectionBoxView(storedCollectionViews[boxId], box, index)];
+    }),
+  );
 
   return {
     pages,
@@ -73,6 +81,48 @@ export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null
     defaultPageId,
     boxes,
     collectionBoxIds,
+    collectionViews,
+  };
+}
+
+function parseCollectionBoxView(
+  input: unknown,
+  box: WorkspaceBox,
+  index: number,
+): CollectionBoxView {
+  const fallback: CollectionBoxView = {
+    boxId: box.id,
+    frame: {
+      x: 64 + (index % 3) * 350,
+      y: 92 + Math.floor(index / 3) * 290,
+      width: Math.max(280, Math.min(520, box.frame.width)),
+      height: Math.max(220, Math.min(460, box.frame.height)),
+    },
+    viewMode: box.viewMode ?? 'list',
+    detailMode: box.detailMode ?? 'detailed',
+    order: index,
+  };
+  if (!isRecord(input) || !isRecord(input.frame)) return fallback;
+  const frame = input.frame;
+  if (
+    typeof frame.x !== 'number' ||
+    typeof frame.y !== 'number' ||
+    typeof frame.width !== 'number' ||
+    typeof frame.height !== 'number'
+  ) {
+    return fallback;
+  }
+  return {
+    boxId: box.id,
+    frame: {
+      x: frame.x,
+      y: frame.y,
+      width: Math.max(240, frame.width),
+      height: Math.max(170, frame.height),
+    },
+    viewMode: input.viewMode === 'grid' ? 'grid' : 'list',
+    detailMode: input.detailMode === 'compact' ? 'compact' : 'detailed',
+    order: typeof input.order === 'number' ? input.order : index,
   };
 }
 

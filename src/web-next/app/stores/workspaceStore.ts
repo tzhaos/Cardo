@@ -48,6 +48,7 @@ import {
   setItemPinned,
   updateBoxFrame,
   updatePageBoxFrames,
+  updateCollectionBoxView,
   updateItemContent,
   constrainWorkspaceFramesToViewport,
 } from '../../domain/reducers';
@@ -66,6 +67,11 @@ interface WorkspaceStore {
   createBox: (preset: WorkspaceBoxPreset, frame: BoxFrame, title?: string) => void;
   createTemporaryBox: (pageId: string, frame: BoxFrame) => string;
   updateBoxFrame: (boxId: string, frame: BoxFrame) => void;
+  updateCollectionBoxFrame: (boxId: string, frame: BoxFrame) => void;
+  updateCollectionBoxView: (
+    boxId: string,
+    patch: { viewMode?: WorkspaceBoxViewMode; detailMode?: WorkspaceBoxDetailMode; order?: number },
+  ) => void;
   applyPageBoxLayout: (pageId: string, frames: Record<string, BoxFrame>) => void;
   undo: () => void;
   redo: () => void;
@@ -108,6 +114,8 @@ export type WorkspaceHistoryAction =
   | 'arrangeBoxes'
   | 'collectBox'
   | 'removeCollectedBox'
+  | 'moveCollectionBox'
+  | 'resizeCollectionBox'
   | 'importData';
 
 interface WorkspaceHistoryEntry {
@@ -250,6 +258,31 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             ),
           );
         }),
+      updateCollectionBoxFrame: (boxId, frame) =>
+        set((state) => {
+          const current = state.snapshot.collectionViews?.[boxId]?.frame;
+          const action =
+            current && (current.width !== frame.width || current.height !== frame.height)
+              ? 'resizeCollectionBox'
+              : 'moveCollectionBox';
+          return recordHistory(
+            state,
+            updateCollectionBoxView(state.snapshot, boxId, { frame }),
+            action,
+            operation(
+              `collection.${action === 'resizeCollectionBox' ? 'resize' : 'move'}`,
+              getBoxTarget(state.snapshot, boxId),
+            ),
+          );
+        }),
+      updateCollectionBoxView: (boxId, patch) =>
+        set((state) =>
+          recordMutation(
+            state,
+            updateCollectionBoxView(state.snapshot, boxId, patch),
+            operation('collection.updateView', getBoxTarget(state.snapshot, boxId), patch),
+          ),
+        ),
       applyPageBoxLayout: (pageId, frames) =>
         set((state) =>
           recordHistory(
