@@ -4,7 +4,10 @@ import {
   clipboard,
   dialog,
   ipcMain,
+  Menu,
+  nativeImage,
   shell,
+  Tray,
   type Event,
   type IpcMainInvokeEvent,
   type WebContentsConsoleMessageEventParams,
@@ -21,6 +24,9 @@ declare const __KHAOSBOX_DEBUG_PACKAGE__: boolean;
 const isDebugPackage = __KHAOSBOX_DEBUG_PACKAGE__ || process.env.KHAOSBOX_DEBUG_PACKAGE === '1';
 const desktopAppRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 let debugLogPath: string | null = null;
+let mainWindow: BrowserWindow | null = null;
+let tray: Tray | null = null;
+let isQuitting = false;
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -42,6 +48,10 @@ function getRendererIndexPath() {
 
 function getPreloadScriptPath() {
   return getDesktopAppPath('main', 'preload.cjs');
+}
+
+function getTrayIconPath() {
+  return getDesktopAppPath('main', 'tray-icon.png');
 }
 
 function formatLogValue(value: unknown): string {
@@ -193,6 +203,77 @@ function registerWindowStateEvents(win: BrowserWindow) {
   win.on('restore', sendMaximizedState);
 }
 
+function showMainWindow() {
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    void createWindow();
+    return;
+  }
+
+  if (mainWindow.isMinimized()) {
+    mainWindow.restore();
+  }
+  mainWindow.show();
+  mainWindow.focus();
+  updateTrayMenu();
+}
+
+function hideMainWindow() {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.hide();
+  }
+  updateTrayMenu();
+}
+
+function toggleMainWindow() {
+  if (!mainWindow || mainWindow.isDestroyed() || !mainWindow.isVisible()) {
+    showMainWindow();
+  } else {
+    hideMainWindow();
+  }
+}
+
+function updateTrayMenu() {
+  if (!tray) {
+    return;
+  }
+
+  const windowVisible = Boolean(mainWindow && !mainWindow.isDestroyed() && mainWindow.isVisible());
+  tray.setContextMenu(
+    Menu.buildFromTemplate([
+      {
+        label: windowVisible ? '隐藏 KhaosBox' : '显示 KhaosBox',
+        click: () => toggleMainWindow(),
+      },
+      { type: 'separator' },
+      {
+        label: '退出',
+        click: () => {
+          isQuitting = true;
+          app.quit();
+        },
+      },
+    ]),
+  );
+}
+
+function createTray() {
+  if (tray) {
+    return;
+  }
+
+  const iconPath = getTrayIconPath();
+  const icon = nativeImage.createFromPath(iconPath);
+  if (icon.isEmpty()) {
+    console.error('Tray icon is missing', iconPath);
+    return;
+  }
+
+  tray = new Tray(icon);
+  tray.setToolTip('KhaosBox');
+  tray.on('click', toggleMainWindow);
+  updateTrayMenu();
+}
+
 async function readStateFile() {
   const statePath = path.join(app.getPath('userData'), 'state.json');
 
@@ -323,8 +404,23 @@ async function createWindow() {
       preload: preloadScript,
     },
   });
+  mainWindow = win;
   registerWindowDebugLogging(win);
   registerWindowStateEvents(win);
+  win.on('close', (event) => {
+    if (!isQuitting) {
+      event.preventDefault();
+      hideMainWindow();
+    }
+  });
+  win.on('show', updateTrayMenu);
+  win.on('hide', updateTrayMenu);
+  win.on('closed', () => {
+    if (mainWindow === win) {
+      mainWindow = null;
+    }
+    updateTrayMenu();
+  });
 
   if (process.env.KHAOSBOX_DESKTOP_DEV_SERVER_URL) {
     await win.loadURL(process.env.KHAOSBOX_DESKTOP_DEV_SERVER_URL);
@@ -339,16 +435,11 @@ const singleInstanceLock = app.requestSingleInstanceLock();
 if (!singleInstanceLock) {
   app.quit();
 } else {
+  app.setAppUserModelId('com.khaosbox.desktop');
   registerIpcHandlers();
 
   app.on('second-instance', () => {
-    const [win] = BrowserWindow.getAllWindows();
-    if (win) {
-      if (win.isMinimized()) {
-        win.restore();
-      }
-      win.focus();
-    }
+    showMainWindow();
   });
 
   void app
@@ -357,20 +448,28 @@ if (!singleInstanceLock) {
       initializeDebugLogging();
       registerDebugProcessHandlers();
       await createWindow();
+      createTray();
 
       app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) {
-          void createWindow();
-        }
+        showMainWindow();
       });
     })
     .catch((error: unknown) => {
       console.error(error);
     });
 
+  app.on('before-quit', () => {
+    isQuitting = true;
+  });
+
+  app.on('will-quit', () => {
+    tray?.destroy();
+    tray = null;
+  });
+
   app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
-      app.quit();
+    if (isQuitting) {
+      return;
     }
   });
 }
