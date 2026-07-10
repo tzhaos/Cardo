@@ -402,9 +402,8 @@ export function BaseBoxFrame({
               aria-label={t('box.changePreset')}
               onClick={(event) => {
                 closeMenu();
-                setAppearanceAnchor((current) =>
-                  current ? null : event.currentTarget.getBoundingClientRect(),
-                );
+                const triggerRect = event.currentTarget.getBoundingClientRect();
+                setAppearanceAnchor((current) => (current ? null : triggerRect));
               }}
             >
               {icon}
