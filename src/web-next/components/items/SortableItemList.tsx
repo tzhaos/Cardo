@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { GripVertical } from 'lucide-react';
 import { AnimatePresence, Reorder, useDragControls } from 'motion/react';
+import { useStagedOrder } from '../../app/motion/useStagedOrder';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import type { BoxItem } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
@@ -16,19 +17,31 @@ export function SortableItemList<TItem extends BoxItem>({
   renderItem: (item: TItem) => ReactNode;
 }) {
   const reorderItems = useWorkspaceStore((state) => state.reorderItems);
-  const itemIds = items.map((item) => item.id);
+  const { orderedIds, startReordering, updateOrder, finishReordering } = useStagedOrder(
+    items,
+    (orderedItemIds) => reorderItems(boxId, orderedItemIds),
+  );
+  const itemsById = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
+  const orderedItems = orderedIds
+    .map((itemId) => itemsById.get(itemId))
+    .filter((item): item is TItem => Boolean(item));
 
   return (
     <Reorder.Group
       as="div"
       axis="y"
       className="wbn-item-list"
-      values={itemIds}
-      onReorder={(orderedItemIds) => reorderItems(boxId, orderedItemIds)}
+      values={orderedIds}
+      onReorder={updateOrder}
     >
       <AnimatePresence initial={false}>
-        {items.map((item) => (
-          <SortableItemEntry itemId={item.id} key={item.id}>
+        {orderedItems.map((item) => (
+          <SortableItemEntry
+            itemId={item.id}
+            key={item.id}
+            onReorderEnd={finishReordering}
+            onReorderStart={startReordering}
+          >
             {renderItem(item)}
           </SortableItemEntry>
         ))}
@@ -37,7 +50,17 @@ export function SortableItemList<TItem extends BoxItem>({
   );
 }
 
-function SortableItemEntry({ itemId, children }: { itemId: string; children: ReactNode }) {
+function SortableItemEntry({
+  itemId,
+  children,
+  onReorderEnd,
+  onReorderStart,
+}: {
+  itemId: string;
+  children: ReactNode;
+  onReorderEnd: () => void;
+  onReorderStart: () => void;
+}) {
   const controls = useDragControls();
   const [dragging, setDragging] = useState(false);
   const { t } = useI18n();
@@ -65,8 +88,14 @@ function SortableItemEntry({ itemId, children }: { itemId: string; children: Rea
         opacity: { duration: 0.16 },
         scale: { type: 'spring', stiffness: 520, damping: 38, mass: 0.62 },
       }}
-      onDragStart={() => setDragging(true)}
-      onDragEnd={() => setDragging(false)}
+      onDragStart={() => {
+        setDragging(true);
+        onReorderStart();
+      }}
+      onDragEnd={() => {
+        setDragging(false);
+        onReorderEnd();
+      }}
     >
       <button
         className="wbn-item-drag-handle"

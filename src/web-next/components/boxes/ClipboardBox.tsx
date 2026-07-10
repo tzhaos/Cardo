@@ -7,7 +7,13 @@ import { ClipboardAddView } from './add-views/ClipboardAddView';
 import { BaseBoxFrame } from './BaseBoxFrame';
 import { useI18n } from '../../i18n/useI18n';
 
-export function ClipboardBox({ box }: { box: WorkspaceBox }) {
+export function ClipboardBox({
+  box,
+  skipEntryAnimation = false,
+}: {
+  box: WorkspaceBox;
+  skipEntryAnimation?: boolean;
+}) {
   const draftState = useUiStore((state) => state.addDrafts[box.id]);
   const openAddView = useUiStore((state) => state.openAddView);
   const items = box.items.filter((item) => item.type === 'clipboard');
@@ -19,6 +25,7 @@ export function ClipboardBox({ box }: { box: WorkspaceBox }) {
       icon={<Clipboard size={16} />}
       accent="#10b981"
       onAddItem={() => openAddView(box.id)}
+      skipEntryAnimation={skipEntryAnimation}
     >
       {draftState?.mode ? (
         <ClipboardAddView boxId={box.id} />

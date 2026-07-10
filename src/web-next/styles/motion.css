@@ -18,61 +18,51 @@
 @keyframes wbn-tab-drop-ready {
   0%,
   100% {
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--wbn-blue) 12%, transparent);
-    opacity: 0.72;
+    opacity: 0.36;
+    transform: scale(0.96);
   }
 
   50% {
-    box-shadow: 0 0 0 7px color-mix(in srgb, var(--wbn-blue) 4%, transparent);
-    opacity: 1;
+    opacity: 0.72;
+    transform: scale(1.08);
   }
 }
 
 @keyframes wbn-tab-drop-release {
   0% {
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--wbn-blue) 28%, transparent);
+    opacity: 0.8;
     transform: scale(0.96);
   }
 
   45% {
-    box-shadow: 0 0 0 10px color-mix(in srgb, var(--wbn-blue) 7%, transparent);
+    opacity: 0.2;
     transform: scale(1.04);
   }
 
   100% {
-    box-shadow: 0 0 0 0 transparent;
+    opacity: 1;
     transform: scale(1);
   }
 }
 
-@keyframes wbn-box-drop-settle {
-  0% {
-    box-shadow:
-      0 24px 48px rgba(15, 23, 42, 0.18),
-      0 0 0 5px color-mix(in srgb, var(--wbn-blue) 14%, transparent);
-  }
-
-  100% {
-    box-shadow: var(--wbn-shadow);
-  }
-}
-
-.wbn-box-drop-target .wbn-tab-pill > button::after {
+.wbn-box-drop-target .wbn-tab-pill > button::after,
+.wbn-box-drop-released .wbn-tab-pill > button::after {
   position: absolute;
   z-index: -1;
   inset: -3px;
   border-radius: 999px;
+  border: 2px solid color-mix(in srgb, var(--wbn-blue) 48%, transparent);
   content: '';
   pointer-events: none;
+  will-change: opacity, transform;
+}
+
+.wbn-box-drop-target .wbn-tab-pill > button::after {
   animation: wbn-tab-drop-ready 880ms ease-in-out infinite;
 }
 
-.wbn-box-drop-released .wbn-tab-pill > button {
+.wbn-box-drop-released .wbn-tab-pill > button::after {
   animation: wbn-tab-drop-release 560ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-
-.wbn-box.wbn-box-drop-released {
-  animation: wbn-box-drop-settle 680ms ease-out both;
 }
 
 @media (prefers-reduced-motion: reduce) {

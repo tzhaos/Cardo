@@ -19,9 +19,17 @@ interface BaseBoxFrameProps {
   accent: string;
   children: ReactNode;
   onAddItem: () => void;
+  skipEntryAnimation?: boolean;
 }
 
-export function BaseBoxFrame({ box, icon, accent, children, onAddItem }: BaseBoxFrameProps) {
+export function BaseBoxFrame({
+  box,
+  icon,
+  accent,
+  children,
+  onAddItem,
+  skipEntryAnimation = false,
+}: BaseBoxFrameProps) {
   const updateBoxFrame = useWorkspaceStore((state) => state.updateBoxFrame);
   const renameBox = useWorkspaceStore((state) => state.renameBox);
   const deleteBox = useWorkspaceStore((state) => state.deleteBox);
@@ -95,9 +103,7 @@ export function BaseBoxFrame({ box, icon, accent, children, onAddItem }: BaseBox
       onMove: (moveEvent) => {
         const overTopBar = useUiStore.getState().boxDragOverTopBar;
         dragTilt.set(
-          overTopBar
-            ? 0
-            : Math.min(2.2, Math.max(-2.2, (moveEvent.clientX - startX) * 0.012)),
+          overTopBar ? 0 : Math.min(2.2, Math.max(-2.2, (moveEvent.clientX - startX) * 0.012)),
         );
         latestFrame = {
           ...startFrame,
@@ -156,10 +162,7 @@ export function BaseBoxFrame({ box, icon, accent, children, onAddItem }: BaseBox
   const draggingOverTopBar = dragging && boxDragOverTopBar;
   const draggingOverTab = draggingOverTopBar && boxDropPageId !== null;
   const dropReleased = boxDropRelease?.boxId === box.id;
-  const compactScale = Math.max(
-    0.22,
-    Math.min(0.46, 136 / box.frame.width, 86 / box.frame.height),
-  );
+  const compactScale = Math.max(0.22, Math.min(0.46, 136 / box.frame.width, 86 / box.frame.height));
   const visualScale = draggingOverTopBar
     ? compactScale * (draggingOverTab ? 0.9 : 1)
     : dragging
@@ -215,14 +218,13 @@ export function BaseBoxFrame({ box, icon, accent, children, onAddItem }: BaseBox
   return (
     <motion.article
       className={visualClassName}
-      initial={{ scale: 0.8, opacity: 0 }}
+      initial={skipEntryAnimation ? false : { scale: 0.8, opacity: 0 }}
       animate={{
         y: dragging && !draggingOverTopBar ? -7 : 0,
         scale: visualScale,
         opacity: draggingOverTopBar ? 0.94 : dragging ? 0.97 : 1,
         borderRadius: draggingOverTopBar ? 24 : 16,
       }}
-      exit={{ scale: 0.8, opacity: 0 }}
       transition={{
         y: { type: 'spring', damping: 30, stiffness: 420, mass: 0.55 },
         scale: dropReleased

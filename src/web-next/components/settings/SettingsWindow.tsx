@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion, useMotionValue } from 'motion/react';
 import {
   clampIndependentMenuPosition,
   useIndependentMenuStore,
@@ -17,13 +17,25 @@ export function SettingsWindow() {
   const moveMenu = useIndependentMenuStore((state) => state.moveMenu);
   const windowRef = useRef<HTMLElement>(null);
   const dragSessionRef = useRef<WindowPointerSession | null>(null);
+  const draggingRef = useRef(false);
+  const positionX = useMotionValue(menu.position.x);
+  const positionY = useMotionValue(menu.position.y);
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    return () => {
       dragSessionRef.current?.end();
-    },
-    [],
-  );
+      document.body.classList.remove('wbn-independent-menu-dragging');
+    };
+  }, []);
+
+  useEffect(() => {
+    if (draggingRef.current) {
+      return;
+    }
+
+    positionX.set(menu.position.x);
+    positionY.set(menu.position.y);
+  }, [menu.position.x, menu.position.y, positionX, positionY]);
 
   useEffect(() => {
     if (!menu.open) {
@@ -74,6 +86,7 @@ export function SettingsWindow() {
     let latestPosition = { x: Math.round(rect.left), y: Math.round(rect.top) };
 
     dragSessionRef.current?.end();
+    draggingRef.current = true;
     document.body.classList.add('wbn-independent-menu-dragging');
     const session = startWindowPointerSession({
       onMove: (moveEvent) => {
@@ -85,10 +98,11 @@ export function SettingsWindow() {
           { width: rect.width, height: rect.height },
           { width: window.innerWidth, height: window.innerHeight },
         );
-        element.style.left = `${latestPosition.x}px`;
-        element.style.top = `${latestPosition.y}px`;
+        positionX.set(latestPosition.x);
+        positionY.set(latestPosition.y);
       },
       onEnd: () => {
+        draggingRef.current = false;
         document.body.classList.remove('wbn-independent-menu-dragging');
         if (dragSessionRef.current === session) {
           dragSessionRef.current = null;
@@ -107,11 +121,11 @@ export function SettingsWindow() {
           data-independent-menu="settings"
           id="wbn-settings-window"
           ref={windowRef}
-          initial={{ opacity: 0, scale: 0.94, y: 16 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.96, y: 10 }}
+          initial={{ opacity: 0, scale: 0.94 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.96 }}
           transition={{ type: 'spring', stiffness: 340, damping: 28 }}
-          style={{ left: menu.position.x, top: menu.position.y }}
+          style={{ left: 0, top: 0, x: positionX, y: positionY }}
         >
           <SettingsPanel onClose={() => closeMenu('settings')} onHeaderPointerDown={beginDrag} />
         </motion.aside>

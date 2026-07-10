@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { Check, Pencil, Plus } from 'lucide-react';
 import { AnimatePresence, motion, Reorder } from 'motion/react';
 import { useUiStore } from '../../app/stores/uiStore';
+import { useStagedOrder } from '../../app/motion/useStagedOrder';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
+import { createLatestFrameScheduler } from '../../app/motion/frameScheduler';
 import { startWindowPointerSession } from '../../app/windowPointerSession';
 import { findPageLandingFrame } from '../../domain/placement';
 import { useI18n } from '../../i18n/useI18n';
@@ -31,12 +33,24 @@ export function TopBar() {
   const [deletePageId, setDeletePageId] = useState<string | null>(null);
   const { t } = useI18n();
 
-  const pages = useMemo(
+  const persistedPages = useMemo(
     () => [...snapshot.pages].sort((first, second) => first.order - second.order),
     [snapshot.pages],
   );
-  const pageToDelete = pages.find((page) => page.id === deletePageId);
-  const pageIds = pages.map((page) => page.id);
+  const {
+    orderedIds: pageIds,
+    startReordering,
+    updateOrder,
+    finishReordering,
+  } = useStagedOrder(persistedPages, reorderPages);
+  const pagesById = useMemo(
+    () => new Map(persistedPages.map((page) => [page.id, page])),
+    [persistedPages],
+  );
+  const pages = pageIds
+    .map((pageId) => pagesById.get(pageId))
+    .filter((page): page is (typeof persistedPages)[number] => Boolean(page));
+  const pageToDelete = persistedPages.find((page) => page.id === deletePageId);
   const deleteBoxCount = snapshot.boxes.filter((box) => box.pageId === deletePageId).length;
 
   useEffect(() => {
@@ -77,6 +91,8 @@ export function TopBar() {
       return;
     }
 
+    const topBarElement = document.querySelector<HTMLElement>('[data-top-bar]');
+    let topBarRect = topBarElement?.getBoundingClientRect();
     const resolveDropPageId = (clientX: number, clientY: number) => {
       const target = document
         .elementsFromPoint(clientX, clientY)
@@ -85,39 +101,39 @@ export function TopBar() {
       return target?.dataset.pageDropId ?? null;
     };
     const resolveTopBarHover = (clientX: number, clientY: number) => {
-      const rect = document.querySelector<HTMLElement>('[data-top-bar]')?.getBoundingClientRect();
       return Boolean(
-        rect &&
-          clientX >= rect.left - 8 &&
-          clientX <= rect.right + 8 &&
-          clientY >= rect.top - 10 &&
-          clientY <= rect.bottom + 10,
+        topBarRect &&
+        clientX >= topBarRect.left - 8 &&
+        clientX <= topBarRect.right + 8 &&
+        clientY >= topBarRect.top - 10 &&
+        clientY <= topBarRect.bottom + 10,
       );
+    };
+    const updateDropTarget = ({ clientX, clientY }: { clientX: number; clientY: number }) => {
+      const overTopBar = resolveTopBarHover(clientX, clientY);
+      setBoxDragOverTopBar(overTopBar);
+      setBoxDropPage(overTopBar ? resolveDropPageId(clientX, clientY) : null);
+    };
+    const frameScheduler = createLatestFrameScheduler(updateDropTarget);
+    const updateTopBarRect = () => {
+      topBarRect = topBarElement?.getBoundingClientRect();
     };
 
     const session = startWindowPointerSession({
       onMove: (event) => {
-        const overTopBar = resolveTopBarHover(event.clientX, event.clientY);
-        setBoxDragOverTopBar(overTopBar);
-        setBoxDropPage(overTopBar ? resolveDropPageId(event.clientX, event.clientY) : null);
+        frameScheduler.schedule({ clientX: event.clientX, clientY: event.clientY });
       },
       onEnd: (reason, event) => {
         if (reason === 'pointerup' && event instanceof PointerEvent) {
           const currentSnapshot = useWorkspaceStore.getState().snapshot;
           const targetPageId =
-            resolveDropPageId(event.clientX, event.clientY) ??
-            useUiStore.getState().boxDropPageId;
+            resolveDropPageId(event.clientX, event.clientY) ?? useUiStore.getState().boxDropPageId;
           const movingBox = currentSnapshot.boxes.find((box) => box.id === draggedBoxId);
           if (targetPageId && movingBox && movingBox.pageId !== targetPageId) {
-            const landingFrame = findPageLandingFrame(
-              currentSnapshot,
-              draggedBoxId,
-              targetPageId,
-              {
-                width: window.innerWidth,
-                height: window.innerHeight,
-              },
-            );
+            const landingFrame = findPageLandingFrame(currentSnapshot, draggedBoxId, targetPageId, {
+              width: window.innerWidth,
+              height: window.innerHeight,
+            });
             finishBoxDrop(draggedBoxId, targetPageId);
             moveBoxToPage(draggedBoxId, targetPageId, landingFrame ?? undefined);
           }
@@ -126,7 +142,12 @@ export function TopBar() {
       },
     });
 
-    return session.dispose;
+    window.addEventListener('resize', updateTopBarRect);
+    return () => {
+      frameScheduler.cancel();
+      window.removeEventListener('resize', updateTopBarRect);
+      session.dispose();
+    };
   }, [
     draggedBoxId,
     endBoxDrag,
@@ -145,11 +166,7 @@ export function TopBar() {
     .join(' ');
 
   return (
-    <header
-      className={topBarClassName}
-      data-editing={editing || undefined}
-      data-top-bar
-    >
+    <header className={topBarClassName} data-editing={editing || undefined} data-top-bar>
       <AnimatePresence mode="popLayout">
         {pageToDelete ? (
           <motion.div
@@ -183,7 +200,7 @@ export function TopBar() {
               axis="x"
               className="wbn-tabs"
               values={pageIds}
-              onReorder={reorderPages}
+              onReorder={updateOrder}
               aria-label={t('page.workspacePages')}
             >
               <AnimatePresence mode="popLayout">
@@ -206,6 +223,8 @@ export function TopBar() {
                     exit={{ opacity: 0, scale: 0.8, width: 0 }}
                     whileDrag={{ opacity: 0.68, scale: 1.03, zIndex: 80 }}
                     transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
+                    onDragStart={startReordering}
+                    onDragEnd={finishReordering}
                   >
                     <TabPill
                       active={page.id === snapshot.activePageId}

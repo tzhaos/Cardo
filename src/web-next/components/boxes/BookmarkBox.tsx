@@ -7,7 +7,13 @@ import { BookmarkAddView } from './add-views/BookmarkAddView';
 import { BaseBoxFrame } from './BaseBoxFrame';
 import { useI18n } from '../../i18n/useI18n';
 
-export function BookmarkBox({ box }: { box: WorkspaceBox }) {
+export function BookmarkBox({
+  box,
+  skipEntryAnimation = false,
+}: {
+  box: WorkspaceBox;
+  skipEntryAnimation?: boolean;
+}) {
   const draftState = useUiStore((state) => state.addDrafts[box.id]);
   const openAddView = useUiStore((state) => state.openAddView);
   const items = box.items.filter((item) => item.type === 'bookmark');
@@ -19,6 +25,7 @@ export function BookmarkBox({ box }: { box: WorkspaceBox }) {
       icon={<Bookmark size={16} />}
       accent="#f97316"
       onAddItem={() => openAddView(box.id)}
+      skipEntryAnimation={skipEntryAnimation}
     >
       {draftState?.mode ? (
         <BookmarkAddView boxId={box.id} />

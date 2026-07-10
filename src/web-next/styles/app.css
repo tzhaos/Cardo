@@ -238,6 +238,7 @@
   box-shadow:
     var(--wbn-shadow-hover),
     0 0 0 5px color-mix(in srgb, var(--wbn-blue) 8%, transparent);
+  backdrop-filter: none;
 }
 
 .wbn-box-drop-target .wbn-tab-pill {
@@ -278,9 +279,9 @@
   border-radius: 16px;
   background-image: linear-gradient(to bottom, var(--wbn-panel), var(--wbn-panel-bottom));
   box-shadow: var(--wbn-shadow);
-  transition:
-    box-shadow 180ms ease,
-    opacity 180ms ease;
+  content-visibility: auto;
+  contain-intrinsic-size: 320px 240px;
+  transition: box-shadow 180ms ease;
 }
 
 .wbn-box:hover {
@@ -906,7 +907,11 @@
   background: var(--wbn-surface-strong);
   box-shadow: var(--wbn-shadow-hover);
   backdrop-filter: blur(18px);
-  will-change: left, top, transform;
+}
+
+body.wbn-independent-menu-dragging .wbn-independent-menu {
+  backdrop-filter: none;
+  will-change: transform;
 }
 
 .wbn-settings-panel {

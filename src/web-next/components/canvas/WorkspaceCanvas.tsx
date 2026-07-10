@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useDeferredValue, useMemo } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { SearchX } from 'lucide-react';
 import type { WorkspaceBoxType } from '../../domain/workspace';
@@ -13,11 +13,12 @@ export function WorkspaceCanvas() {
   const createBox = useWorkspaceStore((state) => state.createBox);
   const createPage = useWorkspaceStore((state) => state.createPage);
   const searchQuery = useUiStore((state) => state.searchQuery);
+  const deferredSearchQuery = useDeferredValue(searchQuery);
   const { openCanvasMenu } = useFloatingMenu();
   const { t } = useI18n();
   const boxes = useMemo(() => {
     const activeBoxes = snapshot.boxes.filter((box) => box.pageId === snapshot.activePageId);
-    const query = searchQuery.trim().toLowerCase();
+    const query = deferredSearchQuery.trim().toLowerCase();
     if (!query) {
       return activeBoxes;
     }
@@ -26,7 +27,8 @@ export function WorkspaceCanvas() {
         box.title.toLowerCase().includes(query) ||
         box.items.some((item) => item.title.toLowerCase().includes(query)),
     );
-  }, [searchQuery, snapshot.activePageId, snapshot.boxes]);
+  }, [deferredSearchQuery, snapshot.activePageId, snapshot.boxes]);
+  const isSearchFiltering = Boolean(deferredSearchQuery.trim());
 
   return (
     <main
@@ -42,13 +44,11 @@ export function WorkspaceCanvas() {
         });
       }}
     >
-      <AnimatePresence mode="popLayout">
-        {boxes.map((box) => (
-          <WorkspaceBoxRenderer box={box} key={box.id} />
-        ))}
-      </AnimatePresence>
+      {boxes.map((box) => (
+        <WorkspaceBoxRenderer box={box} key={box.id} skipEntryAnimation={isSearchFiltering} />
+      ))}
       <AnimatePresence>
-        {searchQuery.trim() && boxes.length === 0 ? (
+        {isSearchFiltering && boxes.length === 0 ? (
           <motion.div
             className="wbn-search-feedback"
             initial={{ opacity: 0, y: 8 }}

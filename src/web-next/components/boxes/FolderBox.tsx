@@ -7,7 +7,13 @@ import { FolderAddView } from './add-views/FolderAddView';
 import { BaseBoxFrame } from './BaseBoxFrame';
 import { useI18n } from '../../i18n/useI18n';
 
-export function FolderBox({ box }: { box: WorkspaceBox }) {
+export function FolderBox({
+  box,
+  skipEntryAnimation = false,
+}: {
+  box: WorkspaceBox;
+  skipEntryAnimation?: boolean;
+}) {
   const draftState = useUiStore((state) => state.addDrafts[box.id]);
   const openAddView = useUiStore((state) => state.openAddView);
   const items = box.items.filter((item) => item.type === 'folder');
@@ -19,6 +25,7 @@ export function FolderBox({ box }: { box: WorkspaceBox }) {
       icon={<Folder size={16} />}
       accent="#3b82f6"
       onAddItem={() => openAddView(box.id)}
+      skipEntryAnimation={skipEntryAnimation}
     >
       {draftState?.mode ? (
         <FolderAddView boxId={box.id} />
