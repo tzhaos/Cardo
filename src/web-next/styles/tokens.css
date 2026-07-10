@@ -1,0 +1,94 @@
+:root {
+  color-scheme: light;
+  font-family:
+    'Inter Variable',
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  --wbn-canvas: #f0f0f2;
+  --wbn-surface: rgba(255, 255, 255, 0.8);
+  --wbn-surface-strong: rgba(255, 255, 255, 0.94);
+  --wbn-panel: #ffffff;
+  --wbn-panel-bottom: #f7f7f8;
+  --wbn-panel-content: rgba(255, 255, 255, 0.52);
+  --wbn-panel-chrome: rgba(255, 255, 255, 0.42);
+  --wbn-border: rgba(0, 0, 0, 0.05);
+  --wbn-border-subtle: #f3f4f6;
+  --wbn-divider: rgba(229, 231, 235, 0.95);
+  --wbn-text: #111827;
+  --wbn-soft-text: #374151;
+  --wbn-secondary-text: #6b7280;
+  --wbn-muted: #9ca3af;
+  --wbn-hover: rgba(0, 0, 0, 0.05);
+  --wbn-active: rgba(0, 0, 0, 0.05);
+  --wbn-input: #ffffff;
+  --wbn-item-hover: #ffffff;
+  --wbn-glyph: #f9fafb;
+  --wbn-neutral-button: #e5e7eb;
+  --wbn-neutral-button-hover: #d1d5db;
+  --wbn-create-background: #111827;
+  --wbn-create-text: #ffffff;
+  --wbn-scrollbar: rgba(0, 0, 0, 0.15);
+  --wbn-scrollbar-hover: rgba(0, 0, 0, 0.25);
+  --wbn-blue: #3b82f6;
+  --wbn-orange: #f97316;
+  --wbn-purple: #a855f7;
+  --wbn-emerald: #10b981;
+  --wbn-red: #ef4444;
+  --wbn-inset-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  --wbn-selection-ring: rgba(59, 130, 246, 0.18);
+  --wbn-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.02), 0 2px 2px rgba(0, 0, 0, 0.02), 0 4px 4px rgba(0, 0, 0, 0.02),
+    0 8px 8px rgba(0, 0, 0, 0.02), 0 16px 16px rgba(0, 0, 0, 0.02);
+  --wbn-shadow-hover:
+    0 2px 2px rgba(0, 0, 0, 0.03), 0 4px 4px rgba(0, 0, 0, 0.03), 0 8px 8px rgba(0, 0, 0, 0.03),
+    0 16px 16px rgba(0, 0, 0, 0.03), 0 32px 32px rgba(0, 0, 0, 0.03),
+    0 64px 64px rgba(0, 0, 0, 0.03);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: inherit;
+  color: var(--wbn-text);
+  background: var(--wbn-canvas);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:focus {
+  outline: none;
+}
+
+button:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.56);
+  outline-offset: 2px;
+}
+
+svg {
+  display: block;
+  flex: 0 0 auto;
+}

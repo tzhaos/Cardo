@@ -1,10 +1,5 @@
-import '../../web/index.css';
-import { configureAppPorts } from '../../web/app/ports/defaultPorts';
-import { renderRoot } from '../../web/app/bootstrap/renderRoot';
-import { createExtensionPorts } from '../ports/createExtensionPorts';
+import '../../web-next/app/styles.css';
+import WebNextApp from '../../web-next/app/WebNextApp';
+import { renderWebNextRoot } from '../../web-next/app/bootstrap';
 
-configureAppPorts(createExtensionPorts());
-
-void import('../../web/app/KhaosBoxApp').then(({ default: KhaosBoxApp }) => {
-  renderRoot(<KhaosBoxApp />);
-});
+renderWebNextRoot(<WebNextApp />);
