@@ -3354,6 +3354,12 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
   background: var(--wbn-create-background) !important;
   color: var(--wbn-create-text) !important;
   box-shadow: var(--wbn-shadow);
+  will-change: transform;
+}
+
+.wbn-toolbar-create:hover {
+  box-shadow: 0 7px 16px color-mix(in srgb, var(--wbn-create-background) 30%, transparent);
+  transform: translateY(-1px) scale(1.04);
 }
 
 .wbn-toolbar-create:active {
