@@ -3357,6 +3357,26 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
     0 0 0 2px var(--wbn-selection-ring);
 }
 
+.wbn-box-highlighted {
+  animation: wbn-box-search-highlight 1.8s ease-out;
+}
+
+@keyframes wbn-box-search-highlight {
+  0%,
+  35% {
+    box-shadow:
+      var(--wbn-shadow-hover),
+      0 0 0 4px var(--box-accent),
+      0 0 0 12px color-mix(in srgb, var(--box-accent) 24%, transparent);
+  }
+
+  100% {
+    box-shadow:
+      var(--wbn-shadow-hover),
+      0 0 0 2px var(--wbn-selection-ring);
+  }
+}
+
 /* Prototype alignment overrides */
 .wbn-tab-pill {
   min-height: 36px;

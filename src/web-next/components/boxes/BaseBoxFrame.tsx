@@ -73,6 +73,7 @@ export function BaseBoxFrame({
   const boxDropPageId = useUiStore((state) => state.boxDropPageId);
   const boxDropRelease = useUiStore((state) => state.boxDropRelease);
   const selectedBoxId = useUiStore((state) => state.selectedBoxId);
+  const highlightedBoxId = useUiStore((state) => state.highlightedBoxId);
   const selectBox = useUiStore((state) => state.selectBox);
   const addViewState = useUiStore((state) => state.addDrafts[box.id]);
   const closeAddView = useUiStore((state) => state.closeAddView);
@@ -263,6 +264,7 @@ export function BaseBoxFrame({
     draggingOverTab ? 'wbn-box-dragging-tab' : '',
     dropReleased ? 'wbn-box-drop-released' : '',
     selectedBoxId === box.id ? 'wbn-box-selected' : '',
+    highlightedBoxId === box.id ? 'wbn-box-highlighted' : '',
     detailMode === 'compact' ? 'wbn-box-compact' : '',
     box.isLocked ? 'wbn-box-locked' : '',
     isTemporary ? 'wbn-box-temporary' : '',

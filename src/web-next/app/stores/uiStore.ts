@@ -21,9 +21,11 @@ interface UiStore {
     entryTransformOrigin: string;
   } | null;
   selectedBoxId: string | null;
+  highlightedBoxId: string | null;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   selectBox: (boxId: string | null) => void;
+  highlightBox: (boxId: string) => void;
   openAddView: (boxId: string, itemType?: WorkspaceItemType) => void;
   selectAddItemType: (boxId: string, itemType: WorkspaceItemType) => void;
   updateDraft: (boxId: string, patch: Record<string, string>) => void;
@@ -44,6 +46,7 @@ interface UiStore {
 }
 
 const emptyDraft: AddDraftState = { mode: false, draft: {} };
+let boxHighlightTimeout: number | null = null;
 
 export const useUiStore = create<UiStore>((set) => ({
   addDrafts: {},
@@ -52,9 +55,18 @@ export const useUiStore = create<UiStore>((set) => ({
   boxDropPageId: null,
   boxDropRelease: null,
   selectedBoxId: null,
+  highlightedBoxId: null,
   searchQuery: '',
   setSearchQuery: (query) => set({ searchQuery: query }),
   selectBox: (boxId) => set({ selectedBoxId: boxId }),
+  highlightBox: (boxId) => {
+    if (boxHighlightTimeout !== null) window.clearTimeout(boxHighlightTimeout);
+    set({ highlightedBoxId: boxId });
+    boxHighlightTimeout = window.setTimeout(() => {
+      boxHighlightTimeout = null;
+      set((state) => (state.highlightedBoxId === boxId ? { highlightedBoxId: null } : state));
+    }, 1800);
+  },
   openAddView: (boxId, itemType) =>
     set((state) => ({
       selectedBoxId: boxId,

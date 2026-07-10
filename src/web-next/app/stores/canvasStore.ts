@@ -25,6 +25,10 @@ interface CanvasStore {
   isPanModifierActive: boolean;
   setViewportSize: (viewportSize: CanvasViewportSize) => void;
   panBy: (pageId: string, delta: CanvasPoint) => void;
+  focusFrame: (
+    pageId: string,
+    frame: { x: number; y: number; width: number; height: number },
+  ) => void;
   resetCamera: (pageId: string) => void;
   fitFrames: (
     pageId: string,
@@ -79,6 +83,27 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
         },
       };
     }),
+  focusFrame: (pageId, frame) => {
+    set((state) => {
+      if (state.viewportSize.width <= 0 || state.viewportSize.height <= 0) return state;
+      const page = getPageCanvasState(state, pageId);
+      const camera = constrainCanvasCamera(
+        {
+          ...page.camera,
+          panX: state.viewportSize.width / 2 - (frame.x + frame.width / 2) * page.camera.zoom,
+          panY: state.viewportSize.height / 2 - (frame.y + frame.height / 2) * page.camera.zoom,
+        },
+        state.viewportSize,
+      );
+      return {
+        pages: {
+          ...state.pages,
+          [pageId]: { ...page, camera, isCameraAnimating: true },
+        },
+      };
+    });
+    finishCameraAnimation(set, pageId);
+  },
   resetCamera: (pageId) => {
     set((state) => ({
       pages: {
