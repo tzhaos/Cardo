@@ -239,6 +239,7 @@ export function TopBar() {
 
   const topBarClassName = [
     'wbn-top-bar',
+    pageToDelete ? 'wbn-top-bar-confirming' : '',
     draggedBoxId ? 'wbn-top-bar-drop-mode' : '',
     boxDragOverTopBar ? 'wbn-top-bar-drag-over' : '',
   ]
@@ -286,13 +287,93 @@ export function TopBar() {
 
   return (
     <header className={topBarClassName} data-top-bar>
-      <AnimatePresence mode="popLayout">
+      <motion.div
+        className="wbn-top-inner"
+        layout="position"
+        initial={false}
+        animate={{ opacity: pageToDelete ? 0 : 1, x: pageToDelete ? -6 : 0 }}
+        transition={{
+          opacity: { duration: 0.12, delay: pageToDelete ? 0 : 0.1 },
+          x: { duration: 0.16, delay: pageToDelete ? 0 : 0.08 },
+          layout: { type: 'spring', stiffness: 460, damping: 38, mass: 0.72 },
+        }}
+        aria-hidden={Boolean(pageToDelete)}
+      >
+        <Reorder.Group
+          as="nav"
+          axis="x"
+          className="wbn-tabs"
+          values={pageIds}
+          onReorder={updateOrder}
+          aria-label={t('page.workspacePages')}
+        >
+          {collectionPage ? (
+            <CollectionTab
+              active={collectionPage.id === snapshot.activePageId}
+              highlighted={boxDropPageId === collectionPage.id}
+              page={collectionPage}
+              released={boxDropRelease?.pageId === collectionPage.id}
+              onActivate={() => {
+                useUiStore.getState().selectBox(null);
+                setActivePage(collectionPage.id);
+              }}
+              onContextMenu={(event) => openPageMenu(event)}
+            />
+          ) : null}
+          <AnimatePresence mode="popLayout">
+            {pages.map((page) => (
+              <SortablePageTab
+                active={page.id === snapshot.activePageId}
+                className={[
+                  boxDropPageId === page.id ? 'wbn-box-drop-target' : '',
+                  boxDropRelease?.pageId === page.id ? 'wbn-box-drop-released' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+                key={page.id}
+                page={page}
+                renameRequested={renamePageId === page.id}
+                onActivate={() => setActivePage(page.id)}
+                onContextMenu={(event) => openPageMenu(event, page)}
+                onRename={(title) => renamePage(page.id, title)}
+                onRenameRequestHandled={() => setRenamePageId(null)}
+                onReorderStart={startReordering}
+                onReorderEnd={finishReordering}
+              />
+            ))}
+          </AnimatePresence>
+          {recycleBinPage ? (
+            <RecycleBinTab
+              active={recycleBinPage.id === snapshot.activePageId}
+              highlighted={boxDropPageId === recycleBinPage.id}
+              page={recycleBinPage}
+              released={boxDropRelease?.pageId === recycleBinPage.id}
+              onActivate={() => setActivePage(recycleBinPage.id)}
+              onContextMenu={(event) => openPageMenu(event)}
+            />
+          ) : null}
+        </Reorder.Group>
+        <motion.div className="wbn-top-actions" layout="position">
+          <motion.button
+            className="wbn-icon-button"
+            type="button"
+            onClick={openNewPage}
+            aria-label={t('page.add')}
+            whileTap={{ scale: 0.9 }}
+          >
+            <Plus size={18} />
+          </motion.button>
+        </motion.div>
+      </motion.div>
+      <AnimatePresence>
         {pageToDelete ? (
           <motion.div
-            key="confirm"
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.96 }}
+            className="wbn-tab-confirm-layer"
+            key={pageToDelete.id}
+            initial={{ opacity: 0, x: 8 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -6, transition: { duration: 0.12, ease: 'easeIn' } }}
+            transition={{ duration: 0.18, delay: 0.1, ease: [0.2, 0.8, 0.2, 1] }}
           >
             <TabDeleteConfirmView
               title={pageToDelete.title}
@@ -304,83 +385,7 @@ export function TopBar() {
               }}
             />
           </motion.div>
-        ) : (
-          <motion.div
-            className="wbn-top-inner"
-            key="tabs"
-            layout="position"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ layout: { type: 'spring', stiffness: 460, damping: 38, mass: 0.72 } }}
-          >
-            <Reorder.Group
-              as="nav"
-              axis="x"
-              className="wbn-tabs"
-              values={pageIds}
-              onReorder={updateOrder}
-              aria-label={t('page.workspacePages')}
-            >
-              {collectionPage ? (
-                <CollectionTab
-                  active={collectionPage.id === snapshot.activePageId}
-                  highlighted={boxDropPageId === collectionPage.id}
-                  page={collectionPage}
-                  released={boxDropRelease?.pageId === collectionPage.id}
-                  onActivate={() => {
-                    useUiStore.getState().selectBox(null);
-                    setActivePage(collectionPage.id);
-                  }}
-                  onContextMenu={(event) => openPageMenu(event)}
-                />
-              ) : null}
-              <AnimatePresence mode="popLayout">
-                {pages.map((page) => (
-                  <SortablePageTab
-                    active={page.id === snapshot.activePageId}
-                    className={[
-                      boxDropPageId === page.id ? 'wbn-box-drop-target' : '',
-                      boxDropRelease?.pageId === page.id ? 'wbn-box-drop-released' : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                    key={page.id}
-                    page={page}
-                    renameRequested={renamePageId === page.id}
-                    onActivate={() => setActivePage(page.id)}
-                    onContextMenu={(event) => openPageMenu(event, page)}
-                    onRename={(title) => renamePage(page.id, title)}
-                    onRenameRequestHandled={() => setRenamePageId(null)}
-                    onReorderStart={startReordering}
-                    onReorderEnd={finishReordering}
-                  />
-                ))}
-              </AnimatePresence>
-              {recycleBinPage ? (
-                <RecycleBinTab
-                  active={recycleBinPage.id === snapshot.activePageId}
-                  highlighted={boxDropPageId === recycleBinPage.id}
-                  page={recycleBinPage}
-                  released={boxDropRelease?.pageId === recycleBinPage.id}
-                  onActivate={() => setActivePage(recycleBinPage.id)}
-                  onContextMenu={(event) => openPageMenu(event)}
-                />
-              ) : null}
-            </Reorder.Group>
-            <motion.div className="wbn-top-actions" layout="position">
-              <motion.button
-                className="wbn-icon-button"
-                type="button"
-                onClick={openNewPage}
-                aria-label={t('page.add')}
-                whileTap={{ scale: 0.9 }}
-              >
-                <Plus size={18} />
-              </motion.button>
-            </motion.div>
-          </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
     </header>
   );

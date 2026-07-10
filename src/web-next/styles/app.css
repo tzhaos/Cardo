@@ -130,9 +130,20 @@
   padding: 6px;
   background: var(--wbn-surface);
   box-shadow: var(--wbn-shadow);
+  caret-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
   backdrop-filter: blur(12px);
   scrollbar-width: none;
   transform: translateX(-50%);
+}
+
+.wbn-top-bar-confirming {
+  overflow: hidden;
+}
+
+.wbn-top-bar-confirming .wbn-top-inner {
+  pointer-events: none;
 }
 
 .wbn-top-inner {
@@ -248,7 +259,8 @@
 
 .wbn-tab-confirm {
   display: flex;
-  min-width: min(560px, calc(100vw - 64px));
+  width: 100%;
+  min-width: 0;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
@@ -258,8 +270,26 @@
   font-weight: 500;
 }
 
+.wbn-tab-confirm-layer {
+  position: absolute;
+  z-index: 4;
+  inset: 6px;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  border-radius: 999px;
+}
+
+.wbn-tab-confirm > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .wbn-tab-confirm div {
   display: flex;
+  flex: 0 0 auto;
   gap: 8px;
 }
 
