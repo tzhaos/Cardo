@@ -4,7 +4,6 @@ import {
   type WorkspaceBox,
   type WorkspacePage,
   type WorkspaceSnapshot,
-  type WorkspaceViewport,
 } from './workspace';
 
 export function restoreWorkspaceSnapshot(input: unknown, fallback: WorkspaceSnapshot) {
@@ -53,20 +52,7 @@ export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null
     boxes: input.boxes.filter(
       (box): box is WorkspaceBox => isWorkspaceBox(box) && pageIds.has(box.pageId),
     ),
-    layoutViewport: isWorkspaceViewport(input.layoutViewport) ? input.layoutViewport : undefined,
   };
-}
-
-function isWorkspaceViewport(input: unknown): input is WorkspaceViewport {
-  return (
-    isRecord(input) &&
-    typeof input.width === 'number' &&
-    Number.isFinite(input.width) &&
-    input.width > 0 &&
-    typeof input.height === 'number' &&
-    Number.isFinite(input.height) &&
-    input.height > 0
-  );
 }
 
 export function extractPersistedWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null {

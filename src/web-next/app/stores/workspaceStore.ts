@@ -9,8 +9,8 @@ import type {
   WorkspaceBoxType,
   WorkspaceBoxViewMode,
   WorkspaceSnapshot,
-  WorkspaceViewport,
 } from '../../domain/workspace';
+import type { CanvasViewportSize } from '../../domain/canvasGeometry';
 import {
   addBox,
   addItem,
@@ -28,7 +28,7 @@ import {
   setBoxViewMode,
   setDefaultPage,
   updateBoxFrame,
-  updateWorkspaceViewport,
+  constrainWorkspaceFramesToViewport,
 } from '../../domain/reducers';
 
 interface WorkspaceStore {
@@ -41,7 +41,7 @@ interface WorkspaceStore {
   setDefaultPage: (pageId: string) => void;
   createBox: (type: WorkspaceBoxType, frame: BoxFrame, title?: string) => void;
   updateBoxFrame: (boxId: string, frame: BoxFrame) => void;
-  updateViewport: (viewport: WorkspaceViewport) => void;
+  constrainFramesToViewport: (viewport: CanvasViewportSize) => void;
   renameBox: (boxId: string, title: string) => void;
   setBoxViewMode: (boxId: string, viewMode: WorkspaceBoxViewMode) => void;
   moveBoxToPage: (boxId: string, pageId: string, frame?: BoxFrame) => void;
@@ -54,7 +54,7 @@ interface WorkspaceStore {
 
 export const useWorkspaceStore = create<WorkspaceStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       snapshot: createDefaultWorkspace(),
       createPage: (title = 'Untitled') => {
         let createdPageId = '';
@@ -80,8 +80,13 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         })),
       updateBoxFrame: (boxId, frame) =>
         set((state) => ({ snapshot: updateBoxFrame(state.snapshot, boxId, frame) })),
-      updateViewport: (viewport) =>
-        set((state) => ({ snapshot: updateWorkspaceViewport(state.snapshot, viewport) })),
+      constrainFramesToViewport: (viewport) => {
+        const snapshot = get().snapshot;
+        const nextSnapshot = constrainWorkspaceFramesToViewport(snapshot, viewport);
+        if (nextSnapshot !== snapshot) {
+          set({ snapshot: nextSnapshot });
+        }
+      },
       renameBox: (boxId, title) =>
         set((state) => ({ snapshot: renameBox(state.snapshot, boxId, title) })),
       setBoxViewMode: (boxId, viewMode) =>
@@ -116,20 +121,3 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
     },
   ),
 );
-
-export function getViewportCenterFrame(
-  type: WorkspaceBoxType,
-  point?: { x: number; y: number },
-): BoxFrame {
-  const width = 320;
-  const height = 240;
-  const fallbackX = typeof window === 'undefined' ? 160 : window.innerWidth / 2 - width / 2;
-  const fallbackY = typeof window === 'undefined' ? 150 : window.innerHeight / 2 - height / 2;
-
-  return {
-    x: Math.max(24, Math.round(point?.x ?? fallbackX)),
-    y: Math.max(24, Math.round(point?.y ?? fallbackY)),
-    width,
-    height,
-  };
-}

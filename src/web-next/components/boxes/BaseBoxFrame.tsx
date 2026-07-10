@@ -4,8 +4,14 @@ import { LayoutGrid, List, Lock, Plus, SquarePen, Trash2, X } from 'lucide-react
 import { animate as animateMotion, motion, useMotionValue, useSpring } from 'motion/react';
 import type { MotionStyle } from 'motion/react';
 import { isRecycleBinPageId, type WorkspaceBox } from '../../domain/workspace';
+import { useCanvasStore } from '../../app/stores/canvasStore';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
+import {
+  constrainBoxFrameToCanvas,
+  constrainBoxResizeToCanvas,
+  createCanvasWorldBounds,
+} from '../../domain/canvasGeometry';
 import {
   startWindowPointerSession,
   type WindowPointerSession,
@@ -101,16 +107,20 @@ export function BaseBoxFrame({
     const startFrame = box.frame;
     let latestFrame = startFrame;
     const session = startWindowPointerSession({
+      pointerId: event.pointerId,
       onMove: (moveEvent) => {
         const overTopBar = useUiStore.getState().boxDragOverTopBar;
         dragTilt.set(
           overTopBar ? 0 : Math.min(2.2, Math.max(-2.2, (moveEvent.clientX - startX) * 0.012)),
         );
-        latestFrame = {
-          ...startFrame,
-          x: Math.max(8, Math.round(startFrame.x + moveEvent.clientX - startX)),
-          y: Math.max(8, Math.round(startFrame.y + moveEvent.clientY - startY)),
-        };
+        latestFrame = constrainBoxFrameToCanvas(
+          {
+            ...startFrame,
+            x: Math.round(startFrame.x + moveEvent.clientX - startX),
+            y: Math.round(startFrame.y + moveEvent.clientY - startY),
+          },
+          createCanvasWorldBounds(useCanvasStore.getState().viewportSize),
+        );
         boxLeft.set(latestFrame.x);
         boxTop.set(latestFrame.y);
       },
@@ -140,12 +150,17 @@ export function BaseBoxFrame({
     const startFrame = box.frame;
     let latestFrame = startFrame;
     const session = startWindowPointerSession({
+      pointerId: event.pointerId,
       onMove: (moveEvent) => {
-        latestFrame = {
-          ...startFrame,
-          width: Math.max(240, Math.round(startFrame.width + moveEvent.clientX - startX)),
-          height: Math.max(170, Math.round(startFrame.height + moveEvent.clientY - startY)),
-        };
+        latestFrame = constrainBoxResizeToCanvas(
+          {
+            ...startFrame,
+            width: Math.max(240, Math.round(startFrame.width + moveEvent.clientX - startX)),
+            height: Math.max(170, Math.round(startFrame.height + moveEvent.clientY - startY)),
+          },
+          createCanvasWorldBounds(useCanvasStore.getState().viewportSize),
+          { width: 240, height: 170 },
+        );
         boxWidth.set(latestFrame.width);
         boxHeight.set(latestFrame.height);
       },
@@ -221,6 +236,7 @@ export function BaseBoxFrame({
   return (
     <motion.article
       className={visualClassName}
+      data-canvas-box
       initial={skipEntryAnimation ? false : { scale: 0.8, opacity: 0 }}
       animate={{
         y: dragging && !draggingOverTopBar ? -7 : 0,
@@ -329,8 +345,8 @@ export function BaseBoxFrame({
             data-no-drag
             onClick={() => setBoxViewMode(box.id, viewMode === 'list' ? 'grid' : 'list')}
             aria-label={t(viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList')}
-            initial={{ opacity: 0 }}
-            whileHover={{ opacity: 1 }}
+            aria-pressed={viewMode === 'grid'}
+            title={t(viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList')}
           >
             {viewMode === 'list' ? <LayoutGrid size={15} /> : <List size={15} />}
           </motion.button>
@@ -349,8 +365,6 @@ export function BaseBoxFrame({
                 ? t('box.closeAddView')
                 : t(isInRecycleBin ? 'menu.deletePermanently' : 'menu.moveToRecycleBin')
             }
-            initial={{ opacity: 0 }}
-            whileHover={{ opacity: 1 }}
           >
             <X size={14} />
           </motion.button>

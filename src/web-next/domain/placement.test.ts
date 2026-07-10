@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { createCanvasWorldBounds } from './canvasGeometry';
 import { findPageLandingFrame } from './placement';
 import type { WorkspaceSnapshot } from './workspace';
 
@@ -27,10 +28,13 @@ function createSnapshot(): WorkspaceSnapshot {
 }
 
 test('findPageLandingFrame centers a box on an empty page', () => {
-  const frame = findPageLandingFrame(createSnapshot(), 'moving', 'target', {
-    width: 1200,
-    height: 800,
-  });
+  const frame = findPageLandingFrame(
+    createSnapshot(),
+    'moving',
+    'target',
+    { x: 600, y: 400 },
+    createCanvasWorldBounds({ width: 1200, height: 800 }),
+  );
 
   assert.deepEqual(frame, { x: 460, y: 300, width: 280, height: 200 });
 });
@@ -48,10 +52,13 @@ test('findPageLandingFrame chooses a nearby free position when center is occupie
     updatedAt: '',
   });
 
-  const frame = findPageLandingFrame(snapshot, 'moving', 'target', {
-    width: 1200,
-    height: 800,
-  });
+  const frame = findPageLandingFrame(
+    snapshot,
+    'moving',
+    'target',
+    { x: 600, y: 400 },
+    createCanvasWorldBounds({ width: 1200, height: 800 }),
+  );
 
   assert.ok(frame);
   assert.notDeepEqual(frame, { x: 460, y: 300, width: 280, height: 200 });

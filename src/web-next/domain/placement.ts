@@ -1,21 +1,30 @@
+import {
+  constrainBoxFrameToCanvas,
+  type CanvasPoint,
+  type CanvasWorldBounds,
+} from './canvasGeometry';
 import type { BoxFrame, WorkspaceSnapshot } from './workspace';
 
-interface ViewportSize {
-  width: number;
-  height: number;
-}
-
-const SIDE_PADDING = 32;
-const TOP_RESERVED = 112;
-const BOTTOM_RESERVED = 96;
 const BOX_GAP = 24;
 const SEARCH_STEP = 24;
+const DEFAULT_BOX_WIDTH = 320;
+const DEFAULT_BOX_HEIGHT = 240;
+
+export function createBoxFrameCenteredAt(point: CanvasPoint): BoxFrame {
+  return {
+    x: Math.round(point.x - DEFAULT_BOX_WIDTH / 2),
+    y: Math.round(point.y - DEFAULT_BOX_HEIGHT / 2),
+    width: DEFAULT_BOX_WIDTH,
+    height: DEFAULT_BOX_HEIGHT,
+  };
+}
 
 export function findPageLandingFrame(
   snapshot: WorkspaceSnapshot,
   boxId: string,
   pageId: string,
-  viewport: ViewportSize,
+  preferredCenter: CanvasPoint,
+  bounds: CanvasWorldBounds,
 ): BoxFrame | null {
   const movingBox = snapshot.boxes.find((box) => box.id === boxId);
   if (!movingBox) {
@@ -23,51 +32,68 @@ export function findPageLandingFrame(
   }
 
   const { width, height } = movingBox.frame;
-  const minX = SIDE_PADDING;
-  const minY = TOP_RESERVED;
-  const maxX = Math.max(minX, viewport.width - width - SIDE_PADDING);
-  const maxY = Math.max(minY, viewport.height - height - BOTTOM_RESERVED);
-  const centerX = clamp(Math.round((viewport.width - width) / 2), minX, maxX);
-  const centerY = clamp(Math.round((viewport.height - height) / 2), minY, maxY);
+  const preferredFrame = constrainBoxFrameToCanvas(
+    {
+      x: Math.round(preferredCenter.x - width / 2),
+      y: Math.round(preferredCenter.y - height / 2),
+      width,
+      height,
+    },
+    bounds,
+  );
   const occupiedFrames = snapshot.boxes
     .filter((box) => box.pageId === pageId && box.id !== boxId)
     .map((box) => box.frame);
 
-  const candidates = createCandidatePositions(minX, minY, maxX, maxY, centerX, centerY);
-  const available = candidates.find(({ x, y }) => {
-    const candidate = { x, y, width, height };
-    return occupiedFrames.every((frame) => !framesOverlap(candidate, frame, BOX_GAP));
-  });
-
-  return {
-    x: available?.x ?? centerX,
-    y: available?.y ?? centerY,
-    width,
-    height,
-  };
+  return findAvailableFrame(preferredFrame, occupiedFrames, bounds) ?? preferredFrame;
 }
 
-function createCandidatePositions(
-  minX: number,
-  minY: number,
-  maxX: number,
-  maxY: number,
-  centerX: number,
-  centerY: number,
+function findAvailableFrame(
+  preferredFrame: BoxFrame,
+  occupiedFrames: BoxFrame[],
+  bounds: CanvasWorldBounds,
 ) {
-  const positions = [{ x: centerX, y: centerY }];
+  const visited = new Set<string>();
+  const maximumRadius = Math.ceil(Math.max(bounds.width, bounds.height) / SEARCH_STEP);
 
-  for (let y = minY; y <= maxY; y += SEARCH_STEP) {
-    for (let x = minX; x <= maxX; x += SEARCH_STEP) {
-      positions.push({ x, y });
+  for (let radius = 0; radius <= maximumRadius; radius += 1) {
+    for (const offset of createRingOffsets(radius)) {
+      const candidate = constrainBoxFrameToCanvas(
+        {
+          ...preferredFrame,
+          x: preferredFrame.x + offset.x * SEARCH_STEP,
+          y: preferredFrame.y + offset.y * SEARCH_STEP,
+        },
+        bounds,
+      );
+      const key = `${candidate.x},${candidate.y}`;
+      if (visited.has(key)) {
+        continue;
+      }
+      visited.add(key);
+
+      if (occupiedFrames.every((frame) => !framesOverlap(candidate, frame, BOX_GAP))) {
+        return candidate;
+      }
     }
   }
 
-  return positions.sort((first, second) => {
-    const firstDistance = (first.x - centerX) ** 2 + (first.y - centerY) ** 2;
-    const secondDistance = (second.x - centerX) ** 2 + (second.y - centerY) ** 2;
-    return firstDistance - secondDistance;
-  });
+  return null;
+}
+
+function createRingOffsets(radius: number) {
+  if (radius === 0) {
+    return [{ x: 0, y: 0 }];
+  }
+
+  const offsets: CanvasPoint[] = [];
+  for (let x = -radius; x <= radius; x += 1) {
+    offsets.push({ x, y: -radius }, { x, y: radius });
+  }
+  for (let y = -radius + 1; y < radius; y += 1) {
+    offsets.push({ x: -radius, y }, { x: radius, y });
+  }
+  return offsets;
 }
 
 function framesOverlap(first: BoxFrame, second: BoxFrame, gap: number) {
@@ -77,8 +103,4 @@ function framesOverlap(first: BoxFrame, second: BoxFrame, gap: number) {
     first.y < second.y + second.height + gap &&
     first.y + first.height + gap > second.y
   );
-}
-
-function clamp(value: number, minimum: number, maximum: number) {
-  return Math.min(Math.max(value, minimum), maximum);
 }

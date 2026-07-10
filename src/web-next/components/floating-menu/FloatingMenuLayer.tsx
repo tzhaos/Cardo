@@ -67,12 +67,7 @@ export function FloatingMenuLayer() {
       />
       {submenu ? (
         <div className="wbn-floating-submenu">
-          <MenuPanel
-            items={submenu}
-            closeMenu={closeMenu}
-            onHoverSubmenu={setSubmenuId}
-            submenuId={submenuId}
-          />
+          <MenuPanel items={submenu} closeMenu={closeMenu} submenuId={submenuId} />
         </div>
       ) : null}
     </div>
@@ -87,7 +82,7 @@ function MenuPanel({
 }: {
   items: FloatingMenuItem[];
   closeMenu: () => void;
-  onHoverSubmenu: (id: string | null) => void;
+  onHoverSubmenu?: (id: string | null) => void;
   submenuId: string | null;
 }) {
   return (
@@ -97,7 +92,8 @@ function MenuPanel({
           className={`wbn-menu-row${item.danger ? ' wbn-menu-row-danger' : ''}${submenuId === item.id ? ' wbn-menu-row-open' : ''}`}
           disabled={item.disabled}
           key={item.id}
-          onMouseEnter={() => onHoverSubmenu(item.children ? item.id : null)}
+          onFocus={() => onHoverSubmenu?.(item.children ? item.id : null)}
+          onMouseEnter={() => onHoverSubmenu?.(item.children ? item.id : null)}
           onClick={() => {
             if (item.disabled || item.children) {
               return;

@@ -4,11 +4,14 @@ import {
   type BoxItem,
   type WorkspaceBoxType,
   type WorkspaceBoxViewMode,
-  type WorkspaceViewport,
   type WorkspaceSnapshot,
 } from './workspace';
 import { createPage, createWorkspaceBox, nowIso } from './factories';
-import { adaptWorkspaceToViewport } from './responsiveLayout';
+import {
+  constrainBoxFrameToCanvas,
+  createCanvasWorldBounds,
+  type CanvasViewportSize,
+} from './canvasGeometry';
 
 export function renamePage(snapshot: WorkspaceSnapshot, pageId: string, title: string) {
   if (isRecycleBinPageId(pageId)) {
@@ -143,8 +146,22 @@ export function updateBoxFrame(snapshot: WorkspaceSnapshot, boxId: string, frame
   };
 }
 
-export function updateWorkspaceViewport(snapshot: WorkspaceSnapshot, viewport: WorkspaceViewport) {
-  return adaptWorkspaceToViewport(snapshot, viewport);
+export function constrainWorkspaceFramesToViewport(
+  snapshot: WorkspaceSnapshot,
+  viewport: CanvasViewportSize,
+) {
+  const bounds = createCanvasWorldBounds(viewport);
+  let changed = false;
+  const boxes = snapshot.boxes.map((box) => {
+    const frame = constrainBoxFrameToCanvas(box.frame, bounds);
+    if (framesEqual(frame, box.frame)) {
+      return box;
+    }
+    changed = true;
+    return { ...box, frame, updatedAt: nowIso() };
+  });
+
+  return changed ? { ...snapshot, boxes } : snapshot;
 }
 
 export function renameBox(snapshot: WorkspaceSnapshot, boxId: string, title: string) {
@@ -306,4 +323,13 @@ function insertWorkspacePage(snapshot: WorkspaceSnapshot, page: ReturnType<typeo
     page,
     ...(recycleBinPage ? [{ ...recycleBinPage, order: workspacePages.length + 1 }] : []),
   ];
+}
+
+function framesEqual(first: BoxFrame, second: BoxFrame) {
+  return (
+    first.x === second.x &&
+    first.y === second.y &&
+    first.width === second.width &&
+    first.height === second.height
+  );
 }

@@ -8,6 +8,7 @@ export type WindowPointerSessionEndReason =
 
 interface WindowPointerSessionOptions {
   capture?: boolean;
+  pointerId?: number;
   onMove: (event: PointerEvent) => void;
   onEnd: (reason: WindowPointerSessionEndReason, event?: Event) => void;
 }
@@ -19,13 +20,14 @@ export interface WindowPointerSession {
 
 export function startWindowPointerSession({
   capture = true,
+  pointerId,
   onMove,
   onEnd,
 }: WindowPointerSessionOptions): WindowPointerSession {
   let active = true;
 
   const removeListeners = () => {
-    window.removeEventListener('pointermove', onMove, capture);
+    window.removeEventListener('pointermove', onPointerMove, capture);
     window.removeEventListener('pointerup', onPointerUp, capture);
     window.removeEventListener('pointercancel', onPointerCancel, capture);
     window.removeEventListener('pointerout', onPointerOut, true);
@@ -44,11 +46,23 @@ export function startWindowPointerSession({
   };
 
   function onPointerUp(event: PointerEvent) {
+    if (pointerId !== undefined && event.pointerId !== pointerId) {
+      return;
+    }
     finish('pointerup', event);
   }
 
   function onPointerCancel(event: PointerEvent) {
+    if (pointerId !== undefined && event.pointerId !== pointerId) {
+      return;
+    }
     finish('pointercancel', event);
+  }
+
+  function onPointerMove(event: PointerEvent) {
+    if (pointerId === undefined || event.pointerId === pointerId) {
+      onMove(event);
+    }
   }
 
   function onPointerOut(event: PointerEvent) {
@@ -73,7 +87,7 @@ export function startWindowPointerSession({
     }
   }
 
-  window.addEventListener('pointermove', onMove, capture);
+  window.addEventListener('pointermove', onPointerMove, capture);
   window.addEventListener('pointerup', onPointerUp, capture);
   window.addEventListener('pointercancel', onPointerCancel, capture);
   window.addEventListener('pointerout', onPointerOut, true);

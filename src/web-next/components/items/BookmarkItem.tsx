@@ -24,7 +24,7 @@ export function BookmarkItem({
 
   return (
     <div
-      className={`wbn-item-row${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}`}
+      className={`wbn-item-row wbn-bookmark-item${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}`}
     >
       <AnimatePresence initial={false} mode="wait">
         {deleteView ? (

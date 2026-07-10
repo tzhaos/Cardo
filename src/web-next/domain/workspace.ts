@@ -22,11 +22,6 @@ export interface BoxFrame {
   height: number;
 }
 
-export interface WorkspaceViewport {
-  width: number;
-  height: number;
-}
-
 export interface BaseBoxItem {
   id: string;
   type: WorkspaceBoxType;
@@ -71,5 +66,4 @@ export interface WorkspaceSnapshot {
   activePageId: string;
   defaultPageId: string;
   boxes: WorkspaceBox[];
-  layoutViewport?: WorkspaceViewport;
 }

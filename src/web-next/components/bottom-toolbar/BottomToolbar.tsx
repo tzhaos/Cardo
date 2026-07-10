@@ -2,15 +2,25 @@ import { useEffect, useRef, useState } from 'react';
 import { Bookmark, Clipboard, Folder, Plus, Search, Settings } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useIndependentMenuStore } from '../../app/stores/independentMenuStore';
+import { useCanvasStore } from '../../app/stores/canvasStore';
+import {
+  constrainBoxFrameToCanvas,
+  createCanvasWorldBounds,
+  getCanvasViewportCenter,
+} from '../../domain/canvasGeometry';
+import { createBoxFrameCenteredAt } from '../../domain/placement';
 import { isRecycleBinPageId, type WorkspaceBoxType } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
-import { getViewportCenterFrame, useWorkspaceStore } from '../../app/stores/workspaceStore';
+import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { useI18n } from '../../i18n/useI18n';
 import { IconButton, IconFrame } from '../primitives/IconPrimitives';
 
 export function BottomToolbar() {
   const createBox = useWorkspaceStore((state) => state.createBox);
   const activePageId = useWorkspaceStore((state) => state.snapshot.activePageId);
+  const panX = useCanvasStore((state) => state.pages[activePageId]?.camera.panX ?? 0);
+  const panY = useCanvasStore((state) => state.pages[activePageId]?.camera.panY ?? 0);
+  const viewportSize = useCanvasStore((state) => state.viewportSize);
   const searchQuery = useUiStore((state) => state.searchQuery);
   const setSearchQuery = useUiStore((state) => state.setSearchQuery);
   const settingsOpen = useIndependentMenuStore((state) => state.menus.settings.open);
@@ -64,7 +74,12 @@ export function BottomToolbar() {
   }, [isRecycleBin]);
 
   const handleAdd = (type: WorkspaceBoxType) => {
-    createBox(type, getViewportCenterFrame(type), getBoxTypeLabel(type, t));
+    const center = getCanvasViewportCenter({ panX, panY }, viewportSize);
+    const frame = constrainBoxFrameToCanvas(
+      createBoxFrameCenteredAt(center),
+      createCanvasWorldBounds(viewportSize),
+    );
+    createBox(type, frame, getBoxTypeLabel(type, t));
     setIsMenuOpen(false);
   };
 

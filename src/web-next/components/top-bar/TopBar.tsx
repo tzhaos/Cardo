@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { Check, Pencil, Plus } from 'lucide-react';
 import { AnimatePresence, motion, Reorder } from 'motion/react';
 import { useUiStore } from '../../app/stores/uiStore';
+import { getPageCanvasState, useCanvasStore } from '../../app/stores/canvasStore';
 import { useStagedOrder } from '../../app/motion/useStagedOrder';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { createLatestFrameScheduler } from '../../app/motion/frameScheduler';
 import { startWindowPointerSession } from '../../app/windowPointerSession';
 import { findPageLandingFrame } from '../../domain/placement';
+import { createCanvasWorldBounds, getCanvasViewportCenter } from '../../domain/canvasGeometry';
 import { isRecycleBinPageId } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { RecycleBinTab } from './RecycleBinTab';
@@ -137,10 +139,15 @@ export function TopBar() {
             resolveDropPageId(event.clientX, event.clientY) ?? useUiStore.getState().boxDropPageId;
           const movingBox = currentSnapshot.boxes.find((box) => box.id === draggedBoxId);
           if (targetPageId && movingBox && movingBox.pageId !== targetPageId) {
-            const landingFrame = findPageLandingFrame(currentSnapshot, draggedBoxId, targetPageId, {
-              width: window.innerWidth,
-              height: window.innerHeight,
-            });
+            const canvasState = useCanvasStore.getState();
+            const targetPageCanvas = getPageCanvasState(canvasState, targetPageId);
+            const landingFrame = findPageLandingFrame(
+              currentSnapshot,
+              draggedBoxId,
+              targetPageId,
+              getCanvasViewportCenter(targetPageCanvas.camera, canvasState.viewportSize),
+              createCanvasWorldBounds(canvasState.viewportSize),
+            );
             finishBoxDrop(draggedBoxId, targetPageId);
             moveBoxToPage(draggedBoxId, targetPageId, landingFrame ?? undefined);
           }

@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
 import type { RefObject } from 'react';
+import { useCanvasStore } from './stores/canvasStore';
 import { useWorkspaceStore } from './stores/workspaceStore';
 
 const RESIZE_COMMIT_DELAY = 180;
 
-export function useResponsiveWorkspaceLayout(canvasRef: RefObject<HTMLElement | null>) {
-  const updateViewport = useWorkspaceStore((state) => state.updateViewport);
+export function useCanvasViewport(canvasRef: RefObject<HTMLElement | null>) {
+  const setViewportSize = useCanvasStore((state) => state.setViewportSize);
+  const constrainFramesToViewport = useWorkspaceStore((state) => state.constrainFramesToViewport);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -15,16 +17,18 @@ export function useResponsiveWorkspaceLayout(canvasRef: RefObject<HTMLElement | 
 
     let timeoutId: number | null = null;
     let latestViewport = readViewport(canvas);
-    updateViewport(latestViewport);
+    setViewportSize(latestViewport);
+    constrainFramesToViewport(latestViewport);
 
     const scheduleCommit = () => {
       latestViewport = readViewport(canvas);
+      setViewportSize(latestViewport);
       if (timeoutId !== null) {
         window.clearTimeout(timeoutId);
       }
       timeoutId = window.setTimeout(() => {
         timeoutId = null;
-        updateViewport(latestViewport);
+        constrainFramesToViewport(latestViewport);
       }, RESIZE_COMMIT_DELAY);
     };
 
@@ -36,7 +40,7 @@ export function useResponsiveWorkspaceLayout(canvasRef: RefObject<HTMLElement | 
         window.clearTimeout(timeoutId);
       }
     };
-  }, [canvasRef, updateViewport]);
+  }, [canvasRef, constrainFramesToViewport, setViewportSize]);
 }
 
 function readViewport(canvas: HTMLElement) {

@@ -1,13 +1,23 @@
 import { useDeferredValue, useEffect, useMemo, useRef } from 'react';
+import type { CSSProperties } from 'react';
 import { AnimatePresence, motion, type Variants } from 'motion/react';
 import { SearchX, Trash2 } from 'lucide-react';
-import { isRecycleBinPageId, type WorkspaceBoxType } from '../../domain/workspace';
+import { useCanvasPan } from '../../app/useCanvasPan';
+import { useCanvasViewport } from '../../app/useCanvasViewport';
+import { useCanvasStore } from '../../app/stores/canvasStore';
 import { useUiStore } from '../../app/stores/uiStore';
-import { useResponsiveWorkspaceLayout } from '../../app/useResponsiveWorkspaceLayout';
-import { getViewportCenterFrame, useWorkspaceStore } from '../../app/stores/workspaceStore';
-import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
-import { WorkspaceBoxRenderer } from './WorkspaceBoxRenderer';
+import { useWorkspaceStore } from '../../app/stores/workspaceStore';
+import {
+  clientPointToCanvasWorld,
+  constrainBoxFrameToCanvas,
+  createCanvasWorldBounds,
+} from '../../domain/canvasGeometry';
+import { createBoxFrameCenteredAt } from '../../domain/placement';
+import { isRecycleBinPageId, type WorkspaceBoxType } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
+import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
+import { CanvasControls } from './CanvasControls';
+import { WorkspaceBoxRenderer } from './WorkspaceBoxRenderer';
 
 export function WorkspaceCanvas() {
   const snapshot = useWorkspaceStore((state) => state.snapshot);
@@ -15,6 +25,9 @@ export function WorkspaceCanvas() {
   const createPage = useWorkspaceStore((state) => state.createPage);
   const searchQuery = useUiStore((state) => state.searchQuery);
   const deferredSearchQuery = useDeferredValue(searchQuery);
+  const panX = useCanvasStore((state) => state.pages[snapshot.activePageId]?.camera.panX ?? 0);
+  const panY = useCanvasStore((state) => state.pages[snapshot.activePageId]?.camera.panY ?? 0);
+  const viewportSize = useCanvasStore((state) => state.viewportSize);
   const { openCanvasMenu } = useFloatingMenu();
   const { t } = useI18n();
   const boxes = useMemo(() => {
@@ -33,7 +46,11 @@ export function WorkspaceCanvas() {
   const isRecycleBin = isRecycleBinPageId(snapshot.activePageId);
   const previousActivePageIdRef = useRef(snapshot.activePageId);
   const canvasRef = useRef<HTMLElement>(null);
-  useResponsiveWorkspaceLayout(canvasRef);
+  const { handlePointerDownCapture, isLocked, isPanModifierActive, isPanning } = useCanvasPan(
+    snapshot.activePageId,
+  );
+  useCanvasViewport(canvasRef);
+  const canvasBounds = useMemo(() => createCanvasWorldBounds(viewportSize), [viewportSize]);
   const pageOrder = useMemo(
     () => [...snapshot.pages].sort((first, second) => first.order - second.order),
     [snapshot.pages],
@@ -44,6 +61,23 @@ export function WorkspaceCanvas() {
   const activePageIndex = pageOrder.findIndex((page) => page.id === snapshot.activePageId);
   const pageTransitionDirection = activePageIndex < previousPageIndex ? -1 : 1;
   const isPageSwitch = previousActivePageIdRef.current !== snapshot.activePageId;
+  const canvasClassName = [
+    'wbn-canvas',
+    isLocked ? 'wbn-canvas-locked' : '',
+    isPanModifierActive && !isLocked ? 'wbn-canvas-pan-ready' : '',
+    isPanning ? 'wbn-canvas-panning' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const worldStyle = {
+    transform: `translate3d(${panX}px, ${panY}px, 0)`,
+  } satisfies CSSProperties;
+  const boundaryStyle = {
+    left: canvasBounds.minX,
+    top: canvasBounds.minY,
+    width: canvasBounds.width,
+    height: canvasBounds.height,
+  } satisfies CSSProperties;
 
   useEffect(() => {
     previousActivePageIdRef.current = snapshot.activePageId;
@@ -51,23 +85,33 @@ export function WorkspaceCanvas() {
 
   return (
     <main
-      className="wbn-canvas"
+      className={canvasClassName}
       ref={canvasRef}
+      onPointerDownCapture={handlePointerDownCapture}
       onContextMenu={(event) => {
-        if (isRecycleBin) {
+        if (
+          isRecycleBin ||
+          (event.target instanceof Element &&
+            event.target.closest('[data-canvas-box], [data-canvas-controls]'))
+        ) {
           return;
         }
 
         event.preventDefault();
         const rect = event.currentTarget.getBoundingClientRect();
-        const point = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+        const point = clientPointToCanvasWorld(event, rect, { panX, panY });
         openCanvasMenu(event.clientX, event.clientY, {
           createPage: () => createPage(t('page.untitled')),
           createBox: (type: WorkspaceBoxType) =>
-            createBox(type, getViewportCenterFrame(type, point), getBoxTypeLabel(type, t)),
+            createBox(
+              type,
+              constrainBoxFrameToCanvas(createBoxFrameCenteredAt(point), canvasBounds),
+              getBoxTypeLabel(type, t),
+            ),
         });
       }}
     >
+      <CanvasControls pageId={snapshot.activePageId} />
       <AnimatePresence initial={false} mode="sync" custom={pageTransitionDirection}>
         <motion.section
           className="wbn-page-scene"
@@ -78,13 +122,16 @@ export function WorkspaceCanvas() {
           animate="center"
           exit="exit"
         >
-          {boxes.map((box) => (
-            <WorkspaceBoxRenderer
-              box={box}
-              key={box.id}
-              skipEntryAnimation={isSearchFiltering || isPageSwitch}
-            />
-          ))}
+          <div className="wbn-canvas-world" style={worldStyle}>
+            <div className="wbn-canvas-boundary" style={boundaryStyle} />
+            {boxes.map((box) => (
+              <WorkspaceBoxRenderer
+                box={box}
+                key={box.id}
+                skipEntryAnimation={isSearchFiltering || isPageSwitch}
+              />
+            ))}
+          </div>
           <AnimatePresence>
             {isRecycleBin && !isSearchFiltering && boxes.length === 0 ? (
               <motion.div
