@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Boxes, Grid3X3, LayoutDashboard, Maximize2, ScanSearch } from 'lucide-react';
+import { BringToFront, Focus, Grid3X3, LayoutDashboard, LocateFixed } from 'lucide-react';
 import { getPageCanvasState, useCanvasStore } from '../../app/stores/canvasStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import {
@@ -77,14 +77,14 @@ export function useCanvasLayoutTools() {
       {
         id: 'avoid-overlap',
         label: t('canvas.avoidOverlap'),
-        icon: <Boxes size={16} />,
+        icon: <BringToFront size={16} />,
         disabled: movableBoxCount < 2,
         onSelect: () => applyLayout(resolvePageBoxOverlaps(boxes, canvasBounds)),
       },
       {
         id: 'recover-offscreen',
         label: t('canvas.recoverOffscreen'),
-        icon: <ScanSearch size={16} />,
+        icon: <LocateFixed size={16} />,
         disabled: boxes.length === 0,
         separatorBefore: true,
         onSelect: () =>
@@ -93,7 +93,7 @@ export function useCanvasLayoutTools() {
       {
         id: 'fit-all',
         label: t('canvas.fitAll'),
-        icon: <Maximize2 size={16} />,
+        icon: <Focus size={16} />,
         disabled: boxes.length === 0,
         onSelect: () =>
           fitFrames(

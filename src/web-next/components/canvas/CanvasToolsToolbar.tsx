@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LayoutDashboard, X } from 'lucide-react';
+import { LayoutGrid } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useI18n } from '../../i18n/useI18n';
 import { IconButton } from '../primitives/IconPrimitives';
@@ -21,10 +21,10 @@ export function CanvasToolsToolbar() {
       >
         <motion.span
           className="wbn-icon-frame"
-          animate={{ rotate: expanded ? 90 : 0 }}
+          animate={{ scale: expanded ? 1.06 : 1 }}
           transition={{ type: 'spring', stiffness: 420, damping: 28 }}
         >
-          {expanded ? <X size={18} /> : <LayoutDashboard size={18} />}
+          <LayoutGrid size={18} />
         </motion.span>
       </IconButton>
       <AnimatePresence initial={false}>
