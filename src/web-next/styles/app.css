@@ -2662,6 +2662,7 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
 }
 
 .wbn-box-selected {
+  z-index: 70 !important;
   box-shadow:
     var(--wbn-shadow-hover),
     0 0 0 2px var(--wbn-selection-ring);

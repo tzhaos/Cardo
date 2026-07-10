@@ -61,7 +61,10 @@ export function findPageLandingFrame(
     .filter((box) => box.pageId === pageId && box.id !== boxId)
     .map((box) => box.frame);
 
-  return findAvailableFrame(preferredFrame, occupiedFrames, bounds) ?? preferredFrame;
+  return (
+    findAvailableFrame(preferredFrame, occupiedFrames, bounds) ??
+    findLowestOverlapFrame(preferredFrame, occupiedFrames, bounds)
+  );
 }
 
 export function findAvailableFrame(
@@ -111,6 +114,48 @@ function createRingOffsets(radius: number) {
     offsets.push({ x: -radius, y }, { x: radius, y });
   }
   return offsets;
+}
+
+function findLowestOverlapFrame(
+  preferredFrame: BoxFrame,
+  occupiedFrames: BoxFrame[],
+  bounds: CanvasWorldBounds,
+) {
+  let bestFrame = preferredFrame;
+  let bestOverlap = Number.POSITIVE_INFINITY;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  const maximumX = Math.max(bounds.minX, bounds.maxX - preferredFrame.width);
+  const maximumY = Math.max(bounds.minY, bounds.maxY - preferredFrame.height);
+
+  for (let y = bounds.minY; y <= maximumY; y += SEARCH_STEP) {
+    for (let x = bounds.minX; x <= maximumX; x += SEARCH_STEP) {
+      const candidate = { ...preferredFrame, x: Math.round(x), y: Math.round(y) };
+      const overlap = occupiedFrames.reduce(
+        (total, frame) => total + getOverlapArea(candidate, frame),
+        0,
+      );
+      const distance = Math.hypot(candidate.x - preferredFrame.x, candidate.y - preferredFrame.y);
+      if (overlap < bestOverlap || (overlap === bestOverlap && distance < bestDistance)) {
+        bestFrame = candidate;
+        bestOverlap = overlap;
+        bestDistance = distance;
+      }
+    }
+  }
+
+  return bestFrame;
+}
+
+function getOverlapArea(first: BoxFrame, second: BoxFrame) {
+  const width = Math.max(
+    0,
+    Math.min(first.x + first.width, second.x + second.width) - Math.max(first.x, second.x),
+  );
+  const height = Math.max(
+    0,
+    Math.min(first.y + first.height, second.y + second.height) - Math.max(first.y, second.y),
+  );
+  return width * height;
 }
 
 function framesOverlap(first: BoxFrame, second: BoxFrame, gap: number) {

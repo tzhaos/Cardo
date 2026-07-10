@@ -8,7 +8,7 @@ import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { createLatestFrameScheduler } from '../../app/motion/frameScheduler';
 import { startWindowPointerSession } from '../../app/windowPointerSession';
 import { findPageLandingFrame } from '../../domain/placement';
-import { createCanvasWorldBounds, getCanvasViewportCenter } from '../../domain/canvasGeometry';
+import { getCanvasViewportCenter, getVisibleCanvasWorldBounds } from '../../domain/canvasGeometry';
 import { isRecycleBinPageId } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { RecycleBinTab } from './RecycleBinTab';
@@ -146,7 +146,7 @@ export function TopBar() {
               draggedBoxId,
               targetPageId,
               getCanvasViewportCenter(targetPageCanvas.camera, canvasState.viewportSize),
-              createCanvasWorldBounds(canvasState.viewportSize),
+              getVisibleCanvasWorldBounds(targetPageCanvas.camera, canvasState.viewportSize),
             );
             finishBoxDrop(draggedBoxId, targetPageId);
             moveBoxToPage(draggedBoxId, targetPageId, landingFrame ?? undefined);
