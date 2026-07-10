@@ -69,3 +69,18 @@ npm run desktop:start
 ```
 
 Build output is written to `artifacts/desktop`.
+
+## CI and releases
+
+GitHub Actions runs formatting, static checks, tests, and builds the browser extension, desktop
+application, and Native Messaging host for pushes and pull requests targeting `main`.
+
+To publish a Windows release, push a stable semantic-version tag:
+
+```powershell
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The release workflow builds and publishes the extension archive, Native Messaging host, desktop
+installer, portable executable, and SHA-256 checksums to the matching GitHub Release.
