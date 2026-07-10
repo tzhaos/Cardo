@@ -16,6 +16,7 @@ import { isRecycleBinPageId, type WorkspaceBoxPreset } from '../../domain/worksp
 import { useI18n } from '../../i18n/useI18n';
 import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
 import { WorkspaceBoxRenderer } from './WorkspaceBoxRenderer';
+import { useCanvasLayoutTools } from './useCanvasLayoutTools';
 
 export function WorkspaceCanvas() {
   const snapshot = useWorkspaceStore((state) => state.snapshot);
@@ -23,6 +24,7 @@ export function WorkspaceCanvas() {
   const createPage = useWorkspaceStore((state) => state.createPage);
   const viewportSize = useCanvasStore((state) => state.viewportSize);
   const { openCanvasMenu } = useFloatingMenu();
+  const { items: canvasLayoutItems } = useCanvasLayoutTools();
   const { t } = useI18n();
   const boxes = useMemo(
     () => snapshot.boxes.filter((box) => box.pageId === snapshot.activePageId),
@@ -90,6 +92,7 @@ export function WorkspaceCanvas() {
               constrainBoxFrameToCanvas(createBoxFrameCenteredAt(point), canvasBounds),
               getBoxPresetLabel(preset, t),
             ),
+          layoutItems: canvasLayoutItems,
         });
       }}
     >
