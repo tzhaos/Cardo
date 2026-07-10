@@ -844,10 +844,29 @@ button.wbn-box-icon:focus-visible {
 
 .wbn-item-reorder-entry-dragging {
   z-index: 30;
+  opacity: 0.16 !important;
   pointer-events: none;
 }
 
 .wbn-item-reorder-entry-dragging .wbn-item-row {
+  border-color: color-mix(in srgb, var(--box-accent) 34%, var(--wbn-border-subtle));
+  background: var(--wbn-surface-strong);
+}
+
+.wbn-item-drag-preview {
+  position: fixed !important;
+  z-index: 300 !important;
+  top: 0;
+  left: 0;
+  margin: 0 !important;
+  opacity: 0.97 !important;
+  pointer-events: none !important;
+  transform-origin: center;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.14);
+  will-change: transform;
+}
+
+.wbn-item-drag-preview .wbn-item-row {
   border-color: color-mix(in srgb, var(--box-accent) 34%, var(--wbn-border-subtle));
   background: var(--wbn-surface-strong);
 }

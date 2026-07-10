@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { GripVertical } from 'lucide-react';
 import { AnimatePresence, Reorder, useDragControls } from 'motion/react';
@@ -79,10 +79,52 @@ function SortableItemEntry({
 }) {
   const controls = useDragControls();
   const [dragging, setDragging] = useState(false);
+  const entryRef = useRef<HTMLDivElement>(null);
+  const dragPreviewRef = useRef<HTMLDivElement | null>(null);
+  const dragPreviewOffsetRef = useRef({ x: 0, y: 0 });
   const { t } = useI18n();
+
+  const removeDragPreview = () => {
+    dragPreviewRef.current?.remove();
+    dragPreviewRef.current = null;
+  };
+
+  const createDragPreview = (point: { x: number; y: number }) => {
+    const entry = entryRef.current;
+    if (!entry) return;
+
+    removeDragPreview();
+    const rect = entry.getBoundingClientRect();
+    const preview = entry.cloneNode(true) as HTMLDivElement;
+    dragPreviewOffsetRef.current = {
+      x: point.x - rect.left,
+      y: point.y - rect.top,
+    };
+    preview.classList.add('wbn-item-drag-preview');
+    preview.removeAttribute('data-item-id');
+    preview.setAttribute('aria-hidden', 'true');
+    preview.inert = true;
+    const entryStyle = window.getComputedStyle(entry);
+    preview.style.setProperty('--box-accent', entryStyle.getPropertyValue('--box-accent'));
+    preview.style.width = `${rect.width}px`;
+    preview.style.height = `${rect.height}px`;
+    document.body.appendChild(preview);
+    dragPreviewRef.current = preview;
+    updateDragPreview(point);
+  };
+
+  const updateDragPreview = (point: { x: number; y: number }) => {
+    const preview = dragPreviewRef.current;
+    if (!preview) return;
+    const offset = dragPreviewOffsetRef.current;
+    preview.style.transform = `translate3d(${point.x - offset.x}px, ${point.y - offset.y}px, 0) scale(1.018)`;
+  };
+
+  useEffect(() => removeDragPreview, []);
 
   return (
     <Reorder.Item
+      ref={entryRef}
       as="div"
       className={`wbn-item-reorder-entry${dragging ? ' wbn-item-reorder-entry-dragging' : ''}`}
       data-item-id={itemId}
@@ -106,12 +148,15 @@ function SortableItemEntry({
         opacity: { duration: 0.16 },
         scale: { type: 'spring', stiffness: 520, damping: 38, mass: 0.62 },
       }}
-      onDragStart={() => {
+      onDrag={(_event, info: PanInfo) => updateDragPreview(info.point)}
+      onDragStart={(_event, info: PanInfo) => {
         setDragging(true);
+        createDragPreview(info.point);
         onReorderStart();
       }}
       onDragEnd={(_event, info: PanInfo) => {
         setDragging(false);
+        removeDragPreview();
         if (!onCrossBoxDrop(info.point)) {
           onReorderEnd();
         }
