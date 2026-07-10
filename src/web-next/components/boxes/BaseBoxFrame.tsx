@@ -148,7 +148,10 @@ export function BaseBoxFrame({
         boxTop.set(latestFrame.y);
       },
       onEnd: (reason) => {
-        updateBoxFrame(box.id, latestFrame);
+        const droppingOnTopBar = useUiStore.getState().boxDragOverTopBar;
+        if (!droppingOnTopBar) {
+          updateBoxFrame(box.id, latestFrame);
+        }
         if (pointerSessionRef.current === session) {
           pointerSessionRef.current = null;
         }
