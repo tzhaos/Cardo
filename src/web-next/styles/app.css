@@ -571,7 +571,7 @@
   padding: 8px 12px;
 }
 
-.wbn-box-compact:not(:hover):not(:focus-within):not(.wbn-box-local-view) .wbn-box-controls {
+.wbn-box-compact:not(:hover) .wbn-box-controls {
   opacity: 0;
   pointer-events: none;
 }
