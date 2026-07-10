@@ -40,6 +40,7 @@ import {
   resolvePageBoxOverlaps,
   snapPageBoxesToGrid,
 } from '../../domain/boxLayout';
+import { GlobalSearchPanel } from '../global-search/GlobalSearchPanel';
 
 export function BottomToolbar() {
   const createBox = useWorkspaceStore((state) => state.createBox);
@@ -97,6 +98,9 @@ export function BottomToolbar() {
 
   return (
     <div className="wbn-bottom-shell">
+      <AnimatePresence>
+        {isSearchActive ? <GlobalSearchPanel query={searchQuery} onClose={closeSearch} /> : null}
+      </AnimatePresence>
       <div className="wbn-bottom-toolbar" aria-label={t('toolbar.workspaceTools')}>
         <IconButton
           className="wbn-toolbar-canvas-control"
@@ -268,10 +272,11 @@ export function BottomToolbar() {
           </motion.span>
         </IconButton>
         <div className="wbn-toolbar-divider" />
-        <motion.div className="wbn-search-pill" animate={{ width: isSearchActive ? 240 : 40 }}>
+        <motion.div className="wbn-search-pill" animate={{ width: isSearchActive ? 320 : 40 }}>
           <IconButton
             onClick={() => {
-              setIsSearchActive((value) => !value);
+              if (isSearchActive) closeSearch();
+              else setIsSearchActive(true);
             }}
             aria-label={t('toolbar.search')}
           >
@@ -281,11 +286,6 @@ export function BottomToolbar() {
             ref={searchInputRef}
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
-            onBlur={() => {
-              if (!searchQuery) {
-                closeSearch();
-              }
-            }}
             placeholder={t('toolbar.searchPlaceholder')}
             style={{
               opacity: isSearchActive ? 1 : 0,

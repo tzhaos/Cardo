@@ -1,11 +1,10 @@
-import { useDeferredValue, useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { AnimatePresence, LayoutGroup, motion, type Variants } from 'motion/react';
-import { SearchX, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { useCanvasPan } from '../../app/useCanvasPan';
 import { useCanvasViewport } from '../../app/useCanvasViewport';
 import { getPageCanvasState, useCanvasStore } from '../../app/stores/canvasStore';
-import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import {
   clientPointToCanvasWorld,
@@ -22,28 +21,13 @@ export function WorkspaceCanvas() {
   const snapshot = useWorkspaceStore((state) => state.snapshot);
   const createBox = useWorkspaceStore((state) => state.createBox);
   const createPage = useWorkspaceStore((state) => state.createPage);
-  const searchQuery = useUiStore((state) => state.searchQuery);
-  const deferredSearchQuery = useDeferredValue(searchQuery);
   const viewportSize = useCanvasStore((state) => state.viewportSize);
   const { openCanvasMenu } = useFloatingMenu();
   const { t } = useI18n();
-  const boxes = useMemo(() => {
-    const activeBoxes = snapshot.boxes.filter((box) => box.pageId === snapshot.activePageId);
-    const query = deferredSearchQuery.trim().toLowerCase();
-    if (!query) {
-      return activeBoxes;
-    }
-    return activeBoxes.filter(
-      (box) =>
-        box.title.toLowerCase().includes(query) ||
-        box.items.some(
-          (item) =>
-            item.title.toLowerCase().includes(query) ||
-            (item.type === 'clipboard' && item.text.toLowerCase().includes(query)),
-        ),
-    );
-  }, [deferredSearchQuery, snapshot.activePageId, snapshot.boxes]);
-  const isSearchFiltering = Boolean(deferredSearchQuery.trim());
+  const boxes = useMemo(
+    () => snapshot.boxes.filter((box) => box.pageId === snapshot.activePageId),
+    [snapshot.activePageId, snapshot.boxes],
+  );
   const isRecycleBin = isRecycleBinPageId(snapshot.activePageId);
   const previousActivePageIdRef = useRef(snapshot.activePageId);
   const canvasRef = useRef<HTMLElement>(null);
@@ -123,16 +107,12 @@ export function WorkspaceCanvas() {
             <div className="wbn-canvas-boundary" style={boundaryStyle} />
             <LayoutGroup id={`workspace-items-${snapshot.activePageId}`}>
               {boxes.map((box) => (
-                <WorkspaceBoxRenderer
-                  box={box}
-                  key={box.id}
-                  skipEntryAnimation={isSearchFiltering || isPageSwitch}
-                />
+                <WorkspaceBoxRenderer box={box} key={box.id} skipEntryAnimation={isPageSwitch} />
               ))}
             </LayoutGroup>
           </CanvasWorld>
           <AnimatePresence>
-            {isRecycleBin && !isSearchFiltering && boxes.length === 0 ? (
+            {isRecycleBin && boxes.length === 0 ? (
               <motion.div
                 className="wbn-recycle-bin-empty"
                 initial={{ opacity: 0, y: 8 }}
@@ -141,16 +121,6 @@ export function WorkspaceCanvas() {
               >
                 <Trash2 size={22} />
                 <span>{t('page.recycleBinEmpty')}</span>
-              </motion.div>
-            ) : isSearchFiltering && boxes.length === 0 ? (
-              <motion.div
-                className="wbn-search-feedback"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 8 }}
-              >
-                <SearchX size={18} />
-                <span>{t('search.noResults')}</span>
               </motion.div>
             ) : null}
           </AnimatePresence>
