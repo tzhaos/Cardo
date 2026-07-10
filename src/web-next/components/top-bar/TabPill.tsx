@@ -85,7 +85,7 @@ export function TabPill({
         ) : null}
         <span className="wbn-tab-label">
           {page.title}
-          {defaultPage ? (
+          {editing && defaultPage ? (
             <motion.span
               aria-hidden="true"
               className="wbn-default-page-indicator"
