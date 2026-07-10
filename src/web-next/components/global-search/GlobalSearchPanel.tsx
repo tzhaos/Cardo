@@ -14,7 +14,7 @@ import {
   Search,
   X,
 } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { motion } from 'motion/react';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { getBoxAccent, getBoxIcon } from '../../domain/boxAppearance';
@@ -169,20 +169,15 @@ export function GlobalSearchPanel({ query, onClose }: { query: string; onClose: 
           )}
         </motion.div>
       </div>
-      <AnimatePresence>
-        {previewBox && previewPage
-          ? createPortal(
-              <ReadonlyBoxPreview
-                box={previewBox}
-                pageTitle={previewPage.title}
-                onClose={() => setPreviewBoxId(null)}
-                onActivateItem={(item) => void activateItem(item, `preview:${item.id}`)}
-                copiedItemId={copiedResultId}
-              />,
-              document.body,
-            )
-          : null}
-      </AnimatePresence>
+      {previewBox && previewPage ? (
+        <ReadonlyBoxPreview
+          box={previewBox}
+          pageTitle={previewPage.title}
+          onClose={() => setPreviewBoxId(null)}
+          onActivateItem={(item) => void activateItem(item, `preview:${item.id}`)}
+          copiedItemId={copiedResultId}
+        />
+      ) : null}
     </>
   );
 }
@@ -208,7 +203,7 @@ function ReadonlyBoxPreview({
 }) {
   const { t } = useI18n();
   const accent = getBoxAccent(box);
-  return (
+  return createPortal(
     <motion.div
       className="wbn-readonly-box-backdrop"
       initial={{ opacity: 0 }}
@@ -261,7 +256,8 @@ function ReadonlyBoxPreview({
           )}
         </div>
       </motion.section>
-    </motion.div>
+    </motion.div>,
+    document.body,
   );
 }
 
