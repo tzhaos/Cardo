@@ -465,14 +465,18 @@ function SegmentButton({
   onClick: () => void;
 }) {
   return (
-    <button className={active ? 'wbn-segment-active' : ''} type="button" onClick={onClick}>
-      {active ? (
-        <motion.span
-          className="wbn-segment-indicator"
-          layoutId="settings-segment-indicator"
-          transition={{ type: 'spring', bounce: 0.12, duration: 0.38 }}
-        />
-      ) : null}
+    <button
+      aria-pressed={active}
+      className={active ? 'wbn-segment-active' : ''}
+      type="button"
+      onClick={onClick}
+    >
+      <motion.span
+        className="wbn-segment-indicator"
+        initial={false}
+        animate={{ opacity: active ? 1 : 0, scale: active ? 1 : 0.94 }}
+        transition={{ type: 'spring', stiffness: 420, damping: 32, mass: 0.55 }}
+      />
       <span>{children}</span>
     </button>
   );
