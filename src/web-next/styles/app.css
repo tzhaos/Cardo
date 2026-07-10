@@ -607,7 +607,18 @@
 }
 
 .wbn-top-action-icon {
+  position: absolute;
+  inset: 0;
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wbn-top-action-icon-stack {
+  position: relative;
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
   align-items: center;
   justify-content: center;
 }
