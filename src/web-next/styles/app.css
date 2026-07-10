@@ -395,11 +395,11 @@
   box-shadow: var(--wbn-shadow-hover);
 }
 
-.wbn-box.wbn-box-pinned {
+.wbn-box.wbn-box-locked {
   z-index: 30;
 }
 
-.wbn-box.wbn-box-pinned:hover {
+.wbn-box.wbn-box-locked:hover {
   z-index: 40;
 }
 
@@ -470,15 +470,15 @@
   outline: none;
 }
 
-.wbn-box-pinned .wbn-box-header {
+.wbn-box-locked .wbn-box-header {
   cursor: default;
 }
 
-.wbn-box-pinned .wbn-box-pin-toggle {
+.wbn-box-locked .wbn-box-lock-toggle {
   color: var(--box-accent);
 }
 
-.wbn-box-pinned .wbn-resize-handle {
+.wbn-box-locked .wbn-resize-handle {
   display: none;
 }
 

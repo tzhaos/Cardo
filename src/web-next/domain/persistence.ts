@@ -94,6 +94,7 @@ function parseWorkspaceBox(input: unknown): WorkspaceBox | null {
     (input.detailMode !== undefined &&
       input.detailMode !== 'detailed' &&
       input.detailMode !== 'compact') ||
+    (input.isLocked !== undefined && typeof input.isLocked !== 'boolean') ||
     (input.isPinned !== undefined && typeof input.isPinned !== 'boolean') ||
     typeof input.createdAt !== 'string' ||
     typeof input.updatedAt !== 'string'
@@ -111,7 +112,12 @@ function parseWorkspaceBox(input: unknown): WorkspaceBox | null {
     items: input.items.map(parseBoxItem).filter((item): item is BoxItem => item !== null),
     ...(input.viewMode ? { viewMode: input.viewMode } : {}),
     ...(input.detailMode ? { detailMode: input.detailMode } : {}),
-    ...(typeof input.isPinned === 'boolean' ? { isPinned: input.isPinned } : {}),
+    isLocked:
+      typeof input.isLocked === 'boolean'
+        ? input.isLocked
+        : typeof input.isPinned === 'boolean'
+          ? input.isPinned
+          : false,
     createdAt: input.createdAt,
     updatedAt: input.updatedAt,
   };

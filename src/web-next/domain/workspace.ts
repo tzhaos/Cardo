@@ -73,7 +73,7 @@ export interface WorkspaceBox {
   items: BoxItem[];
   viewMode?: WorkspaceBoxViewMode;
   detailMode?: WorkspaceBoxDetailMode;
-  isPinned?: boolean;
+  isLocked?: boolean;
   createdAt: string;
   updatedAt: string;
 }

@@ -76,7 +76,7 @@ export function createWorkspaceBox(
     items: [],
     viewMode: 'list',
     detailMode: 'detailed',
-    isPinned: false,
+    isLocked: false,
     createdAt: timestamp,
     updatedAt: timestamp,
   };

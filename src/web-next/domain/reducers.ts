@@ -238,12 +238,12 @@ export function setBoxDetailMode(
   };
 }
 
-export function setBoxPinned(snapshot: WorkspaceSnapshot, boxId: string, isPinned: boolean) {
+export function setBoxLocked(snapshot: WorkspaceSnapshot, boxId: string, isLocked: boolean) {
   return {
     ...snapshot,
     boxes: snapshot.boxes.map((box) =>
-      box.id === boxId && box.isPinned !== isPinned
-        ? { ...box, isPinned, updatedAt: nowIso() }
+      box.id === boxId && box.isLocked !== isLocked
+        ? { ...box, isLocked, updatedAt: nowIso() }
         : box,
     ),
   };
