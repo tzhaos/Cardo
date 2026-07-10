@@ -39,7 +39,7 @@ export interface CanvasPanLimits {
   maxY: number;
 }
 
-export const CANVAS_EXTRA_SCREEN_SPAN = 1.5;
+export const CANVAS_EXTRA_SCREEN_SPAN = 1.2;
 export const CANVAS_SCREEN_SPAN = 1 + CANVAS_EXTRA_SCREEN_SPAN;
 const CANVAS_EDGE_SCREEN_SPAN = CANVAS_EXTRA_SCREEN_SPAN / 2;
 export const ORIGIN_CANVAS_CAMERA: CanvasCamera = { panX: 0, panY: 0, zoom: 1 };
@@ -47,26 +47,30 @@ export const ORIGIN_CANVAS_CAMERA: CanvasCamera = { panX: 0, panY: 0, zoom: 1 };
 export function createCanvasWorldBounds(viewport: CanvasViewportSize): CanvasWorldBounds {
   const width = normalizeDimension(viewport.width);
   const height = normalizeDimension(viewport.height);
+  const horizontalMargin = width * CANVAS_EDGE_SCREEN_SPAN;
+  const verticalMargin = height * CANVAS_EDGE_SCREEN_SPAN;
 
   return {
-    minX: -width * CANVAS_EDGE_SCREEN_SPAN,
-    minY: -height * CANVAS_EDGE_SCREEN_SPAN,
-    maxX: width * (1 + CANVAS_EDGE_SCREEN_SPAN),
-    maxY: height * (1 + CANVAS_EDGE_SCREEN_SPAN),
-    width: width * CANVAS_SCREEN_SPAN,
-    height: height * CANVAS_SCREEN_SPAN,
+    minX: -horizontalMargin,
+    minY: -verticalMargin,
+    maxX: width + horizontalMargin,
+    maxY: height + verticalMargin,
+    width: width + horizontalMargin * 2,
+    height: height + verticalMargin * 2,
   };
 }
 
 export function getCanvasPanLimits(viewport: CanvasViewportSize): CanvasPanLimits {
   const width = normalizeDimension(viewport.width);
   const height = normalizeDimension(viewport.height);
+  const horizontalLimit = width * CANVAS_EDGE_SCREEN_SPAN;
+  const verticalLimit = height * CANVAS_EDGE_SCREEN_SPAN;
 
   return {
-    minX: -width * CANVAS_EDGE_SCREEN_SPAN,
-    maxX: width * CANVAS_EDGE_SCREEN_SPAN,
-    minY: -height * CANVAS_EDGE_SCREEN_SPAN,
-    maxY: height * CANVAS_EDGE_SCREEN_SPAN,
+    minX: -horizontalLimit,
+    maxX: horizontalLimit,
+    minY: -verticalLimit,
+    maxY: verticalLimit,
   };
 }
 
