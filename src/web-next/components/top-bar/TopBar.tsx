@@ -249,6 +249,7 @@ export function TopBar() {
             </Reorder.Group>
             <motion.div className="wbn-top-actions" layout="position">
               <motion.button
+                className="wbn-icon-button"
                 type="button"
                 onClick={() => createPage(t('page.untitled'))}
                 aria-label={t('page.add')}
@@ -257,7 +258,7 @@ export function TopBar() {
                 <Plus size={18} />
               </motion.button>
               <motion.button
-                className={editing ? 'wbn-check-button' : ''}
+                className={`wbn-icon-button${editing ? ' wbn-check-button' : ''}`}
                 type="button"
                 onClick={() => setEditing((value) => !value)}
                 aria-label={editing ? t('page.finishEditing') : t('page.edit')}
@@ -265,7 +266,7 @@ export function TopBar() {
               >
                 <AnimatePresence initial={false} mode="popLayout">
                   <motion.span
-                    className="wbn-top-action-icon"
+                    className="wbn-top-action-icon wbn-icon-frame"
                     key={editing ? 'done' : 'edit'}
                     initial={{ opacity: 0, rotate: editing ? -38 : 38, scale: 0.68 }}
                     animate={{ opacity: 1, rotate: 0, scale: 1 }}

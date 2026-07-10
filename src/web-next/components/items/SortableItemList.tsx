@@ -6,6 +6,7 @@ import { useStagedOrder } from '../../app/motion/useStagedOrder';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import type { BoxItem } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
+import { IconButton } from '../primitives/IconPrimitives';
 
 export function SortableItemList<TItem extends BoxItem>({
   boxId,
@@ -97,9 +98,8 @@ function SortableItemEntry({
         onReorderEnd();
       }}
     >
-      <button
+      <IconButton
         className="wbn-item-drag-handle"
-        type="button"
         aria-label={t('item.reorder')}
         onPointerDown={(event) => {
           event.preventDefault();
@@ -107,7 +107,7 @@ function SortableItemEntry({
         }}
       >
         <GripVertical size={14} />
-      </button>
+      </IconButton>
       {children}
     </Reorder.Item>
   );

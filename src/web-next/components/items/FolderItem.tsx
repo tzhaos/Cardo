@@ -6,6 +6,8 @@ import { ItemDeleteView } from './ItemDeleteView';
 import { ItemActions } from './ItemActions';
 import { useItemRename } from './useItemRename';
 import { useI18n } from '../../i18n/useI18n';
+import { openLocalResource } from '../../platform/hostPlatform';
+import { IconFrame } from '../primitives/IconPrimitives';
 
 export function FolderItem({
   boxId,
@@ -41,9 +43,14 @@ export function FolderItem({
             exit={{ opacity: 0, x: -6 }}
             transition={{ duration: 0.15 }}
           >
-            <span className="wbn-item-glyph">
+            <IconFrame
+              className="wbn-item-glyph"
+              onDoubleClick={() => {
+                void openLocalResource(item.path);
+              }}
+            >
               <Icon size={16} />
-            </span>
+            </IconFrame>
             <div className="wbn-item-main">
               {rename.renaming ? (
                 <input
@@ -67,10 +74,7 @@ export function FolderItem({
               )}
               <small className="wbn-item-secondary">{item.path}</small>
             </div>
-            <ItemActions
-              onEdit={rename.startRenaming}
-              onDelete={() => setDeleteView(true)}
-            />
+            <ItemActions onEdit={rename.startRenaming} onDelete={() => setDeleteView(true)} />
           </motion.div>
         )}
       </AnimatePresence>

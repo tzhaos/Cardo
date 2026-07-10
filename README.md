@@ -13,14 +13,14 @@ KhaosBox is a multi-host TypeScript spatial workbench for organizing links, note
 ```text
 src/
 |-- core/       # runtime-agnostic domain, codecs, protocols, ports
-|-- web/        # React UI, Zustand stores, use-cases, feature controllers
+|-- web-next/   # React UI, spatial workspace domain, platform integration
 |-- extension/  # MV3 bootstrap, Chrome adapters, background bridge
 |-- desktop/    # Electron main, preload, renderer, desktop adapters
 |-- native-host/# TS Native Messaging host for local resource opening
 `-- cli/        # Node CLI entry
 ```
 
-The browser extension and Electron desktop both use `src/web` for the UI. Platform capabilities are injected through `src/core/ports`.
+The browser extension and Electron desktop both use `src/web-next`. Platform capabilities are injected through `src/core/ports`; the CLI can inspect both legacy exports and web-next persisted workspace snapshots.
 
 ## Local resources
 
@@ -51,7 +51,7 @@ npm install
 ## CLI
 
 ```bash
-npm run cli -- inspect workspace.export-v4.json
+npm run cli -- inspect workspace.json
 ```
 
 ## Browser extension

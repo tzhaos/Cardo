@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import type { StateStorage } from 'zustand/middleware';
+import { webNextStorage } from '../../platform/hostPlatform';
 import { createDefaultWorkspace, createItem } from '../../domain/factories';
 import { restoreWorkspaceSnapshot } from '../../domain/persistence';
 import type {
@@ -45,12 +45,6 @@ interface WorkspaceStore {
   reorderItems: (boxId: string, orderedItemIds: string[]) => void;
   deleteItem: (boxId: string, itemId: string) => void;
 }
-
-const emptyStorage: StateStorage = {
-  getItem: () => null,
-  setItem: () => undefined,
-  removeItem: () => undefined,
-};
 
 export const useWorkspaceStore = create<WorkspaceStore>()(
   persist(
@@ -100,9 +94,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
     {
       name: 'khaosbox.web-next.workspace',
       version: 1,
-      storage: createJSONStorage(() =>
-        typeof window === 'undefined' ? emptyStorage : window.localStorage,
-      ),
+      storage: createJSONStorage(() => webNextStorage),
       partialize: ({ snapshot }) => ({ snapshot }),
       merge: (persistedState, currentState) => {
         const persistedSnapshot = (persistedState as Partial<WorkspaceStore> | undefined)?.snapshot;

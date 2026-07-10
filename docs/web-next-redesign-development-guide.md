@@ -4,11 +4,11 @@
 
 This document is the source of truth for the `src/web-next` rebuild. It captures the agreed product, interaction, visual, and implementation decisions so future AI agents can continue development without re-litigating the design.
 
-The rebuild is not a visual patch to the old web app. It is a new frontend implementation that should eventually replace `src/web` after it is complete. During development, keep old web code runnable and copy only the pieces that are still useful.
+The rebuild is not a visual patch to the old web app. It is the sole frontend implementation and is shared by the browser extension and Electron desktop host.
 
 ## Core direction
 
-- Build the new frontend in `src/web-next`.
+- Build and maintain the sole frontend in `src/web-next`.
 - Target web and browser extension verification first.
 - Do not optimize for Electron in the first implementation pass; adapt Electron after the new web experience is stable.
 - Reuse core domain code only when it helps. Do not let old UI architecture, old templates, old widgets, or old CSS constrain the new implementation.
@@ -516,15 +516,14 @@ Use clear boundaries:
 - Require every built-in or custom theme definition to provide both palettes.
 - Add General, Appearance, and About settings sections.
 
-### Phase 6: browser extension verification
+### Phase 6: platform integration and verification
 
-- Wire Vite/browser-extension entry to `web-next` behind a controlled switch or direct temporary entry change.
-- Verify web and browser plugin flows.
-- Keep old web available until explicit replacement.
+- Wire the extension and Electron renderer entries to `web-next` through the shared platform port boundary.
+- Verify extension, desktop, and CLI workspace inspection flows.
 
-### Phase 7: old web removal and platform updates
+### Phase 7: retired web removal and platform updates
 
-- Remove old `src/web` UI implementation only after the new implementation is complete.
+- Keep `src/web` removed; `web-next` is the only frontend implementation.
 - Write old-data migration script separately.
 - Update Electron integration after web/plugin flows are stable.
 

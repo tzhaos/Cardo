@@ -1,13 +1,6 @@
-import '../web/index.css';
-import KhaosBoxApp from '../web/app/KhaosBoxApp';
-import { renderRoot } from '../web/app/bootstrap/renderRoot';
-import { configureAppPorts } from '../web/app/ports/defaultPorts';
+import { configureAppPorts } from '../core/runtime/appPorts';
+import { startWebNextApp } from '../web-next/app/start';
 import { createDesktopPorts } from './ports/createDesktopPorts';
 
 configureAppPorts(createDesktopPorts());
-
-renderRoot(
-  <div className="min-h-screen overflow-x-hidden">
-    <KhaosBoxApp />
-  </div>,
-);
+startWebNextApp();

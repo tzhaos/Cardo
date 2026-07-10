@@ -109,7 +109,7 @@ export function TabPill({
         <AnimatePresence initial={false}>
           {editing && canDelete ? (
             <motion.span
-              className="wbn-tab-delete"
+              className="wbn-tab-delete wbn-icon-frame"
               role="button"
               tabIndex={0}
               aria-label={t('page.delete', { title: page.title })}

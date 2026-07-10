@@ -6,6 +6,8 @@ import { useI18n } from '../../i18n/useI18n';
 import { ItemDeleteView } from './ItemDeleteView';
 import { ItemActions } from './ItemActions';
 import { useItemRename } from './useItemRename';
+import { writeClipboardText } from '../../platform/hostPlatform';
+import { IconFrame } from '../primitives/IconPrimitives';
 
 export function ClipboardItem({
   boxId,
@@ -33,7 +35,7 @@ export function ClipboardItem({
 
   const copyText = async () => {
     try {
-      await navigator.clipboard.writeText(item.text);
+      await writeClipboardText(item.text);
       setCopied(true);
       if (copyResetRef.current !== null) {
         window.clearTimeout(copyResetRef.current);
@@ -64,9 +66,9 @@ export function ClipboardItem({
             exit={{ opacity: 0, x: -6 }}
             transition={{ duration: 0.15 }}
           >
-            <span className="wbn-item-glyph">
+            <IconFrame className="wbn-item-glyph">
               <Clipboard size={16} />
-            </span>
+            </IconFrame>
             <div className="wbn-item-main">
               {rename.renaming ? (
                 <input

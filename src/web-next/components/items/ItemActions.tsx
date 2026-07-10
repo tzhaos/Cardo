@@ -1,5 +1,6 @@
 import { Check, Copy, Edit2, Trash2 } from 'lucide-react';
 import { useI18n } from '../../i18n/useI18n';
+import { IconButton } from '../primitives/IconPrimitives';
 
 export function ItemActions({
   copied = false,
@@ -17,26 +18,20 @@ export function ItemActions({
   return (
     <div className="wbn-item-actions">
       {onCopy ? (
-        <button
+        <IconButton
           className={`wbn-item-copy${copied ? ' wbn-item-copy-done' : ''}`}
-          type="button"
           aria-label={copied ? t('item.copied') : t('item.copy')}
           onClick={onCopy}
         >
           {copied ? <Check size={14} /> : <Copy size={14} />}
-        </button>
+        </IconButton>
       ) : null}
-      <button type="button" aria-label={t('item.rename')} onClick={onEdit}>
+      <IconButton aria-label={t('item.rename')} onClick={onEdit}>
         <Edit2 size={14} />
-      </button>
-      <button
-        className="wbn-item-delete"
-        type="button"
-        aria-label={t('item.delete')}
-        onClick={onDelete}
-      >
+      </IconButton>
+      <IconButton className="wbn-item-delete" aria-label={t('item.delete')} onClick={onDelete}>
         <Trash2 size={14} />
-      </button>
+      </IconButton>
     </div>
   );
 }

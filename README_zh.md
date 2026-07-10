@@ -20,7 +20,7 @@ src/
 `-- cli/        # Node CLI 入口
 ```
 
-浏览器扩展和 Electron 桌面端都复用 `src/web`。平台能力通过 `src/core/ports` 注入。
+浏览器扩展和 Electron 桌面端都复用 `src/web-next`。平台能力通过 `src/core/ports` 注入，CLI 可检查旧版导出和新版持久化工作区快照。
 
 ## 本地资源
 
@@ -51,7 +51,7 @@ npm install
 ## CLI
 
 ```bash
-npm run cli -- inspect workspace.export-v4.json
+npm run cli -- inspect workspace.json
 ```
 
 ## 浏览器扩展

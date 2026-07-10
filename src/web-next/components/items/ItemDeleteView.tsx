@@ -1,6 +1,7 @@
 import { Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useI18n } from '../../i18n/useI18n';
+import { IconFrame } from '../primitives/IconPrimitives';
 
 export function ItemDeleteView({
   onCancel,
@@ -27,7 +28,9 @@ export function ItemDeleteView({
       }}
     >
       <span className="wbn-item-delete-copy">
-        <Trash2 size={15} />
+        <IconFrame>
+          <Trash2 size={15} />
+        </IconFrame>
         <span>{t('item.deleteQuestion')}</span>
       </span>
       <span className="wbn-item-delete-actions">

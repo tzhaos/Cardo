@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import { webNextStorage } from '../../platform/hostPlatform';
 import type { WebNextLocale } from '../../i18n/messages';
 import { isRegisteredWebNextTheme, type WebNextColorMode } from '../../themes/themeRegistry';
 
@@ -20,42 +22,36 @@ interface PreferencesStore {
 }
 
 const STORAGE_KEY = 'khaosbox.web-next.preferences';
-const initialPreferences = readPreferences();
 
-export const usePreferencesStore = create<PreferencesStore>((set) => ({
-  ...initialPreferences,
-  setColorMode: (colorMode) =>
-    set((state) => {
-      savePreferences({ colorMode, locale: state.locale, themeId: state.themeId });
-      return { colorMode };
+export const usePreferencesStore = create<PreferencesStore>()(
+  persist(
+    (set) => ({
+      ...getInitialPreferences(),
+      setColorMode: (colorMode) => set({ colorMode }),
+      setLocale: (locale) => set({ locale }),
+      setThemeId: (themeId) => {
+        if (isRegisteredWebNextTheme(themeId)) {
+          set({ themeId });
+        }
+      },
+      toggleColorMode: () =>
+        set((state) => ({ colorMode: state.colorMode === 'light' ? 'dark' : 'light' })),
+      toggleLocale: () => set((state) => ({ locale: state.locale === 'en' ? 'zh' : 'en' })),
     }),
-  setLocale: (locale) =>
-    set((state) => {
-      savePreferences({ colorMode: state.colorMode, locale, themeId: state.themeId });
-      return { locale };
-    }),
-  setThemeId: (themeId) =>
-    set((state) => {
-      if (!isRegisteredWebNextTheme(themeId)) return state;
-      savePreferences({ colorMode: state.colorMode, locale: state.locale, themeId });
-      return { themeId };
-    }),
-  toggleColorMode: () =>
-    set((state) => {
-      const colorMode = state.colorMode === 'light' ? 'dark' : 'light';
-      savePreferences({ colorMode, locale: state.locale, themeId: state.themeId });
-      return { colorMode };
-    }),
-  toggleLocale: () =>
-    set((state) => {
-      const locale = state.locale === 'en' ? 'zh' : 'en';
-      savePreferences({ colorMode: state.colorMode, locale, themeId: state.themeId });
-      return { locale };
-    }),
-}));
+    {
+      name: STORAGE_KEY,
+      storage: createJSONStorage(() => webNextStorage),
+      partialize: ({ colorMode, locale, themeId }) => ({ colorMode, locale, themeId }),
+      merge: (persistedState, currentState) => ({
+        ...currentState,
+        ...normalizePreferences(persistedState, currentState),
+      }),
+    },
+  ),
+);
 
-function readPreferences(): StoredPreferences {
-  const fallback: StoredPreferences = {
+function getInitialPreferences(): StoredPreferences {
+  return {
     locale:
       typeof navigator !== 'undefined' && navigator.language.toLowerCase().startsWith('zh')
         ? 'zh'
@@ -66,28 +62,18 @@ function readPreferences(): StoredPreferences {
         : 'light',
     themeId: 'classic',
   };
-
-  if (typeof window === 'undefined') return fallback;
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? '') as Partial<
-      StoredPreferences & { theme: string }
-    >;
-    const legacyColorMode =
-      parsed.theme === 'dark' || parsed.theme === 'light' ? parsed.theme : null;
-    return {
-      colorMode:
-        parsed.colorMode === 'dark' || parsed.colorMode === 'light'
-          ? parsed.colorMode
-          : (legacyColorMode ?? fallback.colorMode),
-      locale: parsed.locale === 'zh' ? 'zh' : parsed.locale === 'en' ? 'en' : fallback.locale,
-      themeId: isRegisteredWebNextTheme(parsed.themeId) ? parsed.themeId : fallback.themeId,
-    };
-  } catch {
-    return fallback;
-  }
 }
 
-function savePreferences(preferences: StoredPreferences) {
-  if (typeof window === 'undefined') return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
+function normalizePreferences(input: unknown, fallback: StoredPreferences): StoredPreferences {
+  const parsed = (input ?? {}) as Partial<StoredPreferences & { theme: string }>;
+  const legacyColorMode = parsed.theme === 'dark' || parsed.theme === 'light' ? parsed.theme : null;
+
+  return {
+    colorMode:
+      parsed.colorMode === 'dark' || parsed.colorMode === 'light'
+        ? parsed.colorMode
+        : (legacyColorMode ?? fallback.colorMode),
+    locale: parsed.locale === 'zh' ? 'zh' : parsed.locale === 'en' ? 'en' : fallback.locale,
+    themeId: isRegisteredWebNextTheme(parsed.themeId) ? parsed.themeId : fallback.themeId,
+  };
 }

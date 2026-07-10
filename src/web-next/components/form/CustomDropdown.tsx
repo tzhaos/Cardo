@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useI18n } from '../../i18n/useI18n';
+import { IconFrame } from '../primitives/IconPrimitives';
 
 interface DropdownOption {
   value: string;
@@ -60,7 +61,9 @@ export function CustomDropdown({ value, options, onChange, label }: CustomDropdo
         onClick={() => setOpen((value) => !value)}
       >
         <span>{selected?.label ?? t('field.select')}</span>
-        <ChevronDown size={16} />
+        <IconFrame>
+          <ChevronDown size={16} />
+        </IconFrame>
       </button>
       {open ? (
         <div className="wbn-dropdown-menu" role="listbox">

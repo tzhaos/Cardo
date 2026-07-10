@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { FloatingMenuItem } from './menuTypes';
 import { SubmenuChevron, useFloatingMenu } from './useFloatingMenu';
+import { IconFrame } from '../primitives/IconPrimitives';
 
 export function FloatingMenuLayer() {
   const { menu, closeMenu } = useFloatingMenu();
@@ -106,11 +107,11 @@ function MenuPanel({
           }}
           type="button"
         >
-          <span className="wbn-menu-icon">{item.icon}</span>
+          <IconFrame className="wbn-menu-icon">{item.icon}</IconFrame>
           <span>{item.label}</span>
-          <span className="wbn-menu-trailing">
+          <IconFrame className="wbn-menu-trailing">
             {item.children ? <SubmenuChevron /> : item.shortcut ? <kbd>{item.shortcut}</kbd> : null}
-          </span>
+          </IconFrame>
         </button>
       ))}
     </div>

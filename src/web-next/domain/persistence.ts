@@ -1,8 +1,12 @@
 import type { WorkspaceBox, WorkspacePage, WorkspaceSnapshot } from './workspace';
 
 export function restoreWorkspaceSnapshot(input: unknown, fallback: WorkspaceSnapshot) {
+  return parseWorkspaceSnapshot(input) ?? fallback;
+}
+
+export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null {
   if (!isRecord(input) || !Array.isArray(input.pages) || !Array.isArray(input.boxes)) {
-    return fallback;
+    return null;
   }
 
   const pages = input.pages
@@ -10,7 +14,7 @@ export function restoreWorkspaceSnapshot(input: unknown, fallback: WorkspaceSnap
     .sort((first, second) => first.order - second.order)
     .map((page, order) => ({ ...page, order }));
   if (pages.length === 0) {
-    return fallback;
+    return null;
   }
 
   const pageIds = new Set(pages.map((page) => page.id));
@@ -31,6 +35,15 @@ export function restoreWorkspaceSnapshot(input: unknown, fallback: WorkspaceSnap
       (box): box is WorkspaceBox => isWorkspaceBox(box) && pageIds.has(box.pageId),
     ),
   };
+}
+
+export function extractPersistedWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null {
+  if (!isRecord(input)) {
+    return null;
+  }
+
+  const state = isRecord(input.state) ? input.state : input;
+  return parseWorkspaceSnapshot(state.snapshot ?? state);
 }
 
 function isWorkspacePage(input: unknown): input is WorkspacePage {

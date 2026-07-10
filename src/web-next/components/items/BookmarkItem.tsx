@@ -6,6 +6,8 @@ import { ItemDeleteView } from './ItemDeleteView';
 import { ItemActions } from './ItemActions';
 import { useItemRename } from './useItemRename';
 import { useI18n } from '../../i18n/useI18n';
+import { openExternalUrl } from '../../platform/hostPlatform';
+import { IconFrame } from '../primitives/IconPrimitives';
 
 export function BookmarkItem({
   boxId,
@@ -40,9 +42,9 @@ export function BookmarkItem({
             exit={{ opacity: 0, x: -6 }}
             transition={{ duration: 0.15 }}
           >
-            <span className="wbn-item-glyph">
+            <IconFrame className="wbn-item-glyph">
               <Bookmark size={16} />
-            </span>
+            </IconFrame>
             <div className="wbn-item-main">
               {rename.renaming ? (
                 <input
@@ -61,15 +63,15 @@ export function BookmarkItem({
                   href={item.url}
                   target="_blank"
                   rel="noreferrer"
-                  onDoubleClick={rename.startRenaming}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    openExternalUrl(item.url);
+                  }}
                 >
                   <strong>{item.title}</strong>
                 </a>
               ) : (
-                <strong
-                  className="wbn-item-title-placeholder"
-                  onDoubleClick={rename.startRenaming}
-                >
+                <strong className="wbn-item-title-placeholder" onDoubleClick={rename.startRenaming}>
                   {t('item.untitled')}
                 </strong>
               )}
@@ -78,14 +80,15 @@ export function BookmarkItem({
                 href={item.url}
                 target="_blank"
                 rel="noreferrer"
+                onClick={(event) => {
+                  event.preventDefault();
+                  openExternalUrl(item.url);
+                }}
               >
                 {item.url}
               </a>
             </div>
-            <ItemActions
-              onEdit={rename.startRenaming}
-              onDelete={() => setDeleteView(true)}
-            />
+            <ItemActions onEdit={rename.startRenaming} onDelete={() => setDeleteView(true)} />
           </motion.div>
         )}
       </AnimatePresence>

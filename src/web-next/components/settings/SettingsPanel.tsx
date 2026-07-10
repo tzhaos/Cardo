@@ -17,6 +17,7 @@ import { useI18n } from '../../i18n/useI18n';
 import { getRegisteredWebNextThemes } from '../../themes/themeRegistry';
 import type { WebNextColorMode } from '../../themes/themeRegistry';
 import { ColorModeStateIcon, LanguageStateIcon } from './StateIcons';
+import { IconButton, IconFrame } from '../primitives/IconPrimitives';
 
 type SettingsSection = 'general' | 'appearance' | 'about';
 
@@ -46,12 +47,14 @@ export function SettingsPanel({
     <div className="wbn-settings-panel" role="dialog" aria-label={t('settings.title')}>
       <header className="wbn-settings-header" onPointerDown={onHeaderPointerDown}>
         <div>
-          <Settings size={17} />
+          <IconFrame>
+            <Settings size={17} />
+          </IconFrame>
           <span>{t('settings.title')}</span>
         </div>
-        <button data-no-menu-drag type="button" onClick={onClose} aria-label={t('common.close')}>
+        <IconButton data-no-menu-drag onClick={onClose} aria-label={t('common.close')}>
           <X size={16} />
-        </button>
+        </IconButton>
       </header>
       <div className="wbn-settings-layout">
         <nav className="wbn-settings-nav" aria-label={t('settings.sections')}>
@@ -69,7 +72,9 @@ export function SettingsPanel({
                   transition={{ type: 'spring', bounce: 0.12, duration: 0.42 }}
                 />
               ) : null}
-              <Icon size={16} />
+              <IconFrame>
+                <Icon size={16} />
+              </IconFrame>
               <span>{label}</span>
             </button>
           ))}
@@ -209,9 +214,9 @@ function AppearanceSettings({
                 <small>{theme.description[locale]}</small>
               </span>
               {selected ? (
-                <span className="wbn-theme-check">
+                <IconFrame className="wbn-theme-check">
                   <Check size={12} />
-                </span>
+                </IconFrame>
               ) : null}
             </motion.button>
           );
@@ -228,9 +233,9 @@ function AboutSettings() {
     <>
       <SettingsHeading title={t('settings.about')} description={t('settings.aboutDescription')} />
       <div className="wbn-about-card">
-        <span className="wbn-about-icon">
+        <IconFrame className="wbn-about-icon">
           <Languages size={22} />
-        </span>
+        </IconFrame>
         <span>
           KhaosBox
           <small>{t('settings.webNextEdition')}</small>

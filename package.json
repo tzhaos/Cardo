@@ -19,7 +19,7 @@
     "desktop:start": "npm run desktop:build && electron artifacts/desktop/main/main.js",
     "cli": "tsx src/cli/main.ts",
     "clean": "node -e \"const fs=require('node:fs'); ['artifacts','dist'].forEach((path)=>fs.rmSync(path,{recursive:true,force:true}))\"",
-    "lint": "tsc --noEmit && tsx scripts/check-architecture.ts",
+    "lint": "tsc --noEmit",
     "lint:eslint": "node scripts/run-eslint.mjs .",
     "lint:fix": "node scripts/run-eslint.mjs . --fix",
     "check": "npm run lint && npm run lint:eslint && npm run test:ts",

@@ -6,6 +6,7 @@ import type { WorkspaceBoxType } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
 import { getViewportCenterFrame, useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { useI18n } from '../../i18n/useI18n';
+import { IconButton, IconFrame } from '../primitives/IconPrimitives';
 
 export function BottomToolbar() {
   const createBox = useWorkspaceStore((state) => state.createBox);
@@ -89,9 +90,8 @@ export function BottomToolbar() {
         ) : null}
       </AnimatePresence>
       <div className="wbn-bottom-toolbar" aria-label={t('toolbar.workspaceTools')}>
-        <button
-          className={settingsOpen ? 'wbn-toolbar-button-active' : ''}
-          type="button"
+        <IconButton
+          className={`wbn-toolbar-button${settingsOpen ? ' wbn-toolbar-button-active' : ''}`}
           aria-controls="wbn-settings-window"
           aria-expanded={settingsOpen}
           onClick={() => {
@@ -102,17 +102,16 @@ export function BottomToolbar() {
           aria-label={t('toolbar.settings')}
         >
           <motion.span
-            className="wbn-settings-trigger-icon"
+            className="wbn-settings-trigger-icon wbn-icon-frame"
             animate={{ rotate: settingsOpen ? 120 : 0, scale: settingsOpen ? 1.08 : 1 }}
             transition={{ type: 'spring', stiffness: 330, damping: 22 }}
           >
             <Settings size={18} />
           </motion.span>
-        </button>
+        </IconButton>
         <div className="wbn-toolbar-divider" />
         <motion.div className="wbn-search-pill" animate={{ width: isSearchActive ? 240 : 40 }}>
-          <button
-            type="button"
+          <IconButton
             onClick={() => {
               setIsMenuOpen(false);
               setIsSearchActive((value) => !value);
@@ -120,7 +119,7 @@ export function BottomToolbar() {
             aria-label={t('toolbar.search')}
           >
             <Search size={18} />
-          </button>
+          </IconButton>
           <input
             ref={searchInputRef}
             value={searchQuery}
@@ -138,9 +137,8 @@ export function BottomToolbar() {
           />
         </motion.div>
         <div className="wbn-toolbar-divider" />
-        <button
+        <IconButton
           className="wbn-toolbar-create"
-          type="button"
           onClick={() => {
             setIsMenuOpen((value) => !value);
           }}
@@ -148,12 +146,13 @@ export function BottomToolbar() {
           title={t('toolbar.newBox')}
         >
           <motion.span
+            className="wbn-icon-frame"
             animate={{ rotate: isMenuOpen ? 45 : 0 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           >
             <Plus size={20} />
           </motion.span>
-        </button>
+        </IconButton>
       </div>
     </div>
   );
@@ -170,7 +169,9 @@ function MenuButton({
 }) {
   return (
     <button className="wbn-create-menu-button" type="button" onClick={onClick}>
-      <Icon size={16} />
+      <IconFrame>
+        <Icon size={16} />
+      </IconFrame>
       <span>{label}</span>
     </button>
   );

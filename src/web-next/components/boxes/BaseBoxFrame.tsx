@@ -290,7 +290,7 @@ export function BaseBoxFrame({
     >
       <header className="wbn-box-header" onPointerDown={beginDrag}>
         <div className="wbn-box-title-group">
-          <span className="wbn-box-icon">{icon}</span>
+          <span className="wbn-box-icon wbn-icon-frame">{icon}</span>
           {renamingTitle ? (
             <input
               ref={titleInputRef}
@@ -320,7 +320,7 @@ export function BaseBoxFrame({
           )}
         </div>
         <motion.button
-          className="wbn-box-delete"
+          className="wbn-box-delete wbn-icon-button"
           type="button"
           onClick={() => {
             if (addViewState?.mode) {

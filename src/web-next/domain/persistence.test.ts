@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { restoreWorkspaceSnapshot } from './persistence';
+import { extractPersistedWorkspaceSnapshot, restoreWorkspaceSnapshot } from './persistence';
 import type { WorkspaceSnapshot } from './workspace';
 
 const fallback: WorkspaceSnapshot = {
@@ -51,4 +51,20 @@ test('legacy workspaces use their active page as the initial default', () => {
 
 test('invalid persisted workspaces fall back safely', () => {
   assert.equal(restoreWorkspaceSnapshot({ pages: [], boxes: [] }, fallback), fallback);
+});
+
+test('extracts a workspace from the persisted Zustand envelope', () => {
+  const snapshot = extractPersistedWorkspaceSnapshot({
+    state: {
+      snapshot: {
+        activePageId: 'page-a',
+        defaultPageId: 'page-a',
+        pages: [{ id: 'page-a', title: 'A', order: 0, createdAt: '', updatedAt: '' }],
+        boxes: [],
+      },
+    },
+  });
+
+  assert.equal(snapshot?.activePageId, 'page-a');
+  assert.equal(snapshot?.pages.length, 1);
 });
