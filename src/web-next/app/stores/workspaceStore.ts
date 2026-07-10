@@ -7,6 +7,7 @@ import type {
   BoxFrame,
   BoxItem,
   WorkspaceBoxType,
+  WorkspaceBoxViewMode,
   WorkspaceSnapshot,
 } from '../../domain/workspace';
 import {
@@ -23,6 +24,7 @@ import {
   reorderItems,
   reorderPages,
   setActivePage,
+  setBoxViewMode,
   setDefaultPage,
   updateBoxFrame,
 } from '../../domain/reducers';
@@ -38,6 +40,7 @@ interface WorkspaceStore {
   createBox: (type: WorkspaceBoxType, frame: BoxFrame, title?: string) => void;
   updateBoxFrame: (boxId: string, frame: BoxFrame) => void;
   renameBox: (boxId: string, title: string) => void;
+  setBoxViewMode: (boxId: string, viewMode: WorkspaceBoxViewMode) => void;
   moveBoxToPage: (boxId: string, pageId: string, frame?: BoxFrame) => void;
   deleteBox: (boxId: string) => void;
   createItem: (boxId: string, type: WorkspaceBoxType, draft: Record<string, string>) => BoxItem;
@@ -76,6 +79,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         set((state) => ({ snapshot: updateBoxFrame(state.snapshot, boxId, frame) })),
       renameBox: (boxId, title) =>
         set((state) => ({ snapshot: renameBox(state.snapshot, boxId, title) })),
+      setBoxViewMode: (boxId, viewMode) =>
+        set((state) => ({ snapshot: setBoxViewMode(state.snapshot, boxId, viewMode) })),
       moveBoxToPage: (boxId, pageId, frame) =>
         set((state) => ({ snapshot: moveBoxToPage(state.snapshot, boxId, pageId, frame) })),
       deleteBox: (boxId) => set((state) => ({ snapshot: deleteBox(state.snapshot, boxId) })),

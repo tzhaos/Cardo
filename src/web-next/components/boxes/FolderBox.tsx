@@ -33,6 +33,7 @@ export function FolderBox({
         <SortableItemList
           boxId={box.id}
           items={items}
+          viewMode={box.viewMode ?? 'list'}
           renderItem={(item) => (
             <FolderItem
               boxId={box.id}

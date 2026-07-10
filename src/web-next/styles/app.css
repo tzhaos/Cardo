@@ -376,7 +376,8 @@
 .wbn-box-dragging-bar .wbn-box-content,
 .wbn-box-dragging-bar .wbn-box-footer,
 .wbn-box-dragging-bar .wbn-resize-handle,
-.wbn-box-dragging-bar .wbn-box-delete {
+.wbn-box-dragging-bar .wbn-box-delete,
+.wbn-box-dragging-bar .wbn-box-view-toggle {
   opacity: 0;
 }
 
@@ -460,6 +461,36 @@
   color: var(--wbn-red);
 }
 
+.wbn-box-controls {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 2px;
+}
+
+.wbn-box-view-toggle {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--wbn-muted);
+  opacity: 0;
+  transition:
+    opacity 160ms ease,
+    color 160ms ease,
+    background 160ms ease;
+}
+
+.wbn-box:hover .wbn-box-view-toggle,
+.wbn-box-local-view .wbn-box-view-toggle {
+  opacity: 1;
+}
+
+.wbn-box-view-toggle:hover {
+  background: var(--wbn-hover);
+  color: var(--wbn-soft-text);
+}
+
 .wbn-box-content {
   display: flex;
   flex: 1 1 auto;
@@ -485,6 +516,64 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.wbn-item-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+}
+
+.wbn-item-list-grid .wbn-item-reorder-entry {
+  min-width: 0;
+}
+
+.wbn-item-list-grid .wbn-item-row {
+  min-height: 122px;
+  padding: 10px 8px;
+}
+
+.wbn-item-list-grid .wbn-item-view-content-row {
+  height: 100%;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+.wbn-item-list-grid .wbn-item-glyph {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  color: var(--box-accent);
+  cursor: pointer;
+}
+
+.wbn-item-list-grid .wbn-item-main {
+  width: 100%;
+  flex: 0 1 auto;
+  align-items: center;
+  text-align: center;
+}
+
+.wbn-item-list-grid .wbn-item-main a {
+  display: block;
+  min-width: 0;
+}
+
+.wbn-item-list-grid .wbn-item-main strong {
+  max-width: 100%;
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.wbn-item-list-grid .wbn-item-secondary {
+  display: none;
+}
+
+.wbn-item-list-grid .wbn-item-drag-handle {
+  top: 5px;
+  left: 4px;
+  transform: none;
 }
 
 .wbn-item-reorder-entry {
@@ -1887,6 +1976,14 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
 
 .wbn-item-actions .wbn-item-copy-done {
   color: #10b981;
+}
+
+.wbn-item-list-grid .wbn-item-actions {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 3;
+  margin-left: 0;
 }
 
 .wbn-dropdown {

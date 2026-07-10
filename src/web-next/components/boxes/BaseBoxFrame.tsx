@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
-import { Lock, Plus, SquarePen, Trash2, X } from 'lucide-react';
+import { Grid2X2, List, Lock, Plus, SquarePen, Trash2, X } from 'lucide-react';
 import { animate as animateMotion, motion, useMotionValue, useSpring } from 'motion/react';
 import type { MotionStyle } from 'motion/react';
 import { isRecycleBinPageId, type WorkspaceBox } from '../../domain/workspace';
@@ -32,6 +32,7 @@ export function BaseBoxFrame({
 }: BaseBoxFrameProps) {
   const updateBoxFrame = useWorkspaceStore((state) => state.updateBoxFrame);
   const renameBox = useWorkspaceStore((state) => state.renameBox);
+  const setBoxViewMode = useWorkspaceStore((state) => state.setBoxViewMode);
   const deleteBox = useWorkspaceStore((state) => state.deleteBox);
   const beginBoxDrag = useUiStore((state) => state.beginBoxDrag);
   const endBoxDrag = useUiStore((state) => state.endBoxDrag);
@@ -164,6 +165,7 @@ export function BaseBoxFrame({
   const dropReleased = boxDropRelease?.boxId === box.id;
   const compactScale = Math.max(0.22, Math.min(0.46, 136 / box.frame.width, 86 / box.frame.height));
   const isInRecycleBin = isRecycleBinPageId(box.pageId);
+  const viewMode = box.viewMode ?? 'list';
   const visualScale = draggingOverTopBar
     ? compactScale * (draggingOverTab ? 0.9 : 1)
     : dragging
@@ -320,26 +322,39 @@ export function BaseBoxFrame({
             </span>
           )}
         </div>
-        <motion.button
-          className="wbn-box-delete wbn-icon-button"
-          type="button"
-          onClick={() => {
-            if (addViewState?.mode) {
-              closeAddView(box.id);
-            } else {
-              setConfirmDelete(true);
+        <div className="wbn-box-controls">
+          <motion.button
+            className="wbn-box-view-toggle wbn-icon-button"
+            type="button"
+            data-no-drag
+            onClick={() => setBoxViewMode(box.id, viewMode === 'list' ? 'grid' : 'list')}
+            aria-label={t(viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList')}
+            initial={{ opacity: 0 }}
+            whileHover={{ opacity: 1 }}
+          >
+            {viewMode === 'list' ? <Grid2X2 size={14} /> : <List size={15} />}
+          </motion.button>
+          <motion.button
+            className="wbn-box-delete wbn-icon-button"
+            type="button"
+            onClick={() => {
+              if (addViewState?.mode) {
+                closeAddView(box.id);
+              } else {
+                setConfirmDelete(true);
+              }
+            }}
+            aria-label={
+              addViewState?.mode
+                ? t('box.closeAddView')
+                : t(isInRecycleBin ? 'menu.deletePermanently' : 'menu.moveToRecycleBin')
             }
-          }}
-          aria-label={
-            addViewState?.mode
-              ? t('box.closeAddView')
-              : t(isInRecycleBin ? 'menu.deletePermanently' : 'menu.moveToRecycleBin')
-          }
-          initial={{ opacity: 0 }}
-          whileHover={{ opacity: 1 }}
-        >
-          <X size={14} />
-        </motion.button>
+            initial={{ opacity: 0 }}
+            whileHover={{ opacity: 1 }}
+          >
+            <X size={14} />
+          </motion.button>
+        </div>
       </header>
       <div
         className={`wbn-box-content wbn-box-content-${box.type}${confirmDelete ? ' wbn-box-delete-view' : ''}`}

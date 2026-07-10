@@ -42,7 +42,12 @@ export function BookmarkItem({
             exit={{ opacity: 0, x: -6 }}
             transition={{ duration: 0.15 }}
           >
-            <IconFrame className="wbn-item-glyph">
+            <IconFrame
+              className="wbn-item-glyph"
+              onClick={() => {
+                void openExternalUrl(item.url);
+              }}
+            >
               <Bookmark size={16} />
             </IconFrame>
             <div className="wbn-item-main">

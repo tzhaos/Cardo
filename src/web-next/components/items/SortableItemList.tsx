@@ -4,17 +4,19 @@ import { GripVertical } from 'lucide-react';
 import { AnimatePresence, Reorder, useDragControls } from 'motion/react';
 import { useStagedOrder } from '../../app/motion/useStagedOrder';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
-import type { BoxItem } from '../../domain/workspace';
+import type { BoxItem, WorkspaceBoxViewMode } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { IconButton } from '../primitives/IconPrimitives';
 
 export function SortableItemList<TItem extends BoxItem>({
   boxId,
   items,
+  viewMode,
   renderItem,
 }: {
   boxId: string;
   items: TItem[];
+  viewMode: WorkspaceBoxViewMode;
   renderItem: (item: TItem) => ReactNode;
 }) {
   const reorderItems = useWorkspaceStore((state) => state.reorderItems);
@@ -31,7 +33,7 @@ export function SortableItemList<TItem extends BoxItem>({
     <Reorder.Group
       as="div"
       axis="y"
-      className="wbn-item-list"
+      className={`wbn-item-list${viewMode === 'grid' ? ' wbn-item-list-grid' : ''}`}
       values={orderedIds}
       onReorder={updateOrder}
     >

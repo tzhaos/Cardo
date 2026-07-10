@@ -3,6 +3,7 @@ import {
   type BoxFrame,
   type BoxItem,
   type WorkspaceBoxType,
+  type WorkspaceBoxViewMode,
   type WorkspaceSnapshot,
 } from './workspace';
 import { createPage, createWorkspaceBox, nowIso } from './factories';
@@ -150,6 +151,21 @@ export function renameBox(snapshot: WorkspaceSnapshot, boxId: string, title: str
     ...snapshot,
     boxes: snapshot.boxes.map((box) =>
       box.id === boxId ? { ...box, title: nextTitle, updatedAt: nowIso() } : box,
+    ),
+  };
+}
+
+export function setBoxViewMode(
+  snapshot: WorkspaceSnapshot,
+  boxId: string,
+  viewMode: WorkspaceBoxViewMode,
+) {
+  return {
+    ...snapshot,
+    boxes: snapshot.boxes.map((box) =>
+      box.id === boxId && box.viewMode !== viewMode
+        ? { ...box, viewMode, updatedAt: nowIso() }
+        : box,
     ),
   };
 }
