@@ -39,7 +39,7 @@ export function ItemActions({
         </IconButton>
       ) : null}
       {onEdit ? (
-        <IconButton aria-label={t('item.rename')} onClick={onEdit}>
+        <IconButton aria-label={t('item.editContent')} onClick={onEdit}>
           <Edit2 size={14} />
         </IconButton>
       ) : null}

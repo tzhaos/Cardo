@@ -3,6 +3,7 @@ import { Bookmark } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { BookmarkItem as BookmarkItemModel } from '../../domain/workspace';
 import { ItemDeleteView } from './ItemDeleteView';
+import { ItemContentEditView } from './ItemContentEditView';
 import { ItemActions } from './ItemActions';
 import { useItemRename } from './useItemRename';
 import { useI18n } from '../../i18n/useI18n';
@@ -20,11 +21,12 @@ export function BookmarkItem({
 }) {
   const rename = useItemRename(boxId, item.id, item.title);
   const [deleteView, setDeleteView] = useState(false);
+  const [editView, setEditView] = useState(false);
   const { t } = useI18n();
 
   return (
     <div
-      className={`wbn-item-row wbn-bookmark-item${item.isPinned ? ' wbn-item-pinned' : ''}${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}`}
+      className={`wbn-item-row wbn-bookmark-item${item.isPinned ? ' wbn-item-pinned' : ''}${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}${editView ? ' wbn-item-edit-state' : ''}`}
     >
       <AnimatePresence initial={false} mode="wait">
         {deleteView ? (
@@ -32,6 +34,13 @@ export function BookmarkItem({
             key="delete"
             onCancel={() => setDeleteView(false)}
             onConfirm={rename.deleteItem}
+          />
+        ) : editView ? (
+          <ItemContentEditView
+            key="edit"
+            boxId={boxId}
+            item={item}
+            onCancel={() => setEditView(false)}
           />
         ) : (
           <motion.div
@@ -64,17 +73,7 @@ export function BookmarkItem({
                   }}
                 />
               ) : item.title ? (
-                <a
-                  href={item.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={(event) => {
-                    event.preventDefault();
-                    openExternalUrl(item.url);
-                  }}
-                >
-                  <strong>{item.title}</strong>
-                </a>
+                <strong onDoubleClick={rename.startRenaming}>{item.title}</strong>
               ) : (
                 <strong className="wbn-item-title-placeholder" onDoubleClick={rename.startRenaming}>
                   {t('item.untitled')}
@@ -96,7 +95,7 @@ export function BookmarkItem({
             <ItemActions
               pinned={Boolean(item.isPinned)}
               onPin={() => rename.setPinned(!item.isPinned)}
-              onEdit={rename.startRenaming}
+              onEdit={() => setEditView(true)}
               onDelete={() => setDeleteView(true)}
             />
           </motion.div>

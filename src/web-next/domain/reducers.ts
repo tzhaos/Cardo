@@ -277,6 +277,39 @@ export function renameItem(
   };
 }
 
+export function updateItemContent(
+  snapshot: WorkspaceSnapshot,
+  boxId: string,
+  itemId: string,
+  content: string,
+) {
+  const nextContent = content.trim();
+  if (!nextContent) {
+    return snapshot;
+  }
+
+  const timestamp = nowIso();
+  return {
+    ...snapshot,
+    boxes: snapshot.boxes.map((box) =>
+      box.id === boxId
+        ? {
+            ...box,
+            items: box.items.map((item) => {
+              if (item.id !== itemId) return item;
+              if (item.type === 'folder')
+                return { ...item, path: nextContent, updatedAt: timestamp };
+              if (item.type === 'bookmark')
+                return { ...item, url: nextContent, updatedAt: timestamp };
+              return { ...item, text: nextContent, updatedAt: timestamp };
+            }),
+            updatedAt: timestamp,
+          }
+        : box,
+    ),
+  };
+}
+
 export function setItemPinned(
   snapshot: WorkspaceSnapshot,
   boxId: string,

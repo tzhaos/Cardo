@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { ClipboardItem as ClipboardItemModel } from '../../domain/workspace';
 import { ItemDeleteView } from './ItemDeleteView';
+import { ItemContentEditView } from './ItemContentEditView';
 import { ItemActions } from './ItemActions';
 import { useItemRename } from './useItemRename';
 import { writeClipboardText } from '../../platform/hostPlatform';
@@ -18,6 +19,7 @@ export function ClipboardItem({
   const rename = useItemRename(boxId, item.id, item.title);
   const [copied, setCopied] = useState(false);
   const [deleteView, setDeleteView] = useState(false);
+  const [editView, setEditView] = useState(false);
   const copyResetRef = useRef<number | null>(null);
 
   useEffect(
@@ -44,7 +46,7 @@ export function ClipboardItem({
 
   return (
     <div
-      className={`wbn-item-row wbn-clipboard-item${item.isPinned ? ' wbn-item-pinned' : ''}${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}`}
+      className={`wbn-item-row wbn-clipboard-item${item.isPinned ? ' wbn-item-pinned' : ''}${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}${editView ? ' wbn-item-edit-state' : ''}`}
     >
       <AnimatePresence initial={false} mode="wait">
         {deleteView ? (
@@ -52,6 +54,13 @@ export function ClipboardItem({
             key="delete"
             onCancel={() => setDeleteView(false)}
             onConfirm={rename.deleteItem}
+          />
+        ) : editView ? (
+          <ItemContentEditView
+            key="edit"
+            boxId={boxId}
+            item={item}
+            onCancel={() => setEditView(false)}
           />
         ) : (
           <motion.div
@@ -68,6 +77,7 @@ export function ClipboardItem({
               pinned={Boolean(item.isPinned)}
               onCopy={copyText}
               onPin={() => rename.setPinned(!item.isPinned)}
+              onEdit={() => setEditView(true)}
               onDelete={() => setDeleteView(true)}
             />
           </motion.div>

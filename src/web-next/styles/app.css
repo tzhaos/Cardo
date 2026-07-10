@@ -816,7 +816,8 @@
   cursor: grabbing;
 }
 
-.wbn-item-reorder-entry:has(.wbn-item-delete-state) .wbn-item-drag-handle {
+.wbn-item-reorder-entry:has(.wbn-item-delete-state) .wbn-item-drag-handle,
+.wbn-item-reorder-entry:has(.wbn-item-edit-state) .wbn-item-drag-handle {
   opacity: 0;
   pointer-events: none;
 }
@@ -986,6 +987,72 @@
 
 .wbn-item-delete-actions .wbn-item-delete-confirm:hover {
   background: color-mix(in srgb, var(--wbn-red) 88%, #000000);
+}
+
+.wbn-item-edit-state {
+  padding-left: 8px;
+  border-color: color-mix(in srgb, var(--box-accent) 22%, var(--wbn-border-subtle));
+  background: color-mix(in srgb, var(--box-accent) 4%, var(--wbn-panel-content));
+}
+
+.wbn-item-edit-view {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.wbn-item-edit-view input,
+.wbn-item-edit-view textarea {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid var(--wbn-border-subtle);
+  border-radius: 8px;
+  padding: 7px 9px;
+  background: var(--wbn-input);
+  color: var(--wbn-text);
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.wbn-item-edit-view textarea {
+  min-height: 72px;
+  line-height: 18px;
+  resize: vertical;
+}
+
+.wbn-item-edit-view input:focus,
+.wbn-item-edit-view textarea:focus {
+  border-color: var(--box-accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--box-accent) 42%, transparent);
+}
+
+.wbn-item-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.wbn-item-edit-actions button {
+  min-height: 30px;
+  border: 0;
+  border-radius: 7px;
+  padding: 0 10px;
+  background: var(--wbn-neutral-button);
+  color: var(--wbn-soft-text);
+  font-size: 12px;
+}
+
+.wbn-item-edit-actions .wbn-item-edit-save {
+  background: var(--box-accent);
+  color: #ffffff;
+}
+
+.wbn-item-edit-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.46;
 }
 
 .wbn-empty-state {

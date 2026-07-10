@@ -3,6 +3,7 @@ import { File, Folder, Link } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { FolderItem as FolderItemModel } from '../../domain/workspace';
 import { ItemDeleteView } from './ItemDeleteView';
+import { ItemContentEditView } from './ItemContentEditView';
 import { ItemActions } from './ItemActions';
 import { useItemRename } from './useItemRename';
 import { useI18n } from '../../i18n/useI18n';
@@ -21,11 +22,12 @@ export function FolderItem({
   const Icon = item.kind === 'folder' ? Folder : item.kind === 'file' ? File : Link;
   const rename = useItemRename(boxId, item.id, item.title);
   const [deleteView, setDeleteView] = useState(false);
+  const [editView, setEditView] = useState(false);
   const { t } = useI18n();
 
   return (
     <div
-      className={`wbn-item-row${item.isPinned ? ' wbn-item-pinned' : ''}${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}`}
+      className={`wbn-item-row${item.isPinned ? ' wbn-item-pinned' : ''}${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}${editView ? ' wbn-item-edit-state' : ''}`}
     >
       <AnimatePresence initial={false} mode="wait">
         {deleteView ? (
@@ -33,6 +35,13 @@ export function FolderItem({
             key="delete"
             onCancel={() => setDeleteView(false)}
             onConfirm={rename.deleteItem}
+          />
+        ) : editView ? (
+          <ItemContentEditView
+            key="edit"
+            boxId={boxId}
+            item={item}
+            onCancel={() => setEditView(false)}
           />
         ) : (
           <motion.div
@@ -77,7 +86,7 @@ export function FolderItem({
             <ItemActions
               pinned={Boolean(item.isPinned)}
               onPin={() => rename.setPinned(!item.isPinned)}
-              onEdit={rename.startRenaming}
+              onEdit={() => setEditView(true)}
               onDelete={() => setDeleteView(true)}
             />
           </motion.div>
