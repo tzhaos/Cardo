@@ -9,6 +9,8 @@ import {
   PackageCheck,
   Plus,
   SquarePen,
+  Star,
+  StarOff,
   Trash2,
   Unlock,
   X,
@@ -62,6 +64,8 @@ export function BaseBoxFrame({
   const setBoxLocked = useWorkspaceStore((state) => state.setBoxLocked);
   const setBoxViewMode = useWorkspaceStore((state) => state.setBoxViewMode);
   const deleteBox = useWorkspaceStore((state) => state.deleteBox);
+  const addBoxToCollection = useWorkspaceStore((state) => state.addBoxToCollection);
+  const removeBoxFromCollection = useWorkspaceStore((state) => state.removeBoxFromCollection);
   const beginBoxDrag = useUiStore((state) => state.beginBoxDrag);
   const endBoxDrag = useUiStore((state) => state.endBoxDrag);
   const draggedBoxId = useUiStore((state) => state.draggedBoxId);
@@ -238,6 +242,9 @@ export function BaseBoxFrame({
   const dropReleased = boxDropRelease?.boxId === box.id && boxDropRelease.pageId === box.pageId;
   const compactScale = Math.max(0.22, Math.min(0.46, 136 / box.frame.width, 86 / box.frame.height));
   const isInRecycleBin = isRecycleBinPageId(box.pageId);
+  const isCollected = useWorkspaceStore((state) =>
+    (state.snapshot.collectionBoxIds ?? []).includes(box.id),
+  );
   const isTemporary = box.kind === 'temporary';
   const viewMode = isTemporary ? 'list' : (box.viewMode ?? 'list');
   const detailMode = isTemporary ? 'detailed' : (box.detailMode ?? 'detailed');
@@ -358,6 +365,17 @@ export function BaseBoxFrame({
               icon: box.isLocked ? <Unlock size={16} /> : <Lock size={16} />,
               onSelect: () => setBoxLocked(box.id, !box.isLocked),
             },
+            ...(!isInRecycleBin
+              ? [
+                  {
+                    id: 'collection',
+                    label: t(isCollected ? 'menu.removeFromCollection' : 'menu.addToCollection'),
+                    icon: isCollected ? <StarOff size={16} /> : <Star size={16} />,
+                    onSelect: () =>
+                      isCollected ? removeBoxFromCollection(box.id) : addBoxToCollection(box.id),
+                  },
+                ]
+              : []),
             {
               id: 'delete',
               label: t(isInRecycleBin ? 'menu.deletePermanently' : 'menu.moveToRecycleBin'),

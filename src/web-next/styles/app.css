@@ -456,13 +456,6 @@
   gap: 0;
 }
 
-.wbn-collection-tab {
-  display: flex;
-  margin-right: 6px;
-  border-right: 1px solid var(--wbn-divider);
-  padding-right: 6px;
-}
-
 .wbn-tab-pill {
   position: relative;
   display: flex;
