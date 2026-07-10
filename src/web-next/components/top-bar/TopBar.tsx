@@ -9,7 +9,6 @@ import { startWindowPointerSession } from '../../app/windowPointerSession';
 import { findPageLandingFrame } from '../../domain/placement';
 import { isRecycleBinPageId } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
-import { RecycleBinTab } from './RecycleBinTab';
 import { TabDeleteConfirmView } from './TabDeleteConfirmView';
 import { TabPill } from './TabPill';
 
@@ -43,7 +42,6 @@ export function TopBar() {
     () => persistedPages.filter((page) => !isRecycleBinPageId(page.id)),
     [persistedPages],
   );
-  const recycleBinPage = persistedPages.find((page) => isRecycleBinPageId(page.id));
   const {
     orderedIds: pageIds,
     startReordering,
@@ -254,15 +252,6 @@ export function TopBar() {
                 ))}
               </AnimatePresence>
             </Reorder.Group>
-            {recycleBinPage ? (
-              <RecycleBinTab
-                active={recycleBinPage.id === snapshot.activePageId}
-                highlighted={boxDropPageId === recycleBinPage.id}
-                page={recycleBinPage}
-                released={boxDropRelease?.pageId === recycleBinPage.id}
-                onActivate={() => setActivePage(recycleBinPage.id)}
-              />
-            ) : null}
             <motion.div className="wbn-top-actions" layout="position">
               <motion.button
                 className="wbn-icon-button"
