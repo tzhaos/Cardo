@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bookmark } from 'lucide-react';
+import { Bookmark, ExternalLink } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { BookmarkItem as BookmarkItemModel } from '../../domain/workspace';
 import { ItemDeleteView } from './ItemDeleteView';
@@ -9,6 +9,7 @@ import { useItemRename } from './useItemRename';
 import { useI18n } from '../../i18n/useI18n';
 import { openExternalUrl } from '../../platform/hostPlatform';
 import { IconFrame } from '../primitives/IconPrimitives';
+import { useItemContextMenu } from './useItemContextMenu';
 
 export function BookmarkItem({
   boxId,
@@ -23,10 +24,24 @@ export function BookmarkItem({
   const [deleteView, setDeleteView] = useState(false);
   const [editView, setEditView] = useState(false);
   const { t } = useI18n();
+  const openContextMenu = useItemContextMenu({
+    itemId: item.id,
+    pinned: Boolean(item.isPinned),
+    primaryAction: {
+      label: t('item.open'),
+      icon: <ExternalLink size={16} />,
+      onSelect: () => void openExternalUrl(item.url),
+    },
+    onRename: rename.startRenaming,
+    onEdit: () => setEditView(true),
+    onPin: () => rename.setPinned(!item.isPinned),
+    onDelete: () => setDeleteView(true),
+  });
 
   return (
     <div
       className={`wbn-item-row wbn-bookmark-item${item.isPinned ? ' wbn-item-pinned' : ''}${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}${editView ? ' wbn-item-edit-state' : ''}`}
+      onContextMenu={openContextMenu}
     >
       <AnimatePresence initial={false} mode="wait">
         {deleteView ? (

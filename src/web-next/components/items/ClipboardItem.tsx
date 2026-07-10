@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Check } from 'lucide-react';
+import { Check, Copy } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { ClipboardItem as ClipboardItemModel } from '../../domain/workspace';
 import { ItemDeleteView } from './ItemDeleteView';
@@ -8,6 +8,7 @@ import { ItemActions } from './ItemActions';
 import { useItemRename } from './useItemRename';
 import { writeClipboardText } from '../../platform/hostPlatform';
 import { useI18n } from '../../i18n/useI18n';
+import { useItemContextMenu } from './useItemContextMenu';
 
 export function ClipboardItem({
   boxId,
@@ -46,11 +47,24 @@ export function ClipboardItem({
       setCopied(false);
     }
   };
+  const openContextMenu = useItemContextMenu({
+    itemId: item.id,
+    pinned: Boolean(item.isPinned),
+    primaryAction: {
+      label: t('item.copy'),
+      icon: <Copy size={16} />,
+      onSelect: () => void copyText(),
+    },
+    onEdit: () => setEditView(true),
+    onPin: () => rename.setPinned(!item.isPinned),
+    onDelete: () => setDeleteView(true),
+  });
 
   return (
     <div
       className={`wbn-item-row wbn-clipboard-item${item.isPinned ? ' wbn-item-pinned' : ''}${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}${editView ? ' wbn-item-edit-state' : ''}`}
       title={!deleteView && !editView ? t('item.copy') : undefined}
+      onContextMenu={openContextMenu}
       onClick={(event) => {
         if (
           deleteView ||

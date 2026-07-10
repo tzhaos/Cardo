@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AppWindow, File, Folder } from 'lucide-react';
+import { AppWindow, ExternalLink, File, Folder } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { FileItem, FolderItem, ShortcutItem } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
@@ -9,6 +9,7 @@ import { ItemContentEditView } from './ItemContentEditView';
 import { ItemDeleteView } from './ItemDeleteView';
 import { ItemActions } from './ItemActions';
 import { useItemRename } from './useItemRename';
+import { useItemContextMenu } from './useItemContextMenu';
 
 type LocalResourceItemModel = FileItem | FolderItem | ShortcutItem;
 
@@ -26,10 +27,24 @@ export function LocalResourceItem({
   const [deleteView, setDeleteView] = useState(false);
   const [editView, setEditView] = useState(false);
   const { t } = useI18n();
+  const openContextMenu = useItemContextMenu({
+    itemId: item.id,
+    pinned: Boolean(item.isPinned),
+    primaryAction: {
+      label: t('item.open'),
+      icon: <ExternalLink size={16} />,
+      onSelect: () => void openLocalResource(item.path),
+    },
+    onRename: rename.startRenaming,
+    onEdit: () => setEditView(true),
+    onPin: () => rename.setPinned(!item.isPinned),
+    onDelete: () => setDeleteView(true),
+  });
 
   return (
     <div
       className={`wbn-item-row wbn-local-item wbn-local-item-${item.type}${item.isPinned ? ' wbn-item-pinned' : ''}${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}${editView ? ' wbn-item-edit-state' : ''}`}
+      onContextMenu={openContextMenu}
     >
       <AnimatePresence initial={false} mode="wait">
         {deleteView ? (
