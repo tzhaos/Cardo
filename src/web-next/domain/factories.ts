@@ -1,3 +1,4 @@
+import { RECYCLE_BIN_PAGE_ID } from './workspace';
 import type {
   BoxFrame,
   BoxItem,
@@ -34,6 +35,17 @@ export function createPage(title: string, order: number): WorkspacePage {
   };
 }
 
+export function createRecycleBinPage(order: number): WorkspacePage {
+  const timestamp = nowIso();
+  return {
+    id: RECYCLE_BIN_PAGE_ID,
+    title: 'Recycle Bin',
+    order,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  };
+}
+
 export function getDefaultFrame(type: WorkspaceBoxType, x: number, y: number): BoxFrame {
   return {
     x,
@@ -63,11 +75,12 @@ export function createWorkspaceBox(
 }
 
 export function createDefaultWorkspace(): WorkspaceSnapshot {
-  const pages = ['Workspaces', 'Personal', 'Inspiration'].map((title, index) =>
+  const workspacePages = ['Workspaces', 'Personal', 'Inspiration'].map((title, index) =>
     createPage(title, index),
   );
+  const pages = [...workspacePages, createRecycleBinPage(workspacePages.length)];
 
-  const firstPageId = pages[0]?.id ?? createId('page');
+  const firstPageId = workspacePages[0]?.id ?? createId('page');
 
   return {
     pages,

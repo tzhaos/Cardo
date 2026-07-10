@@ -1,5 +1,11 @@
 export type WorkspaceBoxType = 'folder' | 'bookmark' | 'clipboard';
 
+export const RECYCLE_BIN_PAGE_ID = 'khaosbox-recycle-bin';
+
+export function isRecycleBinPageId(pageId: string) {
+  return pageId === RECYCLE_BIN_PAGE_ID;
+}
+
 export interface WorkspacePage {
   id: string;
   title: string;

@@ -3,7 +3,7 @@ import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { Lock, Plus, SquarePen, Trash2, X } from 'lucide-react';
 import { animate as animateMotion, motion, useMotionValue, useSpring } from 'motion/react';
 import type { MotionStyle } from 'motion/react';
-import type { WorkspaceBox } from '../../domain/workspace';
+import { isRecycleBinPageId, type WorkspaceBox } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import {
@@ -163,6 +163,7 @@ export function BaseBoxFrame({
   const draggingOverTab = draggingOverTopBar && boxDropPageId !== null;
   const dropReleased = boxDropRelease?.boxId === box.id;
   const compactScale = Math.max(0.22, Math.min(0.46, 136 / box.frame.width, 86 / box.frame.height));
+  const isInRecycleBin = isRecycleBinPageId(box.pageId);
   const visualScale = draggingOverTopBar
     ? compactScale * (draggingOverTab ? 0.9 : 1)
     : dragging
@@ -266,7 +267,7 @@ export function BaseBoxFrame({
             },
             {
               id: 'delete',
-              label: t('menu.deleteBox'),
+              label: t(isInRecycleBin ? 'menu.deletePermanently' : 'menu.moveToRecycleBin'),
               icon: <Trash2 size={16} />,
               danger: true,
               onSelect: () => setConfirmDelete(true),
@@ -330,7 +331,9 @@ export function BaseBoxFrame({
             }
           }}
           aria-label={
-            addViewState?.mode ? t('box.closeAddView') : t('page.delete', { title: box.title })
+            addViewState?.mode
+              ? t('box.closeAddView')
+              : t(isInRecycleBin ? 'menu.deletePermanently' : 'menu.moveToRecycleBin')
           }
           initial={{ opacity: 0 }}
           whileHover={{ opacity: 1 }}
@@ -347,7 +350,12 @@ export function BaseBoxFrame({
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <p>{t('box.deleteQuestion', { type: getBoxTypeLabel(box.type, t) })}</p>
+            <p>
+              {t(
+                isInRecycleBin ? 'box.deletePermanentlyQuestion' : 'box.moveToRecycleBinQuestion',
+                { type: getBoxTypeLabel(box.type, t) },
+              )}
+            </p>
             <div className="wbn-box-delete-actions">
               <button type="button" onClick={() => setConfirmDelete(false)}>
                 {t('common.cancel')}
@@ -357,7 +365,7 @@ export function BaseBoxFrame({
                 type="button"
                 onClick={() => deleteBox(box.id)}
               >
-                {t('common.delete')}
+                {t(isInRecycleBin ? 'common.deletePermanently' : 'common.moveToRecycleBin')}
               </button>
             </div>
           </motion.div>

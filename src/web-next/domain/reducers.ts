@@ -1,7 +1,17 @@
-import type { BoxFrame, BoxItem, WorkspaceBoxType, WorkspaceSnapshot } from './workspace';
+import {
+  isRecycleBinPageId,
+  type BoxFrame,
+  type BoxItem,
+  type WorkspaceBoxType,
+  type WorkspaceSnapshot,
+} from './workspace';
 import { createPage, createWorkspaceBox, nowIso } from './factories';
 
 export function renamePage(snapshot: WorkspaceSnapshot, pageId: string, title: string) {
+  if (isRecycleBinPageId(pageId)) {
+    return snapshot;
+  }
+
   const nextTitle = title.trim();
   if (!nextTitle) {
     return snapshot;
@@ -16,22 +26,34 @@ export function renamePage(snapshot: WorkspaceSnapshot, pageId: string, title: s
 }
 
 export function addPage(snapshot: WorkspaceSnapshot, title = 'Untitled') {
-  const page = createPage(title, snapshot.pages.length);
+  const page = createPage(
+    title,
+    snapshot.pages.filter((candidate) => !isRecycleBinPageId(candidate.id)).length,
+  );
   return {
     ...snapshot,
-    pages: [...snapshot.pages, page],
+    pages: insertWorkspacePage(snapshot, page),
     activePageId: page.id,
   };
 }
 
 export function deletePage(snapshot: WorkspaceSnapshot, pageId: string) {
-  if (snapshot.pages.length <= 1) {
+  const workspacePages = snapshot.pages.filter((page) => !isRecycleBinPageId(page.id));
+  const recycleBinPage = snapshot.pages.find((page) => isRecycleBinPageId(page.id));
+  if (
+    isRecycleBinPageId(pageId) ||
+    workspacePages.length <= 1 ||
+    !workspacePages.some((page) => page.id === pageId)
+  ) {
     return snapshot;
   }
 
-  const pages = snapshot.pages
+  const pages = workspacePages
     .filter((page) => page.id !== pageId)
     .map((page, order) => ({ ...page, order }));
+  if (recycleBinPage) {
+    pages.push({ ...recycleBinPage, order: pages.length });
+  }
   const defaultPageId =
     snapshot.defaultPageId === pageId ? (pages[0]?.id ?? '') : snapshot.defaultPageId;
   const activePageId = snapshot.activePageId === pageId ? defaultPageId : snapshot.activePageId;
@@ -40,34 +62,43 @@ export function deletePage(snapshot: WorkspaceSnapshot, pageId: string) {
     pages,
     activePageId,
     defaultPageId,
-    boxes: snapshot.boxes.filter((box) => box.pageId !== pageId),
+    boxes: recycleBinPage
+      ? snapshot.boxes.map((box) =>
+          box.pageId === pageId ? { ...box, pageId: recycleBinPage.id, updatedAt: nowIso() } : box,
+        )
+      : snapshot.boxes.filter((box) => box.pageId !== pageId),
   };
 }
 
 export function reorderPages(snapshot: WorkspaceSnapshot, orderedPageIds: string[]) {
+  const workspacePages = snapshot.pages.filter((page) => !isRecycleBinPageId(page.id));
+  const recycleBinPage = snapshot.pages.find((page) => isRecycleBinPageId(page.id));
   if (
-    orderedPageIds.length !== snapshot.pages.length ||
-    orderedPageIds.some((pageId) => !snapshot.pages.some((page) => page.id === pageId))
+    orderedPageIds.length !== workspacePages.length ||
+    orderedPageIds.some((pageId) => !workspacePages.some((page) => page.id === pageId))
   ) {
     return snapshot;
   }
 
-  const currentOrder = [...snapshot.pages]
+  const currentOrder = [...workspacePages]
     .sort((first, second) => first.order - second.order)
     .map((page) => page.id);
   if (currentOrder.every((pageId, index) => pageId === orderedPageIds[index])) {
     return snapshot;
   }
 
-  const pagesById = new Map(snapshot.pages.map((page) => [page.id, page]));
+  const pagesById = new Map(workspacePages.map((page) => [page.id, page]));
 
   return {
     ...snapshot,
-    pages: orderedPageIds.map((pageId, order) => ({
-      ...pagesById.get(pageId)!,
-      order,
-      updatedAt: nowIso(),
-    })),
+    pages: [
+      ...orderedPageIds.map((pageId, order) => ({
+        ...pagesById.get(pageId)!,
+        order,
+        updatedAt: nowIso(),
+      })),
+      ...(recycleBinPage ? [{ ...recycleBinPage, order: workspacePages.length }] : []),
+    ],
   };
 }
 
@@ -78,7 +109,7 @@ export function setActivePage(snapshot: WorkspaceSnapshot, pageId: string) {
 }
 
 export function setDefaultPage(snapshot: WorkspaceSnapshot, pageId: string) {
-  return snapshot.pages.some((page) => page.id === pageId)
+  return snapshot.pages.some((page) => page.id === pageId && !isRecycleBinPageId(page.id))
     ? { ...snapshot, defaultPageId: pageId }
     : snapshot;
 }
@@ -90,6 +121,10 @@ export function addBox(
   frame: BoxFrame,
   title?: string,
 ) {
+  if (isRecycleBinPageId(pageId)) {
+    return snapshot;
+  }
+
   return {
     ...snapshot,
     boxes: [...snapshot.boxes, createWorkspaceBox(pageId, type, frame, title)],
@@ -120,6 +155,23 @@ export function renameBox(snapshot: WorkspaceSnapshot, boxId: string, title: str
 }
 
 export function deleteBox(snapshot: WorkspaceSnapshot, boxId: string) {
+  const box = snapshot.boxes.find((candidate) => candidate.id === boxId);
+  if (!box) {
+    return snapshot;
+  }
+
+  const recycleBinPage = snapshot.pages.find((page) => isRecycleBinPageId(page.id));
+  if (recycleBinPage && !isRecycleBinPageId(box.pageId)) {
+    return {
+      ...snapshot,
+      boxes: snapshot.boxes.map((candidate) =>
+        candidate.id === boxId
+          ? { ...candidate, pageId: recycleBinPage.id, updatedAt: nowIso() }
+          : candidate,
+      ),
+    };
+  }
+
   return {
     ...snapshot,
     boxes: snapshot.boxes.filter((box) => box.id !== boxId),
@@ -159,11 +211,7 @@ export function renameItem(
   };
 }
 
-export function reorderItems(
-  snapshot: WorkspaceSnapshot,
-  boxId: string,
-  orderedItemIds: string[],
-) {
+export function reorderItems(snapshot: WorkspaceSnapshot, boxId: string, orderedItemIds: string[]) {
   const box = snapshot.boxes.find((candidate) => candidate.id === boxId);
   if (
     !box ||
@@ -226,4 +274,14 @@ export function moveBoxToPage(
       box.id === boxId ? { ...box, pageId, frame: frame ?? box.frame, updatedAt: nowIso() } : box,
     ),
   };
+}
+
+function insertWorkspacePage(snapshot: WorkspaceSnapshot, page: ReturnType<typeof createPage>) {
+  const recycleBinPage = snapshot.pages.find((candidate) => isRecycleBinPageId(candidate.id));
+  const workspacePages = snapshot.pages.filter((candidate) => !isRecycleBinPageId(candidate.id));
+  return [
+    ...workspacePages,
+    page,
+    ...(recycleBinPage ? [{ ...recycleBinPage, order: workspacePages.length + 1 }] : []),
+  ];
 }

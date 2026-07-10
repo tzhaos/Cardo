@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { extractPersistedWorkspaceSnapshot, restoreWorkspaceSnapshot } from './persistence';
-import type { WorkspaceSnapshot } from './workspace';
+import { RECYCLE_BIN_PAGE_ID, type WorkspaceSnapshot } from './workspace';
 
 const fallback: WorkspaceSnapshot = {
   activePageId: 'fallback',
@@ -28,7 +28,7 @@ test('restored workspaces open the configured default page', () => {
   assert.equal(restored.defaultPageId, 'page-b');
   assert.deepEqual(
     restored.pages.map((page) => page.id),
-    ['page-a', 'page-b'],
+    ['page-a', 'page-b', RECYCLE_BIN_PAGE_ID],
   );
 });
 
@@ -66,5 +66,6 @@ test('extracts a workspace from the persisted Zustand envelope', () => {
   });
 
   assert.equal(snapshot?.activePageId, 'page-a');
-  assert.equal(snapshot?.pages.length, 1);
+  assert.equal(snapshot?.pages.length, 2);
+  assert.equal(snapshot?.pages.at(-1)?.id, RECYCLE_BIN_PAGE_ID);
 });

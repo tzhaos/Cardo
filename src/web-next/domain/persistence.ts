@@ -1,4 +1,10 @@
-import type { WorkspaceBox, WorkspacePage, WorkspaceSnapshot } from './workspace';
+import { createRecycleBinPage } from './factories';
+import {
+  isRecycleBinPageId,
+  type WorkspaceBox,
+  type WorkspacePage,
+  type WorkspaceSnapshot,
+} from './workspace';
 
 export function restoreWorkspaceSnapshot(input: unknown, fallback: WorkspaceSnapshot) {
   return parseWorkspaceSnapshot(input) ?? fallback;
@@ -9,13 +15,21 @@ export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null
     return null;
   }
 
-  const pages = input.pages
+  const parsedPages = input.pages
     .filter(isWorkspacePage)
     .sort((first, second) => first.order - second.order)
     .map((page, order) => ({ ...page, order }));
-  if (pages.length === 0) {
+  const workspacePages = parsedPages.filter((page) => !isRecycleBinPageId(page.id));
+  if (workspacePages.length === 0) {
     return null;
   }
+  const existingRecycleBin = parsedPages.find((page) => isRecycleBinPageId(page.id));
+  const pages = [
+    ...workspacePages.map((page, order) => ({ ...page, order })),
+    existingRecycleBin
+      ? { ...existingRecycleBin, title: 'Recycle Bin', order: workspacePages.length }
+      : createRecycleBinPage(workspacePages.length),
+  ];
 
   const pageIds = new Set(pages.map((page) => page.id));
   const legacyActivePageId =
@@ -23,9 +37,13 @@ export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null
       ? input.activePageId
       : null;
   const defaultPageId =
-    typeof input.defaultPageId === 'string' && pageIds.has(input.defaultPageId)
+    typeof input.defaultPageId === 'string' &&
+    pageIds.has(input.defaultPageId) &&
+    !isRecycleBinPageId(input.defaultPageId)
       ? input.defaultPageId
-      : (legacyActivePageId ?? pages[0].id);
+      : legacyActivePageId && !isRecycleBinPageId(legacyActivePageId)
+        ? legacyActivePageId
+        : workspacePages[0].id;
 
   return {
     pages,

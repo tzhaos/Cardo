@@ -1,7 +1,7 @@
 import { useDeferredValue, useMemo } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { SearchX } from 'lucide-react';
-import type { WorkspaceBoxType } from '../../domain/workspace';
+import { SearchX, Trash2 } from 'lucide-react';
+import { isRecycleBinPageId, type WorkspaceBoxType } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
 import { getViewportCenterFrame, useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
@@ -29,11 +29,16 @@ export function WorkspaceCanvas() {
     );
   }, [deferredSearchQuery, snapshot.activePageId, snapshot.boxes]);
   const isSearchFiltering = Boolean(deferredSearchQuery.trim());
+  const isRecycleBin = isRecycleBinPageId(snapshot.activePageId);
 
   return (
     <main
       className="wbn-canvas"
       onContextMenu={(event) => {
+        if (isRecycleBin) {
+          return;
+        }
+
         event.preventDefault();
         const rect = event.currentTarget.getBoundingClientRect();
         const point = { x: event.clientX - rect.left, y: event.clientY - rect.top };
@@ -48,7 +53,17 @@ export function WorkspaceCanvas() {
         <WorkspaceBoxRenderer box={box} key={box.id} skipEntryAnimation={isSearchFiltering} />
       ))}
       <AnimatePresence>
-        {isSearchFiltering && boxes.length === 0 ? (
+        {isRecycleBin && !isSearchFiltering && boxes.length === 0 ? (
+          <motion.div
+            className="wbn-recycle-bin-empty"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+          >
+            <Trash2 size={22} />
+            <span>{t('page.recycleBinEmpty')}</span>
+          </motion.div>
+        ) : isSearchFiltering && boxes.length === 0 ? (
           <motion.div
             className="wbn-search-feedback"
             initial={{ opacity: 0, y: 8 }}

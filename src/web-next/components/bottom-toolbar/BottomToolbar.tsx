@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Bookmark, Clipboard, Folder, Plus, Search, Settings } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useIndependentMenuStore } from '../../app/stores/independentMenuStore';
-import type { WorkspaceBoxType } from '../../domain/workspace';
+import { isRecycleBinPageId, type WorkspaceBoxType } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
 import { getViewportCenterFrame, useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { useI18n } from '../../i18n/useI18n';
@@ -10,6 +10,7 @@ import { IconButton, IconFrame } from '../primitives/IconPrimitives';
 
 export function BottomToolbar() {
   const createBox = useWorkspaceStore((state) => state.createBox);
+  const activePageId = useWorkspaceStore((state) => state.snapshot.activePageId);
   const searchQuery = useUiStore((state) => state.searchQuery);
   const setSearchQuery = useUiStore((state) => state.setSearchQuery);
   const settingsOpen = useIndependentMenuStore((state) => state.menus.settings.open);
@@ -19,6 +20,7 @@ export function BottomToolbar() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const shellRef = useRef<HTMLDivElement>(null);
   const { t } = useI18n();
+  const isRecycleBin = isRecycleBinPageId(activePageId);
 
   useEffect(() => {
     if (isSearchActive) {
@@ -55,6 +57,12 @@ export function BottomToolbar() {
     };
   }, [isMenuOpen]);
 
+  useEffect(() => {
+    if (isRecycleBin) {
+      setIsMenuOpen(false);
+    }
+  }, [isRecycleBin]);
+
   const handleAdd = (type: WorkspaceBoxType) => {
     createBox(type, getViewportCenterFrame(type), getBoxTypeLabel(type, t));
     setIsMenuOpen(false);
@@ -68,7 +76,7 @@ export function BottomToolbar() {
   return (
     <div className="wbn-bottom-shell" ref={shellRef}>
       <AnimatePresence>
-        {isMenuOpen ? (
+        {isMenuOpen && !isRecycleBin ? (
           <motion.div
             className="wbn-create-popover"
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
@@ -136,23 +144,27 @@ export function BottomToolbar() {
             }}
           />
         </motion.div>
-        <div className="wbn-toolbar-divider" />
-        <IconButton
-          className="wbn-toolbar-create"
-          onClick={() => {
-            setIsMenuOpen((value) => !value);
-          }}
-          aria-label={t('toolbar.newBox')}
-          title={t('toolbar.newBox')}
-        >
-          <motion.span
-            className="wbn-icon-frame"
-            animate={{ rotate: isMenuOpen ? 45 : 0 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-          >
-            <Plus size={20} />
-          </motion.span>
-        </IconButton>
+        {!isRecycleBin ? (
+          <>
+            <div className="wbn-toolbar-divider" />
+            <IconButton
+              className="wbn-toolbar-create"
+              onClick={() => {
+                setIsMenuOpen((value) => !value);
+              }}
+              aria-label={t('toolbar.newBox')}
+              title={t('toolbar.newBox')}
+            >
+              <motion.span
+                className="wbn-icon-frame"
+                animate={{ rotate: isMenuOpen ? 45 : 0 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              >
+                <Plus size={20} />
+              </motion.span>
+            </IconButton>
+          </>
+        ) : null}
       </div>
     </div>
   );

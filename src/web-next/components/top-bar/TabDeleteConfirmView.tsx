@@ -16,7 +16,9 @@ export function TabDeleteConfirmView({
 
   return (
     <div className="wbn-tab-confirm" role="alertdialog" aria-label={t('page.deleteConfirmation')}>
-      <span>{t('page.deleteQuestion', { title, count: boxCount, boxes: boxLabel })}</span>
+      <span>
+        {t('page.deleteWithRecycleBinQuestion', { title, count: boxCount, boxes: boxLabel })}
+      </span>
       <div>
         <button type="button" onClick={onCancel}>
           {t('common.cancel')}
