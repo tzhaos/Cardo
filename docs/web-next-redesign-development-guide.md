@@ -303,9 +303,15 @@ Draft behavior:
 - Each box owns its own add-view state and draft.
 - Multiple boxes can be in add view simultaneously.
 - Drafts are retained independently when focus moves to another box.
-- Drafts are in memory only for now.
-- If a user cancels with non-empty draft, use a lightweight discard confirmation inside the box.
+- Drafts are in memory only and are never included in persisted workspace state.
+- Cancel exits immediately and discards the local draft without a second confirmation.
 - Deleting a box or page can clear its local draft.
+
+Type-specific create rules:
+
+- Folder items accept only a local drive folder path or UNC/NAS folder path; no type selector is shown, and the title is derived from the final path segment.
+- Bookmark titles are optional; when omitted, derive the second-to-last hostname label, such as `yyy` from `xxx.yyy.zzz/nnn`.
+- Clipboard titles are optional and may remain empty; clipboard cards expose a right-side copy action without a redundant type label.
 
 Create success animation:
 

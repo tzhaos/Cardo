@@ -1,7 +1,7 @@
+import { useEffect, useRef, useState } from 'react';
 import type { ClipboardItem as ClipboardItemModel } from '../../domain/workspace';
 import { ItemActions } from './ItemActions';
 import { useItemRename } from './useItemRename';
-import { useI18n } from '../../i18n/useI18n';
 
 export function ClipboardItem({
   boxId,
@@ -13,7 +13,30 @@ export function ClipboardItem({
   highlight: boolean;
 }) {
   const rename = useItemRename(boxId, item.id, item.title);
-  const { t } = useI18n();
+  const [copied, setCopied] = useState(false);
+  const copyResetRef = useRef<number | null>(null);
+
+  useEffect(
+    () => () => {
+      if (copyResetRef.current !== null) {
+        window.clearTimeout(copyResetRef.current);
+      }
+    },
+    [],
+  );
+
+  const copyText = async () => {
+    try {
+      await navigator.clipboard.writeText(item.text);
+      setCopied(true);
+      if (copyResetRef.current !== null) {
+        window.clearTimeout(copyResetRef.current);
+      }
+      copyResetRef.current = window.setTimeout(() => setCopied(false), 1200);
+    } catch {
+      setCopied(false);
+    }
+  };
 
   return (
     <div className={`wbn-clipboard-card${highlight ? ' wbn-item-new' : ''}`}>
@@ -29,12 +52,16 @@ export function ClipboardItem({
             if (event.key === 'Escape') rename.cancel();
           }}
         />
-      ) : (
+      ) : item.title ? (
         <strong onDoubleClick={rename.startRenaming}>{item.title}</strong>
-      )}
+      ) : null}
       <p>{item.text}</p>
-      <small>{t('item.clipboardText')}</small>
-      <ItemActions onEdit={rename.startRenaming} onDelete={rename.deleteItem} />
+      <ItemActions
+        copied={copied}
+        onCopy={copyText}
+        onEdit={rename.startRenaming}
+        onDelete={rename.deleteItem}
+      />
     </div>
   );
 }

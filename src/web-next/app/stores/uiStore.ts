@@ -3,7 +3,6 @@ import { create } from 'zustand';
 export interface AddDraftState {
   mode: boolean;
   draft: Record<string, string>;
-  confirmDiscard: boolean;
   highlightItemId?: string;
 }
 
@@ -17,9 +16,6 @@ interface UiStore {
   selectBox: (boxId: string | null) => void;
   openAddView: (boxId: string) => void;
   updateDraft: (boxId: string, patch: Record<string, string>) => void;
-  requestCloseAddView: (boxId: string) => void;
-  confirmDiscard: (boxId: string) => void;
-  cancelDiscard: (boxId: string) => void;
   closeAddView: (boxId: string) => void;
   markCreated: (boxId: string, itemId: string) => void;
   beginBoxDrag: (boxId: string) => void;
@@ -27,7 +23,7 @@ interface UiStore {
   endBoxDrag: () => void;
 }
 
-const emptyDraft: AddDraftState = { mode: false, draft: {}, confirmDiscard: false };
+const emptyDraft: AddDraftState = { mode: false, draft: {} };
 
 export const useUiStore = create<UiStore>((set) => ({
   addDrafts: {},
@@ -42,7 +38,7 @@ export const useUiStore = create<UiStore>((set) => ({
       selectedBoxId: boxId,
       addDrafts: {
         ...state.addDrafts,
-        [boxId]: { ...(state.addDrafts[boxId] ?? emptyDraft), mode: true, confirmDiscard: false },
+        [boxId]: { ...(state.addDrafts[boxId] ?? emptyDraft), mode: true },
       },
     })),
   updateDraft: (boxId, patch) =>
@@ -51,31 +47,9 @@ export const useUiStore = create<UiStore>((set) => ({
       return {
         addDrafts: {
           ...state.addDrafts,
-          [boxId]: { ...current, draft: { ...current.draft, ...patch }, confirmDiscard: false },
+          [boxId]: { ...current, draft: { ...current.draft, ...patch } },
         },
       };
-    }),
-  requestCloseAddView: (boxId) =>
-    set((state) => {
-      const current = state.addDrafts[boxId] ?? emptyDraft;
-      const hasDraft = Object.values(current.draft).some((value) => value.trim().length > 0);
-      return {
-        addDrafts: {
-          ...state.addDrafts,
-          [boxId]: hasDraft
-            ? { ...current, confirmDiscard: true }
-            : { ...emptyDraft, highlightItemId: current.highlightItemId },
-        },
-      };
-    }),
-  confirmDiscard: (boxId) =>
-    set((state) => ({
-      addDrafts: { ...state.addDrafts, [boxId]: { ...emptyDraft } },
-    })),
-  cancelDiscard: (boxId) =>
-    set((state) => {
-      const current = state.addDrafts[boxId] ?? emptyDraft;
-      return { addDrafts: { ...state.addDrafts, [boxId]: { ...current, confirmDiscard: false } } };
     }),
   closeAddView: (boxId) =>
     set((state) => ({ addDrafts: { ...state.addDrafts, [boxId]: { ...emptyDraft } } })),

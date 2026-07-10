@@ -142,9 +142,6 @@ export function renameItem(
   title: string,
 ) {
   const nextTitle = title.trim();
-  if (!nextTitle) {
-    return snapshot;
-  }
 
   return {
     ...snapshot,

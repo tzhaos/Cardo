@@ -6,6 +6,11 @@ import type {
   WorkspacePage,
   WorkspaceSnapshot,
 } from './workspace';
+import {
+  deriveBookmarkItemTitle,
+  deriveFolderItemTitle,
+  parseFolderPathInput,
+} from './itemMetadata';
 
 let sequence = 0;
 
@@ -89,32 +94,35 @@ export function getDefaultBoxTitle(type: WorkspaceBoxType) {
 
 export function createItem(type: WorkspaceBoxType, draft: Record<string, string>): BoxItem {
   const timestamp = nowIso();
-  const base = {
-    id: createId('item'),
-    title: draft.title?.trim() || getDefaultBoxTitle(type).replace(' Box', ''),
-    createdAt: timestamp,
-    updatedAt: timestamp,
-  };
+  const base = { id: createId('item'), createdAt: timestamp, updatedAt: timestamp };
+  const explicitTitle = draft.title?.trim() ?? '';
 
   switch (type) {
-    case 'folder':
+    case 'folder': {
+      const path = parseFolderPathInput(draft.path ?? '') ?? draft.path?.trim() ?? '';
       return {
         ...base,
         type,
-        path: draft.path?.trim() || 'Untitled path',
-        kind: draft.kind === 'file' || draft.kind === 'folder' ? draft.kind : 'path',
+        title: explicitTitle || deriveFolderItemTitle(path),
+        path,
+        kind: 'folder',
       };
-    case 'bookmark':
+    }
+    case 'bookmark': {
+      const url = draft.url?.trim() ?? '';
       return {
         ...base,
         type,
-        url: draft.url?.trim() || 'https://example.com',
+        title: explicitTitle || deriveBookmarkItemTitle(url),
+        url,
       };
+    }
     case 'clipboard':
       return {
         ...base,
         type,
-        text: draft.text?.trim() || 'Clipboard note',
+        title: explicitTitle,
+        text: draft.text?.trim() ?? '',
       };
   }
 }

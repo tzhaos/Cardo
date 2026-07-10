@@ -31,7 +31,7 @@ export function useItemRename(boxId: string, itemId: string, title: string) {
       cancelNextBlur.current = false;
       return;
     }
-    if (draft.trim()) renameItem(boxId, itemId, draft);
+    renameItem(boxId, itemId, draft);
     setRenaming(false);
   };
 

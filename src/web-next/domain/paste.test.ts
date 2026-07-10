@@ -26,20 +26,21 @@ test('folder boxes create items from local paths', () => {
 
 test('bookmark boxes create items from URLs', () => {
   assert.deepEqual(createPasteDraftForBox(createBox('bookmark'), 'https://www.openai.com/docs'), {
-    title: 'openai.com',
+    title: 'openai',
     url: 'https://www.openai.com/docs',
   });
 });
 
 test('clipboard boxes create items from plain text', () => {
   assert.deepEqual(createPasteDraftForBox(createBox('clipboard'), 'Reusable clipboard text'), {
-    title: 'Reusable clipboard text',
+    title: '',
     text: 'Reusable clipboard text',
   });
 });
 
 test('specialized boxes reject incompatible pasted content', () => {
   assert.equal(createPasteDraftForBox(createBox('folder'), 'https://openai.com'), null);
+  assert.equal(createPasteDraftForBox(createBox('folder'), 'C:\\Workspace\\notes.txt'), null);
   assert.equal(createPasteDraftForBox(createBox('bookmark'), 'plain text'), null);
   assert.equal(createPasteDraftForBox(createBox('clipboard'), 'C:\\Workspace\\KhaosBox'), null);
   assert.equal(createPasteDraftForBox(createBox('clipboard'), 'https://openai.com'), null);

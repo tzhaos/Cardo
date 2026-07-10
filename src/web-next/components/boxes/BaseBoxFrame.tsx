@@ -30,7 +30,7 @@ export function BaseBoxFrame({ box, icon, accent, children, onAddItem }: BaseBox
   const selectedBoxId = useUiStore((state) => state.selectedBoxId);
   const selectBox = useUiStore((state) => state.selectBox);
   const addViewState = useUiStore((state) => state.addDrafts[box.id]);
-  const requestCloseAddView = useUiStore((state) => state.requestCloseAddView);
+  const closeAddView = useUiStore((state) => state.closeAddView);
   const { openMenu, closeMenu } = useFloatingMenu();
   const [renamingTitle, setRenamingTitle] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -237,7 +237,7 @@ export function BaseBoxFrame({ box, icon, accent, children, onAddItem }: BaseBox
           type="button"
           onClick={() => {
             if (addViewState?.mode) {
-              requestCloseAddView(box.id);
+              closeAddView(box.id);
             } else {
               setConfirmDelete(true);
             }
