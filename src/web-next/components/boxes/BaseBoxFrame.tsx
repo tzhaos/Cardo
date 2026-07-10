@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import {
-  Eye,
-  EyeOff,
+  ChevronsDownUp,
+  ChevronsUpDown,
   LayoutGrid,
   List,
   Pin,
@@ -386,7 +386,11 @@ export function BaseBoxFrame({
             aria-pressed={detailMode === 'compact'}
             title={t(detailMode === 'detailed' ? 'box.switchToCompact' : 'box.switchToDetailed')}
           >
-            {detailMode === 'detailed' ? <EyeOff size={15} /> : <Eye size={15} />}
+            {detailMode === 'detailed' ? (
+              <ChevronsDownUp size={15} />
+            ) : (
+              <ChevronsUpDown size={15} />
+            )}
           </motion.button>
           <motion.button
             className="wbn-box-view-toggle wbn-icon-button"
