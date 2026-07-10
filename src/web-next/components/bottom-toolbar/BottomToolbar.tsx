@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Bookmark, Clipboard, Folder, Plus, Search, Settings, Trash2 } from 'lucide-react';
+import { Bookmark, Clipboard, Folder, Plus, Search, Settings } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useIndependentMenuStore } from '../../app/stores/independentMenuStore';
 import { isRecycleBinPageId, type WorkspaceBoxType } from '../../domain/workspace';
@@ -10,8 +10,7 @@ import { IconButton, IconFrame } from '../primitives/IconPrimitives';
 
 export function BottomToolbar() {
   const createBox = useWorkspaceStore((state) => state.createBox);
-  const snapshot = useWorkspaceStore((state) => state.snapshot);
-  const setActivePage = useWorkspaceStore((state) => state.setActivePage);
+  const activePageId = useWorkspaceStore((state) => state.snapshot.activePageId);
   const searchQuery = useUiStore((state) => state.searchQuery);
   const setSearchQuery = useUiStore((state) => state.setSearchQuery);
   const settingsOpen = useIndependentMenuStore((state) => state.menus.settings.open);
@@ -21,8 +20,7 @@ export function BottomToolbar() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const shellRef = useRef<HTMLDivElement>(null);
   const { t } = useI18n();
-  const isRecycleBin = isRecycleBinPageId(snapshot.activePageId);
-  const recycleBinPage = snapshot.pages.find((page) => isRecycleBinPageId(page.id));
+  const isRecycleBin = isRecycleBinPageId(activePageId);
 
   useEffect(() => {
     if (isSearchActive) {
@@ -100,23 +98,6 @@ export function BottomToolbar() {
         ) : null}
       </AnimatePresence>
       <div className="wbn-bottom-toolbar" aria-label={t('toolbar.workspaceTools')}>
-        {recycleBinPage ? (
-          <>
-            <IconButton
-              className={`wbn-toolbar-recycle${isRecycleBin ? ' wbn-toolbar-button-active' : ''}`}
-              aria-current={isRecycleBin ? 'page' : undefined}
-              aria-label={t('page.recycleBin')}
-              title={t('page.recycleBin')}
-              onClick={() => {
-                setIsMenuOpen(false);
-                setActivePage(recycleBinPage.id);
-              }}
-            >
-              <Trash2 size={17} />
-            </IconButton>
-            <div className="wbn-toolbar-divider" />
-          </>
-        ) : null}
         <IconButton
           className={`wbn-toolbar-button${settingsOpen ? ' wbn-toolbar-button-active' : ''}`}
           aria-controls="wbn-settings-window"

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
-import { Grid2X2, List, Lock, Plus, SquarePen, Trash2, X } from 'lucide-react';
+import { LayoutGrid, List, Lock, Plus, SquarePen, Trash2, X } from 'lucide-react';
 import { animate as animateMotion, motion, useMotionValue, useSpring } from 'motion/react';
 import type { MotionStyle } from 'motion/react';
 import { isRecycleBinPageId, type WorkspaceBox } from '../../domain/workspace';
@@ -332,7 +332,7 @@ export function BaseBoxFrame({
             initial={{ opacity: 0 }}
             whileHover={{ opacity: 1 }}
           >
-            {viewMode === 'list' ? <Grid2X2 size={14} /> : <List size={15} />}
+            {viewMode === 'list' ? <LayoutGrid size={15} /> : <List size={15} />}
           </motion.button>
           <motion.button
             className="wbn-box-delete wbn-icon-button"

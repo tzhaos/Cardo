@@ -491,7 +491,9 @@
 .wbn-box-view-toggle {
   width: 24px;
   height: 24px;
+  border: 0;
   border-radius: 999px;
+  padding: 0;
   background: transparent;
   color: var(--wbn-muted);
   opacity: 0;
@@ -1553,50 +1555,56 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
   color: var(--wbn-text);
 }
 
-.wbn-bottom-toolbar .wbn-toolbar-recycle,
-.wbn-bottom-toolbar .wbn-toolbar-recycle:hover,
-.wbn-bottom-toolbar .wbn-toolbar-recycle.wbn-toolbar-button-active {
+.wbn-recycle-bin-tab {
   position: relative;
-  isolation: isolate;
-  overflow: visible;
-  background: transparent !important;
-  color: var(--wbn-secondary-text);
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  align-items: center;
+  margin-left: 6px;
+  border-left: 1px solid var(--wbn-divider);
+  padding-left: 6px;
 }
 
-.wbn-toolbar-recycle::before {
+.wbn-recycle-bin-tab button {
   position: absolute;
-  z-index: 0;
-  inset: 8px;
+  inset: 0;
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
   border-radius: 999px;
-  background: var(--wbn-hover);
-  content: '';
-  opacity: 0;
-  transform: scale(0.56);
+  padding: 0;
+  background: transparent;
+  color: var(--wbn-secondary-text);
   transition:
-    opacity 180ms ease,
-    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    background 180ms ease;
+    color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease,
+    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.wbn-toolbar-recycle:hover::before,
-.wbn-toolbar-recycle:focus-visible::before {
-  opacity: 1;
-  transform: scale(1.24);
+.wbn-recycle-bin-tab button:hover,
+.wbn-recycle-bin-tab button:focus-visible {
+  background: var(--wbn-hover);
+  color: var(--wbn-text);
+  transform: scale(1.12);
 }
 
-.wbn-toolbar-recycle.wbn-toolbar-button-active {
-  color: var(--wbn-text) !important;
-}
-
-.wbn-toolbar-recycle.wbn-toolbar-button-active::before {
+.wbn-recycle-bin-tab-active button {
   background: var(--wbn-active);
-  opacity: 1;
-  transform: scale(1);
+  color: var(--wbn-text);
 }
 
-.wbn-toolbar-recycle svg {
-  position: relative;
-  z-index: 1;
+.wbn-recycle-bin-tab.wbn-box-drop-target button {
+  background: color-mix(in srgb, var(--wbn-blue) 12%, var(--wbn-active));
+  box-shadow:
+    inset 0 1px 2px rgba(15, 23, 42, 0.08),
+    0 0 0 3px color-mix(in srgb, var(--wbn-blue) 11%, transparent);
+  transform: scale(1.08);
 }
 
 .wbn-settings-trigger-icon {
