@@ -113,7 +113,6 @@ export interface CollectionBoxView {
 export interface WorkspaceSnapshot {
   pages: WorkspacePage[];
   activePageId: string;
-  defaultPageId?: string;
   boxes: WorkspaceBox[];
   collectionBoxIds?: string[];
   collectionViews?: Record<string, CollectionBoxView>;
