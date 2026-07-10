@@ -123,6 +123,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       name: 'khaosbox.web-next.workspace',
       version: 1,
       storage: createJSONStorage(() => webNextStorage),
+      skipHydration: true,
       partialize: ({ snapshot }) => ({ snapshot }),
       merge: (persistedState, currentState) => {
         const persistedSnapshot = (persistedState as Partial<WorkspaceStore> | undefined)?.snapshot;

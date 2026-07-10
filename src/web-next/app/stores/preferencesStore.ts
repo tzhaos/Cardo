@@ -41,6 +41,7 @@ export const usePreferencesStore = create<PreferencesStore>()(
     {
       name: STORAGE_KEY,
       storage: createJSONStorage(() => webNextStorage),
+      skipHydration: true,
       partialize: ({ colorMode, locale, themeId }) => ({ colorMode, locale, themeId }),
       merge: (persistedState, currentState) => ({
         ...currentState,

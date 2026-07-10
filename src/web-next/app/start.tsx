@@ -1,11 +1,25 @@
 /**
- * Loads the UI only after a host has configured its ports. Persisted stores
- * hydrate during module evaluation, so static entry imports would otherwise
- * race Electron/extension platform setup.
+ * Loads persisted state only after a host has configured its ports, then
+ * renders the UI. Waiting for hydration prevents the default first page from
+ * flashing before the configured entry page is restored.
  */
 export function startWebNextApp() {
-  void Promise.all([import('./WebNextApp'), import('./bootstrap')]).then(
-    ([{ default: WebNextApp }, { renderWebNextRoot }]) => {
+  void Promise.all([
+    import('./WebNextApp'),
+    import('./bootstrap'),
+    import('./stores/preferencesStore'),
+    import('./stores/workspaceStore'),
+  ]).then(
+    async ([
+      { default: WebNextApp },
+      { renderWebNextRoot },
+      { usePreferencesStore },
+      { useWorkspaceStore },
+    ]) => {
+      await Promise.all([
+        usePreferencesStore.persist.rehydrate(),
+        useWorkspaceStore.persist.rehydrate(),
+      ]);
       renderWebNextRoot(<WebNextApp />);
     },
   );
