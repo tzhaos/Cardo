@@ -1597,8 +1597,12 @@ button.wbn-box-icon:focus-visible {
   padding: 4px 8px;
   background: transparent;
   color: var(--wbn-secondary-text);
+  cursor: pointer;
+  caret-color: transparent;
   font-size: 12px;
   font-weight: 500;
+  user-select: none;
+  -webkit-user-select: none;
   transition:
     color 160ms ease,
     background 160ms ease;
