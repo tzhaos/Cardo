@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { FloatingMenuItem } from './menuTypes';
 import { SubmenuChevron, useFloatingMenu } from './useFloatingMenu';
 import { IconFrame } from '../primitives/IconPrimitives';
@@ -6,10 +6,25 @@ import { IconFrame } from '../primitives/IconPrimitives';
 export function FloatingMenuLayer() {
   const { menu, closeMenu } = useFloatingMenu();
   const [submenuId, setSubmenuId] = useState<string | null>(null);
+  const [menuSize, setMenuSize] = useState({ width: 0, height: 0 });
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setSubmenuId(null);
   }, [menu?.id]);
+
+  useLayoutEffect(() => {
+    const element = menuRef.current;
+    if (!element || !menu) return;
+    const updateSize = () => {
+      const rect = element.getBoundingClientRect();
+      setMenuSize({ width: rect.width, height: rect.height });
+    };
+    updateSize();
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [menu, submenuId]);
 
   useEffect(() => {
     if (!menu) {
@@ -45,11 +60,22 @@ export function FloatingMenuLayer() {
       return { left: 0, top: 0 };
     }
 
+    const margin = 8;
+    const width = menuSize.width || 240;
+    const height = menuSize.height || Math.min(520, menu.items.length * 52 + 16);
+    const preferredLeft = menu.x + width + margin > window.innerWidth ? menu.x - width : menu.x;
+    const availableAbove = Math.max(120, menu.y - margin * 2);
+    const availableBelow = Math.max(120, window.innerHeight - menu.y - margin * 2);
+    const openUpward = menu.y > window.innerHeight / 2 || height > availableBelow;
+    const maxHeight = openUpward ? availableAbove : availableBelow;
+    const renderedHeight = Math.min(height, maxHeight);
+    const preferredTop = openUpward ? menu.y - renderedHeight : menu.y;
     return {
-      left: Math.min(menu.x, window.innerWidth - 440),
-      top: Math.min(menu.y, window.innerHeight - 280),
+      left: Math.max(margin, Math.min(preferredLeft, window.innerWidth - width - margin)),
+      top: Math.max(margin, Math.min(preferredTop, window.innerHeight - renderedHeight - margin)),
+      maxHeight,
     };
-  }, [menu]);
+  }, [menu, menuSize.height, menuSize.width]);
 
   const submenu = menu?.items.find((item) => item.id === submenuId)?.children;
 
@@ -58,7 +84,7 @@ export function FloatingMenuLayer() {
   }
 
   return (
-    <div className="wbn-floating-menu-wrap" data-floating-menu style={position}>
+    <div className="wbn-floating-menu-wrap" data-floating-menu ref={menuRef} style={position}>
       <MenuPanel
         items={menu.items}
         closeMenu={closeMenu}

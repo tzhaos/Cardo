@@ -135,11 +135,12 @@ export function BottomToolbar() {
         {!isRecycleBin ? (
           <IconButton
             className="wbn-toolbar-canvas-control"
-            onClick={(event) =>
+            onClick={(event) => {
+              const triggerRect = event.currentTarget.getBoundingClientRect();
               openMenu({
                 id: 'box-layout-tools',
-                x: event.clientX,
-                y: event.clientY,
+                x: triggerRect.left,
+                y: triggerRect.top - 8,
                 items: [
                   {
                     id: 'auto-arrange',
@@ -245,8 +246,8 @@ export function BottomToolbar() {
                     onSelect: undo,
                   },
                 ],
-              })
-            }
+              });
+            }}
             aria-label={t('canvas.layoutTools')}
             title={t('canvas.layoutTools')}
           >

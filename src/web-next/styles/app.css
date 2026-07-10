@@ -2582,12 +2582,15 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
   display: flex;
   align-items: flex-start;
   gap: 8px;
+  overflow: visible;
 }
 
 .wbn-floating-menu {
   display: grid;
   min-width: 192px;
+  max-height: inherit;
   gap: 8px;
+  overflow-y: auto;
   border: 1px solid var(--wbn-border);
   border-radius: 16px;
   padding: 8px;
