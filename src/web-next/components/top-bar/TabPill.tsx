@@ -125,7 +125,7 @@ export function TabPill({
               initial={{ opacity: 0, scale: 0.76 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.76 }}
-              transition={{ duration: 0.12, ease: 'easeOut' }}
+              transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.52 }}
               onClick={(event) => {
                 event.stopPropagation();
                 onDelete();
