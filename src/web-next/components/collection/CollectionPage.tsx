@@ -7,7 +7,7 @@ import {
   ExternalLink,
   File,
   Folder,
-  Globe2,
+  Globe,
   Star,
   X,
 } from 'lucide-react';
@@ -178,7 +178,7 @@ function CollectionItemIcon({ item }: { item: BoxItem }) {
     case 'shortcut':
       return <AppWindow size={16} />;
     case 'bookmark':
-      return <Globe2 size={16} />;
+      return <Globe size={16} />;
     case 'clipboard':
       return <Clipboard size={16} />;
   }

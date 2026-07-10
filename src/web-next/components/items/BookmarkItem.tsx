@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ExternalLink, Globe2 } from 'lucide-react';
+import { ExternalLink, Globe } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { BookmarkItem as BookmarkItemModel } from '../../domain/workspace';
 import { ItemDeleteView } from './ItemDeleteView';
@@ -85,7 +85,7 @@ export function BookmarkItem({
                 }
               }}
             >
-              <Globe2 size={16} />
+              <Globe size={16} />
             </IconFrame>
             <div className="wbn-item-main">
               {rename.renaming ? (

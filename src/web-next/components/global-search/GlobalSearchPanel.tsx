@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AppWindow, Box, Clipboard, File, Folder, Globe2, PanelTop, Search } from 'lucide-react';
+import { AppWindow, Box, Clipboard, File, Folder, Globe, PanelTop, Search } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useCanvasStore } from '../../app/stores/canvasStore';
 import { useUiStore } from '../../app/stores/uiStore';
@@ -171,7 +171,7 @@ function ItemTypeIcon({ item }: { item: BoxItem }) {
     case 'shortcut':
       return <AppWindow size={17} />;
     case 'bookmark':
-      return <Globe2 size={17} />;
+      return <Globe size={17} />;
     case 'clipboard':
       return <Clipboard size={17} />;
   }
