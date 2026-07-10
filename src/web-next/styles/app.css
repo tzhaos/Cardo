@@ -316,6 +316,13 @@
   overflow: hidden;
 }
 
+.wbn-page-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  will-change: transform, opacity;
+}
+
 .wbn-box {
   position: absolute;
   z-index: 10;
