@@ -92,6 +92,7 @@ function isWorkspaceBox(input: unknown): input is WorkspaceBox {
     (input.detailMode === undefined ||
       input.detailMode === 'detailed' ||
       input.detailMode === 'compact') &&
+    (input.isPinned === undefined || typeof input.isPinned === 'boolean') &&
     typeof input.createdAt === 'string' &&
     typeof input.updatedAt === 'string'
   );

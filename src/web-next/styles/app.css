@@ -395,6 +395,26 @@
   box-shadow: var(--wbn-shadow-hover);
 }
 
+.wbn-box.wbn-box-pinned {
+  z-index: 30;
+}
+
+.wbn-box.wbn-box-pinned:hover {
+  z-index: 40;
+}
+
+.wbn-box-pinned .wbn-box-header {
+  cursor: default;
+}
+
+.wbn-box-pinned .wbn-box-pin-toggle {
+  color: var(--box-accent);
+}
+
+.wbn-box-pinned .wbn-resize-handle {
+  display: none;
+}
+
 .wbn-box.wbn-box-dragging {
   z-index: 60;
   box-shadow:

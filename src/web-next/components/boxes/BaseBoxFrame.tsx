@@ -1,6 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
-import { Eye, EyeOff, LayoutGrid, List, Lock, Plus, SquarePen, Trash2, X } from 'lucide-react';
+import {
+  Eye,
+  EyeOff,
+  LayoutGrid,
+  List,
+  Pin,
+  PinOff,
+  Plus,
+  SquarePen,
+  Trash2,
+  X,
+} from 'lucide-react';
 import { animate as animateMotion, motion, useMotionValue, useSpring } from 'motion/react';
 import type { MotionStyle } from 'motion/react';
 import { isRecycleBinPageId, type WorkspaceBox } from '../../domain/workspace';
@@ -39,6 +50,7 @@ export function BaseBoxFrame({
   const updateBoxFrame = useWorkspaceStore((state) => state.updateBoxFrame);
   const renameBox = useWorkspaceStore((state) => state.renameBox);
   const setBoxDetailMode = useWorkspaceStore((state) => state.setBoxDetailMode);
+  const setBoxPinned = useWorkspaceStore((state) => state.setBoxPinned);
   const setBoxViewMode = useWorkspaceStore((state) => state.setBoxViewMode);
   const deleteBox = useWorkspaceStore((state) => state.deleteBox);
   const beginBoxDrag = useUiStore((state) => state.beginBoxDrag);
@@ -95,6 +107,10 @@ export function BaseBoxFrame({
   };
 
   const beginDrag = (event: ReactPointerEvent<HTMLElement>) => {
+    if (box.isPinned) {
+      return;
+    }
+
     if ((event.target as HTMLElement).closest('button,input,textarea,select,[data-no-drag]')) {
       return;
     }
@@ -142,6 +158,10 @@ export function BaseBoxFrame({
   };
 
   const beginResize = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (box.isPinned) {
+      return;
+    }
+
     event.stopPropagation();
     event.preventDefault();
     closeMenu();
@@ -196,6 +216,7 @@ export function BaseBoxFrame({
     dropReleased ? 'wbn-box-drop-released' : '',
     selectedBoxId === box.id ? 'wbn-box-selected' : '',
     detailMode === 'compact' ? 'wbn-box-compact' : '',
+    box.isPinned ? 'wbn-box-pinned' : '',
     addViewState?.mode || confirmDelete ? 'wbn-box-local-view' : '',
   ]
     .filter(Boolean)
@@ -280,11 +301,10 @@ export function BaseBoxFrame({
               },
             },
             {
-              id: 'lock',
-              label: t('menu.lock'),
-              icon: <Lock size={16} />,
-              disabled: true,
-              onSelect: () => undefined,
+              id: 'pin',
+              label: t(box.isPinned ? 'menu.unpinBox' : 'menu.pinBox'),
+              icon: box.isPinned ? <PinOff size={16} /> : <Pin size={16} />,
+              onSelect: () => setBoxPinned(box.id, !box.isPinned),
             },
             {
               id: 'delete',
@@ -342,6 +362,17 @@ export function BaseBoxFrame({
           )}
         </div>
         <div className="wbn-box-controls">
+          <motion.button
+            className="wbn-box-view-toggle wbn-box-pin-toggle wbn-icon-button"
+            type="button"
+            data-no-drag
+            onClick={() => setBoxPinned(box.id, !box.isPinned)}
+            aria-label={t(box.isPinned ? 'box.unpin' : 'box.pin')}
+            aria-pressed={Boolean(box.isPinned)}
+            title={t(box.isPinned ? 'box.unpin' : 'box.pin')}
+          >
+            {box.isPinned ? <PinOff size={15} /> : <Pin size={15} />}
+          </motion.button>
           <motion.button
             className="wbn-box-view-toggle wbn-icon-button"
             type="button"
@@ -431,6 +462,7 @@ export function BaseBoxFrame({
       <button
         className="wbn-resize-handle"
         type="button"
+        disabled={box.isPinned}
         aria-label={t('box.resize', { title: box.title })}
         onPointerDown={beginResize}
       >

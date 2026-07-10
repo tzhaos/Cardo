@@ -27,6 +27,7 @@ import {
   reorderPages,
   setActivePage,
   setBoxDetailMode,
+  setBoxPinned,
   setBoxViewMode,
   setDefaultPage,
   updateBoxFrame,
@@ -46,6 +47,7 @@ interface WorkspaceStore {
   constrainFramesToViewport: (viewport: CanvasViewportSize) => void;
   renameBox: (boxId: string, title: string) => void;
   setBoxDetailMode: (boxId: string, detailMode: WorkspaceBoxDetailMode) => void;
+  setBoxPinned: (boxId: string, isPinned: boolean) => void;
   setBoxViewMode: (boxId: string, viewMode: WorkspaceBoxViewMode) => void;
   moveBoxToPage: (boxId: string, pageId: string, frame?: BoxFrame) => void;
   deleteBox: (boxId: string) => void;
@@ -94,6 +96,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         set((state) => ({ snapshot: renameBox(state.snapshot, boxId, title) })),
       setBoxDetailMode: (boxId, detailMode) =>
         set((state) => ({ snapshot: setBoxDetailMode(state.snapshot, boxId, detailMode) })),
+      setBoxPinned: (boxId, isPinned) =>
+        set((state) => ({ snapshot: setBoxPinned(state.snapshot, boxId, isPinned) })),
       setBoxViewMode: (boxId, viewMode) =>
         set((state) => ({ snapshot: setBoxViewMode(state.snapshot, boxId, viewMode) })),
       moveBoxToPage: (boxId, pageId, frame) =>

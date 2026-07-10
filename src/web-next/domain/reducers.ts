@@ -209,6 +209,17 @@ export function setBoxDetailMode(
   };
 }
 
+export function setBoxPinned(snapshot: WorkspaceSnapshot, boxId: string, isPinned: boolean) {
+  return {
+    ...snapshot,
+    boxes: snapshot.boxes.map((box) =>
+      box.id === boxId && box.isPinned !== isPinned
+        ? { ...box, isPinned, updatedAt: nowIso() }
+        : box,
+    ),
+  };
+}
+
 export function deleteBox(snapshot: WorkspaceSnapshot, boxId: string) {
   const box = snapshot.boxes.find((candidate) => candidate.id === boxId);
   if (!box) {
