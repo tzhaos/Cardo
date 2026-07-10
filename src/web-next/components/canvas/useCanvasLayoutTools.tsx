@@ -1,37 +1,21 @@
-import { useCallback, useMemo } from 'react';
-import {
-  AlignHorizontalDistributeCenter,
-  AlignVerticalDistributeCenter,
-  Boxes,
-  Grid3X3,
-  LayoutDashboard,
-  Layers3,
-  Maximize2,
-  ScanSearch,
-  Undo2,
-} from 'lucide-react';
+import { useMemo } from 'react';
+import { Boxes, Grid3X3, LayoutDashboard, Maximize2, ScanSearch } from 'lucide-react';
 import { getPageCanvasState, useCanvasStore } from '../../app/stores/canvasStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import {
   arrangePageBoxes,
-  distributePageBoxes,
-  groupPageBoxesByContent,
   recoverOffscreenBoxes,
   resolvePageBoxOverlaps,
   snapPageBoxesToGrid,
 } from '../../domain/boxLayout';
 import { createCanvasWorldBounds, getVisibleCanvasWorldBounds } from '../../domain/canvasGeometry';
 import { useI18n } from '../../i18n/useI18n';
-import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
 
 export function useCanvasLayoutTools() {
   const snapshot = useWorkspaceStore((state) => state.snapshot);
   const applyPageBoxLayout = useWorkspaceStore((state) => state.applyPageBoxLayout);
-  const undo = useWorkspaceStore((state) => state.undo);
-  const canUndo = useWorkspaceStore((state) => state.historyPast.length > 0);
   const viewportSize = useCanvasStore((state) => state.viewportSize);
   const fitFrames = useCanvasStore((state) => state.fitFrames);
-  const { openMenu } = useFloatingMenu();
   const { t } = useI18n();
   const activePageId = snapshot.activePageId;
   const boxes = useMemo(
@@ -64,51 +48,12 @@ export function useCanvasLayoutTools() {
         onSelect: () => applyPageBoxLayout(activePageId, snapPageBoxesToGrid(boxes, canvasBounds)),
       },
       {
-        id: 'distribute',
-        label: t('canvas.distribute'),
-        icon: <AlignHorizontalDistributeCenter size={16} />,
-        disabled: movableBoxCount < 3,
-        children: [
-          {
-            id: 'distribute-horizontal',
-            label: t('canvas.distributeHorizontal'),
-            icon: <AlignHorizontalDistributeCenter size={16} />,
-            onSelect: () =>
-              applyPageBoxLayout(
-                activePageId,
-                distributePageBoxes(boxes, 'horizontal', canvasBounds),
-              ),
-          },
-          {
-            id: 'distribute-vertical',
-            label: t('canvas.distributeVertical'),
-            icon: <AlignVerticalDistributeCenter size={16} />,
-            onSelect: () =>
-              applyPageBoxLayout(
-                activePageId,
-                distributePageBoxes(boxes, 'vertical', canvasBounds),
-              ),
-          },
-        ],
-      },
-      {
         id: 'avoid-overlap',
         label: t('canvas.avoidOverlap'),
         icon: <Boxes size={16} />,
         disabled: movableBoxCount < 2,
         onSelect: () =>
           applyPageBoxLayout(activePageId, resolvePageBoxOverlaps(boxes, canvasBounds)),
-      },
-      {
-        id: 'group-content',
-        label: t('canvas.groupByContent'),
-        icon: <Layers3 size={16} />,
-        disabled: movableBoxCount < 2,
-        onSelect: () =>
-          applyPageBoxLayout(
-            activePageId,
-            groupPageBoxesByContent(boxes, visibleBounds, canvasBounds),
-          ),
       },
       {
         id: 'recover-offscreen',
@@ -139,33 +84,18 @@ export function useCanvasLayoutTools() {
             boxes.map((box) => box.frame),
           ),
       },
-      {
-        id: 'undo-layout',
-        label: t('canvas.undoLayout'),
-        icon: <Undo2 size={16} />,
-        disabled: !canUndo,
-        separatorBefore: true,
-        onSelect: undo,
-      },
     ],
     [
       activePageId,
       applyPageBoxLayout,
       boxes,
-      canUndo,
       canvasBounds,
       fitFrames,
       movableBoxCount,
       t,
-      undo,
       visibleBounds,
     ],
   );
 
-  const openCanvasLayoutTools = useCallback(
-    (x: number, y: number) => openMenu({ id: 'box-layout-tools', x, y, items }),
-    [items, openMenu],
-  );
-
-  return { items, openCanvasLayoutTools };
+  return { items };
 }

@@ -986,6 +986,47 @@
   transition: transform 340ms cubic-bezier(0.22, 0.82, 0.2, 1);
 }
 
+.wbn-canvas-tools {
+  position: fixed;
+  top: 50%;
+  left: 18px;
+  z-index: 88;
+  display: grid;
+  gap: 8px;
+  transform: translateY(-50%);
+}
+
+.wbn-canvas-tools > button,
+.wbn-canvas-tools-actions {
+  border: 1px solid var(--wbn-border);
+  background: var(--wbn-surface);
+  box-shadow: var(--wbn-shadow);
+  backdrop-filter: blur(18px);
+}
+
+.wbn-canvas-tools > button {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+}
+
+.wbn-canvas-tools-trigger-active {
+  color: var(--wbn-accent) !important;
+}
+
+.wbn-canvas-tools-actions {
+  display: grid;
+  gap: 4px;
+  border-radius: 14px;
+  padding: 5px;
+}
+
+.wbn-canvas-tools-actions button {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+}
+
 .wbn-canvas-boundary {
   position: absolute;
   z-index: 0;

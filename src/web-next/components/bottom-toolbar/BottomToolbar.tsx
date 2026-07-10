@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  LayoutDashboard,
   History,
   LocateFixed,
   Lock,
@@ -26,7 +25,6 @@ import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { useI18n } from '../../i18n/useI18n';
 import { IconButton } from '../primitives/IconPrimitives';
 import { GlobalSearchPanel } from '../global-search/GlobalSearchPanel';
-import { useCanvasLayoutTools } from '../canvas/useCanvasLayoutTools';
 
 export function BottomToolbar() {
   const createBox = useWorkspaceStore((state) => state.createBox);
@@ -50,7 +48,6 @@ export function BottomToolbar() {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { t } = useI18n();
-  const { openCanvasLayoutTools } = useCanvasLayoutTools();
   const isCollection = isCollectionPageId(activePageId);
 
   useEffect(() => {
@@ -118,17 +115,6 @@ export function BottomToolbar() {
               title={t('canvas.returnToOrigin')}
             >
               <LocateFixed size={18} />
-            </IconButton>
-            <IconButton
-              className="wbn-toolbar-canvas-control"
-              onClick={(event) => {
-                const triggerRect = event.currentTarget.getBoundingClientRect();
-                openCanvasLayoutTools(triggerRect.left, triggerRect.top - 8);
-              }}
-              aria-label={t('canvas.layoutTools')}
-              title={t('canvas.layoutTools')}
-            >
-              <LayoutDashboard size={18} />
             </IconButton>
             <IconButton
               className={`wbn-toolbar-canvas-control${isCanvasLocked ? ' wbn-toolbar-button-active' : ''}`}
