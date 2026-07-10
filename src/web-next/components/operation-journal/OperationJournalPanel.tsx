@@ -1,7 +1,17 @@
 import { useMemo, useState } from 'react';
 import type { PointerEventHandler } from 'react';
-import { Activity, ChevronRight, Clock3, Database, Search, Trash2, X } from 'lucide-react';
 import {
+  Activity,
+  ChevronRight,
+  Clock3,
+  Database,
+  Download,
+  Search,
+  Trash2,
+  X,
+} from 'lucide-react';
+import {
+  recordOperation,
   useOperationJournalStore,
   type OperationCategory,
   type OperationEvent,
@@ -68,6 +78,32 @@ export function OperationJournalPanel({
       selectBox(null);
       onClose();
     }
+  };
+
+  const exportEvents = () => {
+    const exportedAt = new Date().toISOString();
+    const payload = {
+      format: 'khaosbox-operation-journal',
+      version: 1,
+      exportedAt,
+      privacy: 'redacted',
+      retention: { maximumEvents: 5000, maximumAgeDays: 90 },
+      events,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `khaosbox-operation-log-${exportedAt.slice(0, 10)}.json`;
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    recordOperation({
+      category: 'system',
+      action: 'journal.export',
+      source: 'system',
+      undoable: false,
+      details: { eventCount: events.length },
+    });
   };
 
   let previousDateKey = '';
@@ -170,10 +206,16 @@ export function OperationJournalPanel({
             </button>
           </>
         ) : (
-          <button type="button" onClick={() => setConfirmClear(true)} disabled={!events.length}>
-            <Trash2 size={14} />
-            <span>{t('journal.clear')}</span>
-          </button>
+          <>
+            <button type="button" onClick={exportEvents} disabled={!events.length}>
+              <Download size={14} />
+              <span>{t('journal.export')}</span>
+            </button>
+            <button type="button" onClick={() => setConfirmClear(true)} disabled={!events.length}>
+              <Trash2 size={14} />
+              <span>{t('journal.clear')}</span>
+            </button>
+          </>
         )}
       </footer>
     </div>
@@ -253,4 +295,5 @@ const ACTION_MESSAGE_KEYS: Record<string, Parameters<ReturnType<typeof useI18n>[
   'box.preview': 'journal.action.boxPreview',
   'item.open': 'journal.action.itemOpen',
   'item.copy': 'journal.action.itemCopy',
+  'journal.export': 'journal.action.journalExport',
 };
