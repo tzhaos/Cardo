@@ -13,7 +13,13 @@ import {
   Unlock,
   X,
 } from 'lucide-react';
-import { AnimatePresence, animate as animateMotion, motion, useMotionValue } from 'motion/react';
+import {
+  AnimatePresence,
+  animate as animateMotion,
+  motion,
+  useMotionValue,
+  useSpring,
+} from 'motion/react';
 import type { MotionStyle } from 'motion/react';
 import {
   isRecycleBinPageId,
@@ -76,6 +82,7 @@ export function BaseBoxFrame({
   const [renamingTitle, setRenamingTitle] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [appearanceAnchor, setAppearanceAnchor] = useState<DOMRect | null>(null);
+  const [dragTransformOrigin, setDragTransformOrigin] = useState('50% 50%');
   const [titleDraft, setTitleDraft] = useState(box.title);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const pointerSessionRef = useRef<WindowPointerSession | null>(null);
@@ -83,6 +90,8 @@ export function BaseBoxFrame({
   const boxTop = useMotionValue(box.frame.y);
   const boxWidth = useMotionValue(box.frame.width);
   const boxHeight = useMotionValue(box.frame.height);
+  const dragTiltTarget = useMotionValue(0);
+  const dragTilt = useSpring(dragTiltTarget, { stiffness: 320, damping: 26, mass: 0.45 });
   const { t } = useI18n();
 
   useEffect(
@@ -128,6 +137,19 @@ export function BaseBoxFrame({
     closeMenu();
     pointerSessionRef.current?.end();
     beginBoxDrag(box.id);
+    const boxElement = event.currentTarget.closest<HTMLElement>('[data-canvas-box]');
+    const boxRect = boxElement?.getBoundingClientRect();
+    if (boxRect) {
+      const originX = Math.max(
+        0,
+        Math.min(100, ((event.clientX - boxRect.left) / boxRect.width) * 100),
+      );
+      const originY = Math.max(
+        0,
+        Math.min(100, ((event.clientY - boxRect.top) / boxRect.height) * 100),
+      );
+      setDragTransformOrigin(`${originX}% ${originY}%`);
+    }
     const startX = event.clientX;
     const startY = event.clientY;
     const startFrame = box.frame;
@@ -135,6 +157,7 @@ export function BaseBoxFrame({
     const session = startWindowPointerSession({
       pointerId: event.pointerId,
       onMove: (moveEvent) => {
+        dragTiltTarget.set(Math.max(-2.2, Math.min(2.2, (moveEvent.clientX - startX) / 180)));
         const zoom = useCanvasStore.getState().pages[box.pageId]?.camera.zoom ?? 1;
         latestFrame = constrainBoxFrameToCanvas(
           {
@@ -148,6 +171,7 @@ export function BaseBoxFrame({
         boxTop.set(latestFrame.y);
       },
       onEnd: (reason) => {
+        dragTiltTarget.set(0);
         const droppingOnTopBar = useUiStore.getState().boxDragOverTopBar;
         if (!droppingOnTopBar) {
           updateBoxFrame(box.id, latestFrame);
@@ -341,6 +365,8 @@ export function BaseBoxFrame({
           height: boxHeight,
           minWidth: 240,
           minHeight: 170,
+          rotate: dragTilt,
+          transformOrigin: dragTransformOrigin,
           '--box-accent': accent,
         } as MotionStyle & { '--box-accent': string }
       }
