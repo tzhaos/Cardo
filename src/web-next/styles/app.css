@@ -3327,7 +3327,7 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
   position: relative;
   display: flex;
   min-height: 36px;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .wbn-clipboard-body {
@@ -3350,8 +3350,9 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
 
 .wbn-clipboard-card-content .wbn-item-actions {
   position: absolute;
-  top: -5px;
+  top: 50%;
   right: -2px;
+  transform: translateY(-50%);
 }
 
 .wbn-clipboard-copied {
@@ -3377,11 +3378,13 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
 
 .wbn-box-compact .wbn-clipboard-item {
   min-height: 42px;
+  align-items: center;
   padding: 8px 8px 8px 24px;
 }
 
 .wbn-box-compact .wbn-clipboard-card-content {
-  min-height: 16px;
+  min-height: 24px;
+  align-items: center;
 }
 
 .wbn-item-list-grid .wbn-clipboard-item {
@@ -3409,6 +3412,7 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
 
 .wbn-box-compact .wbn-clipboard-body {
   min-height: 16px;
+  padding: 0 94px 0 2px;
   font-size: 12px !important;
   line-height: 16px;
   -webkit-line-clamp: 1;
@@ -3419,12 +3423,17 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
   padding: 34px 2px 0;
 }
 
+.wbn-box-compact .wbn-item-list-grid .wbn-clipboard-card-content {
+  align-items: flex-start;
+}
+
 .wbn-item-list-grid .wbn-item-actions {
   position: absolute;
   top: 4px;
   right: 4px;
   z-index: 3;
   margin-left: 0;
+  transform: none;
 }
 
 .wbn-dropdown {
