@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { isUrlText } from '../../../core/domains/items/services/isUrlText';
+import { parseLocalPathText } from '../../../core/domains/items/services/parseLocalPathText';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { parseFolderPathInput } from '../../domain/itemMetadata';
 import type { BoxItem } from '../../domain/workspace';
@@ -55,14 +56,14 @@ export function ItemContentEditView({
         <input
           autoFocus
           aria-invalid={showInvalid}
-          placeholder={t(item.type === 'folder' ? 'field.folderPath' : 'field.pasteUrl')}
+          placeholder={t(item.type === 'bookmark' ? 'field.pasteUrl' : 'field.localPath')}
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
         />
       )}
       {showInvalid ? (
         <small className="wbn-field-error">
-          {t(item.type === 'folder' ? 'field.folderPathError' : 'field.urlError')}
+          {t(item.type === 'bookmark' ? 'field.urlError' : 'field.localPathError')}
         </small>
       ) : null}
       <span className="wbn-item-edit-actions">
@@ -78,13 +79,17 @@ export function ItemContentEditView({
 }
 
 function getItemContent(item: BoxItem) {
-  if (item.type === 'folder') return item.path;
+  if (item.type === 'folder' || item.type === 'file' || item.type === 'shortcut') return item.path;
   if (item.type === 'bookmark') return item.url;
   return item.text;
 }
 
 function normalizeContent(item: BoxItem, draft: string) {
   if (item.type === 'folder') return parseFolderPathInput(draft);
+  if (item.type === 'file' || item.type === 'shortcut') {
+    const parsedPath = parseLocalPathText(draft);
+    return parsedPath?.type === item.type ? parsedPath.normalizedPath : null;
+  }
   if (item.type === 'bookmark') return isUrlText(draft) ? draft.trim() : null;
   return draft.trim() || null;
 }

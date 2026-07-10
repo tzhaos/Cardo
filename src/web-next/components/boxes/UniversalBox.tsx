@@ -3,7 +3,7 @@ import type { WorkspaceBox, WorkspaceItemType } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
 import { BookmarkItem } from '../items/BookmarkItem';
 import { ClipboardItem } from '../items/ClipboardItem';
-import { FolderItem } from '../items/FolderItem';
+import { LocalResourceItem } from '../items/LocalResourceItem';
 import { SortableItemList } from '../items/SortableItemList';
 import { BookmarkAddView } from './add-views/BookmarkAddView';
 import { ClipboardAddView } from './add-views/ClipboardAddView';
@@ -50,8 +50,10 @@ export function UniversalBox({
 
 function renderItem(boxId: string, item: WorkspaceBox['items'][number], highlight: boolean) {
   switch (item.type) {
+    case 'file':
+    case 'shortcut':
     case 'folder':
-      return <FolderItem boxId={boxId} item={item} highlight={highlight} />;
+      return <LocalResourceItem boxId={boxId} item={item} highlight={highlight} />;
     case 'bookmark':
       return <BookmarkItem boxId={boxId} item={item} highlight={highlight} />;
     case 'clipboard':

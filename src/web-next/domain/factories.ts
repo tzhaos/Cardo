@@ -13,6 +13,7 @@ import {
   deriveFolderItemTitle,
   parseFolderPathInput,
 } from './itemMetadata';
+import { parseLocalPathText } from '../../core/domains/items/services/parseLocalPathText';
 
 let sequence = 0;
 
@@ -122,6 +123,17 @@ export function createItem(type: WorkspaceItemType, draft: Record<string, string
   const explicitTitle = draft.title?.trim() ?? '';
 
   switch (type) {
+    case 'file':
+    case 'shortcut': {
+      const parsedPath = parseLocalPathText(draft.path ?? '');
+      const path = parsedPath?.normalizedPath ?? draft.path?.trim() ?? '';
+      return {
+        ...base,
+        type,
+        title: explicitTitle || deriveFolderItemTitle(path),
+        path,
+      };
+    }
     case 'folder': {
       const path = parseFolderPathInput(draft.path ?? '') ?? draft.path?.trim() ?? '';
       return {
@@ -129,7 +141,6 @@ export function createItem(type: WorkspaceItemType, draft: Record<string, string
         type,
         title: explicitTitle || deriveFolderItemTitle(path),
         path,
-        kind: 'folder',
       };
     }
     case 'bookmark': {

@@ -1,4 +1,4 @@
-export type WorkspaceItemType = 'folder' | 'bookmark' | 'clipboard';
+export type WorkspaceItemType = 'file' | 'shortcut' | 'folder' | 'bookmark' | 'clipboard';
 export type WorkspaceBoxPreset = 'general' | 'folder' | 'bookmark' | 'clipboard';
 export type WorkspaceBoxViewMode = 'list' | 'grid';
 export type WorkspaceBoxDetailMode = 'detailed' | 'compact';
@@ -36,7 +36,17 @@ export interface BaseBoxItem {
 export interface FolderItem extends BaseBoxItem {
   type: 'folder';
   path: string;
-  kind: 'file' | 'folder' | 'path';
+}
+
+export interface FileItem extends BaseBoxItem {
+  type: 'file';
+  path: string;
+}
+
+export interface ShortcutItem extends BaseBoxItem {
+  type: 'shortcut';
+  path: string;
+  targetType?: 'file' | 'folder' | 'application';
 }
 
 export interface BookmarkItem extends BaseBoxItem {
@@ -50,7 +60,7 @@ export interface ClipboardItem extends BaseBoxItem {
   text: string;
 }
 
-export type BoxItem = FolderItem | BookmarkItem | ClipboardItem;
+export type BoxItem = FileItem | ShortcutItem | FolderItem | BookmarkItem | ClipboardItem;
 
 export interface WorkspaceBox {
   id: string;

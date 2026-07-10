@@ -8,7 +8,6 @@ test('creates folder items from local paths', () => {
     draft: {
       title: 'KhaosBox',
       path: 'C:\\Workspace\\KhaosBox',
-      kind: 'folder',
     },
   });
 });
@@ -33,7 +32,11 @@ test('creates clipboard items from plain text', () => {
   });
 });
 
-test('rejects empty and unsupported path-like input', () => {
+test('creates file and shortcut items from recognized local paths', () => {
+  assert.equal(createPasteItemDraft('C:\\Workspace\\notes.txt')?.type, 'file');
+  assert.equal(createPasteItemDraft('C:\\Tools\\editor.exe')?.type, 'shortcut');
+});
+
+test('rejects empty input', () => {
   assert.equal(createPasteItemDraft(''), null);
-  assert.equal(createPasteItemDraft('C:\\Workspace\\notes.txt'), null);
 });

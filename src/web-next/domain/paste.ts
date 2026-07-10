@@ -1,10 +1,6 @@
 import { isUrlText } from '../../core/domains/items/services/isUrlText';
 import { parseLocalPathText } from '../../core/domains/items/services/parseLocalPathText';
-import {
-  deriveBookmarkItemTitle,
-  deriveFolderItemTitle,
-  parseFolderPathInput,
-} from './itemMetadata';
+import { deriveBookmarkItemTitle, deriveFolderItemTitle } from './itemMetadata';
 import type { WorkspaceItemType } from './workspace';
 
 export interface PasteItemDraft {
@@ -18,14 +14,13 @@ export function createPasteItemDraft(text: string): PasteItemDraft | null {
     return null;
   }
 
-  const path = parseFolderPathInput(value);
-  if (path) {
+  const localPath = parseLocalPathText(value);
+  if (localPath) {
     return {
-      type: 'folder',
+      type: localPath.type,
       draft: {
-        title: deriveFolderItemTitle(path),
-        path,
-        kind: 'folder',
+        title: deriveFolderItemTitle(localPath.normalizedPath),
+        path: localPath.normalizedPath,
       },
     };
   }
@@ -38,10 +33,6 @@ export function createPasteItemDraft(text: string): PasteItemDraft | null {
         url: value,
       },
     };
-  }
-
-  if (parseLocalPathText(value)) {
-    return null;
   }
 
   return {

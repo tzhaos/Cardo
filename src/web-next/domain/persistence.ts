@@ -1,6 +1,7 @@
 import { createRecycleBinPage } from './factories';
 import {
   isRecycleBinPageId,
+  type BoxItem,
   type WorkspaceBox,
   type WorkspaceBoxPreset,
   type WorkspacePage,
@@ -106,7 +107,7 @@ function parseWorkspaceBox(input: unknown): WorkspaceBox | null {
     preset: resolveBoxPreset(input.preset ?? input.type),
     title: input.title,
     frame: input.frame as WorkspaceBox['frame'],
-    items: input.items as WorkspaceBox['items'],
+    items: input.items.map(parseBoxItem).filter((item): item is BoxItem => item !== null),
     ...(input.viewMode ? { viewMode: input.viewMode } : {}),
     ...(input.detailMode ? { detailMode: input.detailMode } : {}),
     ...(typeof input.isPinned === 'boolean' ? { isPinned: input.isPinned } : {}),
@@ -117,6 +118,55 @@ function parseWorkspaceBox(input: unknown): WorkspaceBox | null {
 
 function resolveBoxPreset(input: unknown): WorkspaceBoxPreset {
   return input === 'folder' || input === 'bookmark' || input === 'clipboard' ? input : 'general';
+}
+
+function parseBoxItem(input: unknown): BoxItem | null {
+  if (
+    !isRecord(input) ||
+    typeof input.id !== 'string' ||
+    typeof input.title !== 'string' ||
+    typeof input.createdAt !== 'string' ||
+    typeof input.updatedAt !== 'string' ||
+    (input.isPinned !== undefined && typeof input.isPinned !== 'boolean')
+  ) {
+    return null;
+  }
+
+  const base = {
+    id: input.id,
+    title: input.title,
+    ...(typeof input.isPinned === 'boolean' ? { isPinned: input.isPinned } : {}),
+    createdAt: input.createdAt,
+    updatedAt: input.updatedAt,
+  };
+
+  if (input.type === 'bookmark' && typeof input.url === 'string') {
+    return {
+      ...base,
+      type: 'bookmark',
+      url: input.url,
+      ...(typeof input.favicon === 'string' ? { favicon: input.favicon } : {}),
+    };
+  }
+
+  if (input.type === 'clipboard' && typeof input.text === 'string') {
+    return { ...base, type: 'clipboard', title: '', text: input.text };
+  }
+
+  if (
+    (input.type === 'file' || input.type === 'shortcut' || input.type === 'folder') &&
+    typeof input.path === 'string'
+  ) {
+    const normalizedType =
+      input.type === 'folder' && input.kind === 'file'
+        ? 'file'
+        : input.type === 'folder' && input.kind === 'path'
+          ? 'shortcut'
+          : input.type;
+    return { ...base, type: normalizedType, path: input.path };
+  }
+
+  return null;
 }
 
 function isRecord(input: unknown): input is Record<string, unknown> {

@@ -297,7 +297,7 @@ export function updateItemContent(
             ...box,
             items: box.items.map((item) => {
               if (item.id !== itemId) return item;
-              if (item.type === 'folder')
+              if (item.type === 'folder' || item.type === 'file' || item.type === 'shortcut')
                 return { ...item, path: nextContent, updatedAt: timestamp };
               if (item.type === 'bookmark')
                 return { ...item, url: nextContent, updatedAt: timestamp };
