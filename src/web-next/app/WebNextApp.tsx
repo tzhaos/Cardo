@@ -11,7 +11,6 @@ import { applyWebNextTheme } from '../themes/themeRegistry';
 import { useCancelActivePointerOnWindowExit } from './useCancelActivePointerOnWindowExit';
 import { usePasteIntoSelectedBox } from './usePasteIntoSelectedBox';
 import { useWorkspaceHistoryShortcuts } from './useWorkspaceHistoryShortcuts';
-import { HistoryToast } from '../components/history/HistoryToast';
 import { usePreferencesStore } from './stores/preferencesStore';
 import './styles.css';
 
@@ -38,7 +37,6 @@ export default function WebNextApp() {
         <BottomToolbar />
         <FloatingMenuLayer />
         <SettingsWindow />
-        <HistoryToast />
       </div>
     </FloatingMenuProvider>
   );

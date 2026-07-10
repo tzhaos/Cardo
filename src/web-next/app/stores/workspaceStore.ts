@@ -47,7 +47,6 @@ interface WorkspaceStore {
   snapshot: WorkspaceSnapshot;
   historyPast: WorkspaceHistoryEntry[];
   historyFuture: WorkspaceHistoryEntry[];
-  historyNotice: { id: number; action: WorkspaceHistoryAction } | null;
   createPage: (title?: string) => string;
   renamePage: (pageId: string, title: string) => void;
   deletePage: (pageId: string) => void;
@@ -60,7 +59,6 @@ interface WorkspaceStore {
   applyPageBoxLayout: (pageId: string, frames: Record<string, BoxFrame>) => void;
   undo: () => void;
   redo: () => void;
-  dismissHistoryNotice: () => void;
   constrainFramesToViewport: (viewport: CanvasViewportSize) => void;
   renameBox: (boxId: string, title: string) => void;
   promoteTemporaryBox: (boxId: string, title: string) => void;
@@ -111,7 +109,6 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       snapshot: createDefaultWorkspace(),
       historyPast: [],
       historyFuture: [],
-      historyNotice: null,
       createPage: (title = 'Untitled') => {
         let createdPageId = '';
         set((state) => {
@@ -165,7 +162,6 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             snapshot: entry.before,
             historyPast: state.historyPast.slice(0, -1),
             historyFuture: [...state.historyFuture, entry].slice(-HISTORY_LIMIT),
-            historyNotice: null,
           };
         }),
       redo: () =>
@@ -176,10 +172,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             snapshot: entry.after,
             historyPast: [...state.historyPast, entry].slice(-HISTORY_LIMIT),
             historyFuture: state.historyFuture.slice(0, -1),
-            historyNotice: null,
           };
         }),
-      dismissHistoryNotice: () => set({ historyNotice: null }),
       constrainFramesToViewport: (viewport) => {
         const snapshot = get().snapshot;
         const nextSnapshot = constrainWorkspaceFramesToViewport(snapshot, viewport);
@@ -267,6 +261,5 @@ function recordHistory(
     snapshot: nextSnapshot,
     historyPast: [...state.historyPast, entry].slice(-HISTORY_LIMIT),
     historyFuture: [],
-    historyNotice: { id: Date.now(), action },
   };
 }
