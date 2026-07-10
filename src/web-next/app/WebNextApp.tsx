@@ -1,6 +1,7 @@
 import '@fontsource-variable/inter';
 import { useLayoutEffect } from 'react';
 import { BottomToolbar } from '../components/bottom-toolbar/BottomToolbar';
+import DesktopTitleBar from '../../desktop/DesktopTitleBar';
 import { WorkspaceCanvas } from '../components/canvas/WorkspaceCanvas';
 import { FloatingMenuLayer } from '../components/floating-menu/FloatingMenuLayer';
 import { FloatingMenuProvider } from '../components/floating-menu/useFloatingMenu';
@@ -18,6 +19,7 @@ export default function WebNextApp() {
   const colorMode = usePreferencesStore((state) => state.colorMode);
   const locale = usePreferencesStore((state) => state.locale);
   const themeId = usePreferencesStore((state) => state.themeId);
+  const isDesktopHost = typeof window !== 'undefined' && Boolean(window.khaosboxDesktop);
 
   useLayoutEffect(() => {
     document.documentElement.lang = locale === 'zh' ? 'zh-CN' : 'en';
@@ -26,7 +28,8 @@ export default function WebNextApp() {
 
   return (
     <FloatingMenuProvider>
-      <div className="wbn-app">
+      <div className={`wbn-app${isDesktopHost ? ' wbn-app-desktop' : ''}`}>
+        <DesktopTitleBar />
         <TopBar />
         <WorkspaceCanvas />
         <BottomToolbar />

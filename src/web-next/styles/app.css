@@ -10,6 +10,73 @@
     background-color 320ms ease;
 }
 
+.wbn-desktop-titlebar {
+  position: fixed;
+  z-index: 220;
+  top: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  height: 40px;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--wbn-border);
+  background: color-mix(in srgb, var(--wbn-surface-strong) 82%, transparent);
+  color: var(--wbn-soft-text);
+  user-select: none;
+  -webkit-app-region: drag;
+  backdrop-filter: blur(14px);
+}
+
+.wbn-desktop-titlebar-brand {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  color: var(--wbn-soft-text);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.wbn-desktop-titlebar-brand svg {
+  color: var(--wbn-blue);
+}
+
+.wbn-desktop-window-controls {
+  display: flex;
+  align-self: stretch;
+  -webkit-app-region: no-drag;
+}
+
+.wbn-desktop-window-control {
+  display: inline-flex;
+  width: 46px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--wbn-secondary-text);
+  transition:
+    color 140ms ease,
+    background 140ms ease;
+}
+
+.wbn-desktop-window-control:hover {
+  background: var(--wbn-hover);
+  color: var(--wbn-text);
+}
+
+.wbn-desktop-window-control-close:hover {
+  background: var(--wbn-red);
+  color: #fff;
+}
+
+.wbn-app-desktop .wbn-top-bar {
+  top: 64px;
+}
+
 .wbn-top-bar {
   position: fixed;
   z-index: 50;
