@@ -61,7 +61,7 @@ export function TabPill({
 
   return (
     <motion.div
-      layout="position"
+      layout
       transition={{ layout: { type: 'spring', stiffness: 500, damping: 40, mass: 0.68 } }}
       className={`wbn-tab-pill${active ? ' wbn-tab-pill-active' : ''}${defaultPage ? ' wbn-tab-pill-default' : ''}${editable ? ' wbn-tab-pill-editing' : ''}${renaming ? ' wbn-tab-pill-renaming' : ''}${systemPage ? ' wbn-tab-pill-system' : ''}`}
     >
