@@ -363,18 +363,7 @@ export function TopBar() {
                 aria-label={editing ? t('page.finishEditing') : t('page.edit')}
                 whileTap={{ scale: 0.9 }}
               >
-                <AnimatePresence initial={false} mode="popLayout">
-                  <motion.span
-                    className="wbn-top-action-icon wbn-icon-frame"
-                    key={editing ? 'done' : 'edit'}
-                    initial={{ opacity: 0, rotate: editing ? -38 : 38, scale: 0.68 }}
-                    animate={{ opacity: 1, rotate: 0, scale: 1 }}
-                    exit={{ opacity: 0, rotate: editing ? 38 : -38, scale: 0.68 }}
-                    transition={{ type: 'spring', stiffness: 540, damping: 32, mass: 0.54 }}
-                  >
-                    {editing ? <Check size={18} /> : <Pencil size={18} />}
-                  </motion.span>
-                </AnimatePresence>
+                {editing ? <Check size={18} /> : <Pencil size={18} />}
               </motion.button>
             </motion.div>
           </motion.div>

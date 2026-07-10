@@ -543,14 +543,18 @@
 }
 
 .wbn-tab-delete {
+  position: absolute;
+  top: 9px;
+  right: 5px;
+  z-index: 2;
   display: inline-flex;
-  width: 0;
+  width: 18px;
   min-height: 18px;
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  margin-right: 0;
+  margin: 0;
   padding: 0 !important;
   border-radius: 999px;
   color: var(--wbn-muted) !important;
@@ -3478,11 +3482,13 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
 }
 
 .wbn-tab-delete {
-  position: relative;
+  position: absolute;
+  top: 9px;
+  right: 5px;
   z-index: 2;
   display: inline-flex;
   height: 18px;
-  min-width: 0;
+  min-width: 18px;
   min-height: 18px;
   align-items: center;
   justify-content: center;

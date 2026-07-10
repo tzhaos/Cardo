@@ -122,10 +122,10 @@ export function TabPill({
               role="button"
               tabIndex={0}
               aria-label={t('page.delete', { title: page.title })}
-              initial={{ width: 0, marginLeft: 0, opacity: 0, scale: 0.64 }}
-              animate={{ width: 18, marginLeft: 4, opacity: 1, scale: 1 }}
-              exit={{ width: 0, marginLeft: 0, opacity: 0, scale: 0.64 }}
-              transition={{ type: 'spring', stiffness: 520, damping: 38, mass: 0.62 }}
+              initial={{ opacity: 0, scale: 0.76 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.76 }}
+              transition={{ duration: 0.12, ease: 'easeOut' }}
               onClick={(event) => {
                 event.stopPropagation();
                 onDelete();
