@@ -20,7 +20,7 @@ import {
   getCanvasViewportCenter,
 } from '../../domain/canvasGeometry';
 import { createBoxFrameCenteredAt } from '../../domain/placement';
-import { isCollectionPageId, isRecycleBinPageId, isSystemPageId } from '../../domain/workspace';
+import { isCollectionPageId, isSystemPageId } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { useI18n } from '../../i18n/useI18n';
@@ -51,7 +51,6 @@ export function BottomToolbar() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { t } = useI18n();
   const { openCanvasLayoutTools } = useCanvasLayoutTools();
-  const isRecycleBin = isRecycleBinPageId(activePageId);
   const isCollection = isCollectionPageId(activePageId);
 
   useEffect(() => {
@@ -120,19 +119,17 @@ export function BottomToolbar() {
             >
               <LocateFixed size={18} />
             </IconButton>
-            {!isRecycleBin ? (
-              <IconButton
-                className="wbn-toolbar-canvas-control"
-                onClick={(event) => {
-                  const triggerRect = event.currentTarget.getBoundingClientRect();
-                  openCanvasLayoutTools(triggerRect.left, triggerRect.top - 8);
-                }}
-                aria-label={t('canvas.layoutTools')}
-                title={t('canvas.layoutTools')}
-              >
-                <LayoutDashboard size={18} />
-              </IconButton>
-            ) : null}
+            <IconButton
+              className="wbn-toolbar-canvas-control"
+              onClick={(event) => {
+                const triggerRect = event.currentTarget.getBoundingClientRect();
+                openCanvasLayoutTools(triggerRect.left, triggerRect.top - 8);
+              }}
+              aria-label={t('canvas.layoutTools')}
+              title={t('canvas.layoutTools')}
+            >
+              <LayoutDashboard size={18} />
+            </IconButton>
             <IconButton
               className={`wbn-toolbar-canvas-control${isCanvasLocked ? ' wbn-toolbar-button-active' : ''}`}
               onClick={() => toggleCanvasLocked(activePageId)}

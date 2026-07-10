@@ -28,6 +28,7 @@ export function WorkspaceCanvas() {
   const createBox = useWorkspaceStore((state) => state.createBox);
   const createPage = useWorkspaceStore((state) => state.createPage);
   const viewportSize = useCanvasStore((state) => state.viewportSize);
+  const resetCamera = useCanvasStore((state) => state.resetCamera);
   const { openCanvasMenu } = useFloatingMenu();
   const { items: canvasLayoutItems } = useCanvasLayoutTools();
   const { t } = useI18n();
@@ -83,7 +84,6 @@ export function WorkspaceCanvas() {
       onContextMenu={(event) => {
         if (
           isCollection ||
-          isRecycleBin ||
           (event.target instanceof Element && event.target.closest('[data-canvas-box]'))
         ) {
           return;
@@ -94,14 +94,19 @@ export function WorkspaceCanvas() {
         const camera = getPageCanvasState(useCanvasStore.getState(), snapshot.activePageId).camera;
         const point = clientPointToCanvasWorld(event, rect, camera);
         openCanvasMenu(event.clientX, event.clientY, {
-          createPage: () => createPage(t('page.untitled')),
-          createBox: (preset: WorkspaceBoxPreset) =>
-            createBox(
-              preset,
-              constrainBoxFrameToCanvas(createBoxFrameCenteredAt(point), canvasBounds),
-              getBoxPresetLabel(preset, t),
-            ),
+          ...(isRecycleBin
+            ? {}
+            : {
+                createPage: () => createPage(t('page.untitled')),
+                createBox: (preset: WorkspaceBoxPreset) =>
+                  createBox(
+                    preset,
+                    constrainBoxFrameToCanvas(createBoxFrameCenteredAt(point), canvasBounds),
+                    getBoxPresetLabel(preset, t),
+                  ),
+              }),
           layoutItems: canvasLayoutItems,
+          resetView: () => resetCamera(snapshot.activePageId),
         });
       }}
     >

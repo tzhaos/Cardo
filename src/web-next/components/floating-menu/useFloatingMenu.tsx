@@ -12,8 +12,8 @@ interface FloatingMenuContextValue {
     x: number,
     y: number,
     actions: {
-      createPage: () => void;
-      createBox: (preset: WorkspaceBoxPreset) => void;
+      createPage?: () => void;
+      createBox?: (preset: WorkspaceBoxPreset) => void;
       resetView?: () => void;
       layoutItems?: FloatingMenuItem[];
     },
@@ -32,8 +32,8 @@ export function FloatingMenuProvider({ children }: { children: React.ReactNode }
       x: number,
       y: number,
       actions: {
-        createPage: () => void;
-        createBox: (preset: WorkspaceBoxPreset) => void;
+        createPage?: () => void;
+        createBox?: (preset: WorkspaceBoxPreset) => void;
         resetView?: () => void;
         layoutItems?: FloatingMenuItem[];
       },
@@ -43,18 +43,26 @@ export function FloatingMenuProvider({ children }: { children: React.ReactNode }
         x,
         y,
         items: [
-          {
-            id: 'new-page',
-            label: t('menu.newPage'),
-            icon: <PanelTop size={16} />,
-            onSelect: actions.createPage,
-          },
-          {
-            id: 'new-box',
-            label: t('menu.newBox'),
-            icon: <Plus size={16} />,
-            onSelect: () => actions.createBox('general'),
-          },
+          ...(actions.createPage
+            ? [
+                {
+                  id: 'new-page',
+                  label: t('menu.newPage'),
+                  icon: <PanelTop size={16} />,
+                  onSelect: actions.createPage,
+                },
+              ]
+            : []),
+          ...(actions.createBox
+            ? [
+                {
+                  id: 'new-box',
+                  label: t('menu.newBox'),
+                  icon: <Plus size={16} />,
+                  onSelect: () => actions.createBox('general'),
+                },
+              ]
+            : []),
           {
             id: 'layout-tools',
             label: t('canvas.layoutTools'),
