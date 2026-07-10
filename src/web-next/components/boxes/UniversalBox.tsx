@@ -36,7 +36,7 @@ export function UniversalBox({
         <SortableItemList
           boxId={box.id}
           items={box.items}
-          viewMode={box.viewMode ?? 'list'}
+          viewMode={box.kind === 'temporary' ? 'list' : (box.viewMode ?? 'list')}
           renderItem={(item) => renderItem(box.id, item, draftState?.highlightItemId === item.id)}
         />
       ) : (

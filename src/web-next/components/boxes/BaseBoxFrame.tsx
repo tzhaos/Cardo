@@ -5,6 +5,7 @@ import {
   ChevronsUpDown,
   LayoutGrid,
   List,
+  PackageCheck,
   Pin,
   PinOff,
   Plus,
@@ -49,6 +50,7 @@ export function BaseBoxFrame({
 }: BaseBoxFrameProps) {
   const updateBoxFrame = useWorkspaceStore((state) => state.updateBoxFrame);
   const renameBox = useWorkspaceStore((state) => state.renameBox);
+  const promoteTemporaryBox = useWorkspaceStore((state) => state.promoteTemporaryBox);
   const setBoxDetailMode = useWorkspaceStore((state) => state.setBoxDetailMode);
   const setBoxPinned = useWorkspaceStore((state) => state.setBoxPinned);
   const setBoxViewMode = useWorkspaceStore((state) => state.setBoxViewMode);
@@ -194,8 +196,9 @@ export function BaseBoxFrame({
   const dropReleased = boxDropRelease?.boxId === box.id;
   const compactScale = Math.max(0.22, Math.min(0.46, 136 / box.frame.width, 86 / box.frame.height));
   const isInRecycleBin = isRecycleBinPageId(box.pageId);
-  const viewMode = box.viewMode ?? 'list';
-  const detailMode = box.detailMode ?? 'detailed';
+  const isTemporary = box.kind === 'temporary';
+  const viewMode = isTemporary ? 'list' : (box.viewMode ?? 'list');
+  const detailMode = isTemporary ? 'detailed' : (box.detailMode ?? 'detailed');
   const visualScale = draggingOverTopBar
     ? compactScale * (draggingOverTab ? 0.9 : 1)
     : dragging
@@ -210,6 +213,7 @@ export function BaseBoxFrame({
     selectedBoxId === box.id ? 'wbn-box-selected' : '',
     detailMode === 'compact' ? 'wbn-box-compact' : '',
     box.isPinned ? 'wbn-box-pinned' : '',
+    isTemporary ? 'wbn-box-temporary' : '',
     addViewState?.mode || confirmDelete ? 'wbn-box-local-view' : '',
   ]
     .filter(Boolean)
@@ -267,6 +271,10 @@ export function BaseBoxFrame({
       onContextMenu={(event) => {
         event.preventDefault();
         selectBox(box.id);
+        if (isTemporary) {
+          closeMenu();
+          return;
+        }
         openMenu({
           id: `box-${box.id}`,
           x: event.clientX,
@@ -315,99 +323,120 @@ export function BaseBoxFrame({
         } as MotionStyle & { '--box-accent': string }
       }
     >
-      <header className="wbn-box-header" onPointerDown={beginDrag}>
-        <div className="wbn-box-title-group">
-          <span className="wbn-box-icon wbn-icon-frame">{icon}</span>
-          {renamingTitle ? (
-            <input
-              ref={titleInputRef}
-              className="wbn-inline-rename wbn-box-title-input"
-              aria-label={t('box.rename', { title: box.title })}
-              value={titleDraft}
-              onChange={(event) => setTitleDraft(event.target.value)}
-              onBlur={commitTitle}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  event.currentTarget.blur();
-                }
-                if (event.key === 'Escape') {
-                  setTitleDraft(box.title);
-                  setRenamingTitle(false);
+      {isTemporary ? (
+        <header className="wbn-temporary-box-header" onPointerDown={beginDrag}>
+          <span className="wbn-temporary-box-grip" aria-hidden="true" />
+          <button
+            type="button"
+            data-no-drag
+            onClick={() => {
+              const title = t('box.collectedItems');
+              setTitleDraft(title);
+              promoteTemporaryBox(box.id, title);
+              setRenamingTitle(true);
+            }}
+            title={t('box.promote')}
+            aria-label={t('box.promote')}
+          >
+            <PackageCheck size={15} />
+            <span>{t('box.keep')}</span>
+          </button>
+        </header>
+      ) : (
+        <header className="wbn-box-header" onPointerDown={beginDrag}>
+          <div className="wbn-box-title-group">
+            <span className="wbn-box-icon wbn-icon-frame">{icon}</span>
+            {renamingTitle ? (
+              <input
+                ref={titleInputRef}
+                className="wbn-inline-rename wbn-box-title-input"
+                aria-label={t('box.rename', { title: box.title })}
+                value={titleDraft}
+                onChange={(event) => setTitleDraft(event.target.value)}
+                onBlur={commitTitle}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.currentTarget.blur();
+                  }
+                  if (event.key === 'Escape') {
+                    setTitleDraft(box.title);
+                    setRenamingTitle(false);
+                  }
+                }}
+              />
+            ) : (
+              <span
+                className="wbn-box-title"
+                data-no-drag
+                onDoubleClick={() => setRenamingTitle(true)}
+              >
+                {box.title}
+              </span>
+            )}
+          </div>
+          <div className="wbn-box-controls">
+            <motion.button
+              className="wbn-box-view-toggle wbn-box-pin-toggle wbn-icon-button"
+              type="button"
+              data-no-drag
+              onClick={() => setBoxPinned(box.id, !box.isPinned)}
+              aria-label={t(box.isPinned ? 'box.unpin' : 'box.pin')}
+              aria-pressed={Boolean(box.isPinned)}
+              title={t(box.isPinned ? 'box.unpin' : 'box.pin')}
+            >
+              {box.isPinned ? <PinOff size={15} /> : <Pin size={15} />}
+            </motion.button>
+            <motion.button
+              className="wbn-box-view-toggle wbn-icon-button"
+              type="button"
+              data-no-drag
+              onClick={() =>
+                setBoxDetailMode(box.id, detailMode === 'detailed' ? 'compact' : 'detailed')
+              }
+              aria-label={t(
+                detailMode === 'detailed' ? 'box.switchToCompact' : 'box.switchToDetailed',
+              )}
+              aria-pressed={detailMode === 'compact'}
+              title={t(detailMode === 'detailed' ? 'box.switchToCompact' : 'box.switchToDetailed')}
+            >
+              {detailMode === 'detailed' ? (
+                <ChevronsDownUp size={15} />
+              ) : (
+                <ChevronsUpDown size={15} />
+              )}
+            </motion.button>
+            <motion.button
+              className="wbn-box-view-toggle wbn-icon-button"
+              type="button"
+              data-no-drag
+              onClick={() => setBoxViewMode(box.id, viewMode === 'list' ? 'grid' : 'list')}
+              aria-label={t(viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList')}
+              aria-pressed={viewMode === 'grid'}
+              title={t(viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList')}
+            >
+              {viewMode === 'list' ? <LayoutGrid size={15} /> : <List size={15} />}
+            </motion.button>
+            <motion.button
+              className="wbn-box-delete wbn-icon-button"
+              type="button"
+              onClick={() => {
+                if (addViewState?.mode) {
+                  closeAddView(box.id);
+                } else {
+                  setConfirmDelete(true);
                 }
               }}
-            />
-          ) : (
-            <span
-              className="wbn-box-title"
-              data-no-drag
-              onDoubleClick={() => setRenamingTitle(true)}
-            >
-              {box.title}
-            </span>
-          )}
-        </div>
-        <div className="wbn-box-controls">
-          <motion.button
-            className="wbn-box-view-toggle wbn-box-pin-toggle wbn-icon-button"
-            type="button"
-            data-no-drag
-            onClick={() => setBoxPinned(box.id, !box.isPinned)}
-            aria-label={t(box.isPinned ? 'box.unpin' : 'box.pin')}
-            aria-pressed={Boolean(box.isPinned)}
-            title={t(box.isPinned ? 'box.unpin' : 'box.pin')}
-          >
-            {box.isPinned ? <PinOff size={15} /> : <Pin size={15} />}
-          </motion.button>
-          <motion.button
-            className="wbn-box-view-toggle wbn-icon-button"
-            type="button"
-            data-no-drag
-            onClick={() =>
-              setBoxDetailMode(box.id, detailMode === 'detailed' ? 'compact' : 'detailed')
-            }
-            aria-label={t(
-              detailMode === 'detailed' ? 'box.switchToCompact' : 'box.switchToDetailed',
-            )}
-            aria-pressed={detailMode === 'compact'}
-            title={t(detailMode === 'detailed' ? 'box.switchToCompact' : 'box.switchToDetailed')}
-          >
-            {detailMode === 'detailed' ? (
-              <ChevronsDownUp size={15} />
-            ) : (
-              <ChevronsUpDown size={15} />
-            )}
-          </motion.button>
-          <motion.button
-            className="wbn-box-view-toggle wbn-icon-button"
-            type="button"
-            data-no-drag
-            onClick={() => setBoxViewMode(box.id, viewMode === 'list' ? 'grid' : 'list')}
-            aria-label={t(viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList')}
-            aria-pressed={viewMode === 'grid'}
-            title={t(viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList')}
-          >
-            {viewMode === 'list' ? <LayoutGrid size={15} /> : <List size={15} />}
-          </motion.button>
-          <motion.button
-            className="wbn-box-delete wbn-icon-button"
-            type="button"
-            onClick={() => {
-              if (addViewState?.mode) {
-                closeAddView(box.id);
-              } else {
-                setConfirmDelete(true);
+              aria-label={
+                addViewState?.mode
+                  ? t('box.closeAddView')
+                  : t(isInRecycleBin ? 'menu.deletePermanently' : 'menu.moveToRecycleBin')
               }
-            }}
-            aria-label={
-              addViewState?.mode
-                ? t('box.closeAddView')
-                : t(isInRecycleBin ? 'menu.deletePermanently' : 'menu.moveToRecycleBin')
-            }
-          >
-            <X size={14} />
-          </motion.button>
-        </div>
-      </header>
+            >
+              <X size={14} />
+            </motion.button>
+          </div>
+        </header>
+      )}
       <div
         className={`wbn-box-content wbn-box-content-mixed${confirmDelete ? ' wbn-box-delete-view' : ''}`}
       >
@@ -440,7 +469,7 @@ export function BaseBoxFrame({
           children
         )}
       </div>
-      {!addViewState?.mode && !confirmDelete ? (
+      {!isTemporary && !addViewState?.mode && !confirmDelete ? (
         <footer className="wbn-box-footer">
           <button type="button" onClick={onAddItem}>
             <Plus size={14} />
@@ -448,24 +477,26 @@ export function BaseBoxFrame({
           </button>
         </footer>
       ) : null}
-      <button
-        className="wbn-resize-handle"
-        type="button"
-        disabled={box.isPinned}
-        aria-label={t('box.resize', { title: box.title })}
-        onPointerDown={beginResize}
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path
-            d="M21 15 15 21M21 8 8 21"
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-          />
-        </svg>
-      </button>
+      {!isTemporary ? (
+        <button
+          className="wbn-resize-handle"
+          type="button"
+          disabled={box.isPinned}
+          aria-label={t('box.resize', { title: box.title })}
+          onPointerDown={beginResize}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M21 15 15 21M21 8 8 21"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+            />
+          </svg>
+        </button>
+      ) : null}
     </motion.article>
   );
 }

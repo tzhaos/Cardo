@@ -2,6 +2,7 @@ export type WorkspaceItemType = 'file' | 'shortcut' | 'folder' | 'bookmark' | 'c
 export type WorkspaceBoxPreset = 'general' | 'folder' | 'bookmark' | 'clipboard';
 export type WorkspaceBoxViewMode = 'list' | 'grid';
 export type WorkspaceBoxDetailMode = 'detailed' | 'compact';
+export type WorkspaceBoxKind = 'normal' | 'temporary';
 
 export const RECYCLE_BIN_PAGE_ID = 'khaosbox-recycle-bin';
 
@@ -66,6 +67,7 @@ export interface WorkspaceBox {
   id: string;
   pageId: string;
   preset: WorkspaceBoxPreset;
+  kind?: WorkspaceBoxKind;
   title: string;
   frame: BoxFrame;
   items: BoxItem[];

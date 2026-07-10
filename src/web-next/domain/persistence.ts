@@ -105,6 +105,7 @@ function parseWorkspaceBox(input: unknown): WorkspaceBox | null {
     id: input.id,
     pageId: input.pageId,
     preset: resolveBoxPreset(input.preset ?? input.type),
+    kind: input.kind === 'temporary' ? 'temporary' : 'normal',
     title: input.title,
     frame: input.frame as WorkspaceBox['frame'],
     items: input.items.map(parseBoxItem).filter((item): item is BoxItem => item !== null),

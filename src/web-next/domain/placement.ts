@@ -19,6 +19,22 @@ export function createBoxFrameCenteredAt(point: CanvasPoint): BoxFrame {
   };
 }
 
+export function findNewBoxFrame(
+  snapshot: WorkspaceSnapshot,
+  pageId: string,
+  preferredCenter: CanvasPoint,
+  bounds: CanvasWorldBounds,
+) {
+  const preferredFrame = constrainBoxFrameToCanvas(
+    createBoxFrameCenteredAt(preferredCenter),
+    bounds,
+  );
+  const occupiedFrames = snapshot.boxes
+    .filter((box) => box.pageId === pageId)
+    .map((box) => box.frame);
+  return findAvailableFrame(preferredFrame, occupiedFrames, bounds) ?? preferredFrame;
+}
+
 export function findPageLandingFrame(
   snapshot: WorkspaceSnapshot,
   boxId: string,

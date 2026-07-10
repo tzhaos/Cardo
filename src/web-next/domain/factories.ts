@@ -4,6 +4,7 @@ import type {
   BoxItem,
   WorkspaceBox,
   WorkspaceBoxPreset,
+  WorkspaceBoxKind,
   WorkspaceItemType,
   WorkspacePage,
   WorkspaceSnapshot,
@@ -62,12 +63,14 @@ export function createWorkspaceBox(
   preset: WorkspaceBoxPreset,
   frame: BoxFrame,
   title = getDefaultBoxTitle(preset),
+  kind: WorkspaceBoxKind = 'normal',
 ): WorkspaceBox {
   const timestamp = nowIso();
   return {
     id: createId('box'),
     pageId,
     preset,
+    kind,
     title,
     frame,
     items: [],

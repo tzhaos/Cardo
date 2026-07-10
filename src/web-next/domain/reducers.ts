@@ -4,6 +4,7 @@ import {
   type BoxItem,
   type WorkspaceBoxDetailMode,
   type WorkspaceBoxPreset,
+  type WorkspaceBoxKind,
   type WorkspaceBoxViewMode,
   type WorkspaceSnapshot,
 } from './workspace';
@@ -127,6 +128,7 @@ export function addBox(
   preset: WorkspaceBoxPreset,
   frame: BoxFrame,
   title?: string,
+  kind: WorkspaceBoxKind = 'normal',
 ) {
   if (isRecycleBinPageId(pageId)) {
     return snapshot;
@@ -134,7 +136,7 @@ export function addBox(
 
   return {
     ...snapshot,
-    boxes: [...snapshot.boxes, createWorkspaceBox(pageId, preset, frame, title)],
+    boxes: [...snapshot.boxes, createWorkspaceBox(pageId, preset, frame, title, kind)],
   };
 }
 
@@ -175,6 +177,20 @@ export function renameBox(snapshot: WorkspaceSnapshot, boxId: string, title: str
     ...snapshot,
     boxes: snapshot.boxes.map((box) =>
       box.id === boxId ? { ...box, title: nextTitle, updatedAt: nowIso() } : box,
+    ),
+  };
+}
+
+export function promoteTemporaryBox(snapshot: WorkspaceSnapshot, boxId: string, title: string) {
+  const nextTitle = title.trim();
+  if (!nextTitle) return snapshot;
+
+  return {
+    ...snapshot,
+    boxes: snapshot.boxes.map((box) =>
+      box.id === boxId && box.kind === 'temporary'
+        ? { ...box, kind: 'normal' as const, title: nextTitle, updatedAt: nowIso() }
+        : box,
     ),
   };
 }
@@ -376,17 +392,19 @@ export function reorderItems(snapshot: WorkspaceSnapshot, boxId: string, ordered
 }
 
 export function deleteItem(snapshot: WorkspaceSnapshot, boxId: string, itemId: string) {
+  const boxes = snapshot.boxes.map((box) =>
+    box.id === boxId
+      ? {
+          ...box,
+          items: box.items.filter((item) => item.id !== itemId),
+          updatedAt: nowIso(),
+        }
+      : box,
+  );
+
   return {
     ...snapshot,
-    boxes: snapshot.boxes.map((box) =>
-      box.id === boxId
-        ? {
-            ...box,
-            items: box.items.filter((item) => item.id !== itemId),
-            updatedAt: nowIso(),
-          }
-        : box,
-    ),
+    boxes: boxes.filter((box) => box.kind !== 'temporary' || box.items.length > 0),
   };
 }
 

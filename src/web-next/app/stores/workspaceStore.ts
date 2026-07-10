@@ -21,6 +21,7 @@ import {
   deleteItem,
   deletePage,
   moveBoxToPage,
+  promoteTemporaryBox,
   renameBox,
   renameItem,
   renamePage,
@@ -46,9 +47,11 @@ interface WorkspaceStore {
   setActivePage: (pageId: string) => void;
   setDefaultPage: (pageId: string) => void;
   createBox: (preset: WorkspaceBoxPreset, frame: BoxFrame, title?: string) => void;
+  createTemporaryBox: (pageId: string, frame: BoxFrame) => string;
   updateBoxFrame: (boxId: string, frame: BoxFrame) => void;
   constrainFramesToViewport: (viewport: CanvasViewportSize) => void;
   renameBox: (boxId: string, title: string) => void;
+  promoteTemporaryBox: (boxId: string, title: string) => void;
   setBoxDetailMode: (boxId: string, detailMode: WorkspaceBoxDetailMode) => void;
   setBoxPinned: (boxId: string, isPinned: boolean) => void;
   setBoxViewMode: (boxId: string, viewMode: WorkspaceBoxViewMode) => void;
@@ -88,6 +91,15 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         set((state) => ({
           snapshot: addBox(state.snapshot, state.snapshot.activePageId, preset, frame, title),
         })),
+      createTemporaryBox: (pageId, frame) => {
+        let createdBoxId = '';
+        set((state) => {
+          const snapshot = addBox(state.snapshot, pageId, 'general', frame, '', 'temporary');
+          createdBoxId = snapshot.boxes.at(-1)?.id ?? '';
+          return { snapshot: { ...snapshot, activePageId: pageId } };
+        });
+        return createdBoxId;
+      },
       updateBoxFrame: (boxId, frame) =>
         set((state) => ({ snapshot: updateBoxFrame(state.snapshot, boxId, frame) })),
       constrainFramesToViewport: (viewport) => {
@@ -99,6 +111,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       },
       renameBox: (boxId, title) =>
         set((state) => ({ snapshot: renameBox(state.snapshot, boxId, title) })),
+      promoteTemporaryBox: (boxId, title) =>
+        set((state) => ({ snapshot: promoteTemporaryBox(state.snapshot, boxId, title) })),
       setBoxDetailMode: (boxId, detailMode) =>
         set((state) => ({ snapshot: setBoxDetailMode(state.snapshot, boxId, detailMode) })),
       setBoxPinned: (boxId, isPinned) =>
