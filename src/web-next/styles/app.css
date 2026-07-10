@@ -626,23 +626,17 @@ button.wbn-box-icon:focus-visible {
   outline-offset: 2px;
 }
 
-.wbn-box-appearance-popover {
-  position: fixed;
-  z-index: 240;
-  width: 268px;
-  max-height: calc(100vh - 24px);
-  overflow: auto;
-  border: 1px solid var(--wbn-border);
-  border-radius: 14px;
-  padding: 12px;
-  background: var(--wbn-surface-strong);
-  box-shadow: var(--wbn-shadow-hover);
+.wbn-box-appearance-view {
+  width: 100%;
+  min-height: 100%;
+  overflow-y: auto;
+  padding: 12px 14px 14px;
   color: var(--wbn-text);
-  transform-origin: top left;
-  backdrop-filter: blur(18px);
+  scrollbar-color: var(--wbn-scrollbar) transparent;
+  scrollbar-width: thin;
 }
 
-.wbn-box-appearance-popover section + section {
+.wbn-box-appearance-view section + section {
   margin-top: 14px;
   border-top: 1px solid var(--wbn-divider);
   padding-top: 12px;
@@ -660,14 +654,14 @@ button.wbn-box-icon:focus-visible {
 
 .wbn-box-icon-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 5px;
 }
 
 .wbn-box-icon-grid button {
   position: relative;
   display: inline-flex;
-  width: 34px;
+  width: 100%;
   height: 34px;
   align-items: center;
   justify-content: center;
@@ -704,14 +698,14 @@ button.wbn-box-icon:focus-visible {
 
 .wbn-box-color-grid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 6px;
 }
 
 .wbn-box-color-grid button {
   display: inline-flex;
-  width: 24px;
-  height: 24px;
+  width: 100%;
+  aspect-ratio: 1;
   align-items: center;
   justify-content: center;
   border: 2px solid var(--wbn-surface-strong);

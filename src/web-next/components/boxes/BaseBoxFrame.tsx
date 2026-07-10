@@ -13,13 +13,7 @@ import {
   Unlock,
   X,
 } from 'lucide-react';
-import {
-  AnimatePresence,
-  animate as animateMotion,
-  motion,
-  useMotionValue,
-  useSpring,
-} from 'motion/react';
+import { animate as animateMotion, motion, useMotionValue, useSpring } from 'motion/react';
 import type { MotionStyle } from 'motion/react';
 import {
   isRecycleBinPageId,
@@ -40,7 +34,7 @@ import {
 } from '../../app/windowPointerSession';
 import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
 import { useI18n } from '../../i18n/useI18n';
-import { BoxAppearancePopover } from './BoxAppearancePopover';
+import { BoxAppearanceView } from './BoxAppearancePopover';
 
 interface BaseBoxFrameProps {
   box: WorkspaceBox;
@@ -81,7 +75,7 @@ export function BaseBoxFrame({
   const { openMenu, closeMenu } = useFloatingMenu();
   const [renamingTitle, setRenamingTitle] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [appearanceAnchor, setAppearanceAnchor] = useState<DOMRect | null>(null);
+  const [appearanceView, setAppearanceView] = useState(false);
   const [dragTransformOrigin, setDragTransformOrigin] = useState('50% 50%');
   const [dropLandingStarted, setDropLandingStarted] = useState(false);
   const [titleDraft, setTitleDraft] = useState(box.title);
@@ -135,7 +129,7 @@ export function BaseBoxFrame({
     }
 
     event.preventDefault();
-    setAppearanceAnchor(null);
+    setAppearanceView(false);
     closeMenu();
     pointerSessionRef.current?.end();
     beginBoxDrag(box.id);
@@ -263,7 +257,7 @@ export function BaseBoxFrame({
     detailMode === 'compact' ? 'wbn-box-compact' : '',
     box.isLocked ? 'wbn-box-locked' : '',
     isTemporary ? 'wbn-box-temporary' : '',
-    addViewState?.mode || confirmDelete ? 'wbn-box-local-view' : '',
+    addViewState?.mode || appearanceView || confirmDelete ? 'wbn-box-local-view' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -330,7 +324,7 @@ export function BaseBoxFrame({
       onPointerDown={() => selectBox(box.id)}
       onContextMenu={(event) => {
         event.preventDefault();
-        setAppearanceAnchor(null);
+        setAppearanceView(false);
         selectBox(box.id);
         if (isTemporary) {
           closeMenu();
@@ -412,13 +406,14 @@ export function BaseBoxFrame({
               className="wbn-box-icon wbn-icon-frame"
               type="button"
               data-no-drag
-              data-box-appearance-trigger={box.id}
               title={t('box.changePreset')}
               aria-label={t('box.changePreset')}
-              onClick={(event) => {
+              aria-pressed={appearanceView}
+              onClick={() => {
                 closeMenu();
-                const triggerRect = event.currentTarget.getBoundingClientRect();
-                setAppearanceAnchor((current) => (current ? null : triggerRect));
+                setConfirmDelete(false);
+                closeAddView(box.id);
+                setAppearanceView((current) => !current);
               }}
             >
               {icon}
@@ -497,16 +492,20 @@ export function BaseBoxFrame({
               className="wbn-box-delete wbn-icon-button"
               type="button"
               onClick={() => {
-                if (addViewState?.mode) {
+                if (appearanceView) {
+                  setAppearanceView(false);
+                } else if (addViewState?.mode) {
                   closeAddView(box.id);
                 } else {
                   setConfirmDelete(true);
                 }
               }}
               aria-label={
-                addViewState?.mode
-                  ? t('box.closeAddView')
-                  : t(isInRecycleBin ? 'menu.deletePermanently' : 'menu.moveToRecycleBin')
+                appearanceView
+                  ? t('box.closeAppearanceView')
+                  : addViewState?.mode
+                    ? t('box.closeAddView')
+                    : t(isInRecycleBin ? 'menu.deletePermanently' : 'menu.moveToRecycleBin')
               }
             >
               <X size={14} />
@@ -517,7 +516,14 @@ export function BaseBoxFrame({
       <div
         className={`wbn-box-content wbn-box-content-mixed${confirmDelete ? ' wbn-box-delete-view' : ''}`}
       >
-        {confirmDelete ? (
+        {appearanceView ? (
+          <BoxAppearanceView
+            box={box}
+            accent={accent}
+            icon={iconId}
+            onClose={() => setAppearanceView(false)}
+          />
+        ) : confirmDelete ? (
           <motion.div
             className="wbn-box-delete-confirm"
             initial={{ opacity: 0, y: 8 }}
@@ -546,7 +552,7 @@ export function BaseBoxFrame({
           children
         )}
       </div>
-      {!isTemporary && !addViewState?.mode && !confirmDelete ? (
+      {!isTemporary && !addViewState?.mode && !appearanceView && !confirmDelete ? (
         <footer className="wbn-box-footer">
           <button type="button" onClick={onAddItem}>
             <Plus size={14} />
@@ -574,17 +580,6 @@ export function BaseBoxFrame({
           </svg>
         </button>
       ) : null}
-      <AnimatePresence>
-        {appearanceAnchor ? (
-          <BoxAppearancePopover
-            box={box}
-            accent={accent}
-            icon={iconId}
-            anchor={appearanceAnchor}
-            onClose={() => setAppearanceAnchor(null)}
-          />
-        ) : null}
-      </AnimatePresence>
     </motion.article>
   );
 }

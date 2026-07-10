@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { createPortal } from 'react-dom';
 import { Check, Palette } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
@@ -13,47 +12,29 @@ import type { WorkspaceBox, WorkspaceBoxIcon } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { BoxAppearanceIcon } from './boxIconRegistry';
 
-export function BoxAppearancePopover({
+export function BoxAppearanceView({
   box,
   accent,
   icon,
-  anchor,
   onClose,
 }: {
   box: WorkspaceBox;
   accent: string;
   icon: WorkspaceBoxIcon;
-  anchor: DOMRect;
   onClose: () => void;
 }) {
   const setBoxAppearance = useWorkspaceStore((state) => state.setBoxAppearance);
   const [colorDraft, setColorDraft] = useState(accent.toUpperCase());
   const [invalidColor, setInvalidColor] = useState(false);
-  const panelRef = useRef<HTMLDivElement>(null);
   const { t } = useI18n();
 
   useEffect(() => {
-    const closeOnOutsidePointer = (event: PointerEvent) => {
-      if (event.target instanceof Node && panelRef.current?.contains(event.target)) return;
-      if (
-        event.target instanceof Element &&
-        event.target.closest<HTMLElement>('[data-box-appearance-trigger]')?.dataset
-          .boxAppearanceTrigger === box.id
-      ) {
-        return;
-      }
-      onClose();
-    };
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
     };
-    window.addEventListener('pointerdown', closeOnOutsidePointer, true);
     window.addEventListener('keydown', closeOnEscape);
-    window.addEventListener('resize', onClose);
     return () => {
-      window.removeEventListener('pointerdown', closeOnOutsidePointer, true);
       window.removeEventListener('keydown', closeOnEscape);
-      window.removeEventListener('resize', onClose);
     };
   }, [onClose]);
 
@@ -67,27 +48,14 @@ export function BoxAppearancePopover({
     setColorDraft(normalized.toUpperCase());
     setBoxAppearance(box.id, { accent: normalized });
   };
-  const panelWidth = 268;
-  const left = Math.max(12, Math.min(anchor.left, window.innerWidth - panelWidth - 12));
-  const top = Math.min(anchor.bottom + 8, window.innerHeight - 350);
-
-  return createPortal(
+  return (
     <motion.div
-      ref={panelRef}
-      className="wbn-box-appearance-popover"
+      className="wbn-box-appearance-view"
       data-no-drag
-      style={
-        {
-          left,
-          top: Math.max(12, top),
-          '--box-accent': accent,
-        } as CSSProperties
-      }
-      initial={{ opacity: 0, y: -6, scale: 0.97 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -4, scale: 0.98 }}
-      transition={{ duration: 0.14 }}
-      onPointerDown={(event) => event.stopPropagation()}
+      style={{ '--box-accent': accent } as CSSProperties}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.18 }}
     >
       <section>
         <span className="wbn-box-appearance-label">{t('box.icon')}</span>
@@ -165,7 +133,6 @@ export function BoxAppearancePopover({
           />
         </div>
       </section>
-    </motion.div>,
-    document.body,
+    </motion.div>
   );
 }
