@@ -43,6 +43,12 @@ export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null
 
   const pageIds = new Set(pages.map((page) => page.id));
   const collectionPageId = pages.find((page) => isCollectionPageId(page.id))!.id;
+  const legacyDefaultPageId =
+    typeof input.defaultPageId === 'string' &&
+    pageIds.has(input.defaultPageId) &&
+    !isSystemPageId(input.defaultPageId)
+      ? input.defaultPageId
+      : null;
 
   const boxes = input.boxes
     .map(parseWorkspaceBox)
@@ -67,6 +73,7 @@ export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null
   return {
     pages,
     activePageId: collectionPageId,
+    ...(legacyDefaultPageId ? { defaultPageId: legacyDefaultPageId } : {}),
     boxes,
     collectionBoxIds,
     collectionViews,
