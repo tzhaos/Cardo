@@ -50,7 +50,9 @@ export function addPage(snapshot: WorkspaceSnapshot, title = 'Untitled') {
 }
 
 export function deletePage(snapshot: WorkspaceSnapshot, pageId: string) {
-  const workspacePages = snapshot.pages.filter((page) => !isSystemPageId(page.id));
+  const workspacePages = snapshot.pages
+    .filter((page) => !isSystemPageId(page.id))
+    .sort((first, second) => first.order - second.order);
   const collectionPage = snapshot.pages.find((page) => isCollectionPageId(page.id));
   const recycleBinPage = snapshot.pages.find((page) => isRecycleBinPageId(page.id));
   if (
@@ -73,6 +75,8 @@ export function deletePage(snapshot: WorkspaceSnapshot, pageId: string) {
   }
   const collectionPageId = collectionPage?.id ?? snapshot.activePageId;
   const activePageId = snapshot.activePageId === pageId ? collectionPageId : snapshot.activePageId;
+  const defaultPageId =
+    snapshot.defaultPageId === pageId ? remainingWorkspacePages[0]!.id : snapshot.defaultPageId;
   const removedBoxIds = new Set(
     snapshot.boxes.filter((box) => box.pageId === pageId).map((box) => box.id),
   );
@@ -80,6 +84,7 @@ export function deletePage(snapshot: WorkspaceSnapshot, pageId: string) {
   return {
     pages,
     activePageId,
+    defaultPageId,
     boxes: recycleBinPage
       ? snapshot.boxes.map((box) =>
           box.pageId === pageId ? { ...box, pageId: recycleBinPage.id, updatedAt: nowIso() } : box,
@@ -92,6 +97,18 @@ export function deletePage(snapshot: WorkspaceSnapshot, pageId: string) {
       Object.entries(snapshot.collectionViews ?? {}).filter(([boxId]) => !removedBoxIds.has(boxId)),
     ),
   };
+}
+
+export function setDefaultPage(snapshot: WorkspaceSnapshot, pageId: string) {
+  if (
+    snapshot.defaultPageId === pageId ||
+    isSystemPageId(pageId) ||
+    !snapshot.pages.some((page) => page.id === pageId)
+  ) {
+    return snapshot;
+  }
+
+  return { ...snapshot, defaultPageId: pageId };
 }
 
 export function reorderPages(snapshot: WorkspaceSnapshot, orderedPageIds: string[]) {

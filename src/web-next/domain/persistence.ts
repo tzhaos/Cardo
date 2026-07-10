@@ -17,7 +17,12 @@ export function restoreWorkspaceSnapshot(input: unknown, fallback: WorkspaceSnap
 }
 
 export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null {
-  if (!isRecord(input) || !Array.isArray(input.pages) || !Array.isArray(input.boxes)) {
+  if (
+    !isRecord(input) ||
+    !Array.isArray(input.pages) ||
+    !Array.isArray(input.boxes) ||
+    typeof input.defaultPageId !== 'string'
+  ) {
     return null;
   }
 
@@ -27,6 +32,10 @@ export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null
     .map((page, order) => ({ ...page, order }));
   const workspacePages = parsedPages.filter((page) => !isSystemPageId(page.id));
   if (workspacePages.length === 0) {
+    return null;
+  }
+  const defaultPageId = input.defaultPageId;
+  if (!workspacePages.some((page) => page.id === defaultPageId)) {
     return null;
   }
   const existingRecycleBin = parsedPages.find((page) => isRecycleBinPageId(page.id));
@@ -42,8 +51,6 @@ export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null
   ];
 
   const pageIds = new Set(pages.map((page) => page.id));
-  const collectionPageId = pages.find((page) => isCollectionPageId(page.id))!.id;
-
   const boxes = input.boxes
     .map(parseWorkspaceBox)
     .filter((box): box is WorkspaceBox => box !== null)
@@ -66,7 +73,8 @@ export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null
 
   return {
     pages,
-    activePageId: collectionPageId,
+    activePageId: defaultPageId,
+    defaultPageId,
     boxes,
     collectionBoxIds,
     collectionViews,

@@ -6,6 +6,7 @@ import { COLLECTION_PAGE_ID, type WorkspaceSnapshot } from './workspace';
 function createSnapshot(): WorkspaceSnapshot {
   return {
     activePageId: 'page-a',
+    defaultPageId: 'page-a',
     pages: [
       { id: COLLECTION_PAGE_ID, title: 'Collection', order: -1, createdAt: '', updatedAt: '' },
       { id: 'page-a', title: 'A', order: 0, createdAt: '', updatedAt: '' },
@@ -29,4 +30,5 @@ test('deleting the active page opens the collection page', () => {
   const nextSnapshot = deletePage(createSnapshot(), 'page-a');
 
   assert.equal(nextSnapshot.activePageId, COLLECTION_PAGE_ID);
+  assert.equal(nextSnapshot.defaultPageId, 'page-b');
 });

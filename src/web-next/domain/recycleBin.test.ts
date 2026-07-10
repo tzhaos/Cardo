@@ -6,6 +6,7 @@ import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID, type WorkspaceSnapshot } from 
 function createSnapshot(): WorkspaceSnapshot {
   return {
     activePageId: 'page-a',
+    defaultPageId: 'page-a',
     pages: [
       { id: COLLECTION_PAGE_ID, title: 'Collection', order: -1, createdAt: '', updatedAt: '' },
       { id: 'page-a', title: 'A', order: 0, createdAt: '', updatedAt: '' },
@@ -63,4 +64,5 @@ test('deleting a workspace page moves its boxes to the recycle bin', () => {
 
   assert.equal(nextSnapshot.boxes[0]?.pageId, RECYCLE_BIN_PAGE_ID);
   assert.equal(nextSnapshot.activePageId, COLLECTION_PAGE_ID);
+  assert.equal(nextSnapshot.defaultPageId, 'page-b');
 });

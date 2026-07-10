@@ -109,7 +109,8 @@ export function createDefaultWorkspace(): WorkspaceSnapshot {
 
   return {
     pages,
-    activePageId: COLLECTION_PAGE_ID,
+    activePageId: firstPageId,
+    defaultPageId: firstPageId,
     collectionBoxIds: [],
     collectionViews: {},
     boxes: [

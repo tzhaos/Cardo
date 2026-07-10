@@ -1,7 +1,7 @@
 /**
  * Loads persisted state only after a host has configured its ports, then
- * renders the UI. Waiting for hydration prevents the default first page from
- * flashing before the configured entry page is restored.
+ * renders the UI. Waiting for hydration prevents the initial workspace from
+ * flashing before the persisted default page is restored.
  */
 export function startWebNextApp() {
   void Promise.all([

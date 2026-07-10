@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
-import { Plus, SquarePen, Trash2 } from 'lucide-react';
+import { House, Plus, SquarePen, Trash2 } from 'lucide-react';
 import { AnimatePresence, motion, Reorder } from 'motion/react';
 import { useUiStore } from '../../app/stores/uiStore';
 import { getPageCanvasState, useCanvasStore } from '../../app/stores/canvasStore';
@@ -29,6 +29,7 @@ export function TopBar() {
   const deletePage = useWorkspaceStore((state) => state.deletePage);
   const reorderPages = useWorkspaceStore((state) => state.reorderPages);
   const setActivePage = useWorkspaceStore((state) => state.setActivePage);
+  const setDefaultPage = useWorkspaceStore((state) => state.setDefaultPage);
   const moveBoxToPage = useWorkspaceStore((state) => state.moveBoxToPage);
   const addBoxToCollection = useWorkspaceStore((state) => state.addBoxToCollection);
   const draggedBoxId = useUiStore((state) => state.draggedBoxId);
@@ -270,6 +271,13 @@ export function TopBar() {
                 label: t('menu.rename'),
                 icon: <SquarePen size={16} />,
                 onSelect: () => setRenamePageId(page.id),
+              },
+              {
+                id: 'set-default-page',
+                label: t(page.id === snapshot.defaultPageId ? 'page.default' : 'page.setDefault'),
+                icon: <House size={16} />,
+                disabled: page.id === snapshot.defaultPageId,
+                onSelect: () => setDefaultPage(page.id),
               },
               {
                 id: 'delete-page',

@@ -39,6 +39,7 @@ import {
   reorderItems,
   reorderPages,
   setActivePage,
+  setDefaultPage,
   setBoxAppearance,
   setBoxDetailMode,
   setBoxLocked,
@@ -64,6 +65,7 @@ interface WorkspaceStore {
   deletePage: (pageId: string) => void;
   reorderPages: (orderedPageIds: string[]) => void;
   setActivePage: (pageId: string, origin?: string) => void;
+  setDefaultPage: (pageId: string) => void;
   createBox: (preset: WorkspaceBoxPreset, frame: BoxFrame, title?: string) => void;
   createTemporaryBox: (pageId: string, frame: BoxFrame) => string;
   updateBoxFrame: (boxId: string, frame: BoxFrame) => void;
@@ -112,6 +114,7 @@ export type WorkspaceHistoryAction =
   | 'moveBox'
   | 'resizeBox'
   | 'deletePage'
+  | 'setDefaultPage'
   | 'moveBoxToPage'
   | 'arrangeBoxes'
   | 'arrangeCollectionBoxes'
@@ -198,6 +201,15 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           });
           return { snapshot: nextSnapshot };
         }),
+      setDefaultPage: (pageId) =>
+        set((state) =>
+          recordHistory(
+            state,
+            setDefaultPage(state.snapshot, pageId),
+            'setDefaultPage',
+            operation('page.setDefault', getPageTarget(state.snapshot, pageId)),
+          ),
+        ),
       createBox: (preset, frame, title) =>
         set((state) => {
           const nextSnapshot = addBox(
@@ -525,7 +537,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
     }),
     {
       name: 'khaosbox.web-next.workspace',
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => webNextStorage),
       skipHydration: true,
       partialize: ({ snapshot }) => ({ snapshot }),

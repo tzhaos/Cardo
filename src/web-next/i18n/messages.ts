@@ -8,6 +8,8 @@ export const WEB_NEXT_MESSAGES = {
     'page.workspacePages': 'Workspace pages',
     'page.add': 'Add page',
     'page.rename': 'Rename {title}',
+    'page.setDefault': 'Set as default page',
+    'page.default': 'Default page',
     'page.delete': 'Delete {title}',
     'page.deleteConfirmation': 'Delete page confirmation',
     'page.deleteWithRecycleBinQuestion':
@@ -213,6 +215,8 @@ export const WEB_NEXT_MESSAGES = {
     'page.workspacePages': '工作区页面',
     'page.add': '新建页面',
     'page.rename': '重命名“{title}”',
+    'page.setDefault': '设为默认页面',
+    'page.default': '默认页面',
     'page.delete': '删除“{title}”',
     'page.deleteConfirmation': '删除页面确认',
     'page.deleteQuestion': '删除“{title}”以及其中的 {count} 个盒子？',

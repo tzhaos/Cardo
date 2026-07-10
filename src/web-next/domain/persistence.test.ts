@@ -5,14 +5,16 @@ import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID, type WorkspaceSnapshot } from 
 
 const fallback: WorkspaceSnapshot = {
   activePageId: 'fallback',
+  defaultPageId: 'fallback',
   pages: [{ id: 'fallback', title: 'Fallback', order: 0, createdAt: '', updatedAt: '' }],
   boxes: [],
 };
 
-test('restored workspaces open the collection page', () => {
+test('restored workspaces open the declared default page', () => {
   const restored = restoreWorkspaceSnapshot(
     {
       activePageId: 'page-a',
+      defaultPageId: 'page-a',
       pages: [
         { id: 'page-b', title: 'B', order: 1, createdAt: '', updatedAt: '' },
         { id: 'page-a', title: 'A', order: 0, createdAt: '', updatedAt: '' },
@@ -22,17 +24,19 @@ test('restored workspaces open the collection page', () => {
     fallback,
   );
 
-  assert.equal(restored.activePageId, COLLECTION_PAGE_ID);
+  assert.equal(restored.activePageId, 'page-a');
+  assert.equal(restored.defaultPageId, 'page-a');
   assert.deepEqual(
     restored.pages.map((page) => page.id),
     [COLLECTION_PAGE_ID, 'page-a', 'page-b', RECYCLE_BIN_PAGE_ID],
   );
 });
 
-test('persisted active pages do not override the collection start page', () => {
+test('persisted active pages do not override the default start page', () => {
   const restored = restoreWorkspaceSnapshot(
     {
       activePageId: 'page-b',
+      defaultPageId: 'page-a',
       pages: [
         { id: 'page-a', title: 'A', order: 0, createdAt: '', updatedAt: '' },
         { id: 'page-b', title: 'B', order: 1, createdAt: '', updatedAt: '' },
@@ -42,7 +46,7 @@ test('persisted active pages do not override the collection start page', () => {
     fallback,
   );
 
-  assert.equal(restored.activePageId, COLLECTION_PAGE_ID);
+  assert.equal(restored.activePageId, 'page-a');
 });
 
 test('invalid persisted workspaces fall back safely', () => {
@@ -54,13 +58,14 @@ test('extracts a workspace from the persisted Zustand envelope', () => {
     state: {
       snapshot: {
         activePageId: 'page-a',
+        defaultPageId: 'page-a',
         pages: [{ id: 'page-a', title: 'A', order: 0, createdAt: '', updatedAt: '' }],
         boxes: [],
       },
     },
   });
 
-  assert.equal(snapshot?.activePageId, COLLECTION_PAGE_ID);
+  assert.equal(snapshot?.activePageId, 'page-a');
   assert.equal(snapshot?.pages.length, 3);
   assert.equal(snapshot?.pages.at(-1)?.id, RECYCLE_BIN_PAGE_ID);
 });
