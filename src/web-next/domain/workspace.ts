@@ -3,6 +3,19 @@ export type WorkspaceBoxPreset = 'general' | 'folder' | 'bookmark' | 'clipboard'
 export type WorkspaceBoxViewMode = 'list' | 'grid';
 export type WorkspaceBoxDetailMode = 'detailed' | 'compact';
 export type WorkspaceBoxKind = 'normal' | 'temporary';
+export type WorkspaceBoxIcon =
+  | 'box'
+  | 'folder'
+  | 'bookmark'
+  | 'clipboard'
+  | 'briefcase'
+  | 'code'
+  | 'image'
+  | 'music'
+  | 'book'
+  | 'idea'
+  | 'star'
+  | 'heart';
 
 export const RECYCLE_BIN_PAGE_ID = 'khaosbox-recycle-bin';
 
@@ -74,6 +87,8 @@ export interface WorkspaceBox {
   viewMode?: WorkspaceBoxViewMode;
   detailMode?: WorkspaceBoxDetailMode;
   isLocked?: boolean;
+  icon?: WorkspaceBoxIcon;
+  accent?: string;
   createdAt: string;
   updatedAt: string;
 }

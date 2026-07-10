@@ -1,11 +1,12 @@
-import { Folder } from 'lucide-react';
 import type { WorkspaceBox } from '../../domain/workspace';
+import { getBoxAccent, getBoxIcon } from '../../domain/boxAppearance';
 import { useUiStore } from '../../app/stores/uiStore';
 import { FolderItem } from '../items/FolderItem';
 import { SortableItemList } from '../items/SortableItemList';
 import { FolderAddView } from './add-views/FolderAddView';
 import { BaseBoxFrame } from './BaseBoxFrame';
 import { useI18n } from '../../i18n/useI18n';
+import { BoxAppearanceIcon } from './boxIconRegistry';
 
 export function FolderBox({
   box,
@@ -18,12 +19,14 @@ export function FolderBox({
   const openAddView = useUiStore((state) => state.openAddView);
   const items = box.items.filter((item) => item.type === 'folder');
   const { t } = useI18n();
+  const icon = getBoxIcon(box);
 
   return (
     <BaseBoxFrame
       box={box}
-      icon={<Folder size={16} />}
-      accent="#3b82f6"
+      icon={<BoxAppearanceIcon icon={icon} size={16} />}
+      iconId={icon}
+      accent={getBoxAccent(box)}
       onAddItem={() => openAddView(box.id)}
       skipEntryAnimation={skipEntryAnimation}
     >

@@ -64,6 +64,7 @@ export function createWorkspaceBox(
   frame: BoxFrame,
   title = getDefaultBoxTitle(preset),
   kind: WorkspaceBoxKind = 'normal',
+  appearance: Pick<WorkspaceBox, 'icon' | 'accent'> = {},
 ): WorkspaceBox {
   const timestamp = nowIso();
   return {
@@ -77,6 +78,7 @@ export function createWorkspaceBox(
     viewMode: 'list',
     detailMode: 'detailed',
     isLocked: false,
+    ...appearance,
     createdAt: timestamp,
     updatedAt: timestamp,
   };

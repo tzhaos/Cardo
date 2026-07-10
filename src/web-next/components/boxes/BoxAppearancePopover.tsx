@@ -1,0 +1,171 @@
+import { useEffect, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
+import { createPortal } from 'react-dom';
+import { Check, Palette } from 'lucide-react';
+import { motion } from 'motion/react';
+import { useWorkspaceStore } from '../../app/stores/workspaceStore';
+import {
+  BOX_ACCENT_PRESETS,
+  BOX_ICON_PRESETS,
+  normalizeBoxAccent,
+} from '../../domain/boxAppearance';
+import type { WorkspaceBox, WorkspaceBoxIcon } from '../../domain/workspace';
+import { useI18n } from '../../i18n/useI18n';
+import { BoxAppearanceIcon } from './boxIconRegistry';
+
+export function BoxAppearancePopover({
+  box,
+  accent,
+  icon,
+  anchor,
+  onClose,
+}: {
+  box: WorkspaceBox;
+  accent: string;
+  icon: WorkspaceBoxIcon;
+  anchor: DOMRect;
+  onClose: () => void;
+}) {
+  const setBoxAppearance = useWorkspaceStore((state) => state.setBoxAppearance);
+  const [colorDraft, setColorDraft] = useState(accent.toUpperCase());
+  const [invalidColor, setInvalidColor] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const { t } = useI18n();
+
+  useEffect(() => {
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      if (event.target instanceof Node && panelRef.current?.contains(event.target)) return;
+      if (
+        event.target instanceof Element &&
+        event.target.closest<HTMLElement>('[data-box-appearance-trigger]')?.dataset
+          .boxAppearanceTrigger === box.id
+      ) {
+        return;
+      }
+      onClose();
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('pointerdown', closeOnOutsidePointer, true);
+    window.addEventListener('keydown', closeOnEscape);
+    window.addEventListener('resize', onClose);
+    return () => {
+      window.removeEventListener('pointerdown', closeOnOutsidePointer, true);
+      window.removeEventListener('keydown', closeOnEscape);
+      window.removeEventListener('resize', onClose);
+    };
+  }, [onClose]);
+
+  const applyColorDraft = () => {
+    const normalized = normalizeBoxAccent(colorDraft);
+    if (!normalized) {
+      setInvalidColor(true);
+      return;
+    }
+    setInvalidColor(false);
+    setColorDraft(normalized.toUpperCase());
+    setBoxAppearance(box.id, { accent: normalized });
+  };
+  const panelWidth = 268;
+  const left = Math.max(12, Math.min(anchor.left, window.innerWidth - panelWidth - 12));
+  const top = Math.min(anchor.bottom + 8, window.innerHeight - 350);
+
+  return createPortal(
+    <motion.div
+      ref={panelRef}
+      className="wbn-box-appearance-popover"
+      data-no-drag
+      style={
+        {
+          left,
+          top: Math.max(12, top),
+          '--box-accent': accent,
+        } as CSSProperties
+      }
+      initial={{ opacity: 0, y: -6, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -4, scale: 0.98 }}
+      transition={{ duration: 0.14 }}
+      onPointerDown={(event) => event.stopPropagation()}
+    >
+      <section>
+        <span className="wbn-box-appearance-label">{t('box.icon')}</span>
+        <div className="wbn-box-icon-grid">
+          {BOX_ICON_PRESETS.map((candidate) => (
+            <button
+              className={candidate === icon ? 'wbn-box-icon-choice-active' : undefined}
+              type="button"
+              key={candidate}
+              aria-label={`${t('box.icon')} ${candidate}`}
+              aria-pressed={candidate === icon}
+              onClick={() => setBoxAppearance(box.id, { icon: candidate })}
+            >
+              <BoxAppearanceIcon icon={candidate} size={17} />
+              {candidate === icon ? <Check className="wbn-box-choice-check" size={10} /> : null}
+            </button>
+          ))}
+        </div>
+      </section>
+      <section>
+        <span className="wbn-box-appearance-label">{t('box.color')}</span>
+        <div className="wbn-box-color-grid">
+          {BOX_ACCENT_PRESETS.map((candidate) => (
+            <button
+              className={candidate === accent.toLowerCase() ? 'wbn-box-color-active' : undefined}
+              type="button"
+              key={candidate}
+              style={{ '--choice-color': candidate } as CSSProperties}
+              aria-label={candidate}
+              aria-pressed={candidate === accent.toLowerCase()}
+              onClick={() => {
+                setColorDraft(candidate.toUpperCase());
+                setInvalidColor(false);
+                setBoxAppearance(box.id, { accent: candidate });
+              }}
+            >
+              {candidate === accent.toLowerCase() ? <Check size={11} /> : null}
+            </button>
+          ))}
+        </div>
+        <div className="wbn-box-custom-color-row">
+          <label className="wbn-box-native-color" title={t('box.colorPicker')}>
+            <Palette size={15} />
+            <input
+              type="color"
+              value={accent}
+              aria-label={t('box.colorPicker')}
+              onChange={(event) => {
+                const color = event.target.value;
+                setColorDraft(color.toUpperCase());
+                setInvalidColor(false);
+                setBoxAppearance(box.id, { accent: color });
+              }}
+            />
+          </label>
+          <input
+            className="wbn-box-color-code"
+            value={colorDraft}
+            aria-label={t('box.colorCode')}
+            aria-invalid={invalidColor}
+            spellCheck={false}
+            onChange={(event) => {
+              setColorDraft(event.target.value);
+              setInvalidColor(false);
+            }}
+            onBlur={applyColorDraft}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') event.currentTarget.blur();
+              if (event.key === 'Escape') {
+                setColorDraft(accent.toUpperCase());
+                setInvalidColor(false);
+                event.currentTarget.blur();
+              }
+            }}
+          />
+        </div>
+      </section>
+    </motion.div>,
+    document.body,
+  );
+}

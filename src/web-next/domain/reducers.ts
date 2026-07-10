@@ -2,6 +2,7 @@ import {
   isRecycleBinPageId,
   type BoxFrame,
   type BoxItem,
+  type WorkspaceBox,
   type WorkspaceBoxDetailMode,
   type WorkspaceBoxPreset,
   type WorkspaceBoxKind,
@@ -9,6 +10,7 @@ import {
   type WorkspaceSnapshot,
 } from './workspace';
 import { createPage, createWorkspaceBox, nowIso } from './factories';
+import { chooseAvailableBoxAccent, normalizeBoxAccent } from './boxAppearance';
 import {
   constrainBoxFrameToCanvas,
   createCanvasWorldBounds,
@@ -136,7 +138,23 @@ export function addBox(
 
   return {
     ...snapshot,
-    boxes: [...snapshot.boxes, createWorkspaceBox(pageId, preset, frame, title, kind)],
+    boxes: [
+      ...snapshot.boxes,
+      createWorkspaceBox(
+        pageId,
+        preset,
+        frame,
+        title,
+        kind,
+        kind === 'temporary'
+          ? {}
+          : {
+              accent: chooseAvailableBoxAccent(
+                snapshot.boxes.filter((box) => box.pageId === pageId),
+              ),
+            },
+      ),
+    ],
   };
 }
 
@@ -190,6 +208,27 @@ export function setBoxPreset(
     ...snapshot,
     boxes: snapshot.boxes.map((box) =>
       box.id === boxId && box.preset !== preset ? { ...box, preset, updatedAt: nowIso() } : box,
+    ),
+  };
+}
+
+export function setBoxAppearance(
+  snapshot: WorkspaceSnapshot,
+  boxId: string,
+  appearance: Pick<WorkspaceBox, 'icon' | 'accent'>,
+) {
+  const accent = appearance.accent ? normalizeBoxAccent(appearance.accent) : null;
+  return {
+    ...snapshot,
+    boxes: snapshot.boxes.map((box) =>
+      box.id === boxId
+        ? {
+            ...box,
+            ...(appearance.icon ? { icon: appearance.icon } : {}),
+            ...(accent ? { accent } : {}),
+            updatedAt: nowIso(),
+          }
+        : box,
     ),
   };
 }

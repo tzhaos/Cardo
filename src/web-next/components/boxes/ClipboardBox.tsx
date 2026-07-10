@@ -1,11 +1,12 @@
-import { Clipboard } from 'lucide-react';
 import type { WorkspaceBox } from '../../domain/workspace';
+import { getBoxAccent, getBoxIcon } from '../../domain/boxAppearance';
 import { useUiStore } from '../../app/stores/uiStore';
 import { ClipboardItem } from '../items/ClipboardItem';
 import { SortableItemList } from '../items/SortableItemList';
 import { ClipboardAddView } from './add-views/ClipboardAddView';
 import { BaseBoxFrame } from './BaseBoxFrame';
 import { useI18n } from '../../i18n/useI18n';
+import { BoxAppearanceIcon } from './boxIconRegistry';
 
 export function ClipboardBox({
   box,
@@ -18,12 +19,14 @@ export function ClipboardBox({
   const openAddView = useUiStore((state) => state.openAddView);
   const items = box.items.filter((item) => item.type === 'clipboard');
   const { t } = useI18n();
+  const icon = getBoxIcon(box);
 
   return (
     <BaseBoxFrame
       box={box}
-      icon={<Clipboard size={16} />}
-      accent="#10b981"
+      icon={<BoxAppearanceIcon icon={icon} size={16} />}
+      iconId={icon}
+      accent={getBoxAccent(box)}
       onAddItem={() => openAddView(box.id)}
       skipEntryAnimation={skipEntryAnimation}
     >

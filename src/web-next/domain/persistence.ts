@@ -7,6 +7,7 @@ import {
   type WorkspacePage,
   type WorkspaceSnapshot,
 } from './workspace';
+import { isWorkspaceBoxIcon, normalizeBoxAccent } from './boxAppearance';
 
 export function restoreWorkspaceSnapshot(input: unknown, fallback: WorkspaceSnapshot) {
   return parseWorkspaceSnapshot(input) ?? fallback;
@@ -102,6 +103,8 @@ function parseWorkspaceBox(input: unknown): WorkspaceBox | null {
     return null;
   }
 
+  const accent = typeof input.accent === 'string' ? normalizeBoxAccent(input.accent) : null;
+
   return {
     id: input.id,
     pageId: input.pageId,
@@ -118,6 +121,8 @@ function parseWorkspaceBox(input: unknown): WorkspaceBox | null {
         : typeof input.isPinned === 'boolean'
           ? input.isPinned
           : false,
+    ...(isWorkspaceBoxIcon(input.icon) ? { icon: input.icon } : {}),
+    ...(accent ? { accent } : {}),
     createdAt: input.createdAt,
     updatedAt: input.updatedAt,
   };

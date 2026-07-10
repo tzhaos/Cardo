@@ -1,11 +1,12 @@
-import { Bookmark } from 'lucide-react';
 import type { WorkspaceBox } from '../../domain/workspace';
+import { getBoxAccent, getBoxIcon } from '../../domain/boxAppearance';
 import { useUiStore } from '../../app/stores/uiStore';
 import { BookmarkItem } from '../items/BookmarkItem';
 import { SortableItemList } from '../items/SortableItemList';
 import { BookmarkAddView } from './add-views/BookmarkAddView';
 import { BaseBoxFrame } from './BaseBoxFrame';
 import { useI18n } from '../../i18n/useI18n';
+import { BoxAppearanceIcon } from './boxIconRegistry';
 
 export function BookmarkBox({
   box,
@@ -18,12 +19,14 @@ export function BookmarkBox({
   const openAddView = useUiStore((state) => state.openAddView);
   const items = box.items.filter((item) => item.type === 'bookmark');
   const { t } = useI18n();
+  const icon = getBoxIcon(box);
 
   return (
     <BaseBoxFrame
       box={box}
-      icon={<Bookmark size={16} />}
-      accent="#f97316"
+      icon={<BoxAppearanceIcon icon={icon} size={16} />}
+      iconId={icon}
+      accent={getBoxAccent(box)}
       onAddItem={() => openAddView(box.id)}
       skipEntryAnimation={skipEntryAnimation}
     >

@@ -1,5 +1,5 @@
-import { Bookmark, Clipboard, Folder, PackageOpen } from 'lucide-react';
 import type { WorkspaceBox, WorkspaceItemType } from '../../domain/workspace';
+import { getBoxAccent, getBoxIcon } from '../../domain/boxAppearance';
 import { useUiStore } from '../../app/stores/uiStore';
 import { BookmarkItem } from '../items/BookmarkItem';
 import { ClipboardItem } from '../items/ClipboardItem';
@@ -8,6 +8,7 @@ import { SortableItemList } from '../items/SortableItemList';
 import { UniversalAddView } from './add-views/UniversalAddView';
 import { BaseBoxFrame } from './BaseBoxFrame';
 import { useI18n } from '../../i18n/useI18n';
+import { BoxAppearanceIcon } from './boxIconRegistry';
 
 export function UniversalBox({
   box,
@@ -19,14 +20,16 @@ export function UniversalBox({
   const draftState = useUiStore((state) => state.addDrafts[box.id]);
   const openAddView = useUiStore((state) => state.openAddView);
   const { t } = useI18n();
-  const appearance = getBoxAppearance(box.preset);
+  const accent = getBoxAccent(box);
+  const icon = getBoxIcon(box);
   const preferredItemType = getPreferredItemType(box.preset);
 
   return (
     <BaseBoxFrame
       box={box}
-      icon={appearance.icon}
-      accent={appearance.accent}
+      icon={<BoxAppearanceIcon icon={icon} size={16} />}
+      iconId={icon}
+      accent={accent}
       onAddItem={() => openAddView(box.id, preferredItemType)}
       skipEntryAnimation={skipEntryAnimation}
     >
@@ -61,17 +64,4 @@ function renderItem(boxId: string, item: WorkspaceBox['items'][number], highligh
 
 function getPreferredItemType(preset: WorkspaceBox['preset']): WorkspaceItemType {
   return preset === 'general' ? 'clipboard' : preset;
-}
-
-function getBoxAppearance(preset: WorkspaceBox['preset']) {
-  switch (preset) {
-    case 'folder':
-      return { icon: <Folder size={16} />, accent: '#3b82f6' };
-    case 'bookmark':
-      return { icon: <Bookmark size={16} />, accent: '#f97316' };
-    case 'clipboard':
-      return { icon: <Clipboard size={16} />, accent: '#10b981' };
-    case 'general':
-      return { icon: <PackageOpen size={16} />, accent: '#8b5cf6' };
-  }
 }

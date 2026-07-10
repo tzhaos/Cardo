@@ -7,6 +7,7 @@ import type {
   BoxFrame,
   BoxItem,
   WorkspaceBoxDetailMode,
+  WorkspaceBoxIcon,
   WorkspaceBoxPreset,
   WorkspaceItemType,
   WorkspaceBoxViewMode,
@@ -29,6 +30,7 @@ import {
   reorderItems,
   reorderPages,
   setActivePage,
+  setBoxAppearance,
   setBoxDetailMode,
   setBoxLocked,
   setBoxPreset,
@@ -56,6 +58,10 @@ interface WorkspaceStore {
   promoteTemporaryBox: (boxId: string, title: string) => void;
   setBoxDetailMode: (boxId: string, detailMode: WorkspaceBoxDetailMode) => void;
   setBoxLocked: (boxId: string, isLocked: boolean) => void;
+  setBoxAppearance: (
+    boxId: string,
+    appearance: { icon?: WorkspaceBoxIcon; accent?: string },
+  ) => void;
   setBoxPreset: (boxId: string, preset: WorkspaceBoxPreset) => void;
   setBoxViewMode: (boxId: string, viewMode: WorkspaceBoxViewMode) => void;
   moveBoxToPage: (boxId: string, pageId: string, frame?: BoxFrame) => void;
@@ -126,6 +132,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         set((state) => ({ snapshot: setBoxDetailMode(state.snapshot, boxId, detailMode) })),
       setBoxLocked: (boxId, isLocked) =>
         set((state) => ({ snapshot: setBoxLocked(state.snapshot, boxId, isLocked) })),
+      setBoxAppearance: (boxId, appearance) =>
+        set((state) => ({ snapshot: setBoxAppearance(state.snapshot, boxId, appearance) })),
       setBoxPreset: (boxId, preset) =>
         set((state) => ({ snapshot: setBoxPreset(state.snapshot, boxId, preset) })),
       setBoxViewMode: (boxId, viewMode) =>

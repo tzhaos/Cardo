@@ -3,24 +3,23 @@ import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import {
   ChevronsDownUp,
   ChevronsUpDown,
-  Bookmark,
-  Clipboard,
-  Folder,
   LayoutGrid,
   List,
   Lock,
   PackageCheck,
-  PackageOpen,
   Plus,
   SquarePen,
   Trash2,
   Unlock,
   X,
 } from 'lucide-react';
-import { animate as animateMotion, motion, useMotionValue } from 'motion/react';
+import { AnimatePresence, animate as animateMotion, motion, useMotionValue } from 'motion/react';
 import type { MotionStyle } from 'motion/react';
-import { isRecycleBinPageId, type WorkspaceBox } from '../../domain/workspace';
-import type { WorkspaceBoxPreset } from '../../domain/workspace';
+import {
+  isRecycleBinPageId,
+  type WorkspaceBox,
+  type WorkspaceBoxIcon,
+} from '../../domain/workspace';
 import { useCanvasStore } from '../../app/stores/canvasStore';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
@@ -35,10 +34,12 @@ import {
 } from '../../app/windowPointerSession';
 import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
 import { useI18n } from '../../i18n/useI18n';
+import { BoxAppearancePopover } from './BoxAppearancePopover';
 
 interface BaseBoxFrameProps {
   box: WorkspaceBox;
   icon: ReactNode;
+  iconId: WorkspaceBoxIcon;
   accent: string;
   children: ReactNode;
   onAddItem: () => void;
@@ -48,6 +49,7 @@ interface BaseBoxFrameProps {
 export function BaseBoxFrame({
   box,
   icon,
+  iconId,
   accent,
   children,
   onAddItem,
@@ -58,7 +60,6 @@ export function BaseBoxFrame({
   const promoteTemporaryBox = useWorkspaceStore((state) => state.promoteTemporaryBox);
   const setBoxDetailMode = useWorkspaceStore((state) => state.setBoxDetailMode);
   const setBoxLocked = useWorkspaceStore((state) => state.setBoxLocked);
-  const setBoxPreset = useWorkspaceStore((state) => state.setBoxPreset);
   const setBoxViewMode = useWorkspaceStore((state) => state.setBoxViewMode);
   const deleteBox = useWorkspaceStore((state) => state.deleteBox);
   const beginBoxDrag = useUiStore((state) => state.beginBoxDrag);
@@ -74,6 +75,7 @@ export function BaseBoxFrame({
   const { openMenu, closeMenu } = useFloatingMenu();
   const [renamingTitle, setRenamingTitle] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [appearanceAnchor, setAppearanceAnchor] = useState<DOMRect | null>(null);
   const [titleDraft, setTitleDraft] = useState(box.title);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const pointerSessionRef = useRef<WindowPointerSession | null>(null);
@@ -122,6 +124,7 @@ export function BaseBoxFrame({
     }
 
     event.preventDefault();
+    setAppearanceAnchor(null);
     closeMenu();
     pointerSessionRef.current?.end();
     beginBoxDrag(box.id);
@@ -277,6 +280,7 @@ export function BaseBoxFrame({
       onPointerDown={() => selectBox(box.id)}
       onContextMenu={(event) => {
         event.preventDefault();
+        setAppearanceAnchor(null);
         selectBox(box.id);
         if (isTemporary) {
           closeMenu();
@@ -356,17 +360,14 @@ export function BaseBoxFrame({
               className="wbn-box-icon wbn-icon-frame"
               type="button"
               data-no-drag
+              data-box-appearance-trigger={box.id}
               title={t('box.changePreset')}
               aria-label={t('box.changePreset')}
               onClick={(event) => {
-                openMenu({
-                  id: `box-preset-${box.id}`,
-                  x: event.clientX,
-                  y: event.clientY,
-                  items: getBoxPresetMenuItems(box.preset, t, (preset) =>
-                    setBoxPreset(box.id, preset),
-                  ),
-                });
+                closeMenu();
+                setAppearanceAnchor((current) =>
+                  current ? null : event.currentTarget.getBoundingClientRect(),
+                );
               }}
             >
               {icon}
@@ -522,6 +523,17 @@ export function BaseBoxFrame({
           </svg>
         </button>
       ) : null}
+      <AnimatePresence>
+        {appearanceAnchor ? (
+          <BoxAppearancePopover
+            box={box}
+            accent={accent}
+            icon={iconId}
+            anchor={appearanceAnchor}
+            onClose={() => setAppearanceAnchor(null)}
+          />
+        ) : null}
+      </AnimatePresence>
     </motion.article>
   );
 }
@@ -534,23 +546,4 @@ function getBoxTypeLabel(preset: WorkspaceBox['preset'], t: ReturnType<typeof us
       : preset === 'clipboard'
         ? t('box.clipboard')
         : t('box.general');
-}
-
-function getBoxPresetMenuItems(
-  currentPreset: WorkspaceBoxPreset,
-  t: ReturnType<typeof useI18n>['t'],
-  onSelect: (preset: WorkspaceBoxPreset) => void,
-) {
-  return [
-    { preset: 'general' as const, label: t('box.general'), icon: <PackageOpen size={16} /> },
-    { preset: 'folder' as const, label: t('box.folder'), icon: <Folder size={16} /> },
-    { preset: 'bookmark' as const, label: t('box.bookmark'), icon: <Bookmark size={16} /> },
-    { preset: 'clipboard' as const, label: t('box.clipboard'), icon: <Clipboard size={16} /> },
-  ].map(({ preset, label, icon }) => ({
-    id: `preset-${preset}`,
-    label,
-    icon,
-    disabled: preset === currentPreset,
-    onSelect: () => onSelect(preset),
-  }));
 }
