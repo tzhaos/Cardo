@@ -18,6 +18,7 @@ import {
 import { animate as animateMotion, motion, useMotionValue, useSpring } from 'motion/react';
 import type { MotionStyle } from 'motion/react';
 import {
+  RECYCLE_BIN_PAGE_ID,
   isRecycleBinPageId,
   type WorkspaceBox,
   type WorkspaceBoxIcon,
@@ -46,6 +47,15 @@ interface BaseBoxFrameProps {
   children: ReactNode;
   onAddItem: () => void;
   skipEntryAnimation?: boolean;
+}
+
+interface BoxDeleteMotion {
+  x: number;
+  y: number;
+  scale: number;
+  opacity: number;
+  borderRadius: number;
+  permanent: boolean;
 }
 
 export function BaseBoxFrame({
@@ -81,13 +91,17 @@ export function BaseBoxFrame({
   const [renamingTitle, setRenamingTitle] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [appearanceView, setAppearanceView] = useState(false);
+  const [deleteMotion, setDeleteMotion] = useState<BoxDeleteMotion | null>(null);
   const [dragTransformOrigin, setDragTransformOrigin] = useState(
     boxDropRelease?.boxId === box.id ? boxDropRelease.entryTransformOrigin : '50% 50%',
   );
   const [dropLandingStarted, setDropLandingStarted] = useState(false);
   const [titleDraft, setTitleDraft] = useState(box.title);
+  const articleRef = useRef<HTMLElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const pointerSessionRef = useRef<WindowPointerSession | null>(null);
+  const deleteTargetRef = useRef<HTMLElement | null>(null);
+  const deleteCommittedRef = useRef(false);
   const initialDropFrame = boxDropRelease?.boxId === box.id ? boxDropRelease.entryFrame : box.frame;
   const boxLeft = useMotionValue(initialDropFrame.x);
   const boxTop = useMotionValue(initialDropFrame.y);
@@ -100,6 +114,7 @@ export function BaseBoxFrame({
   useEffect(
     () => () => {
       pointerSessionRef.current?.end();
+      deleteTargetRef.current?.classList.remove('wbn-box-drop-target');
     },
     [],
   );
@@ -264,9 +279,10 @@ export function BaseBoxFrame({
           : 1;
   const visualClassName = [
     'wbn-box',
-    dragging ? 'wbn-box-dragging' : '',
-    draggingOverTopBar ? 'wbn-box-dragging-bar' : '',
-    draggingOverTab ? 'wbn-box-dragging-tab' : '',
+    dragging || deleteMotion ? 'wbn-box-dragging' : '',
+    draggingOverTopBar || (deleteMotion && !deleteMotion.permanent) ? 'wbn-box-dragging-bar' : '',
+    draggingOverTab || (deleteMotion && !deleteMotion.permanent) ? 'wbn-box-dragging-tab' : '',
+    deleteMotion ? 'wbn-box-delete-exiting' : '',
     dropReleased ? 'wbn-box-drop-released' : '',
     selectedBoxId === box.id ? 'wbn-box-selected' : '',
     highlightedBoxId === box.id ? 'wbn-box-highlighted' : '',
@@ -317,26 +333,89 @@ export function BaseBoxFrame({
     dropReleased,
   ]);
 
+  const startDeleteMotion = () => {
+    if (deleteMotion || deleteCommittedRef.current) return;
+
+    pointerSessionRef.current?.end();
+    endBoxDrag();
+    const boxRect = articleRef.current?.getBoundingClientRect();
+    if (isInRecycleBin || !boxRect) {
+      setDeleteMotion({
+        x: 0,
+        y: 8,
+        scale: 0.82,
+        opacity: 0,
+        borderRadius: 16,
+        permanent: true,
+      });
+      return;
+    }
+
+    const target = document.querySelector<HTMLElement>(
+      `[data-page-drop-id="${RECYCLE_BIN_PAGE_ID}"]`,
+    );
+    const targetRect = target?.getBoundingClientRect();
+    if (target) {
+      deleteTargetRef.current = target;
+      target.classList.add('wbn-box-drop-target');
+    }
+    setDeleteMotion({
+      x: targetRect
+        ? targetRect.left + targetRect.width / 2 - (boxRect.left + boxRect.width / 2)
+        : 0,
+      y: targetRect
+        ? targetRect.top + targetRect.height / 2 - (boxRect.top + boxRect.height / 2)
+        : 8,
+      scale: compactScale * 0.9,
+      opacity: targetRect ? 0.18 : 0,
+      borderRadius: 24,
+      permanent: false,
+    });
+  };
+
+  const finishDeleteMotion = () => {
+    if (!deleteMotion || deleteCommittedRef.current) return;
+
+    deleteCommittedRef.current = true;
+    const target = deleteTargetRef.current;
+    deleteTargetRef.current = null;
+    if (target) {
+      target.classList.remove('wbn-box-drop-target');
+      target.classList.add('wbn-box-drop-released');
+      window.setTimeout(() => target.classList.remove('wbn-box-drop-released'), 560);
+    }
+    deleteBox(box.id);
+  };
+
   return (
     <motion.article
+      ref={articleRef}
       className={visualClassName}
       data-canvas-box
       data-box-id={box.id}
       initial={skipEntryAnimation ? false : { scale: 0.8, opacity: 0 }}
       animate={{
-        y: dragging && !draggingOverTopBar ? -7 : 0,
-        scale: visualScale,
-        opacity: draggingOverTopBar ? 0.94 : dragging ? 0.97 : 1,
-        borderRadius: draggingOverTopBar ? 24 : 16,
+        x: deleteMotion?.x ?? 0,
+        y: deleteMotion?.y ?? (dragging && !draggingOverTopBar ? -7 : 0),
+        scale: deleteMotion?.scale ?? visualScale,
+        opacity: deleteMotion?.opacity ?? (draggingOverTopBar ? 0.94 : dragging ? 0.97 : 1),
+        borderRadius: deleteMotion?.borderRadius ?? (draggingOverTopBar ? 24 : 16),
       }}
-      transition={{
-        y: { type: 'spring', damping: 30, stiffness: 420, mass: 0.55 },
-        scale: dropReleased
-          ? { type: 'spring', damping: 22, stiffness: 170, mass: 0.94 }
-          : { type: 'spring', damping: 28, stiffness: 380, mass: 0.6 },
-        borderRadius: { duration: 0.2 },
-        opacity: { duration: 0.16 },
-      }}
+      transition={
+        deleteMotion
+          ? deleteMotion.permanent
+            ? { duration: 0.24, ease: [0.4, 0, 1, 1] }
+            : { duration: 0.52, ease: [0.22, 0.72, 0.18, 1] }
+          : {
+              y: { type: 'spring', damping: 30, stiffness: 420, mass: 0.55 },
+              scale: dropReleased
+                ? { type: 'spring', damping: 22, stiffness: 170, mass: 0.94 }
+                : { type: 'spring', damping: 28, stiffness: 380, mass: 0.6 },
+              borderRadius: { duration: 0.2 },
+              opacity: { duration: 0.16 },
+            }
+      }
+      onAnimationComplete={finishDeleteMotion}
       onPointerDown={() => selectBox(box.id)}
       onContextMenu={(event) => {
         event.preventDefault();
@@ -402,7 +481,8 @@ export function BaseBoxFrame({
           minWidth: 240,
           minHeight: 170,
           rotate: dragTilt,
-          transformOrigin: dragTransformOrigin,
+          transformOrigin: deleteMotion ? '50% 50%' : dragTransformOrigin,
+          pointerEvents: deleteMotion ? 'none' : undefined,
           '--box-accent': accent,
         } as MotionStyle & { '--box-accent': string }
       }
@@ -569,7 +649,7 @@ export function BaseBoxFrame({
               <button
                 className="wbn-box-delete-confirm-button"
                 type="button"
-                onClick={() => deleteBox(box.id)}
+                onClick={startDeleteMotion}
               >
                 {t(isInRecycleBin ? 'common.deletePermanently' : 'common.moveToRecycleBin')}
               </button>
