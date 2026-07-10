@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { useMemo, useState } from 'react';
+import type { PointerEventHandler } from 'react';
 import { Activity, ChevronRight, Clock3, Database, Search, Trash2, X } from 'lucide-react';
-import { motion } from 'motion/react';
 import {
   useOperationJournalStore,
   type OperationCategory,
@@ -13,7 +12,13 @@ import { useI18n } from '../../i18n/useI18n';
 
 type JournalFilter = 'all' | OperationCategory;
 
-export function OperationJournalPanel({ onClose }: { onClose: () => void }) {
+export function OperationJournalPanel({
+  onClose,
+  onHeaderPointerDown,
+}: {
+  onClose: () => void;
+  onHeaderPointerDown?: PointerEventHandler<HTMLElement>;
+}) {
   const events = useOperationJournalStore((state) => state.events);
   const clear = useOperationJournalStore((state) => state.clear);
   const snapshot = useWorkspaceStore((state) => state.snapshot);
@@ -23,14 +28,6 @@ export function OperationJournalPanel({ onClose }: { onClose: () => void }) {
   const [filter, setFilter] = useState<JournalFilter>('all');
   const [confirmClear, setConfirmClear] = useState(false);
   const { t, locale } = useI18n();
-
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
 
   const visibleEvents = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
@@ -75,122 +72,111 @@ export function OperationJournalPanel({ onClose }: { onClose: () => void }) {
 
   let previousDateKey = '';
 
-  return createPortal(
-    <div className="wbn-journal-layer" onPointerDown={onClose}>
-      <motion.aside
-        className="wbn-journal-panel"
-        aria-label={t('journal.title')}
-        initial={{ opacity: 0, x: -10, y: 12, scale: 0.98 }}
-        animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
-        exit={{ opacity: 0, x: -8, y: 8, scale: 0.985 }}
-        transition={{ duration: 0.18 }}
-        onPointerDown={(event) => event.stopPropagation()}
-      >
-        <header className="wbn-journal-header">
-          <span>
-            <Clock3 size={17} />
-            <strong>{t('journal.title')}</strong>
-            <small>{t('journal.eventCount', { count: events.length })}</small>
-          </span>
-          <button type="button" onClick={onClose} aria-label={t('common.close')}>
-            <X size={16} />
+  return (
+    <div className="wbn-journal-panel" role="dialog" aria-label={t('journal.title')}>
+      <header className="wbn-journal-header" onPointerDown={onHeaderPointerDown}>
+        <span>
+          <Clock3 size={17} />
+          <strong>{t('journal.title')}</strong>
+          <small>{t('journal.eventCount', { count: events.length })}</small>
+        </span>
+        <button type="button" onClick={onClose} aria-label={t('common.close')}>
+          <X size={16} />
+        </button>
+      </header>
+      <div className="wbn-journal-search">
+        <Search size={15} />
+        <input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder={t('journal.searchPlaceholder')}
+        />
+      </div>
+      <div className="wbn-journal-filters" aria-label={t('journal.filters')}>
+        {(['all', 'mutation', 'activity', 'system'] as const).map((candidate) => (
+          <button
+            className={candidate === filter ? 'wbn-journal-filter-active' : undefined}
+            type="button"
+            key={candidate}
+            onClick={() => setFilter(candidate)}
+          >
+            {t(`journal.filter.${candidate}`)}
           </button>
-        </header>
-        <div className="wbn-journal-search">
-          <Search size={15} />
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={t('journal.searchPlaceholder')}
-          />
-        </div>
-        <div className="wbn-journal-filters" aria-label={t('journal.filters')}>
-          {(['all', 'mutation', 'activity', 'system'] as const).map((candidate) => (
+        ))}
+      </div>
+      <div className="wbn-journal-events">
+        {visibleEvents.length ? (
+          visibleEvents.map((event) => {
+            const date = new Date(event.timestamp);
+            const dateKey = date.toDateString();
+            const showDate = dateKey !== previousDateKey;
+            previousDateKey = dateKey;
+            const canLocate = Boolean(
+              (event.target?.boxId &&
+                snapshot.boxes.some((box) => box.id === event.target?.boxId)) ||
+              (event.target?.pageId &&
+                snapshot.pages.some((page) => page.id === event.target?.pageId)),
+            );
+            return (
+              <div className="wbn-journal-event-block" key={event.id}>
+                {showDate ? (
+                  <div className="wbn-journal-date">{formatDateHeading(date, locale, t)}</div>
+                ) : null}
+                <button
+                  className="wbn-journal-event"
+                  type="button"
+                  disabled={!canLocate}
+                  onClick={() => locateEvent(event)}
+                >
+                  <span className={`wbn-journal-event-icon wbn-journal-${event.category}`}>
+                    <CategoryIcon category={event.category} />
+                  </span>
+                  <span className="wbn-journal-event-copy">
+                    <span>
+                      <strong>{getActionLabel(event.action, t)}</strong>
+                      {event.undoable ? <small>{t('journal.undoable')}</small> : null}
+                    </span>
+                    <span>{getTargetLabel(event) || t(`journal.source.${event.source}`)}</span>
+                    <time>{formatEventTime(date, locale)}</time>
+                  </span>
+                  {canLocate ? <ChevronRight size={14} /> : null}
+                </button>
+              </div>
+            );
+          })
+        ) : (
+          <div className="wbn-journal-empty">
+            <Database size={20} />
+            <span>{query || filter !== 'all' ? t('journal.noMatches') : t('journal.empty')}</span>
+          </div>
+        )}
+      </div>
+      <footer className="wbn-journal-footer">
+        {confirmClear ? (
+          <>
+            <span>{t('journal.clearQuestion')}</span>
+            <button type="button" onClick={() => setConfirmClear(false)}>
+              {t('common.cancel')}
+            </button>
             <button
-              className={candidate === filter ? 'wbn-journal-filter-active' : undefined}
+              className="wbn-journal-clear-confirm"
               type="button"
-              key={candidate}
-              onClick={() => setFilter(candidate)}
+              onClick={() => {
+                clear();
+                setConfirmClear(false);
+              }}
             >
-              {t(`journal.filter.${candidate}`)}
+              {t('common.delete')}
             </button>
-          ))}
-        </div>
-        <div className="wbn-journal-events">
-          {visibleEvents.length ? (
-            visibleEvents.map((event) => {
-              const date = new Date(event.timestamp);
-              const dateKey = date.toDateString();
-              const showDate = dateKey !== previousDateKey;
-              previousDateKey = dateKey;
-              const canLocate = Boolean(
-                (event.target?.boxId &&
-                  snapshot.boxes.some((box) => box.id === event.target?.boxId)) ||
-                (event.target?.pageId &&
-                  snapshot.pages.some((page) => page.id === event.target?.pageId)),
-              );
-              return (
-                <div className="wbn-journal-event-block" key={event.id}>
-                  {showDate ? (
-                    <div className="wbn-journal-date">{formatDateHeading(date, locale, t)}</div>
-                  ) : null}
-                  <button
-                    className="wbn-journal-event"
-                    type="button"
-                    disabled={!canLocate}
-                    onClick={() => locateEvent(event)}
-                  >
-                    <span className={`wbn-journal-event-icon wbn-journal-${event.category}`}>
-                      <CategoryIcon category={event.category} />
-                    </span>
-                    <span className="wbn-journal-event-copy">
-                      <span>
-                        <strong>{getActionLabel(event.action, t)}</strong>
-                        {event.undoable ? <small>{t('journal.undoable')}</small> : null}
-                      </span>
-                      <span>{getTargetLabel(event) || t(`journal.source.${event.source}`)}</span>
-                      <time>{formatEventTime(date, locale)}</time>
-                    </span>
-                    {canLocate ? <ChevronRight size={14} /> : null}
-                  </button>
-                </div>
-              );
-            })
-          ) : (
-            <div className="wbn-journal-empty">
-              <Database size={20} />
-              <span>{query || filter !== 'all' ? t('journal.noMatches') : t('journal.empty')}</span>
-            </div>
-          )}
-        </div>
-        <footer className="wbn-journal-footer">
-          {confirmClear ? (
-            <>
-              <span>{t('journal.clearQuestion')}</span>
-              <button type="button" onClick={() => setConfirmClear(false)}>
-                {t('common.cancel')}
-              </button>
-              <button
-                className="wbn-journal-clear-confirm"
-                type="button"
-                onClick={() => {
-                  clear();
-                  setConfirmClear(false);
-                }}
-              >
-                {t('common.delete')}
-              </button>
-            </>
-          ) : (
-            <button type="button" onClick={() => setConfirmClear(true)} disabled={!events.length}>
-              <Trash2 size={14} />
-              <span>{t('journal.clear')}</span>
-            </button>
-          )}
-        </footer>
-      </motion.aside>
-    </div>,
-    document.body,
+          </>
+        ) : (
+          <button type="button" onClick={() => setConfirmClear(true)} disabled={!events.length}>
+            <Trash2 size={14} />
+            <span>{t('journal.clear')}</span>
+          </button>
+        )}
+      </footer>
+    </div>
   );
 }
 

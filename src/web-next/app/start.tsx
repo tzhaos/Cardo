@@ -10,6 +10,7 @@ export function startWebNextApp() {
     import('./stores/preferencesStore'),
     import('./stores/workspaceStore'),
     import('./stores/operationJournalStore'),
+    import('./stores/independentMenuStore'),
   ]).then(
     async ([
       { default: WebNextApp },
@@ -17,11 +18,13 @@ export function startWebNextApp() {
       { usePreferencesStore },
       { useWorkspaceStore },
       { useOperationJournalStore },
+      { useIndependentMenuStore },
     ]) => {
       await Promise.all([
         usePreferencesStore.persist.rehydrate(),
         useWorkspaceStore.persist.rehydrate(),
         useOperationJournalStore.persist.rehydrate(),
+        useIndependentMenuStore.persist.rehydrate(),
       ]);
       renderWebNextRoot(<WebNextApp />);
     },

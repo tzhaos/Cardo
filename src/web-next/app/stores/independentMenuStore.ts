@@ -1,6 +1,8 @@
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import { webNextStorage } from '../../platform/hostPlatform';
 
-export type IndependentMenuId = 'settings';
+export type IndependentMenuId = 'settings' | 'journal';
 
 export interface IndependentMenuPosition {
   x: number;
@@ -20,36 +22,72 @@ interface IndependentMenuStore {
 }
 
 const SETTINGS_DEFAULT_SIZE = { width: 640, height: 430 };
+const JOURNAL_DEFAULT_SIZE = { width: 420, height: 600 };
 
-export const useIndependentMenuStore = create<IndependentMenuStore>((set) => ({
-  menus: {
-    settings: {
-      open: false,
-      position: getInitialMenuPosition(SETTINGS_DEFAULT_SIZE),
+export const useIndependentMenuStore = create<IndependentMenuStore>()(
+  persist(
+    (set) => ({
+      menus: createDefaultMenus(),
+      closeMenu: (menuId) =>
+        set((state) => ({
+          menus: {
+            ...state.menus,
+            [menuId]: { ...state.menus[menuId], open: false },
+          },
+        })),
+      moveMenu: (menuId, position) =>
+        set((state) => ({
+          menus: {
+            ...state.menus,
+            [menuId]: { ...state.menus[menuId], position },
+          },
+        })),
+      toggleMenu: (menuId) =>
+        set((state) => ({
+          menus: {
+            ...state.menus,
+            [menuId]: { ...state.menus[menuId], open: !state.menus[menuId].open },
+          },
+        })),
+    }),
+    {
+      name: 'khaosbox.web-next.independent-menus',
+      version: 1,
+      storage: createJSONStorage(() => webNextStorage),
+      skipHydration: true,
+      partialize: (state) => ({
+        menus: Object.fromEntries(
+          Object.entries(state.menus).map(([menuId, menu]) => [
+            menuId,
+            { open: false, position: menu.position },
+          ]),
+        ) as IndependentMenuStore['menus'],
+      }),
+      merge: (persistedState, currentState) => {
+        const persistedMenus = (persistedState as Partial<IndependentMenuStore> | undefined)?.menus;
+        return {
+          ...currentState,
+          menus: Object.fromEntries(
+            (Object.keys(currentState.menus) as IndependentMenuId[]).map((menuId) => [
+              menuId,
+              {
+                ...currentState.menus[menuId],
+                position: persistedMenus?.[menuId]?.position ?? currentState.menus[menuId].position,
+              },
+            ]),
+          ) as IndependentMenuStore['menus'],
+        };
+      },
     },
-  },
-  closeMenu: (menuId) =>
-    set((state) => ({
-      menus: {
-        ...state.menus,
-        [menuId]: { ...state.menus[menuId], open: false },
-      },
-    })),
-  moveMenu: (menuId, position) =>
-    set((state) => ({
-      menus: {
-        ...state.menus,
-        [menuId]: { ...state.menus[menuId], position },
-      },
-    })),
-  toggleMenu: (menuId) =>
-    set((state) => ({
-      menus: {
-        ...state.menus,
-        [menuId]: { ...state.menus[menuId], open: !state.menus[menuId].open },
-      },
-    })),
-}));
+  ),
+);
+
+function createDefaultMenus(): IndependentMenuStore['menus'] {
+  return {
+    settings: { open: false, position: getInitialMenuPosition(SETTINGS_DEFAULT_SIZE) },
+    journal: { open: false, position: getInitialMenuPosition(JOURNAL_DEFAULT_SIZE) },
+  };
+}
 
 export function clampIndependentMenuPosition(
   position: IndependentMenuPosition,

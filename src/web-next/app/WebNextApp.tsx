@@ -6,6 +6,7 @@ import { WorkspaceCanvas } from '../components/canvas/WorkspaceCanvas';
 import { FloatingMenuLayer } from '../components/floating-menu/FloatingMenuLayer';
 import { FloatingMenuProvider } from '../components/floating-menu/useFloatingMenu';
 import { SettingsWindow } from '../components/settings/SettingsWindow';
+import { OperationJournalWindow } from '../components/operation-journal/OperationJournalWindow';
 import { TopBar } from '../components/top-bar/TopBar';
 import { applyWebNextTheme } from '../themes/themeRegistry';
 import { useCancelActivePointerOnWindowExit } from './useCancelActivePointerOnWindowExit';
@@ -37,6 +38,7 @@ export default function WebNextApp() {
         <BottomToolbar />
         <FloatingMenuLayer />
         <SettingsWindow />
+        <OperationJournalWindow />
       </div>
     </FloatingMenuProvider>
   );
