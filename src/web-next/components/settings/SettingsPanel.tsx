@@ -1,14 +1,17 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { PointerEventHandler } from 'react';
 import {
   Check,
   CircleHelp,
+  Database,
+  Download,
   Languages,
   Moon,
   Palette,
   Settings,
   SlidersHorizontal,
   Sun,
+  Upload,
   X,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -18,8 +21,12 @@ import { getRegisteredWebNextThemes } from '../../themes/themeRegistry';
 import type { WebNextColorMode } from '../../themes/themeRegistry';
 import { ColorModeStateIcon, LanguageStateIcon } from './StateIcons';
 import { IconButton, IconFrame } from '../primitives/IconPrimitives';
+import { useWorkspaceStore } from '../../app/stores/workspaceStore';
+import { extractPersistedWorkspaceSnapshot } from '../../domain/persistence';
+import type { WorkspaceSnapshot } from '../../domain/workspace';
+import { useUiStore } from '../../app/stores/uiStore';
 
-type SettingsSection = 'general' | 'appearance' | 'about';
+type SettingsSection = 'general' | 'appearance' | 'data' | 'about';
 
 export function SettingsPanel({
   onClose,
@@ -40,6 +47,7 @@ export function SettingsPanel({
   const sections = [
     { id: 'general' as const, icon: SlidersHorizontal, label: t('settings.general') },
     { id: 'appearance' as const, icon: Palette, label: t('settings.appearance') },
+    { id: 'data' as const, icon: Database, label: t('settings.data') },
     { id: 'about' as const, icon: CircleHelp, label: t('settings.about') },
   ];
 
@@ -101,12 +109,124 @@ export function SettingsPanel({
                   themes={themes}
                 />
               ) : null}
+              {section === 'data' ? <DataSettings /> : null}
               {section === 'about' ? <AboutSettings /> : null}
             </motion.section>
           </AnimatePresence>
         </div>
       </div>
     </div>
+  );
+}
+
+function DataSettings() {
+  const snapshot = useWorkspaceStore((state) => state.snapshot);
+  const replaceSnapshot = useWorkspaceStore((state) => state.replaceSnapshot);
+  const selectBox = useUiStore((state) => state.selectBox);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [pendingImport, setPendingImport] = useState<{
+    snapshot: WorkspaceSnapshot;
+    fileName: string;
+  } | null>(null);
+  const [importError, setImportError] = useState(false);
+  const { t } = useI18n();
+
+  const exportData = () => {
+    const payload = {
+      format: 'khaosbox-workspace',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      snapshot,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `khaosbox-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+  };
+
+  const readImportFile = async (file: File) => {
+    try {
+      const parsed = JSON.parse(await file.text()) as unknown;
+      const importedSnapshot = extractPersistedWorkspaceSnapshot(parsed);
+      if (!importedSnapshot) throw new Error('Invalid workspace data');
+      setImportError(false);
+      setPendingImport({ snapshot: importedSnapshot, fileName: file.name });
+    } catch {
+      setPendingImport(null);
+      setImportError(true);
+    }
+  };
+
+  return (
+    <>
+      <SettingsHeading title={t('settings.data')} description={t('settings.dataDescription')} />
+      <div className="wbn-data-actions">
+        <button type="button" onClick={exportData}>
+          <IconFrame>
+            <Download size={18} />
+          </IconFrame>
+          <span>
+            {t('settings.exportData')}
+            <small>{t('settings.exportDataDescription')}</small>
+          </span>
+        </button>
+        <button type="button" onClick={() => inputRef.current?.click()}>
+          <IconFrame>
+            <Upload size={18} />
+          </IconFrame>
+          <span>
+            {t('settings.importData')}
+            <small>{t('settings.importDataDescription')}</small>
+          </span>
+        </button>
+      </div>
+      <input
+        className="wbn-data-file-input"
+        ref={inputRef}
+        type="file"
+        accept="application/json,.json"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file) void readImportFile(file);
+          event.currentTarget.value = '';
+        }}
+      />
+      {importError ? <p className="wbn-data-error">{t('settings.importInvalid')}</p> : null}
+      <AnimatePresence>
+        {pendingImport ? (
+          <motion.div
+            className="wbn-data-import-confirm"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 6 }}
+          >
+            <span>
+              {t('settings.importConfirm')}
+              <small>{pendingImport.fileName}</small>
+            </span>
+            <div>
+              <button type="button" onClick={() => setPendingImport(null)}>
+                {t('common.cancel')}
+              </button>
+              <button
+                className="wbn-data-import-confirm-button"
+                type="button"
+                onClick={() => {
+                  replaceSnapshot(pendingImport.snapshot);
+                  selectBox(null);
+                  setPendingImport(null);
+                }}
+              >
+                {t('settings.importReplace')}
+              </button>
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </>
   );
 }
 

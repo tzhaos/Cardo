@@ -2266,6 +2266,111 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
   gap: 10px;
 }
 
+.wbn-data-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.wbn-data-actions > button {
+  display: flex;
+  min-height: 94px;
+  align-items: flex-start;
+  gap: 11px;
+  border: 1px solid var(--wbn-border);
+  border-radius: 14px;
+  padding: 14px;
+  background: var(--wbn-panel-content);
+  color: var(--wbn-secondary-text);
+  text-align: left;
+}
+
+.wbn-data-actions > button:hover {
+  border-color: color-mix(in srgb, var(--wbn-blue) 25%, var(--wbn-border));
+  background: var(--wbn-hover);
+}
+
+.wbn-data-actions > button > span:last-child {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 5px;
+  color: var(--wbn-soft-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.wbn-data-actions small {
+  color: var(--wbn-muted);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+.wbn-data-file-input {
+  display: none;
+}
+
+.wbn-data-error {
+  margin: 12px 0 0;
+  border: 1px solid color-mix(in srgb, var(--wbn-red) 24%, var(--wbn-border));
+  border-radius: 10px;
+  padding: 9px 11px;
+  background: color-mix(in srgb, var(--wbn-red) 6%, var(--wbn-panel-content));
+  color: var(--wbn-red);
+  font-size: 12px;
+}
+
+.wbn-data-import-confirm {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 12px;
+  border: 1px solid color-mix(in srgb, var(--wbn-blue) 24%, var(--wbn-border));
+  border-radius: 12px;
+  padding: 10px 11px;
+  background: color-mix(in srgb, var(--wbn-blue) 5%, var(--wbn-panel-content));
+}
+
+.wbn-data-import-confirm > span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  color: var(--wbn-soft-text);
+  font-size: 12px;
+}
+
+.wbn-data-import-confirm small {
+  overflow: hidden;
+  color: var(--wbn-muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wbn-data-import-confirm > div {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 6px;
+}
+
+.wbn-data-import-confirm button {
+  min-height: 30px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 9px;
+  background: var(--wbn-hover);
+  color: var(--wbn-secondary-text);
+  font-size: 11px;
+}
+
+.wbn-data-import-confirm .wbn-data-import-confirm-button {
+  background: var(--wbn-blue);
+  color: #fff;
+}
+
 .wbn-theme-card {
   position: relative;
   display: grid;

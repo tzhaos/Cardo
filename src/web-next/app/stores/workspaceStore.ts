@@ -47,6 +47,7 @@ interface WorkspaceStore {
   snapshot: WorkspaceSnapshot;
   historyPast: WorkspaceHistoryEntry[];
   historyFuture: WorkspaceHistoryEntry[];
+  replaceSnapshot: (snapshot: WorkspaceSnapshot) => void;
   createPage: (title?: string) => string;
   renamePage: (pageId: string, title: string) => void;
   deletePage: (pageId: string) => void;
@@ -93,7 +94,8 @@ export type WorkspaceHistoryAction =
   | 'resizeBox'
   | 'deletePage'
   | 'moveBoxToPage'
-  | 'arrangeBoxes';
+  | 'arrangeBoxes'
+  | 'importData';
 
 interface WorkspaceHistoryEntry {
   before: WorkspaceSnapshot;
@@ -109,6 +111,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       snapshot: createDefaultWorkspace(),
       historyPast: [],
       historyFuture: [],
+      replaceSnapshot: (snapshot) => set((state) => recordHistory(state, snapshot, 'importData')),
       createPage: (title = 'Untitled') => {
         let createdPageId = '';
         set((state) => {
