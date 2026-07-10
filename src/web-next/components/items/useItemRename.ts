@@ -4,6 +4,7 @@ import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 export function useItemRename(boxId: string, itemId: string, title: string) {
   const renameItem = useWorkspaceStore((state) => state.renameItem);
   const deleteItem = useWorkspaceStore((state) => state.deleteItem);
+  const setItemPinned = useWorkspaceStore((state) => state.setItemPinned);
   const [renaming, setRenaming] = useState(false);
   const [draft, setDraft] = useState(title);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -50,5 +51,6 @@ export function useItemRename(boxId: string, itemId: string, title: string) {
     commit,
     cancel,
     deleteItem: () => deleteItem(boxId, itemId),
+    setPinned: (isPinned: boolean) => setItemPinned(boxId, itemId, isPinned),
   };
 }

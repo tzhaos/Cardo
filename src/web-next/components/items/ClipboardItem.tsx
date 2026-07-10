@@ -48,7 +48,7 @@ export function ClipboardItem({
 
   return (
     <div
-      className={`wbn-item-row wbn-clipboard-item${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}`}
+      className={`wbn-item-row wbn-clipboard-item${item.isPinned ? ' wbn-item-pinned' : ''}${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}`}
     >
       <AnimatePresence initial={false} mode="wait">
         {deleteView ? (
@@ -94,7 +94,9 @@ export function ClipboardItem({
             </div>
             <ItemActions
               copied={copied}
+              pinned={Boolean(item.isPinned)}
               onCopy={copyText}
+              onPin={() => rename.setPinned(!item.isPinned)}
               onEdit={rename.startRenaming}
               onDelete={() => setDeleteView(true)}
             />

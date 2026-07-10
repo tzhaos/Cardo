@@ -27,6 +27,7 @@ export interface BaseBoxItem {
   id: string;
   type: WorkspaceBoxType;
   title: string;
+  isPinned?: boolean;
   createdAt: string;
   updatedAt: string;
 }

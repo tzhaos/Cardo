@@ -24,7 +24,7 @@ export function BookmarkItem({
 
   return (
     <div
-      className={`wbn-item-row wbn-bookmark-item${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}`}
+      className={`wbn-item-row wbn-bookmark-item${item.isPinned ? ' wbn-item-pinned' : ''}${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}`}
     >
       <AnimatePresence initial={false} mode="wait">
         {deleteView ? (
@@ -93,7 +93,12 @@ export function BookmarkItem({
                 {item.url}
               </a>
             </div>
-            <ItemActions onEdit={rename.startRenaming} onDelete={() => setDeleteView(true)} />
+            <ItemActions
+              pinned={Boolean(item.isPinned)}
+              onPin={() => rename.setPinned(!item.isPinned)}
+              onEdit={rename.startRenaming}
+              onDelete={() => setDeleteView(true)}
+            />
           </motion.div>
         )}
       </AnimatePresence>

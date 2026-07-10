@@ -25,7 +25,7 @@ export function FolderItem({
 
   return (
     <div
-      className={`wbn-item-row${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}`}
+      className={`wbn-item-row${item.isPinned ? ' wbn-item-pinned' : ''}${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}`}
     >
       <AnimatePresence initial={false} mode="wait">
         {deleteView ? (
@@ -74,7 +74,12 @@ export function FolderItem({
               )}
               <small className="wbn-item-secondary">{item.path}</small>
             </div>
-            <ItemActions onEdit={rename.startRenaming} onDelete={() => setDeleteView(true)} />
+            <ItemActions
+              pinned={Boolean(item.isPinned)}
+              onPin={() => rename.setPinned(!item.isPinned)}
+              onEdit={rename.startRenaming}
+              onDelete={() => setDeleteView(true)}
+            />
           </motion.div>
         )}
       </AnimatePresence>

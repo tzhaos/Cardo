@@ -277,6 +277,36 @@ export function renameItem(
   };
 }
 
+export function setItemPinned(
+  snapshot: WorkspaceSnapshot,
+  boxId: string,
+  itemId: string,
+  isPinned: boolean,
+) {
+  const timestamp = nowIso();
+
+  return {
+    ...snapshot,
+    boxes: snapshot.boxes.map((box) => {
+      if (box.id !== boxId || !box.items.some((item) => item.id === itemId)) {
+        return box;
+      }
+
+      const items = box.items.map((item) =>
+        item.id === itemId ? { ...item, isPinned, updatedAt: timestamp } : item,
+      );
+      return {
+        ...box,
+        items: [
+          ...items.filter((item) => item.isPinned),
+          ...items.filter((item) => !item.isPinned),
+        ],
+        updatedAt: timestamp,
+      };
+    }),
+  };
+}
+
 export function reorderItems(snapshot: WorkspaceSnapshot, boxId: string, orderedItemIds: string[]) {
   const box = snapshot.boxes.find((candidate) => candidate.id === boxId);
   if (
@@ -294,13 +324,17 @@ export function reorderItems(snapshot: WorkspaceSnapshot, boxId: string, ordered
   }
 
   const itemsById = new Map(box.items.map((item) => [item.id, item]));
+  const orderedItems = orderedItemIds.map((itemId) => itemsById.get(itemId)!);
   return {
     ...snapshot,
     boxes: snapshot.boxes.map((candidate) =>
       candidate.id === boxId
         ? {
             ...candidate,
-            items: orderedItemIds.map((itemId) => itemsById.get(itemId)!),
+            items: [
+              ...orderedItems.filter((item) => item.isPinned),
+              ...orderedItems.filter((item) => !item.isPinned),
+            ],
             updatedAt: nowIso(),
           }
         : candidate,

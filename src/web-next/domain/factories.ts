@@ -110,7 +110,12 @@ export function getDefaultBoxTitle(type: WorkspaceBoxType) {
 
 export function createItem(type: WorkspaceBoxType, draft: Record<string, string>): BoxItem {
   const timestamp = nowIso();
-  const base = { id: createId('item'), createdAt: timestamp, updatedAt: timestamp };
+  const base = {
+    id: createId('item'),
+    isPinned: false,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  };
   const explicitTitle = draft.title?.trim() ?? '';
 
   switch (type) {

@@ -846,6 +846,15 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
+.wbn-item-row.wbn-item-pinned {
+  border-color: color-mix(in srgb, var(--box-accent) 18%, var(--wbn-border-subtle));
+  background: color-mix(in srgb, var(--box-accent) 5%, var(--wbn-panel-content));
+}
+
+.wbn-item-pinned .wbn-item-pin {
+  color: var(--box-accent);
+}
+
 .wbn-item-glyph {
   display: inline-flex;
   width: 36px;

@@ -30,6 +30,7 @@ import {
   setBoxPinned,
   setBoxViewMode,
   setDefaultPage,
+  setItemPinned,
   updateBoxFrame,
   constrainWorkspaceFramesToViewport,
 } from '../../domain/reducers';
@@ -53,6 +54,7 @@ interface WorkspaceStore {
   deleteBox: (boxId: string) => void;
   createItem: (boxId: string, type: WorkspaceBoxType, draft: Record<string, string>) => BoxItem;
   renameItem: (boxId: string, itemId: string, title: string) => void;
+  setItemPinned: (boxId: string, itemId: string, isPinned: boolean) => void;
   reorderItems: (boxId: string, orderedItemIds: string[]) => void;
   deleteItem: (boxId: string, itemId: string) => void;
 }
@@ -110,6 +112,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       },
       renameItem: (boxId, itemId, title) =>
         set((state) => ({ snapshot: renameItem(state.snapshot, boxId, itemId, title) })),
+      setItemPinned: (boxId, itemId, isPinned) =>
+        set((state) => ({ snapshot: setItemPinned(state.snapshot, boxId, itemId, isPinned) })),
       reorderItems: (boxId, orderedItemIds) =>
         set((state) => ({ snapshot: reorderItems(state.snapshot, boxId, orderedItemIds) })),
       deleteItem: (boxId, itemId) =>
