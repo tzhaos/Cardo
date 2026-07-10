@@ -10,11 +10,18 @@
     background-color 320ms ease;
 }
 
-.wbn-history-toast {
+.wbn-history-toast-wrap {
   position: fixed;
   z-index: 260;
+  right: 0;
   bottom: 92px;
-  left: 50%;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.wbn-history-toast {
   display: flex;
   min-height: 42px;
   align-items: center;
@@ -26,7 +33,7 @@
   box-shadow: var(--wbn-shadow-hover);
   color: var(--wbn-soft-text);
   font-size: 13px;
-  transform: translateX(-50%);
+  pointer-events: auto;
   backdrop-filter: blur(16px);
 }
 
