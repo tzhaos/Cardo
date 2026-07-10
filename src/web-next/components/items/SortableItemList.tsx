@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { GripVertical } from 'lucide-react';
 import { AnimatePresence, Reorder, useDragControls } from 'motion/react';
 import { useStagedOrder } from '../../app/motion/useStagedOrder';
+import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import type { BoxItem, WorkspaceBoxViewMode } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
@@ -20,6 +21,7 @@ export function SortableItemList<TItem extends BoxItem>({
   renderItem: (item: TItem) => ReactNode;
 }) {
   const reorderItems = useWorkspaceStore((state) => state.reorderItems);
+  const isBoxDragging = useUiStore((state) => state.draggedBoxId === boxId);
   const { orderedIds, startReordering, updateOrder, finishReordering } = useStagedOrder(
     items,
     (orderedItemIds) => reorderItems(boxId, orderedItemIds),
@@ -45,6 +47,7 @@ export function SortableItemList<TItem extends BoxItem>({
             key={item.id}
             onReorderEnd={finishReordering}
             onReorderStart={startReordering}
+            suspendLayout={isBoxDragging}
           >
             {renderItem(item)}
           </SortableItemEntry>
@@ -59,11 +62,13 @@ function SortableItemEntry({
   children,
   onReorderEnd,
   onReorderStart,
+  suspendLayout,
 }: {
   itemId: string;
   children: ReactNode;
   onReorderEnd: () => void;
   onReorderStart: () => void;
+  suspendLayout: boolean;
 }) {
   const controls = useDragControls();
   const [dragging, setDragging] = useState(false);
@@ -78,7 +83,7 @@ function SortableItemEntry({
       dragElastic={0.06}
       dragListener={false}
       dragMomentum={false}
-      layout="position"
+      layout={suspendLayout ? false : 'position'}
       initial={{ opacity: 0, y: 8, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -6, scale: 0.97 }}

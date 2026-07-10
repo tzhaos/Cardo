@@ -426,7 +426,6 @@
 
 .wbn-box-dragging .wbn-item-reorder-entry {
   transition: none !important;
-  transform: none !important;
 }
 
 .wbn-box-dragging .wbn-item-drag-handle {

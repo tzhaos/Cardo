@@ -12,7 +12,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import { animate as animateMotion, motion, useMotionValue, useSpring } from 'motion/react';
+import { animate as animateMotion, motion, useMotionValue } from 'motion/react';
 import type { MotionStyle } from 'motion/react';
 import { isRecycleBinPageId, type WorkspaceBox } from '../../domain/workspace';
 import { useCanvasStore } from '../../app/stores/canvasStore';
@@ -73,8 +73,6 @@ export function BaseBoxFrame({
   const boxTop = useMotionValue(box.frame.y);
   const boxWidth = useMotionValue(box.frame.width);
   const boxHeight = useMotionValue(box.frame.height);
-  const dragTilt = useMotionValue(0);
-  const smoothDragTilt = useSpring(dragTilt, { stiffness: 420, damping: 34, mass: 0.42 });
   const { t } = useI18n();
 
   useEffect(
@@ -126,10 +124,6 @@ export function BaseBoxFrame({
     const session = startWindowPointerSession({
       pointerId: event.pointerId,
       onMove: (moveEvent) => {
-        const overTopBar = useUiStore.getState().boxDragOverTopBar;
-        dragTilt.set(
-          overTopBar ? 0 : Math.min(2.2, Math.max(-2.2, (moveEvent.clientX - startX) * 0.012)),
-        );
         latestFrame = constrainBoxFrameToCanvas(
           {
             ...startFrame,
@@ -142,7 +136,6 @@ export function BaseBoxFrame({
         boxTop.set(latestFrame.y);
       },
       onEnd: (reason) => {
-        dragTilt.set(0);
         updateBoxFrame(box.id, latestFrame);
         if (pointerSessionRef.current === session) {
           pointerSessionRef.current = null;
@@ -251,12 +244,6 @@ export function BaseBoxFrame({
     dropReleased,
   ]);
 
-  useEffect(() => {
-    if (draggingOverTopBar) {
-      dragTilt.set(0);
-    }
-  }, [dragTilt, draggingOverTopBar]);
-
   return (
     <motion.article
       className={visualClassName}
@@ -324,8 +311,6 @@ export function BaseBoxFrame({
           height: boxHeight,
           minWidth: 240,
           minHeight: 170,
-          rotateZ: smoothDragTilt,
-          transformOrigin: '50% 18%',
           '--box-accent': accent,
         } as MotionStyle & { '--box-accent': string }
       }
