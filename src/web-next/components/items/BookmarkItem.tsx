@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import { Bookmark } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import type { BookmarkItem as BookmarkItemModel } from '../../domain/workspace';
+import { ItemDeleteView } from './ItemDeleteView';
 import { ItemActions } from './ItemActions';
 import { useItemRename } from './useItemRename';
 
@@ -13,35 +16,70 @@ export function BookmarkItem({
   highlight: boolean;
 }) {
   const rename = useItemRename(boxId, item.id, item.title);
+  const [deleteView, setDeleteView] = useState(false);
 
   return (
-    <div className={`wbn-item-row${highlight ? ' wbn-item-new' : ''}`}>
-      <span className="wbn-item-glyph">
-        <Bookmark size={16} />
-      </span>
-      <div className="wbn-item-main">
-        {rename.renaming ? (
-          <input
-            ref={rename.inputRef}
-            className="wbn-inline-rename wbn-item-title-input"
-            value={rename.draft}
-            onChange={(event) => rename.setDraft(event.target.value)}
-            onBlur={rename.commit}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') event.currentTarget.blur();
-              if (event.key === 'Escape') rename.cancel();
-            }}
+    <div
+      className={`wbn-item-row${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}`}
+    >
+      <AnimatePresence initial={false} mode="wait">
+        {deleteView ? (
+          <ItemDeleteView
+            key="delete"
+            onCancel={() => setDeleteView(false)}
+            onConfirm={rename.deleteItem}
           />
         ) : (
-          <a href={item.url} target="_blank" rel="noreferrer" onDoubleClick={rename.startRenaming}>
-            <strong>{item.title}</strong>
-          </a>
+          <motion.div
+            className="wbn-item-view-content wbn-item-view-content-row"
+            key="content"
+            initial={{ opacity: 0, x: -6 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -6 }}
+            transition={{ duration: 0.15 }}
+          >
+            <span className="wbn-item-glyph">
+              <Bookmark size={16} />
+            </span>
+            <div className="wbn-item-main">
+              {rename.renaming ? (
+                <input
+                  ref={rename.inputRef}
+                  className="wbn-inline-rename wbn-item-title-input"
+                  value={rename.draft}
+                  onChange={(event) => rename.setDraft(event.target.value)}
+                  onBlur={rename.commit}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') event.currentTarget.blur();
+                    if (event.key === 'Escape') rename.cancel();
+                  }}
+                />
+              ) : (
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  onDoubleClick={rename.startRenaming}
+                >
+                  <strong>{item.title}</strong>
+                </a>
+              )}
+              <a
+                className="wbn-item-subtitle-link"
+                href={item.url}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {item.url}
+              </a>
+            </div>
+            <ItemActions
+              onEdit={rename.startRenaming}
+              onDelete={() => setDeleteView(true)}
+            />
+          </motion.div>
         )}
-        <a className="wbn-item-subtitle-link" href={item.url} target="_blank" rel="noreferrer">
-          {item.url}
-        </a>
-      </div>
-      <ItemActions onEdit={rename.startRenaming} onDelete={rename.deleteItem} />
+      </AnimatePresence>
     </div>
   );
 }

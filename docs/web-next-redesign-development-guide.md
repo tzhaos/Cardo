@@ -319,6 +319,12 @@ Item ordering:
 - A quiet grip handle appears on hover/focus; dragging lifts the item while sibling items settle with spring layout motion.
 - Item controls remain local to the item and do not initiate a drag.
 
+Item-local destructive flow:
+
+- Delete never jumps to a box-level or global modal; the selected item itself transitions into a compact delete-confirmation view.
+- Cancel restores that item only, while confirm removes it and lets sibling items settle through the existing list layout animation.
+- The item drag handle is disabled while its delete view is active, keeping the operation inside the current item layer.
+
 Create success animation:
 
 - After confirm, return to the item list.
