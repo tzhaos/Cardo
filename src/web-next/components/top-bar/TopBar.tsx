@@ -104,7 +104,11 @@ export function TopBar() {
   }, [draggedBoxId, endBoxDrag, moveBoxToPage, setBoxDropPage]);
 
   return (
-    <header className={`wbn-top-bar${draggedBoxId ? ' wbn-top-bar-drop-mode' : ''}`} data-top-bar>
+    <header
+      className={`wbn-top-bar${draggedBoxId ? ' wbn-top-bar-drop-mode' : ''}`}
+      data-editing={editing || undefined}
+      data-top-bar
+    >
       <AnimatePresence mode="popLayout">
         {pageToDelete ? (
           <motion.div
@@ -127,9 +131,11 @@ export function TopBar() {
           <motion.div
             className="wbn-top-inner"
             key="tabs"
+            layout="position"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ layout: { type: 'spring', stiffness: 460, damping: 38, mass: 0.72 } }}
           >
             <Reorder.Group
               as="nav"
@@ -148,6 +154,7 @@ export function TopBar() {
                     key={page.id}
                     value={page.id}
                     dragListener={editing}
+                    layout="position"
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8, width: 0 }}
@@ -175,23 +182,36 @@ export function TopBar() {
                 ))}
               </AnimatePresence>
             </Reorder.Group>
-            <div className="wbn-top-actions">
-              <button
+            <motion.div className="wbn-top-actions" layout="position">
+              <motion.button
                 type="button"
                 onClick={() => createPage(t('page.untitled'))}
                 aria-label={t('page.add')}
+                whileTap={{ scale: 0.9 }}
               >
                 <Plus size={18} />
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 className={editing ? 'wbn-check-button' : ''}
                 type="button"
                 onClick={() => setEditing((value) => !value)}
                 aria-label={editing ? t('page.finishEditing') : t('page.edit')}
+                whileTap={{ scale: 0.9 }}
               >
-                {editing ? <Check size={18} /> : <Pencil size={18} />}
-              </button>
-            </div>
+                <AnimatePresence initial={false} mode="popLayout">
+                  <motion.span
+                    className="wbn-top-action-icon"
+                    key={editing ? 'done' : 'edit'}
+                    initial={{ opacity: 0, rotate: editing ? -38 : 38, scale: 0.68 }}
+                    animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                    exit={{ opacity: 0, rotate: editing ? 38 : -38, scale: 0.68 }}
+                    transition={{ type: 'spring', stiffness: 540, damping: 32, mass: 0.54 }}
+                  >
+                    {editing ? <Check size={18} /> : <Pencil size={18} />}
+                  </motion.span>
+                </AnimatePresence>
+              </motion.button>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

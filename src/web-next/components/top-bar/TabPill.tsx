@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
-import { motion } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import type { WorkspacePage } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 
@@ -54,7 +54,9 @@ export function TabPill({
   };
 
   return (
-    <div
+    <motion.div
+      layout="position"
+      transition={{ layout: { type: 'spring', stiffness: 500, damping: 40, mass: 0.68 } }}
       className={`wbn-tab-pill${active ? ' wbn-tab-pill-active' : ''}${defaultPage ? ' wbn-tab-pill-default' : ''}${editing ? ' wbn-tab-pill-editing' : ''}${renaming ? ' wbn-tab-pill-renaming' : ''}`}
     >
       <button
@@ -76,38 +78,54 @@ export function TabPill({
           }
         }}
       >
-        {active && !editing ? (
-          <motion.span
-            className="wbn-active-tab-indicator"
-            layoutId="active-tab-indicator"
-            transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-          />
-        ) : null}
-        <span className="wbn-tab-label">
-          {page.title}
-          {editing && defaultPage ? (
+        <AnimatePresence initial={false}>
+          {active && !editing ? (
             <motion.span
-              aria-hidden="true"
-              className="wbn-default-page-indicator"
-              layoutId="default-page-indicator"
-              transition={{ type: 'spring', bounce: 0.16, duration: 0.46 }}
+              className="wbn-active-tab-indicator"
+              layoutId="active-tab-indicator"
+              initial={{ opacity: 0, scale: 0.94 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ type: 'spring', bounce: 0.16, duration: 0.52 }}
             />
           ) : null}
+        </AnimatePresence>
+        <span className="wbn-tab-label">
+          {page.title}
+          <AnimatePresence initial={false}>
+            {editing && defaultPage ? (
+              <motion.span
+                aria-hidden="true"
+                className="wbn-default-page-indicator"
+                layoutId="default-page-indicator"
+                initial={{ opacity: 0, scaleX: 0.35, y: -2 }}
+                animate={{ opacity: 1, scaleX: 1, y: 0 }}
+                exit={{ opacity: 0, scaleX: 0.35, y: -2 }}
+                transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.55 }}
+              />
+            ) : null}
+          </AnimatePresence>
         </span>
-        {editing && canDelete ? (
-          <span
-            className="wbn-tab-delete"
-            role="button"
-            tabIndex={0}
-            aria-label={t('page.delete', { title: page.title })}
-            onClick={(event) => {
-              event.stopPropagation();
-              onDelete();
-            }}
-          >
-            <X size={14} />
-          </span>
-        ) : null}
+        <AnimatePresence initial={false}>
+          {editing && canDelete ? (
+            <motion.span
+              className="wbn-tab-delete"
+              role="button"
+              tabIndex={0}
+              aria-label={t('page.delete', { title: page.title })}
+              initial={{ width: 0, marginRight: 0, opacity: 0, scale: 0.64 }}
+              animate={{ width: 20, marginRight: 8, opacity: 1, scale: 1 }}
+              exit={{ width: 0, marginRight: 0, opacity: 0, scale: 0.64 }}
+              transition={{ type: 'spring', stiffness: 520, damping: 38, mass: 0.62 }}
+              onClick={(event) => {
+                event.stopPropagation();
+                onDelete();
+              }}
+            >
+              <X size={14} />
+            </motion.span>
+          ) : null}
+        </AnimatePresence>
       </button>
       {renaming ? (
         <div className="wbn-tab-rename-layer">
@@ -130,6 +148,6 @@ export function TabPill({
           />
         </div>
       ) : null}
-    </div>
+    </motion.div>
   );
 }

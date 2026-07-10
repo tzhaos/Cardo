@@ -331,6 +331,7 @@ Capabilities in edit state:
 - Drag-sort tabs.
 - Clicking a page sets it as the default startup page instead of activating it.
 - The default page has a small blue indicator below its label.
+- Entering edit state fades the active-page fill, grows delete controls from zero width, reveals the default-page marker, and morphs the edit icon without abruptly resizing the capsule.
 - Confirm/exit edit mode with the rightmost blue check button.
 - Keep at least one tab.
 
