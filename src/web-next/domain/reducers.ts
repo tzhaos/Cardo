@@ -159,6 +159,41 @@ export function renameItem(
   };
 }
 
+export function reorderItems(
+  snapshot: WorkspaceSnapshot,
+  boxId: string,
+  orderedItemIds: string[],
+) {
+  const box = snapshot.boxes.find((candidate) => candidate.id === boxId);
+  if (
+    !box ||
+    orderedItemIds.length !== box.items.length ||
+    new Set(orderedItemIds).size !== orderedItemIds.length ||
+    orderedItemIds.some((itemId) => !box.items.some((item) => item.id === itemId))
+  ) {
+    return snapshot;
+  }
+
+  const currentOrder = box.items.map((item) => item.id);
+  if (currentOrder.every((itemId, index) => itemId === orderedItemIds[index])) {
+    return snapshot;
+  }
+
+  const itemsById = new Map(box.items.map((item) => [item.id, item]));
+  return {
+    ...snapshot,
+    boxes: snapshot.boxes.map((candidate) =>
+      candidate.id === boxId
+        ? {
+            ...candidate,
+            items: orderedItemIds.map((itemId) => itemsById.get(itemId)!),
+            updatedAt: nowIso(),
+          }
+        : candidate,
+    ),
+  };
+}
+
 export function deleteItem(snapshot: WorkspaceSnapshot, boxId: string, itemId: string) {
   return {
     ...snapshot,

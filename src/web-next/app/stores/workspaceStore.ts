@@ -20,6 +20,7 @@ import {
   renameBox,
   renameItem,
   renamePage,
+  reorderItems,
   reorderPages,
   setActivePage,
   setDefaultPage,
@@ -41,6 +42,7 @@ interface WorkspaceStore {
   deleteBox: (boxId: string) => void;
   createItem: (boxId: string, type: WorkspaceBoxType, draft: Record<string, string>) => BoxItem;
   renameItem: (boxId: string, itemId: string, title: string) => void;
+  reorderItems: (boxId: string, orderedItemIds: string[]) => void;
   deleteItem: (boxId: string, itemId: string) => void;
 }
 
@@ -90,6 +92,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       },
       renameItem: (boxId, itemId, title) =>
         set((state) => ({ snapshot: renameItem(state.snapshot, boxId, itemId, title) })),
+      reorderItems: (boxId, orderedItemIds) =>
+        set((state) => ({ snapshot: reorderItems(state.snapshot, boxId, orderedItemIds) })),
       deleteItem: (boxId, itemId) =>
         set((state) => ({ snapshot: deleteItem(state.snapshot, boxId, itemId) })),
     }),

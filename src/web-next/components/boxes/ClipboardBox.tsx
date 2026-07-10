@@ -2,6 +2,7 @@ import { Clipboard } from 'lucide-react';
 import type { WorkspaceBox } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
 import { ClipboardItem } from '../items/ClipboardItem';
+import { SortableItemList } from '../items/SortableItemList';
 import { ClipboardAddView } from './add-views/ClipboardAddView';
 import { BaseBoxFrame } from './BaseBoxFrame';
 import { useI18n } from '../../i18n/useI18n';
@@ -22,16 +23,17 @@ export function ClipboardBox({ box }: { box: WorkspaceBox }) {
       {draftState?.mode ? (
         <ClipboardAddView boxId={box.id} />
       ) : items.length ? (
-        <div className="wbn-item-list">
-          {items.map((item) => (
+        <SortableItemList
+          boxId={box.id}
+          items={items}
+          renderItem={(item) => (
             <ClipboardItem
               boxId={box.id}
               item={item}
-              key={item.id}
               highlight={draftState?.highlightItemId === item.id}
             />
-          ))}
-        </div>
+          )}
+        />
       ) : (
         <div className="wbn-empty-state">{t('box.emptyClipboard')}</div>
       )}

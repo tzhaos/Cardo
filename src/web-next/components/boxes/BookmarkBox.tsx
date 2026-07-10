@@ -2,6 +2,7 @@ import { Bookmark } from 'lucide-react';
 import type { WorkspaceBox } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
 import { BookmarkItem } from '../items/BookmarkItem';
+import { SortableItemList } from '../items/SortableItemList';
 import { BookmarkAddView } from './add-views/BookmarkAddView';
 import { BaseBoxFrame } from './BaseBoxFrame';
 import { useI18n } from '../../i18n/useI18n';
@@ -22,16 +23,17 @@ export function BookmarkBox({ box }: { box: WorkspaceBox }) {
       {draftState?.mode ? (
         <BookmarkAddView boxId={box.id} />
       ) : items.length ? (
-        <div className="wbn-item-list">
-          {items.map((item) => (
+        <SortableItemList
+          boxId={box.id}
+          items={items}
+          renderItem={(item) => (
             <BookmarkItem
               boxId={box.id}
               item={item}
-              key={item.id}
               highlight={draftState?.highlightItemId === item.id}
             />
-          ))}
-        </div>
+          )}
+        />
       ) : (
         <div className="wbn-empty-state">{t('box.emptyBookmark')}</div>
       )}

@@ -2,6 +2,7 @@ import { Folder } from 'lucide-react';
 import type { WorkspaceBox } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
 import { FolderItem } from '../items/FolderItem';
+import { SortableItemList } from '../items/SortableItemList';
 import { FolderAddView } from './add-views/FolderAddView';
 import { BaseBoxFrame } from './BaseBoxFrame';
 import { useI18n } from '../../i18n/useI18n';
@@ -22,16 +23,17 @@ export function FolderBox({ box }: { box: WorkspaceBox }) {
       {draftState?.mode ? (
         <FolderAddView boxId={box.id} />
       ) : items.length ? (
-        <div className="wbn-item-list">
-          {items.map((item) => (
+        <SortableItemList
+          boxId={box.id}
+          items={items}
+          renderItem={(item) => (
             <FolderItem
               boxId={box.id}
               item={item}
-              key={item.id}
               highlight={draftState?.highlightItemId === item.id}
             />
-          ))}
-        </div>
+          )}
+        />
       ) : (
         <div className="wbn-empty-state">{t('box.emptyFolder')}</div>
       )}

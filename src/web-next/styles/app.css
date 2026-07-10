@@ -367,7 +367,66 @@
 }
 
 .wbn-item-list {
-  display: contents;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wbn-item-reorder-entry {
+  position: relative;
+  width: 100%;
+  border-radius: 10px;
+}
+
+.wbn-item-reorder-entry-dragging {
+  z-index: 30;
+}
+
+.wbn-item-reorder-entry-dragging .wbn-item-row,
+.wbn-item-reorder-entry-dragging .wbn-clipboard-card {
+  border-color: color-mix(in srgb, var(--box-accent) 34%, var(--wbn-border-subtle));
+  background: var(--wbn-surface-strong);
+}
+
+.wbn-item-drag-handle {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  left: 3px;
+  display: inline-flex;
+  width: 20px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--wbn-muted);
+  cursor: grab;
+  opacity: 0;
+  touch-action: none;
+  transform: translateY(-50%);
+  transition:
+    opacity 140ms ease,
+    color 140ms ease,
+    background 140ms ease;
+}
+
+.wbn-item-reorder-entry:hover .wbn-item-drag-handle,
+.wbn-item-drag-handle:focus-visible,
+.wbn-item-reorder-entry-dragging .wbn-item-drag-handle {
+  opacity: 1;
+}
+
+.wbn-item-drag-handle:hover,
+.wbn-item-drag-handle:focus-visible {
+  background: var(--wbn-hover);
+  color: var(--wbn-soft-text);
+  outline: none;
+}
+
+.wbn-item-drag-handle:active {
+  cursor: grabbing;
 }
 
 .wbn-item-row,
@@ -379,7 +438,7 @@
   gap: 12px;
   border: 1px solid transparent;
   border-radius: 8px;
-  padding: 8px;
+  padding: 8px 8px 8px 26px;
   background: transparent;
   color: inherit;
   text-decoration: none;
@@ -1591,6 +1650,12 @@
 
 .wbn-clipboard-card {
   padding-right: 42px;
+}
+
+@media (hover: none) {
+  .wbn-item-drag-handle {
+    opacity: 0.58;
+  }
 }
 
 .wbn-clipboard-card .wbn-item-actions button:not(.wbn-item-copy) {

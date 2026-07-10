@@ -313,6 +313,12 @@ Type-specific create rules:
 - Bookmark titles are optional; when omitted, derive the second-to-last hostname label, such as `yyy` from `xxx.yyy.zzz/nnn`.
 - Clipboard titles are optional and may remain empty; clipboard cards expose a right-side copy action without a redundant type label.
 
+Item ordering:
+
+- Items are drag-sortable only within their owning box, and the resulting array order is persisted with the workspace.
+- A quiet grip handle appears on hover/focus; dragging lifts the item while sibling items settle with spring layout motion.
+- Item controls remain local to the item and do not initiate a drag.
+
 Create success animation:
 
 - After confirm, return to the item list.
