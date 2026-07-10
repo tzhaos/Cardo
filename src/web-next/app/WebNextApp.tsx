@@ -6,12 +6,14 @@ import { FloatingMenuLayer } from '../components/floating-menu/FloatingMenuLayer
 import { FloatingMenuProvider } from '../components/floating-menu/useFloatingMenu';
 import { SettingsWindow } from '../components/settings/SettingsWindow';
 import { TopBar } from '../components/top-bar/TopBar';
+import { applyWebNextTheme } from '../themes/themeRegistry';
+import { useCancelActivePointerOnWindowExit } from './useCancelActivePointerOnWindowExit';
 import { usePasteIntoSelectedBox } from './usePasteIntoSelectedBox';
 import { usePreferencesStore } from './stores/preferencesStore';
-import { applyWebNextTheme } from '../themes/themeRegistry';
 import './styles.css';
 
 export default function WebNextApp() {
+  useCancelActivePointerOnWindowExit();
   usePasteIntoSelectedBox();
   const colorMode = usePreferencesStore((state) => state.colorMode);
   const locale = usePreferencesStore((state) => state.locale);

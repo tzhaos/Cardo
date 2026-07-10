@@ -5,6 +5,10 @@ import {
   clampIndependentMenuPosition,
   useIndependentMenuStore,
 } from '../../app/stores/independentMenuStore';
+import {
+  startWindowPointerSession,
+  type WindowPointerSession,
+} from '../../app/windowPointerSession';
 import { SettingsPanel } from './SettingsPanel';
 
 export function SettingsWindow() {
@@ -12,18 +16,18 @@ export function SettingsWindow() {
   const closeMenu = useIndependentMenuStore((state) => state.closeMenu);
   const moveMenu = useIndependentMenuStore((state) => state.moveMenu);
   const windowRef = useRef<HTMLElement>(null);
-  const dragCleanupRef = useRef<(() => void) | null>(null);
+  const dragSessionRef = useRef<WindowPointerSession | null>(null);
 
   useEffect(
     () => () => {
-      dragCleanupRef.current?.();
+      dragSessionRef.current?.end();
     },
     [],
   );
 
   useEffect(() => {
     if (!menu.open) {
-      dragCleanupRef.current?.();
+      dragSessionRef.current?.end();
       return;
     }
 
@@ -67,32 +71,32 @@ export function SettingsWindow() {
     event.preventDefault();
     const rect = element.getBoundingClientRect();
     const pointerOffset = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    let latestPosition = { x: Math.round(rect.left), y: Math.round(rect.top) };
 
-    const cleanup = () => {
-      document.body.classList.remove('wbn-independent-menu-dragging');
-      window.removeEventListener('pointermove', onMove, true);
-      window.removeEventListener('pointerup', cleanup, true);
-      window.removeEventListener('pointercancel', cleanup, true);
-      dragCleanupRef.current = null;
-    };
-    const onMove = (moveEvent: PointerEvent) => {
-      const position = clampIndependentMenuPosition(
-        {
-          x: moveEvent.clientX - pointerOffset.x,
-          y: moveEvent.clientY - pointerOffset.y,
-        },
-        { width: rect.width, height: rect.height },
-        { width: window.innerWidth, height: window.innerHeight },
-      );
-      moveMenu('settings', position);
-    };
-
-    dragCleanupRef.current?.();
-    dragCleanupRef.current = cleanup;
+    dragSessionRef.current?.end();
     document.body.classList.add('wbn-independent-menu-dragging');
-    window.addEventListener('pointermove', onMove, true);
-    window.addEventListener('pointerup', cleanup, true);
-    window.addEventListener('pointercancel', cleanup, true);
+    const session = startWindowPointerSession({
+      onMove: (moveEvent) => {
+        latestPosition = clampIndependentMenuPosition(
+          {
+            x: moveEvent.clientX - pointerOffset.x,
+            y: moveEvent.clientY - pointerOffset.y,
+          },
+          { width: rect.width, height: rect.height },
+          { width: window.innerWidth, height: window.innerHeight },
+        );
+        element.style.left = `${latestPosition.x}px`;
+        element.style.top = `${latestPosition.y}px`;
+      },
+      onEnd: () => {
+        document.body.classList.remove('wbn-independent-menu-dragging');
+        if (dragSessionRef.current === session) {
+          dragSessionRef.current = null;
+        }
+        moveMenu('settings', latestPosition);
+      },
+    });
+    dragSessionRef.current = session;
   };
 
   return (

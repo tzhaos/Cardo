@@ -3,6 +3,7 @@ import { Check, Pencil, Plus } from 'lucide-react';
 import { AnimatePresence, motion, Reorder } from 'motion/react';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
+import { startWindowPointerSession } from '../../app/windowPointerSession';
 import { findPageLandingFrame } from '../../domain/placement';
 import { useI18n } from '../../i18n/useI18n';
 import { TabDeleteConfirmView } from './TabDeleteConfirmView';
@@ -71,30 +72,36 @@ export function TopBar() {
       return target?.dataset.pageDropId ?? null;
     };
 
-    const onPointerMove = (event: PointerEvent) => {
-      setBoxDropPage(resolveDropPageId(event.clientX, event.clientY));
-    };
+    const session = startWindowPointerSession({
+      onMove: (event) => {
+        setBoxDropPage(resolveDropPageId(event.clientX, event.clientY));
+      },
+      onEnd: (reason, event) => {
+        if (reason === 'pointerup' && event instanceof PointerEvent) {
+          const currentSnapshot = useWorkspaceStore.getState().snapshot;
+          const targetPageId =
+            resolveDropPageId(event.clientX, event.clientY) ??
+            useUiStore.getState().boxDropPageId;
+          const movingBox = currentSnapshot.boxes.find((box) => box.id === draggedBoxId);
+          if (targetPageId && movingBox && movingBox.pageId !== targetPageId) {
+            const landingFrame = findPageLandingFrame(
+              currentSnapshot,
+              draggedBoxId,
+              targetPageId,
+              {
+                width: window.innerWidth,
+                height: window.innerHeight,
+              },
+            );
+            moveBoxToPage(draggedBoxId, targetPageId, landingFrame ?? undefined);
+          }
+        }
+        endBoxDrag();
+      },
+    });
 
-    const onPointerUp = (event: PointerEvent) => {
-      const targetPageId = resolveDropPageId(event.clientX, event.clientY) ?? boxDropPageId;
-      const movingBox = snapshot.boxes.find((box) => box.id === draggedBoxId);
-      if (targetPageId && movingBox && movingBox.pageId !== targetPageId) {
-        const landingFrame = findPageLandingFrame(snapshot, draggedBoxId, targetPageId, {
-          width: window.innerWidth,
-          height: window.innerHeight,
-        });
-        moveBoxToPage(draggedBoxId, targetPageId, landingFrame ?? undefined);
-      }
-      endBoxDrag();
-    };
-
-    window.addEventListener('pointermove', onPointerMove, true);
-    window.addEventListener('pointerup', onPointerUp, true);
-    return () => {
-      window.removeEventListener('pointermove', onPointerMove, true);
-      window.removeEventListener('pointerup', onPointerUp, true);
-    };
-  }, [boxDropPageId, draggedBoxId, endBoxDrag, moveBoxToPage, setBoxDropPage, snapshot]);
+    return session.dispose;
+  }, [draggedBoxId, endBoxDrag, moveBoxToPage, setBoxDropPage]);
 
   return (
     <header className={`wbn-top-bar${draggedBoxId ? ' wbn-top-bar-drop-mode' : ''}`} data-top-bar>

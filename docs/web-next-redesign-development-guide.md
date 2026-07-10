@@ -181,6 +181,7 @@ It should contain core ambient actions such as:
 
 Language and color-mode controls live inside Settings rather than occupying permanent toolbar slots.
 Settings is a root-level independent menu, not a toolbar drop menu, canvas box, or canvas child. It can remain open while the workspace is used and can be moved by dragging its header.
+Menu movement updates the element directly during the pointer session and persists its final position only when dragging ends, so internal animated indicators remain visually attached to the menu.
 
 The create button is a dark circular button on the right. When the create menu is open, the button changes to an `×` state.
 
@@ -268,6 +269,7 @@ Use the same drop menu style for all context menus. Suppress the browser default
 ### Box movement and resize
 
 - Box dragging is always available from the header.
+- Pointer-held interactions end on pointer cancel, window exit, window blur, or document hiding so switching apps cannot leave a drag or resize session stuck.
 - Resize handles are not always visible.
 - Resize affordances appear lightly on hover near corners/edges.
 - Resize should feel calm and not turn the prototype into a heavy editor UI.

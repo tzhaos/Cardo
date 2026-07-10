@@ -5,6 +5,10 @@ import { motion } from 'motion/react';
 import type { WorkspaceBox } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
+import {
+  startWindowPointerSession,
+  type WindowPointerSession,
+} from '../../app/windowPointerSession';
 import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
 import { useI18n } from '../../i18n/useI18n';
 
@@ -32,7 +36,15 @@ export function BaseBoxFrame({ box, icon, accent, children, onAddItem }: BaseBox
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [titleDraft, setTitleDraft] = useState(box.title);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const pointerSessionRef = useRef<WindowPointerSession | null>(null);
   const { t } = useI18n();
+
+  useEffect(
+    () => () => {
+      pointerSessionRef.current?.end();
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!renamingTitle) {
@@ -61,52 +73,58 @@ export function BaseBoxFrame({ box, icon, accent, children, onAddItem }: BaseBox
       return;
     }
 
+    event.preventDefault();
     closeMenu();
+    pointerSessionRef.current?.end();
     beginBoxDrag(box.id);
     const startX = event.clientX;
     const startY = event.clientY;
     const startFrame = box.frame;
-    const pointerId = event.pointerId;
-    event.currentTarget.setPointerCapture(pointerId);
-
-    const onMove = (moveEvent: PointerEvent) => {
-      updateBoxFrame(box.id, {
-        ...startFrame,
-        x: Math.max(8, Math.round(startFrame.x + moveEvent.clientX - startX)),
-        y: Math.max(8, Math.round(startFrame.y + moveEvent.clientY - startY)),
-      });
-    };
-    const onUp = () => {
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-      window.setTimeout(endBoxDrag, 0);
-    };
-
-    window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerup', onUp);
+    const session = startWindowPointerSession({
+      onMove: (moveEvent) => {
+        updateBoxFrame(box.id, {
+          ...startFrame,
+          x: Math.max(8, Math.round(startFrame.x + moveEvent.clientX - startX)),
+          y: Math.max(8, Math.round(startFrame.y + moveEvent.clientY - startY)),
+        });
+      },
+      onEnd: (reason) => {
+        if (pointerSessionRef.current === session) {
+          pointerSessionRef.current = null;
+        }
+        if (reason === 'pointerup') {
+          window.setTimeout(endBoxDrag, 0);
+        } else {
+          endBoxDrag();
+        }
+      },
+    });
+    pointerSessionRef.current = session;
   };
 
   const beginResize = (event: ReactPointerEvent<HTMLButtonElement>) => {
     event.stopPropagation();
+    event.preventDefault();
     closeMenu();
+    pointerSessionRef.current?.end();
     const startX = event.clientX;
     const startY = event.clientY;
     const startFrame = box.frame;
-
-    const onMove = (moveEvent: PointerEvent) => {
-      updateBoxFrame(box.id, {
-        ...startFrame,
-        width: Math.max(240, Math.round(startFrame.width + moveEvent.clientX - startX)),
-        height: Math.max(170, Math.round(startFrame.height + moveEvent.clientY - startY)),
-      });
-    };
-    const onUp = () => {
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-    };
-
-    window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerup', onUp);
+    const session = startWindowPointerSession({
+      onMove: (moveEvent) => {
+        updateBoxFrame(box.id, {
+          ...startFrame,
+          width: Math.max(240, Math.round(startFrame.width + moveEvent.clientX - startX)),
+          height: Math.max(170, Math.round(startFrame.height + moveEvent.clientY - startY)),
+        });
+      },
+      onEnd: () => {
+        if (pointerSessionRef.current === session) {
+          pointerSessionRef.current = null;
+        }
+      },
+    });
+    pointerSessionRef.current = session;
   };
 
   return (
