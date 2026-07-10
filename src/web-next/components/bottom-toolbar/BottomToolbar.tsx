@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   LayoutDashboard,
+  History,
   LocateFixed,
   Lock,
   Plus,
@@ -26,6 +27,7 @@ import { useI18n } from '../../i18n/useI18n';
 import { IconButton } from '../primitives/IconPrimitives';
 import { GlobalSearchPanel } from '../global-search/GlobalSearchPanel';
 import { useCanvasLayoutTools } from '../canvas/useCanvasLayoutTools';
+import { OperationJournalPanel } from '../operation-journal/OperationJournalPanel';
 
 export function BottomToolbar() {
   const createBox = useWorkspaceStore((state) => state.createBox);
@@ -46,6 +48,7 @@ export function BottomToolbar() {
   const settingsOpen = useIndependentMenuStore((state) => state.menus.settings.open);
   const toggleIndependentMenu = useIndependentMenuStore((state) => state.toggleMenu);
   const [isSearchActive, setIsSearchActive] = useState(false);
+  const [journalOpen, setJournalOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { t } = useI18n();
   const { openCanvasLayoutTools } = useCanvasLayoutTools();
@@ -76,7 +79,19 @@ export function BottomToolbar() {
     <div className="wbn-bottom-shell">
       <AnimatePresence>
         {isSearchActive ? <GlobalSearchPanel query={searchQuery} onClose={closeSearch} /> : null}
+        {journalOpen ? <OperationJournalPanel onClose={() => setJournalOpen(false)} /> : null}
       </AnimatePresence>
+      <div className="wbn-journal-control">
+        <IconButton
+          className={journalOpen ? 'wbn-journal-control-active' : undefined}
+          onClick={() => setJournalOpen((current) => !current)}
+          aria-label={t('journal.title')}
+          title={t('journal.title')}
+          aria-expanded={journalOpen}
+        >
+          <History size={17} />
+        </IconButton>
+      </div>
       <div className="wbn-history-controls" aria-label={t('history.controls')}>
         <IconButton
           disabled={!canUndo}

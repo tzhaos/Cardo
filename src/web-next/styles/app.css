@@ -45,6 +45,323 @@
   opacity: 0.34;
 }
 
+.wbn-journal-control {
+  position: absolute;
+  right: calc(100% + 106px);
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--wbn-border);
+  border-radius: 999px;
+  padding: 6px;
+  background: var(--wbn-surface);
+  box-shadow: var(--wbn-shadow);
+  backdrop-filter: blur(12px);
+}
+
+.wbn-journal-control button {
+  display: inline-flex;
+  width: 36px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--wbn-secondary-text);
+}
+
+.wbn-journal-control button:hover,
+.wbn-journal-control .wbn-journal-control-active {
+  background: var(--wbn-hover);
+  color: var(--wbn-text);
+}
+
+.wbn-journal-layer {
+  position: fixed;
+  z-index: 205;
+  inset: 0;
+}
+
+.wbn-journal-panel {
+  position: absolute;
+  bottom: 88px;
+  left: 16px;
+  display: flex;
+  width: min(420px, calc(100vw - 32px));
+  max-height: min(640px, calc(100vh - 120px));
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--wbn-border);
+  border-radius: 18px;
+  background: var(--wbn-surface-strong);
+  box-shadow: var(--wbn-shadow-hover);
+  backdrop-filter: blur(20px);
+  transform-origin: bottom left;
+}
+
+.wbn-journal-header {
+  display: flex;
+  min-height: 54px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--wbn-divider);
+  padding: 8px 10px 8px 16px;
+}
+
+.wbn-journal-header > span {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.wbn-journal-header svg {
+  color: var(--wbn-blue);
+}
+
+.wbn-journal-header strong {
+  color: var(--wbn-text);
+  font-size: 14px;
+}
+
+.wbn-journal-header small {
+  color: var(--wbn-muted);
+  font-size: 10px;
+}
+
+.wbn-journal-header button,
+.wbn-journal-footer button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--wbn-secondary-text);
+}
+
+.wbn-journal-header button {
+  width: 32px;
+  height: 32px;
+}
+
+.wbn-journal-header button:hover,
+.wbn-journal-footer button:hover:not(:disabled) {
+  background: var(--wbn-hover);
+  color: var(--wbn-text);
+}
+
+.wbn-journal-search {
+  display: flex;
+  min-height: 40px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 12px 8px;
+  border: 1px solid var(--wbn-border-subtle);
+  border-radius: 10px;
+  padding: 0 10px;
+  background: var(--wbn-input);
+  color: var(--wbn-muted);
+}
+
+.wbn-journal-search:focus-within {
+  border-color: color-mix(in srgb, var(--wbn-blue) 48%, var(--wbn-border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--wbn-blue) 8%, transparent);
+}
+
+.wbn-journal-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--wbn-text);
+  font-size: 12px;
+  outline: none;
+}
+
+.wbn-journal-filters {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 5px;
+  padding: 0 12px 9px;
+}
+
+.wbn-journal-filters button {
+  border: 0;
+  border-radius: 999px;
+  padding: 5px 9px;
+  background: var(--wbn-hover);
+  color: var(--wbn-muted);
+  font-size: 10px;
+}
+
+.wbn-journal-filters button:hover,
+.wbn-journal-filters .wbn-journal-filter-active {
+  background: color-mix(in srgb, var(--wbn-blue) 12%, var(--wbn-hover));
+  color: var(--wbn-blue);
+}
+
+.wbn-journal-events {
+  min-height: 180px;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  border-top: 1px solid var(--wbn-divider);
+  padding: 4px 8px 10px;
+  scrollbar-color: var(--wbn-scrollbar) transparent;
+  scrollbar-width: thin;
+}
+
+.wbn-journal-date {
+  padding: 11px 8px 5px;
+  color: var(--wbn-muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.wbn-journal-event {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: 30px minmax(0, 1fr) 16px;
+  align-items: center;
+  gap: 9px;
+  border: 0;
+  border-radius: 11px;
+  padding: 8px;
+  background: transparent;
+  color: var(--wbn-text);
+  text-align: left;
+  transition: background 140ms ease;
+}
+
+.wbn-journal-event:not(:disabled):hover {
+  background: var(--wbn-hover);
+}
+
+.wbn-journal-event:disabled {
+  cursor: default;
+  opacity: 0.72;
+}
+
+.wbn-journal-event-icon {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+}
+
+.wbn-journal-mutation {
+  background: color-mix(in srgb, var(--wbn-blue) 10%, transparent);
+  color: var(--wbn-blue);
+}
+
+.wbn-journal-activity {
+  background: color-mix(in srgb, #10b981 11%, transparent);
+  color: #10b981;
+}
+
+.wbn-journal-system {
+  background: color-mix(in srgb, #8b5cf6 10%, transparent);
+  color: #8b5cf6;
+}
+
+.wbn-journal-event-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wbn-journal-event-copy > span:first-child {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+}
+
+.wbn-journal-event-copy strong,
+.wbn-journal-event-copy > span:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wbn-journal-event-copy strong {
+  color: var(--wbn-soft-text);
+  font-size: 12px;
+  font-weight: 550;
+}
+
+.wbn-journal-event-copy small {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 2px 5px;
+  background: color-mix(in srgb, var(--wbn-blue) 9%, transparent);
+  color: var(--wbn-blue);
+  font-size: 8px;
+}
+
+.wbn-journal-event-copy > span:nth-child(2),
+.wbn-journal-event-copy time {
+  color: var(--wbn-muted);
+  font-size: 10px;
+}
+
+.wbn-journal-event > svg {
+  color: var(--wbn-muted);
+}
+
+.wbn-journal-empty {
+  display: flex;
+  min-height: 220px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--wbn-muted);
+  font-size: 11px;
+}
+
+.wbn-journal-footer {
+  display: flex;
+  min-height: 48px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  border-top: 1px solid var(--wbn-divider);
+  padding: 7px 10px;
+}
+
+.wbn-journal-footer > button {
+  min-height: 32px;
+  gap: 6px;
+  padding: 0 9px;
+  font-size: 10px;
+}
+
+.wbn-journal-footer > button:disabled {
+  opacity: 0.36;
+}
+
+.wbn-journal-footer > span {
+  margin-right: auto;
+  color: var(--wbn-secondary-text);
+  font-size: 10px;
+}
+
+.wbn-journal-clear-confirm {
+  background: color-mix(in srgb, var(--wbn-red) 10%, transparent) !important;
+  color: var(--wbn-red) !important;
+}
+
 .wbn-desktop-titlebar {
   position: fixed;
   z-index: 220;
