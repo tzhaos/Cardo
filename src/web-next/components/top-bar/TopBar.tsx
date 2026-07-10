@@ -19,8 +19,13 @@ export function TopBar() {
   const setDefaultPage = useWorkspaceStore((state) => state.setDefaultPage);
   const moveBoxToPage = useWorkspaceStore((state) => state.moveBoxToPage);
   const draggedBoxId = useUiStore((state) => state.draggedBoxId);
+  const boxDragOverTopBar = useUiStore((state) => state.boxDragOverTopBar);
   const boxDropPageId = useUiStore((state) => state.boxDropPageId);
+  const boxDropRelease = useUiStore((state) => state.boxDropRelease);
+  const setBoxDragOverTopBar = useUiStore((state) => state.setBoxDragOverTopBar);
   const setBoxDropPage = useUiStore((state) => state.setBoxDropPage);
+  const finishBoxDrop = useUiStore((state) => state.finishBoxDrop);
+  const clearBoxDropRelease = useUiStore((state) => state.clearBoxDropRelease);
   const endBoxDrag = useUiStore((state) => state.endBoxDrag);
   const [editing, setEditing] = useState(false);
   const [deletePageId, setDeletePageId] = useState<string | null>(null);
@@ -60,6 +65,14 @@ export function TopBar() {
   }, [deletePageId]);
 
   useEffect(() => {
+    if (!boxDropRelease) {
+      return;
+    }
+    const timeoutId = window.setTimeout(clearBoxDropRelease, 680);
+    return () => window.clearTimeout(timeoutId);
+  }, [boxDropRelease, clearBoxDropRelease]);
+
+  useEffect(() => {
     if (!draggedBoxId) {
       return;
     }
@@ -71,10 +84,22 @@ export function TopBar() {
         .find(Boolean);
       return target?.dataset.pageDropId ?? null;
     };
+    const resolveTopBarHover = (clientX: number, clientY: number) => {
+      const rect = document.querySelector<HTMLElement>('[data-top-bar]')?.getBoundingClientRect();
+      return Boolean(
+        rect &&
+          clientX >= rect.left - 8 &&
+          clientX <= rect.right + 8 &&
+          clientY >= rect.top - 10 &&
+          clientY <= rect.bottom + 10,
+      );
+    };
 
     const session = startWindowPointerSession({
       onMove: (event) => {
-        setBoxDropPage(resolveDropPageId(event.clientX, event.clientY));
+        const overTopBar = resolveTopBarHover(event.clientX, event.clientY);
+        setBoxDragOverTopBar(overTopBar);
+        setBoxDropPage(overTopBar ? resolveDropPageId(event.clientX, event.clientY) : null);
       },
       onEnd: (reason, event) => {
         if (reason === 'pointerup' && event instanceof PointerEvent) {
@@ -93,6 +118,7 @@ export function TopBar() {
                 height: window.innerHeight,
               },
             );
+            finishBoxDrop(draggedBoxId, targetPageId);
             moveBoxToPage(draggedBoxId, targetPageId, landingFrame ?? undefined);
           }
         }
@@ -101,11 +127,26 @@ export function TopBar() {
     });
 
     return session.dispose;
-  }, [draggedBoxId, endBoxDrag, moveBoxToPage, setBoxDropPage]);
+  }, [
+    draggedBoxId,
+    endBoxDrag,
+    finishBoxDrop,
+    moveBoxToPage,
+    setBoxDragOverTopBar,
+    setBoxDropPage,
+  ]);
+
+  const topBarClassName = [
+    'wbn-top-bar',
+    draggedBoxId ? 'wbn-top-bar-drop-mode' : '',
+    boxDragOverTopBar ? 'wbn-top-bar-drag-over' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <header
-      className={`wbn-top-bar${draggedBoxId ? ' wbn-top-bar-drop-mode' : ''}`}
+      className={topBarClassName}
       data-editing={editing || undefined}
       data-top-bar
     >
@@ -149,7 +190,12 @@ export function TopBar() {
                 {pages.map((page) => (
                   <Reorder.Item
                     as="div"
-                    className={boxDropPageId === page.id ? 'wbn-box-drop-target' : ''}
+                    className={[
+                      boxDropPageId === page.id ? 'wbn-box-drop-target' : '',
+                      boxDropRelease?.pageId === page.id ? 'wbn-box-drop-released' : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
                     data-page-drop-id={page.id}
                     key={page.id}
                     value={page.id}

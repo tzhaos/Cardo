@@ -9,7 +9,9 @@ export interface AddDraftState {
 interface UiStore {
   addDrafts: Record<string, AddDraftState>;
   draggedBoxId: string | null;
+  boxDragOverTopBar: boolean;
   boxDropPageId: string | null;
+  boxDropRelease: { boxId: string; pageId: string } | null;
   selectedBoxId: string | null;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
@@ -19,7 +21,10 @@ interface UiStore {
   closeAddView: (boxId: string) => void;
   markCreated: (boxId: string, itemId: string) => void;
   beginBoxDrag: (boxId: string) => void;
+  setBoxDragOverTopBar: (overTopBar: boolean) => void;
   setBoxDropPage: (pageId: string | null) => void;
+  finishBoxDrop: (boxId: string, pageId: string) => void;
+  clearBoxDropRelease: () => void;
   endBoxDrag: () => void;
 }
 
@@ -28,7 +33,9 @@ const emptyDraft: AddDraftState = { mode: false, draft: {} };
 export const useUiStore = create<UiStore>((set) => ({
   addDrafts: {},
   draggedBoxId: null,
+  boxDragOverTopBar: false,
   boxDropPageId: null,
+  boxDropRelease: null,
   selectedBoxId: null,
   searchQuery: '',
   setSearchQuery: (query) => set({ searchQuery: query }),
@@ -57,8 +64,26 @@ export const useUiStore = create<UiStore>((set) => ({
     set((state) => ({
       addDrafts: { ...state.addDrafts, [boxId]: { ...emptyDraft, highlightItemId: itemId } },
     })),
-  beginBoxDrag: (boxId) => set({ draggedBoxId: boxId, boxDropPageId: null, selectedBoxId: boxId }),
+  beginBoxDrag: (boxId) =>
+    set({
+      draggedBoxId: boxId,
+      boxDragOverTopBar: false,
+      boxDropPageId: null,
+      boxDropRelease: null,
+      selectedBoxId: boxId,
+    }),
+  setBoxDragOverTopBar: (overTopBar) =>
+    set((state) =>
+      state.draggedBoxId && state.boxDragOverTopBar !== overTopBar
+        ? { boxDragOverTopBar: overTopBar }
+        : state,
+    ),
   setBoxDropPage: (pageId) =>
-    set((state) => (state.draggedBoxId ? { boxDropPageId: pageId } : state)),
-  endBoxDrag: () => set({ draggedBoxId: null, boxDropPageId: null }),
+    set((state) =>
+      state.draggedBoxId && state.boxDropPageId !== pageId ? { boxDropPageId: pageId } : state,
+    ),
+  finishBoxDrop: (boxId, pageId) => set({ boxDropRelease: { boxId, pageId } }),
+  clearBoxDropRelease: () => set({ boxDropRelease: null }),
+  endBoxDrag: () =>
+    set({ draggedBoxId: null, boxDragOverTopBar: false, boxDropPageId: null }),
 }));

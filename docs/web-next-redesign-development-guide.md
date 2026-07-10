@@ -169,6 +169,13 @@ Drag sorting state:
 - Drop position uses a thin blue insertion indicator.
 - Sorting happens only within the top bar.
 
+Cross-page box drag sequence:
+
+- Picking up a box adds a small vertical lift, directional tilt, stronger shadow, and selection edge.
+- Entering the page bar smoothly compresses the box into a compact card silhouette while non-header content fades away.
+- Hovering a page tab slightly depresses the tab, strengthens its label, and runs a quiet drop-ready pulse.
+- Releasing on another page plays a tab release ripple while the box springs from its compact state into the destination landing frame.
+
 ### Bottom toolbar
 
 The bottom toolbar is another floating capsule near the bottom center.

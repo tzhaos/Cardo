@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { Lock, Plus, SquarePen, Trash2, X } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, useMotionValue, useSpring } from 'motion/react';
 import type { WorkspaceBox } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
@@ -27,6 +27,9 @@ export function BaseBoxFrame({ box, icon, accent, children, onAddItem }: BaseBox
   const beginBoxDrag = useUiStore((state) => state.beginBoxDrag);
   const endBoxDrag = useUiStore((state) => state.endBoxDrag);
   const draggedBoxId = useUiStore((state) => state.draggedBoxId);
+  const boxDragOverTopBar = useUiStore((state) => state.boxDragOverTopBar);
+  const boxDropPageId = useUiStore((state) => state.boxDropPageId);
+  const boxDropRelease = useUiStore((state) => state.boxDropRelease);
   const selectedBoxId = useUiStore((state) => state.selectedBoxId);
   const selectBox = useUiStore((state) => state.selectBox);
   const addViewState = useUiStore((state) => state.addDrafts[box.id]);
@@ -37,6 +40,8 @@ export function BaseBoxFrame({ box, icon, accent, children, onAddItem }: BaseBox
   const [titleDraft, setTitleDraft] = useState(box.title);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const pointerSessionRef = useRef<WindowPointerSession | null>(null);
+  const dragTilt = useMotionValue(0);
+  const smoothDragTilt = useSpring(dragTilt, { stiffness: 420, damping: 34, mass: 0.42 });
   const { t } = useI18n();
 
   useEffect(
@@ -82,6 +87,12 @@ export function BaseBoxFrame({ box, icon, accent, children, onAddItem }: BaseBox
     const startFrame = box.frame;
     const session = startWindowPointerSession({
       onMove: (moveEvent) => {
+        const overTopBar = useUiStore.getState().boxDragOverTopBar;
+        dragTilt.set(
+          overTopBar
+            ? 0
+            : Math.min(2.2, Math.max(-2.2, (moveEvent.clientX - startX) * 0.012)),
+        );
         updateBoxFrame(box.id, {
           ...startFrame,
           x: Math.max(8, Math.round(startFrame.x + moveEvent.clientX - startX)),
@@ -89,6 +100,7 @@ export function BaseBoxFrame({ box, icon, accent, children, onAddItem }: BaseBox
         });
       },
       onEnd: (reason) => {
+        dragTilt.set(0);
         if (pointerSessionRef.current === session) {
           pointerSessionRef.current = null;
         }
@@ -127,27 +139,68 @@ export function BaseBoxFrame({ box, icon, accent, children, onAddItem }: BaseBox
     pointerSessionRef.current = session;
   };
 
+  const dragging = draggedBoxId === box.id;
+  const draggingOverTopBar = dragging && boxDragOverTopBar;
+  const draggingOverTab = draggingOverTopBar && boxDropPageId !== null;
+  const dropReleased = boxDropRelease?.boxId === box.id;
+  const compactScale = Math.max(
+    0.22,
+    Math.min(0.46, 136 / box.frame.width, 86 / box.frame.height),
+  );
+  const visualScale = draggingOverTopBar
+    ? compactScale * (draggingOverTab ? 0.9 : 1)
+    : dragging
+      ? 1.028
+      : 1;
+  const visualClassName = [
+    'wbn-box',
+    dragging ? 'wbn-box-dragging' : '',
+    draggingOverTopBar ? 'wbn-box-dragging-bar' : '',
+    draggingOverTab ? 'wbn-box-dragging-tab' : '',
+    dropReleased ? 'wbn-box-drop-released' : '',
+    selectedBoxId === box.id ? 'wbn-box-selected' : '',
+    addViewState?.mode || confirmDelete ? 'wbn-box-local-view' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  useEffect(() => {
+    if (draggingOverTopBar) {
+      dragTilt.set(0);
+    }
+  }, [dragTilt, draggingOverTopBar]);
+
   return (
     <motion.article
-      className={`wbn-box${draggedBoxId === box.id ? ' wbn-box-dragging' : ''}${selectedBoxId === box.id ? ' wbn-box-selected' : ''}${addViewState?.mode || confirmDelete ? ' wbn-box-local-view' : ''}`}
+      className={visualClassName}
       initial={{ left: box.frame.x, top: box.frame.y, scale: 0.8, opacity: 0 }}
       animate={{
         left: box.frame.x,
         top: box.frame.y,
-        scale: 1,
-        opacity: draggedBoxId === box.id ? 0.82 : 1,
+        y: dragging && !draggingOverTopBar ? -7 : 0,
+        scale: visualScale,
+        opacity: draggingOverTopBar ? 0.94 : dragging ? 0.97 : 1,
+        borderRadius: draggingOverTopBar ? 24 : 16,
       }}
       exit={{ scale: 0.8, opacity: 0 }}
       transition={{
         left:
-          draggedBoxId === box.id
+          dragging
             ? { duration: 0 }
-            : { type: 'spring', damping: 28, stiffness: 260 },
+            : dropReleased
+              ? { type: 'spring', damping: 23, stiffness: 250, mass: 0.86 }
+              : { type: 'spring', damping: 28, stiffness: 260 },
         top:
-          draggedBoxId === box.id
+          dragging
             ? { duration: 0 }
-            : { type: 'spring', damping: 28, stiffness: 260 },
-        scale: { type: 'spring', damping: 25, stiffness: 300 },
+            : dropReleased
+              ? { type: 'spring', damping: 23, stiffness: 250, mass: 0.86 }
+              : { type: 'spring', damping: 28, stiffness: 260 },
+        y: { type: 'spring', damping: 30, stiffness: 420, mass: 0.55 },
+        scale: dropReleased
+          ? { type: 'spring', damping: 19, stiffness: 285, mass: 0.78 }
+          : { type: 'spring', damping: 28, stiffness: 380, mass: 0.6 },
+        borderRadius: { duration: 0.2 },
         opacity: { duration: 0.16 },
       }}
       onPointerDown={() => selectBox(box.id)}
@@ -197,6 +250,8 @@ export function BaseBoxFrame({ box, icon, accent, children, onAddItem }: BaseBox
           height: box.frame.height,
           minWidth: 240,
           minHeight: 170,
+          rotateZ: smoothDragTilt,
+          transformOrigin: '50% 18%',
           '--box-accent': accent,
         } as React.CSSProperties
       }

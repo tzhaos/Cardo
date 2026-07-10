@@ -69,7 +69,9 @@
   white-space: nowrap;
   transition:
     color 180ms ease,
-    background 180ms ease;
+    background 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .wbn-tab-pill:not(.wbn-tab-pill-active) button:hover {
@@ -222,13 +224,33 @@
 }
 
 .wbn-top-bar-drop-mode {
+  border-color: color-mix(in srgb, var(--wbn-blue) 12%, var(--wbn-border));
   box-shadow: var(--wbn-shadow);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.wbn-top-bar-drag-over {
+  border-color: color-mix(in srgb, var(--wbn-blue) 32%, var(--wbn-border));
+  background: color-mix(in srgb, var(--wbn-surface) 94%, var(--wbn-blue));
+  box-shadow:
+    var(--wbn-shadow-hover),
+    0 0 0 5px color-mix(in srgb, var(--wbn-blue) 8%, transparent);
 }
 
 .wbn-box-drop-target .wbn-tab-pill {
   background: transparent;
   box-shadow: none;
-  transform: none;
+}
+
+.wbn-box-drop-target .wbn-tab-pill > button {
+  background: color-mix(in srgb, var(--wbn-blue) 12%, var(--wbn-active));
+  box-shadow:
+    inset 0 1px 2px rgba(15, 23, 42, 0.08),
+    0 0 0 3px color-mix(in srgb, var(--wbn-blue) 11%, transparent);
+  transform: translateY(1px) scale(0.965);
 }
 
 .wbn-box-drop-target
@@ -258,8 +280,7 @@
   box-shadow: var(--wbn-shadow);
   transition:
     box-shadow 180ms ease,
-    opacity 180ms ease,
-    transform 180ms ease;
+    opacity 180ms ease;
 }
 
 .wbn-box:hover {
@@ -267,10 +288,37 @@
   box-shadow: var(--wbn-shadow-hover);
 }
 
-.wbn-box-dragging {
+.wbn-box.wbn-box-dragging {
   z-index: 60;
-  opacity: 0.82;
-  transform: scale(1.015);
+  box-shadow:
+    0 24px 48px rgba(15, 23, 42, 0.16),
+    0 8px 18px rgba(15, 23, 42, 0.1),
+    0 0 0 1px color-mix(in srgb, var(--box-accent) 20%, transparent);
+  cursor: grabbing;
+}
+
+.wbn-box.wbn-box-dragging-bar {
+  box-shadow:
+    0 20px 42px rgba(15, 23, 42, 0.2),
+    0 0 0 2px color-mix(in srgb, var(--box-accent) 28%, transparent);
+}
+
+.wbn-box.wbn-box-dragging-tab {
+  box-shadow:
+    0 16px 34px rgba(15, 23, 42, 0.2),
+    0 0 0 4px color-mix(in srgb, var(--wbn-blue) 15%, transparent);
+}
+
+.wbn-box-dragging-bar .wbn-box-content,
+.wbn-box-dragging-bar .wbn-box-footer,
+.wbn-box-dragging-bar .wbn-resize-handle,
+.wbn-box-dragging-bar .wbn-box-delete {
+  opacity: 0;
+}
+
+.wbn-box-dragging-bar .wbn-box-header {
+  border-bottom-color: transparent;
+  background: color-mix(in srgb, var(--wbn-panel-chrome) 92%, var(--box-accent));
 }
 
 .wbn-box-header {
@@ -356,6 +404,9 @@
   background: var(--wbn-panel-content);
   scrollbar-width: thin;
   scrollbar-color: var(--wbn-scrollbar) transparent;
+  transition:
+    opacity 160ms ease,
+    filter 160ms ease;
 }
 
 .wbn-box-content-folder,
