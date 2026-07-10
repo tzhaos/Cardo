@@ -10,6 +10,7 @@ import {
   clientPointToCanvasWorld,
   constrainBoxFrameToCanvas,
   createCanvasWorldBounds,
+  getCanvasPanLimits,
 } from '../../domain/canvasGeometry';
 import { createBoxFrameCenteredAt } from '../../domain/placement';
 import {
@@ -161,7 +162,30 @@ export function WorkspaceCanvas() {
           </AnimatePresence>
         </motion.section>
       </AnimatePresence>
+      <CanvasBoundaryFeedback pageId={snapshot.activePageId} />
     </main>
+  );
+}
+
+function CanvasBoundaryFeedback({ pageId }: { pageId: string }) {
+  const panX = useCanvasStore((state) => state.pages[pageId]?.camera.panX ?? 0);
+  const panY = useCanvasStore((state) => state.pages[pageId]?.camera.panY ?? 0);
+  const viewportSize = useCanvasStore((state) => state.viewportSize);
+  const isPanning = useCanvasStore((state) => state.interactionMode === 'panning');
+  const limits = useMemo(() => getCanvasPanLimits(viewportSize), [viewportSize]);
+  const canShow = isPanning && viewportSize.width > 0 && viewportSize.height > 0;
+  const atLeft = canShow && Math.abs(panX - limits.maxX) < 0.5;
+  const atRight = canShow && Math.abs(panX - limits.minX) < 0.5;
+  const atTop = canShow && Math.abs(panY - limits.maxY) < 0.5;
+  const atBottom = canShow && Math.abs(panY - limits.minY) < 0.5;
+
+  return (
+    <div className="wbn-canvas-edge-feedback" aria-hidden="true">
+      <span className={`wbn-canvas-edge wbn-canvas-edge-left${atLeft ? ' is-active' : ''}`} />
+      <span className={`wbn-canvas-edge wbn-canvas-edge-right${atRight ? ' is-active' : ''}`} />
+      <span className={`wbn-canvas-edge wbn-canvas-edge-top${atTop ? ' is-active' : ''}`} />
+      <span className={`wbn-canvas-edge wbn-canvas-edge-bottom${atBottom ? ' is-active' : ''}`} />
+    </div>
   );
 }
 

@@ -11,21 +11,21 @@ import {
 
 const viewport = { width: 1200, height: 800 };
 
-test('creates a nine-screen canvas around the origin viewport', () => {
+test('creates a canvas with one and a half extra screen spans around the origin', () => {
   assert.deepEqual(createCanvasWorldBounds(viewport), {
-    minX: -1200,
-    minY: -800,
-    maxX: 2400,
-    maxY: 1600,
-    width: 3600,
-    height: 2400,
+    minX: -900,
+    minY: -600,
+    maxX: 2100,
+    maxY: 1400,
+    width: 3000,
+    height: 2000,
   });
 });
 
-test('camera panning stops at the nine-screen canvas boundary', () => {
+test('camera panning stops at the reduced canvas boundary', () => {
   assert.deepEqual(panCanvasCamera({ panX: 900, panY: -700 }, { x: 500, y: -500 }, viewport), {
-    panX: 1200,
-    panY: -800,
+    panX: 900,
+    panY: -600,
   });
 });
 
@@ -52,7 +52,7 @@ test('keeps box frames fully inside the canvas', () => {
 
   assert.deepEqual(
     constrainBoxFrameToCanvas({ x: 2300, y: -900, width: 320, height: 240 }, bounds),
-    { x: 2080, y: -800, width: 320, height: 240 },
+    { x: 1780, y: -600, width: 320, height: 240 },
   );
 });
 
@@ -60,10 +60,10 @@ test('limits box resizing without moving its top-left corner', () => {
   const bounds = createCanvasWorldBounds(viewport);
 
   assert.deepEqual(
-    constrainBoxResizeToCanvas({ x: 2200, y: 1400, width: 500, height: 400 }, bounds, {
+    constrainBoxResizeToCanvas({ x: 1900, y: 1200, width: 500, height: 400 }, bounds, {
       width: 240,
       height: 170,
     }),
-    { x: 2200, y: 1400, width: 200, height: 200 },
+    { x: 1900, y: 1200, width: 200, height: 200 },
   );
 });
