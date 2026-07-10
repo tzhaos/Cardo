@@ -13,7 +13,13 @@ interface UiStore {
   draggedBoxId: string | null;
   boxDragOverTopBar: boolean;
   boxDropPageId: string | null;
-  boxDropRelease: { boxId: string; pageId: string; entryFrame: BoxFrame } | null;
+  boxDropRelease: {
+    boxId: string;
+    pageId: string;
+    entryFrame: BoxFrame;
+    entryScale: number;
+    entryTransformOrigin: string;
+  } | null;
   selectedBoxId: string | null;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
@@ -26,7 +32,13 @@ interface UiStore {
   beginBoxDrag: (boxId: string) => void;
   setBoxDragOverTopBar: (overTopBar: boolean) => void;
   setBoxDropPage: (pageId: string | null) => void;
-  finishBoxDrop: (boxId: string, pageId: string, entryFrame: BoxFrame) => void;
+  finishBoxDrop: (
+    boxId: string,
+    pageId: string,
+    entryFrame: BoxFrame,
+    entryScale: number,
+    entryTransformOrigin: string,
+  ) => void;
   clearBoxDropRelease: () => void;
   endBoxDrag: () => void;
 }
@@ -92,8 +104,8 @@ export const useUiStore = create<UiStore>((set) => ({
     set((state) =>
       state.draggedBoxId && state.boxDropPageId !== pageId ? { boxDropPageId: pageId } : state,
     ),
-  finishBoxDrop: (boxId, pageId, entryFrame) =>
-    set({ boxDropRelease: { boxId, pageId, entryFrame } }),
+  finishBoxDrop: (boxId, pageId, entryFrame, entryScale, entryTransformOrigin) =>
+    set({ boxDropRelease: { boxId, pageId, entryFrame, entryScale, entryTransformOrigin } }),
   clearBoxDropRelease: () => set({ boxDropRelease: null }),
   endBoxDrag: () => set({ draggedBoxId: null, boxDragOverTopBar: false, boxDropPageId: null }),
 }));

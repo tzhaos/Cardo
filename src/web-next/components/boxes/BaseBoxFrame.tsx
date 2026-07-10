@@ -76,7 +76,9 @@ export function BaseBoxFrame({
   const [renamingTitle, setRenamingTitle] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [appearanceView, setAppearanceView] = useState(false);
-  const [dragTransformOrigin, setDragTransformOrigin] = useState('50% 50%');
+  const [dragTransformOrigin, setDragTransformOrigin] = useState(
+    boxDropRelease?.boxId === box.id ? boxDropRelease.entryTransformOrigin : '50% 50%',
+  );
   const [dropLandingStarted, setDropLandingStarted] = useState(false);
   const [titleDraft, setTitleDraft] = useState(box.title);
   const titleInputRef = useRef<HTMLInputElement>(null);
@@ -241,7 +243,7 @@ export function BaseBoxFrame({
   const detailMode = isTemporary ? 'detailed' : (box.detailMode ?? 'detailed');
   const visualScale =
     dropReleased && !dropLandingStarted
-      ? compactScale
+      ? (boxDropRelease?.entryScale ?? compactScale)
       : draggingOverTopBar
         ? compactScale * (draggingOverTab ? 0.9 : 1)
         : dragging

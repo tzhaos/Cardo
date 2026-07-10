@@ -70,6 +70,7 @@ export function WorkspaceCanvas() {
   return (
     <main
       className={canvasClassName}
+      data-workspace-canvas
       ref={canvasRef}
       onPointerDownCapture={handlePointerDownCapture}
       onContextMenu={(event) => {

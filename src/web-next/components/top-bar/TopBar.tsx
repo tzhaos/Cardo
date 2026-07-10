@@ -8,7 +8,11 @@ import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { createLatestFrameScheduler } from '../../app/motion/frameScheduler';
 import { startWindowPointerSession } from '../../app/windowPointerSession';
 import { findPageLandingFrame } from '../../domain/placement';
-import { getCanvasViewportCenter, getVisibleCanvasWorldBounds } from '../../domain/canvasGeometry';
+import {
+  clientPointToCanvasWorld,
+  getCanvasViewportCenter,
+  getVisibleCanvasWorldBounds,
+} from '../../domain/canvasGeometry';
 import { isRecycleBinPageId } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { RecycleBinTab } from './RecycleBinTab';
@@ -153,22 +157,39 @@ export function TopBar() {
               targetPageCanvas.camera,
               canvasState.viewportSize,
             );
-            const pointerRatio = Math.max(
-              0,
-              Math.min(1, event.clientX / Math.max(1, canvasState.viewportSize.width)),
+            const compactScale = Math.max(
+              0.22,
+              Math.min(0.46, 136 / movingBox.frame.width, 86 / movingBox.frame.height),
             );
+            const entryScale = compactScale * 0.9;
+            const releaseElement = document.querySelector<HTMLElement>(
+              `[data-box-id="${draggedBoxId}"]`,
+            );
+            const releaseRect = releaseElement?.getBoundingClientRect();
+            const computedOrigin = releaseElement
+              ? window.getComputedStyle(releaseElement).transformOrigin
+              : `${movingBox.frame.width / 2}px ${movingBox.frame.height / 2}px`;
+            const [originX = movingBox.frame.width / 2, originY = movingBox.frame.height / 2] =
+              computedOrigin.split(' ').map((value) => Number.parseFloat(value));
+            const canvasRect = document
+              .querySelector<HTMLElement>('[data-workspace-canvas]')
+              ?.getBoundingClientRect() ?? { left: 0, top: 0 };
+            const releaseTopLeft = releaseRect
+              ? clientPointToCanvasWorld(
+                  { clientX: releaseRect.left, clientY: releaseRect.top },
+                  canvasRect,
+                  targetPageCanvas.camera,
+                )
+              : {
+                  x: visibleBounds.minX + visibleBounds.width / 2,
+                  y: visibleBounds.minY,
+                };
             const entryFrame = {
               ...targetFrame,
-              x: Math.max(
-                visibleBounds.minX,
-                Math.min(
-                  visibleBounds.maxX - targetFrame.width,
-                  visibleBounds.minX + visibleBounds.width * pointerRatio - targetFrame.width / 2,
-                ),
-              ),
-              y: visibleBounds.minY + 28 / targetPageCanvas.camera.zoom,
+              x: releaseTopLeft.x - originX * (1 - entryScale),
+              y: releaseTopLeft.y - originY * (1 - entryScale),
             };
-            finishBoxDrop(draggedBoxId, targetPageId, entryFrame);
+            finishBoxDrop(draggedBoxId, targetPageId, entryFrame, entryScale, computedOrigin);
             moveBoxToPage(draggedBoxId, targetPageId, targetFrame);
           }
         }
