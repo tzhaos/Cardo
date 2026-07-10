@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AppWindow, Box, Clipboard, File, Folder, Globe, PanelTop, Search } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useCanvasStore } from '../../app/stores/canvasStore';
@@ -14,15 +14,7 @@ import {
 } from '../../platform/hostPlatform';
 import { recordBoxActivity, recordItemActivity } from '../../app/operationActivity';
 
-export function GlobalSearchPanel({
-  query,
-  onClose,
-  rootRef,
-}: {
-  query: string;
-  onClose: () => void;
-  rootRef: RefObject<HTMLDivElement | null>;
-}) {
+export function GlobalSearchPanel({ query, onClose }: { query: string; onClose: () => void }) {
   const snapshot = useWorkspaceStore((state) => state.snapshot);
   const setActivePage = useWorkspaceStore((state) => state.setActivePage);
   const selectBox = useUiStore((state) => state.selectBox);
@@ -86,11 +78,6 @@ export function GlobalSearchPanel({
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        onClose();
-        return;
-      }
       if (!results.length) return;
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
         event.preventDefault();
@@ -105,7 +92,7 @@ export function GlobalSearchPanel({
   });
 
   return (
-    <div ref={rootRef} className="wbn-global-search-panel-wrap">
+    <div className="wbn-global-search-panel-wrap">
       <motion.div
         className="wbn-global-search-panel"
         initial={{ opacity: 0, y: 12, scale: 0.98 }}
@@ -113,12 +100,7 @@ export function GlobalSearchPanel({
         exit={{ opacity: 0, y: 8, scale: 0.985 }}
         transition={{ duration: 0.16 }}
       >
-        {!query.trim() ? (
-          <div className="wbn-global-search-empty">
-            <Search size={20} />
-            <span>{t('search.globalHint')}</span>
-          </div>
-        ) : results.length ? (
+        {results.length ? (
           <div className="wbn-global-search-results" role="listbox">
             {results.map((result, index) => (
               <button

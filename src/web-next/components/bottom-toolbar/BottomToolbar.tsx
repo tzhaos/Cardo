@@ -33,8 +33,6 @@ export function BottomToolbar() {
   const toggleIndependentMenu = useIndependentMenuStore((state) => state.toggleMenu);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const searchPillRef = useRef<HTMLDivElement>(null);
-  const searchPanelRef = useRef<HTMLDivElement>(null);
   const { t } = useI18n();
 
   useEffect(() => {
@@ -57,21 +55,6 @@ export function BottomToolbar() {
     setSearchQuery('');
   };
 
-  useEffect(() => {
-    if (!isSearchActive) return;
-
-    const closeOnOutsidePointer = (event: PointerEvent) => {
-      const target = event.target;
-      if (!(target instanceof Node)) return;
-      if (searchPillRef.current?.contains(target) || searchPanelRef.current?.contains(target))
-        return;
-      closeSearch();
-    };
-
-    window.addEventListener('pointerdown', closeOnOutsidePointer, true);
-    return () => window.removeEventListener('pointerdown', closeOnOutsidePointer, true);
-  }, [isSearchActive]);
-
   const webSearchUrl = createWebSearchUrl(searchEngine, customSearchTemplate, searchQuery);
   const runWebSearch = () => {
     if (!webSearchUrl) return;
@@ -82,8 +65,8 @@ export function BottomToolbar() {
   return (
     <div className="wbn-bottom-shell">
       <AnimatePresence>
-        {isSearchActive ? (
-          <GlobalSearchPanel query={searchQuery} onClose={closeSearch} rootRef={searchPanelRef} />
+        {isSearchActive && searchQuery.trim() ? (
+          <GlobalSearchPanel query={searchQuery} onClose={closeSearch} />
         ) : null}
       </AnimatePresence>
       <div className="wbn-bottom-toolbar" aria-label={t('toolbar.workspaceTools')}>
@@ -107,7 +90,6 @@ export function BottomToolbar() {
         </IconButton>
         <div className="wbn-toolbar-divider" />
         <motion.div
-          ref={searchPillRef}
           className={`wbn-search-pill${isSearchActive ? ' wbn-search-pill-active' : ''}`}
           animate={{ width: isSearchActive ? 360 : 40 }}
         >
