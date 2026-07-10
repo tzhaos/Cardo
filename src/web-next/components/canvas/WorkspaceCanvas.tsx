@@ -1,10 +1,10 @@
 import { useDeferredValue, useEffect, useMemo, useRef } from 'react';
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { AnimatePresence, LayoutGroup, motion, type Variants } from 'motion/react';
 import { SearchX, Trash2 } from 'lucide-react';
 import { useCanvasPan } from '../../app/useCanvasPan';
 import { useCanvasViewport } from '../../app/useCanvasViewport';
-import { useCanvasStore } from '../../app/stores/canvasStore';
+import { getPageCanvasState, useCanvasStore } from '../../app/stores/canvasStore';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import {
@@ -24,8 +24,6 @@ export function WorkspaceCanvas() {
   const createPage = useWorkspaceStore((state) => state.createPage);
   const searchQuery = useUiStore((state) => state.searchQuery);
   const deferredSearchQuery = useDeferredValue(searchQuery);
-  const panX = useCanvasStore((state) => state.pages[snapshot.activePageId]?.camera.panX ?? 0);
-  const panY = useCanvasStore((state) => state.pages[snapshot.activePageId]?.camera.panY ?? 0);
   const viewportSize = useCanvasStore((state) => state.viewportSize);
   const { openCanvasMenu } = useFloatingMenu();
   const { t } = useI18n();
@@ -72,9 +70,6 @@ export function WorkspaceCanvas() {
   ]
     .filter(Boolean)
     .join(' ');
-  const worldStyle = {
-    transform: `translate3d(${panX}px, ${panY}px, 0)`,
-  } satisfies CSSProperties;
   const boundaryStyle = {
     left: canvasBounds.minX,
     top: canvasBounds.minY,
@@ -101,7 +96,8 @@ export function WorkspaceCanvas() {
 
         event.preventDefault();
         const rect = event.currentTarget.getBoundingClientRect();
-        const point = clientPointToCanvasWorld(event, rect, { panX, panY });
+        const camera = getPageCanvasState(useCanvasStore.getState(), snapshot.activePageId).camera;
+        const point = clientPointToCanvasWorld(event, rect, camera);
         openCanvasMenu(event.clientX, event.clientY, {
           createPage: () => createPage(t('page.untitled')),
           createBox: (preset: WorkspaceBoxPreset) =>
@@ -123,7 +119,7 @@ export function WorkspaceCanvas() {
           animate="center"
           exit="exit"
         >
-          <div className="wbn-canvas-world" style={worldStyle}>
+          <CanvasWorld pageId={snapshot.activePageId}>
             <div className="wbn-canvas-boundary" style={boundaryStyle} />
             <LayoutGroup id={`workspace-items-${snapshot.activePageId}`}>
               {boxes.map((box) => (
@@ -134,7 +130,7 @@ export function WorkspaceCanvas() {
                 />
               ))}
             </LayoutGroup>
-          </div>
+          </CanvasWorld>
           <AnimatePresence>
             {isRecycleBin && !isSearchFiltering && boxes.length === 0 ? (
               <motion.div
@@ -161,6 +157,20 @@ export function WorkspaceCanvas() {
         </motion.section>
       </AnimatePresence>
     </main>
+  );
+}
+
+function CanvasWorld({ pageId, children }: { pageId: string; children: ReactNode }) {
+  const panX = useCanvasStore((state) => state.pages[pageId]?.camera.panX ?? 0);
+  const panY = useCanvasStore((state) => state.pages[pageId]?.camera.panY ?? 0);
+  const style = {
+    transform: `translate3d(${panX}px, ${panY}px, 0)`,
+  } satisfies CSSProperties;
+
+  return (
+    <div className="wbn-canvas-world" style={style}>
+      {children}
+    </div>
   );
 }
 

@@ -3,8 +3,8 @@ import type { ReactNode } from 'react';
 import { GripVertical } from 'lucide-react';
 import { AnimatePresence, Reorder, useDragControls } from 'motion/react';
 import type { PanInfo } from 'motion/react';
+import { useItemLayoutAnimationPolicy } from '../../app/motion/useItemLayoutAnimationPolicy';
 import { useStagedOrder } from '../../app/motion/useStagedOrder';
-import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import type { BoxItem, WorkspaceBoxViewMode } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
@@ -23,7 +23,7 @@ export function SortableItemList<TItem extends BoxItem>({
 }) {
   const reorderItems = useWorkspaceStore((state) => state.reorderItems);
   const moveItemBetweenBoxes = useWorkspaceStore((state) => state.moveItemBetweenBoxes);
-  const isBoxDragging = useUiStore((state) => state.draggedBoxId === boxId);
+  const itemLayoutAnimationsEnabled = useItemLayoutAnimationPolicy();
   const { orderedIds, startReordering, updateOrder, finishReordering, cancelReordering } =
     useStagedOrder(items, (orderedItemIds) => reorderItems(boxId, orderedItemIds));
   const itemsById = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
@@ -52,7 +52,7 @@ export function SortableItemList<TItem extends BoxItem>({
               moveItemBetweenBoxes(boxId, drop.targetBoxId, item.id, drop.targetIndex);
               return true;
             }}
-            suspendLayout={isBoxDragging}
+            suspendLayout={!itemLayoutAnimationsEnabled}
           >
             {renderItem(item)}
           </SortableItemEntry>
