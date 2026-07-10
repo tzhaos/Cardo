@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { AnimatePresence, motion, type Variants } from 'motion/react';
 import { Trash2 } from 'lucide-react';
@@ -164,25 +164,38 @@ export function WorkspaceCanvas() {
 }
 
 function CanvasWorld({ pageId, children }: { pageId: string; children: ReactNode }) {
-  const panX = useCanvasStore((state) => state.pages[pageId]?.camera.panX ?? 0);
-  const panY = useCanvasStore((state) => state.pages[pageId]?.camera.panY ?? 0);
-  const zoom = useCanvasStore((state) => state.pages[pageId]?.camera.zoom ?? 1);
-  const isCameraAnimating = useCanvasStore(
-    (state) => state.pages[pageId]?.isCameraAnimating ?? false,
-  );
+  const worldRef = useRef<HTMLDivElement>(null);
+  const initialPageState = getPageCanvasState(useCanvasStore.getState(), pageId);
   const style = {
-    transform: `translate3d(${panX}px, ${panY}px, 0) scale(${zoom})`,
+    transform: cameraTransform(initialPageState.camera),
     transformOrigin: '0 0',
   } satisfies CSSProperties;
 
+  useLayoutEffect(() => {
+    const world = worldRef.current;
+    if (!world) return;
+    const applyCamera = () => {
+      const page = getPageCanvasState(useCanvasStore.getState(), pageId);
+      world.style.transform = cameraTransform(page.camera);
+      world.classList.toggle('wbn-canvas-world-animating', Boolean(page.isCameraAnimating));
+    };
+    applyCamera();
+    return useCanvasStore.subscribe(applyCamera);
+  }, [pageId]);
+
   return (
     <div
-      className={`wbn-canvas-world${isCameraAnimating ? ' wbn-canvas-world-animating' : ''}`}
+      className={`wbn-canvas-world${initialPageState.isCameraAnimating ? ' wbn-canvas-world-animating' : ''}`}
+      ref={worldRef}
       style={style}
     >
       {children}
     </div>
   );
+}
+
+function cameraTransform(camera: { panX: number; panY: number; zoom: number }) {
+  return `translate3d(${camera.panX}px, ${camera.panY}px, 0) scale(${camera.zoom})`;
 }
 
 const pageSceneVariants: Variants = {

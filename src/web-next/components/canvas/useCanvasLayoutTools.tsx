@@ -22,13 +22,16 @@ export function useCanvasLayoutTools() {
     () => snapshot.boxes.filter((box) => box.pageId === activePageId),
     [activePageId, snapshot.boxes],
   );
-  const camera = useCanvasStore((state) => getPageCanvasState(state, activePageId).camera);
   const canvasBounds = useMemo(() => createCanvasWorldBounds(viewportSize), [viewportSize]);
-  const visibleBounds = useMemo(
-    () => getVisibleCanvasWorldBounds(camera, viewportSize),
-    [camera, viewportSize],
-  );
   const movableBoxCount = boxes.filter((box) => !box.isLocked).length;
+
+  const getCurrentVisibleBounds = () => {
+    const canvasState = useCanvasStore.getState();
+    return getVisibleCanvasWorldBounds(
+      getPageCanvasState(canvasState, activePageId).camera,
+      canvasState.viewportSize,
+    );
+  };
 
   const items = useMemo(
     () => [
@@ -38,7 +41,10 @@ export function useCanvasLayoutTools() {
         icon: <LayoutDashboard size={16} />,
         disabled: movableBoxCount < 2,
         onSelect: () =>
-          applyPageBoxLayout(activePageId, arrangePageBoxes(boxes, visibleBounds, canvasBounds)),
+          applyPageBoxLayout(
+            activePageId,
+            arrangePageBoxes(boxes, getCurrentVisibleBounds(), canvasBounds),
+          ),
       },
       {
         id: 'snap-grid',
@@ -59,18 +65,12 @@ export function useCanvasLayoutTools() {
         id: 'recover-offscreen',
         label: t('canvas.recoverOffscreen'),
         icon: <ScanSearch size={16} />,
-        disabled: boxes.every(
-          (box) =>
-            box.frame.x < visibleBounds.maxX &&
-            box.frame.x + box.frame.width > visibleBounds.minX &&
-            box.frame.y < visibleBounds.maxY &&
-            box.frame.y + box.frame.height > visibleBounds.minY,
-        ),
+        disabled: boxes.length === 0,
         separatorBefore: true,
         onSelect: () =>
           applyPageBoxLayout(
             activePageId,
-            recoverOffscreenBoxes(boxes, visibleBounds, canvasBounds),
+            recoverOffscreenBoxes(boxes, getCurrentVisibleBounds(), canvasBounds),
           ),
       },
       {
@@ -85,16 +85,7 @@ export function useCanvasLayoutTools() {
           ),
       },
     ],
-    [
-      activePageId,
-      applyPageBoxLayout,
-      boxes,
-      canvasBounds,
-      fitFrames,
-      movableBoxCount,
-      t,
-      visibleBounds,
-    ],
+    [activePageId, applyPageBoxLayout, boxes, canvasBounds, fitFrames, movableBoxCount, t],
   );
 
   return { items };
