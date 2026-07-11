@@ -3,6 +3,7 @@ import type { PointerEvent as ReactPointerEvent } from 'react';
 import { Reorder, useDragControls } from 'motion/react';
 import type { WorkspacePage } from '../../domain/workspace';
 import { registerPageDropElement } from '../../app/interactionElementRegistry';
+import { useUiStore } from '../../app/stores/uiStore';
 import { TabPill } from './TabPill';
 
 const LONG_PRESS_MS = 320;
@@ -32,6 +33,7 @@ export function SortablePageTab({
   onReorderEnd: () => void;
 }) {
   const controls = useDragControls();
+  const boxDragActive = useUiStore((state) => Boolean(state.draggedBoxId));
   const registerDropElement = useCallback(
     (element: HTMLDivElement | null) => registerPageDropElement(page.id, element),
     [page.id],
@@ -85,12 +87,14 @@ export function SortablePageTab({
       value={page.id}
       dragControls={controls}
       dragListener={false}
-      layout="position"
-      initial={{ opacity: 0, scale: 0.8 }}
+      layout={boxDragActive ? false : 'position'}
+      initial={boxDragActive ? false : { opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.8, width: 0 }}
+      exit={boxDragActive ? undefined : { opacity: 0, scale: 0.8, width: 0 }}
       whileDrag={{ opacity: 0.68, scale: 1.03, zIndex: 80 }}
-      transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
+      transition={
+        boxDragActive ? { duration: 0 } : { type: 'spring', bounce: 0, duration: 0.4 }
+      }
       onPointerDownCapture={beginLongPress}
       onClickCapture={(event) => {
         if (!suppressClickRef.current) return;

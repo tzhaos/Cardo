@@ -218,7 +218,8 @@
 .wbn-box-drop-target .wbn-tab-pill > button {
   background: transparent;
   box-shadow: none;
-  transform: scale(0.965);
+  /* Avoid scale fight with active-tab indicator geometry during cross-page drag. */
+  transform: none;
 }
 
 .wbn-tab-pill {

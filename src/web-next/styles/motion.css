@@ -57,12 +57,21 @@
   will-change: opacity, transform;
 }
 
+/* Steady drop highlight — no infinite pulse (was desynced from pointer / active pill). */
 .wbn-box-drop-target .wbn-tab-pill > button::after {
-  animation: wbn-tab-drop-ready 880ms ease-in-out infinite;
+  opacity: 0.62;
+  transform: scale(1);
+  animation: none;
 }
 
 .wbn-box-drop-released .wbn-tab-pill > button::after {
-  animation: wbn-tab-drop-release 560ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: wbn-tab-drop-release 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* While any box is dragged, freeze tab layout springs so chrome tracks the pointer. */
+.wbn-top-bar-drop-mode .wbn-tab-pill,
+.wbn-top-bar-drop-mode .wbn-tabs > * {
+  transition: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
