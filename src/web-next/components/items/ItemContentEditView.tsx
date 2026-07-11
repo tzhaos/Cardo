@@ -3,7 +3,6 @@ import { motion } from 'motion/react';
 import { isUrlText } from '../../../core/domains/items/services/isUrlText';
 import { parseLocalPathText } from '../../../core/domains/items/services/parseLocalPathText';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
-import { parseFolderPathInput } from '../../domain/itemMetadata';
 import type { BoxItem } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { Input } from '../../ui/primitives/input';
@@ -92,7 +91,10 @@ function getItemContent(item: BoxItem) {
 }
 
 function normalizeContent(item: BoxItem, draft: string) {
-  if (item.type === 'folder') return parseFolderPathInput(draft);
+  if (item.type === 'folder') {
+    const parsedPath = parseLocalPathText(draft);
+    return parsedPath?.type === 'folder' ? parsedPath.normalizedPath : null;
+  }
   if (item.type === 'file' || item.type === 'shortcut') {
     const parsedPath = parseLocalPathText(draft);
     return parsedPath?.type === item.type ? parsedPath.normalizedPath : null;

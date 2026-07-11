@@ -1,6 +1,5 @@
 import { isUrlText } from '../../core/domains/items/services/isUrlText';
 import { parseLocalPathText } from '../../core/domains/items/services/parseLocalPathText';
-import { deriveBookmarkItemTitle, deriveFolderItemTitle } from './itemMetadata';
 import type { WorkspaceItemType } from './workspace';
 
 export interface PasteItemDraft {
@@ -41,6 +40,12 @@ export function createPasteItemDraft(text: string): PasteItemDraft | null {
   };
 }
 
-export function boxAcceptsPaste(text: string) {
-  return createPasteItemDraft(text) !== null;
+function deriveFolderItemTitle(path: string) {
+  return path.split(/[\\/]/).filter(Boolean).at(-1) ?? '';
+}
+
+function deriveBookmarkItemTitle(url: string) {
+  const hostname = new URL(url).hostname.replace(/^www\./i, '');
+  const labels = hostname.split('.').filter(Boolean);
+  return labels.length > 1 ? (labels.at(-2) ?? hostname) : hostname;
 }
