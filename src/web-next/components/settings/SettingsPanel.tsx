@@ -24,8 +24,11 @@ import type { WebNextColorMode } from '../../themes/themeRegistry';
 import { ColorModeStateIcon, LanguageStateIcon } from './StateIcons';
 import { IconButton, IconFrame } from '../../ui/khaos/icon-button';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
-import { extractPersistedWorkspaceSnapshot } from '../../domain/persistence';
 import type { WorkspaceSnapshot } from '../../domain/workspace';
+import {
+  WORKSPACE_TRANSFER_VERSION,
+  workspaceTransferDocumentSchema,
+} from '../../../core/contracts/workspaceTransfer';
 import { useUiStore } from '../../app/stores/uiStore';
 import { exportOperationJournal } from '../../app/stores/operationJournalStore';
 import { isValidCustomSearchTemplate, type WebSearchEngineId } from '../../domain/webSearch';
@@ -149,7 +152,7 @@ function DataSettings() {
   const exportData = () => {
     const payload = {
       format: 'khaosbox-workspace',
-      version: 3,
+      version: WORKSPACE_TRANSFER_VERSION,
       exportedAt: new Date().toISOString(),
       snapshot,
     };
@@ -164,11 +167,9 @@ function DataSettings() {
 
   const readImportFile = async (file: File) => {
     try {
-      const parsed = JSON.parse(await file.text()) as unknown;
-      const importedSnapshot = extractPersistedWorkspaceSnapshot(parsed);
-      if (!importedSnapshot) throw new Error('Invalid workspace data');
+      const parsed = workspaceTransferDocumentSchema.parse(JSON.parse(await file.text()));
       setImportError(false);
-      setPendingImport({ snapshot: importedSnapshot, fileName: file.name });
+      setPendingImport({ snapshot: parsed.snapshot, fileName: file.name });
     } catch {
       setPendingImport(null);
       setImportError(true);
