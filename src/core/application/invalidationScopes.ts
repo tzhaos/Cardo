@@ -84,8 +84,11 @@ function onlySingleBoxItems(changes: HistoryChangeSet): string | null {
 }
 
 /**
- * True single-page boxes-only path. Cross-page moves (before.pageId !== after.pageId),
- * and insert/delete rows with only one side, must fall through to projection.
+ * True single-page boxes-only path.
+ * - Cross-page move (before.pageId !== after.pageId → multiple ids): widen to projection.
+ * - Insert (after only) or hard-delete (before only) with one present pageId: still narrow
+ *   to pageBoxes for that page (not under-invalidation).
+ * - Multi-table hard-deletes never reach this helper (table filter fails first).
  */
 function onlySinglePageBoxes(changes: HistoryChangeSet): string | null {
   if (!changes.length || changes.some((change) => change.table !== 'boxes')) {
@@ -95,7 +98,7 @@ function onlySinglePageBoxes(changes: HistoryChangeSet): string | null {
   for (const change of changes) {
     if (change.table !== 'boxes') return null;
     const ids = pageIdsFromBoxChange(change);
-    // Missing pageId on either present side, or a cross-page change, widens out.
+    // Empty pageId set, or a single change spanning two pages, widens out.
     if (ids.length === 0) return null;
     if (ids.length > 1) return null;
     for (const id of ids) pageIds.add(id);
