@@ -5,6 +5,18 @@
 3. 每个独立 Feature 或 Fix 完成后分别执行 `npm run build` 和 `npm run desktop:build`，单独提交并推送。
 4. 项目禁止旧 Schema、旧字段、旧持久化格式和退休机制的兼容代码。
 
+## Cardo 过渡注记（PR0）
+
+目标产品名 Cardo。多 client 本机 Runtime 架构与命名/路径政策见 `docs/architecture/local-runtime-multi-client.md`；改名清单见 `docs/architecture/cardo-rename-checklist.md`。
+
+目标架构：单一 Cardo Runtime 持有权威 SQLite 与全部业务写路径；CLI、Web、Browser Extension、Desktop 均为对称 client，不各自长期持有写库。
+
+过渡期约束（在完整平台边界改写完成前生效）：
+
+1. 禁止把 Extension OPFS 权威写库，或 Desktop 面向业务的 raw SQL IPC（`database:execute` 一类），当作长期目标架构继续叠功能。
+2. 过渡实现可暂时保留本地 opener / OPFS solo，但新功能设计必须面向 Runtime Command/Query 协议与单一写者模型。
+3. 下方「平台边界」描述的是当前代码事实，不是终态；完整平台边界与 Agents 终态改写归属后续 PR（设计 Rollout PR6），本文件此处不做全文重写。
+
 ## 数据架构
 
 1. Drizzle Schema 是持久化关系结构的唯一来源。
