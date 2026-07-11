@@ -157,20 +157,15 @@ function commitBoxDragRelease(
   const pageCanvas = getPageCanvasState(canvas, destinationPageId);
   const viewportBounds = getVisibleCanvasWorldBounds(pageCanvas.camera, canvas.viewportSize);
   const canvasBounds = createCanvasWorldBounds(canvas.viewportSize);
-
-  const pointerFrame =
-    framePreservingGrabUnderPointer(
-      event.clientX,
-      event.clientY,
-      destinationPageId,
-      dragSession.latestFrame,
-      dragSession.transformOrigin,
-    ) ?? dragSession.latestFrame;
-
   const releasedOnTab = Boolean(tabPageId) && ui.boxDragOverTopBar;
 
-  // Normal canvas drag: keep the pointer frame (overlap allowed). Only clamp to world.
-  // Cross-page tab release: auto-place in the viewport, avoiding other boxes when possible.
+  // Drag tracking already wrote world coords into latestFrame (client-delta based).
+  // Do NOT reproject from the pointer — that fights pan/scale/lift and causes a
+  // visible snap/bounce on every release.
+  const dragFrame = constrainBoxFrameToCanvas(dragSession.latestFrame, canvasBounds);
+
+  // Normal canvas drag: keep the frame the user already sees.
+  // Cross-page tab release: auto-place in the viewport (free-slot when crowded).
   // Off-screen non-tab drop: pull back into the viewport without mutual exclusion.
   let landingFrame: BoxFrame;
   if (releasedOnTab) {
@@ -178,27 +173,33 @@ function commitBoxDragRelease(
       .filter((box) => box.pageId === destinationPageId && box.id !== draggedBoxId)
       .map((box) => box.frame);
     landingFrame = findViewportAdaptiveFrame({
-      size: { width: pointerFrame.width, height: pointerFrame.height },
+      size: { width: dragFrame.width, height: dragFrame.height },
       preferredCenter: getCanvasViewportCenter(pageCanvas.camera, canvas.viewportSize),
       viewportBounds,
       canvasBounds,
       occupiedFrames,
     });
-  } else if (isFrameInViewport(pointerFrame, viewportBounds)) {
-    landingFrame = constrainBoxFrameToCanvas(pointerFrame, canvasBounds);
+  } else if (isFrameInViewport(dragFrame, viewportBounds)) {
+    landingFrame = dragFrame;
   } else {
     landingFrame = findViewportAdaptiveFrame({
-      size: { width: pointerFrame.width, height: pointerFrame.height },
+      size: { width: dragFrame.width, height: dragFrame.height },
       preferredCenter: {
-        x: pointerFrame.x + pointerFrame.width / 2,
-        y: pointerFrame.y + pointerFrame.height / 2,
+        x: dragFrame.x + dragFrame.width / 2,
+        y: dragFrame.y + dragFrame.height / 2,
       },
       viewportBounds,
       canvasBounds,
     });
   }
 
-  ui.setPendingBoxLanding(draggedBoxId, landingFrame);
+  // Only animate when landing actually moves (tab place / pull-in). Same-spot drop snaps.
+  const moved =
+    Math.abs(landingFrame.x - dragSession.latestFrame.x) > 1 ||
+    Math.abs(landingFrame.y - dragSession.latestFrame.y) > 1;
+  if (moved) {
+    ui.setPendingBoxLanding(draggedBoxId, landingFrame);
+  }
 
   // Projection may already show destination via optimistic preview; Runtime still
   // holds origin until this write. Compare against drag-start page, not projection.

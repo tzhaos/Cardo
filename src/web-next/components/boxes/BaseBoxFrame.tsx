@@ -345,7 +345,8 @@ export function BaseBoxFrame({
 
     const deltaX = Math.abs(boxLeft.get() - targetFrame.x);
     const deltaY = Math.abs(boxTop.get() - targetFrame.y);
-    // Snap small corrections (edge clamp / server round-trip) — no spring bounce.
+    // Snap tiny deltas (same-spot drop / server echo). Animate only real moves
+    // (cross-page tab place or pull-in from off-screen).
     if (deltaX < 2 && deltaY < 2) {
       boxLeft.set(targetFrame.x);
       boxTop.set(targetFrame.y);
@@ -353,14 +354,22 @@ export function BaseBoxFrame({
       return;
     }
 
-    // Ease-out only: springs overshoot and feel like a rubber-band when flinging.
-    const positionTransition = pendingBoxLanding
-      ? { type: 'tween' as const, duration: 0.2, ease: [0.22, 1, 0.36, 1] as const }
-      : { type: 'tween' as const, duration: 0.16, ease: [0.22, 1, 0.36, 1] as const };
+    if (!pendingBoxLanding) {
+      // Projection caught up without a landing intent — hard snap, no bounce.
+      boxLeft.set(targetFrame.x);
+      boxTop.set(targetFrame.y);
+      return;
+    }
+
+    const positionTransition = {
+      type: 'tween' as const,
+      duration: 0.18,
+      ease: [0.22, 1, 0.36, 1] as const,
+    };
     const leftAnimation = animateMotion(boxLeft, targetFrame.x, positionTransition);
     const topAnimation = animateMotion(boxTop, targetFrame.y, positionTransition);
     void leftAnimation.then(() => {
-      if (pendingBoxLanding) clearPendingBoxLanding(box.id);
+      clearPendingBoxLanding(box.id);
     });
     return () => {
       leftAnimation.stop();
