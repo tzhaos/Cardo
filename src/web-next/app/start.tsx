@@ -10,17 +10,15 @@ export function startWebNextApp() {
     import('./stores/preferencesStore'),
     import('./stores/workspaceStore'),
     import('../platform/hostPlatform'),
-    import('../../core/database/initializeWorkspaceDatabase'),
   ]).then(
     async ([
       { default: WebNextApp },
       { renderWebNextRoot },
       { usePreferencesStore },
       { useWorkspaceStore },
-      { getKhaosDatabase },
-      { initializeWorkspaceDatabase },
+      { initializeWorkspace },
     ]) => {
-      await initializeWorkspaceDatabase(getKhaosDatabase(), {
+      await initializeWorkspace({
         locale: navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en',
         colorMode: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
       });

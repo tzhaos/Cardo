@@ -18,13 +18,23 @@ import {
   WORKSPACE_TRANSFER_VERSION,
   workspaceTransferDocumentSchema,
 } from '../../core/contracts/workspaceTransfer';
+import {
+  initializeWorkspaceDatabase,
+  type InitialWorkspacePreferences,
+} from '../../core/database/initializeWorkspaceDatabase';
 
 let database: KhaosDatabase | null = null;
 let databaseTaskQueue: Promise<unknown> = Promise.resolve();
 
-export function getKhaosDatabase() {
+function getKhaosDatabase() {
   database ??= createDatabaseClient(getAppPorts().database);
   return database;
+}
+
+export function initializeWorkspace(initialPreferences: InitialWorkspacePreferences) {
+  return runDatabaseTask(() =>
+    initializeWorkspaceDatabase(getKhaosDatabase(), initialPreferences),
+  );
 }
 
 export function dispatchDatabaseCommand(command: WorkspaceCommand) {
