@@ -15,6 +15,7 @@ import { usePasteIntoSelectedBox } from './usePasteIntoSelectedBox';
 import { useWorkspaceHistoryShortcuts } from './useWorkspaceHistoryShortcuts';
 import { usePreferencesStore } from './stores/preferencesStore';
 import { BoxPageDropController } from './BoxPageDropController';
+import { TooltipProvider } from '../ui/primitives/tooltip';
 import './styles.css';
 
 export default function WebNextApp() {
@@ -32,18 +33,20 @@ export default function WebNextApp() {
   }, [colorMode, locale, themeId]);
 
   return (
-    <FloatingMenuProvider>
-      <div className={`wbn-app${isDesktopHost ? ' wbn-app-desktop' : ''}`}>
-        <DesktopTitleBar />
-        <BoxPageDropController />
-        <TopBar />
-        <HistoryToolbar />
-        <WorkspaceCanvas />
-        <CanvasToolsToolbar />
-        <BottomToolbar />
-        <FloatingMenuLayer />
-        <SettingsWindow />
-      </div>
-    </FloatingMenuProvider>
+    <TooltipProvider>
+      <FloatingMenuProvider>
+        <div className={`wbn-app${isDesktopHost ? ' wbn-app-desktop' : ''}`}>
+          <DesktopTitleBar />
+          <BoxPageDropController />
+          <TopBar />
+          <HistoryToolbar />
+          <WorkspaceCanvas />
+          <CanvasToolsToolbar />
+          <BottomToolbar />
+          <FloatingMenuLayer />
+          <SettingsWindow />
+        </div>
+      </FloatingMenuProvider>
+    </TooltipProvider>
   );
 }

@@ -22,7 +22,7 @@ import { useI18n } from '../../i18n/useI18n';
 import { getRegisteredWebNextThemes } from '../../themes/themeRegistry';
 import type { WebNextColorMode } from '../../themes/themeRegistry';
 import { ColorModeStateIcon, LanguageStateIcon } from './StateIcons';
-import { IconButton, IconFrame } from '../primitives/IconPrimitives';
+import { IconButton, IconFrame } from '../../ui/khaos/icon-button';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { extractPersistedWorkspaceSnapshot } from '../../domain/persistence';
 import type { WorkspaceSnapshot } from '../../domain/workspace';

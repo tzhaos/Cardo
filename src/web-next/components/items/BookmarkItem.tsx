@@ -8,7 +8,7 @@ import { ItemActions } from './ItemActions';
 import { useItemRename } from './useItemRename';
 import { useI18n } from '../../i18n/useI18n';
 import { openExternalUrl } from '../../platform/hostPlatform';
-import { IconFrame } from '../primitives/IconPrimitives';
+import { IconFrame } from '../../ui/khaos/icon-button';
 import { useItemContextMenu } from './useItemContextMenu';
 import { recordItemActivity } from '../../app/operationActivity';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';

@@ -120,3 +120,35 @@ svg {
 .wbn-icon-frame > svg {
   display: block;
 }
+
+.wbn-ui-tooltip-content {
+  z-index: 1200;
+  max-width: 260px;
+  padding: 6px 9px;
+  border: 1px solid var(--wbn-border);
+  border-radius: 8px;
+  background: var(--wbn-panel);
+  box-shadow: var(--wbn-shadow);
+  color: var(--wbn-text);
+  font-size: 12px;
+  line-height: 1.25;
+  user-select: none;
+  animation: wbn-ui-tooltip-in 120ms ease-out;
+}
+
+.wbn-ui-tooltip-arrow {
+  fill: var(--wbn-panel);
+  stroke: var(--wbn-border);
+  stroke-width: 1px;
+}
+
+@keyframes wbn-ui-tooltip-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import type { FloatingMenuItem } from './menuTypes';
 import { SubmenuChevron, useFloatingMenu } from './useFloatingMenu';
-import { IconFrame } from '../primitives/IconPrimitives';
+import { IconFrame } from '../../ui/khaos/icon-button';
 
 export function FloatingMenuLayer() {
   const { menu, closeMenu } = useFloatingMenu();

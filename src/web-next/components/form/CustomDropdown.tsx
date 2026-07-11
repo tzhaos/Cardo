@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useI18n } from '../../i18n/useI18n';
-import { IconFrame } from '../primitives/IconPrimitives';
+import { IconFrame } from '../../ui/khaos/icon-button';
 
 interface DropdownOption {
   value: string;

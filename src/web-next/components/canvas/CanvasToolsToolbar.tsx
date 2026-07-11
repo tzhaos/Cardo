@@ -1,5 +1,5 @@
 import { useI18n } from '../../i18n/useI18n';
-import { IconButton } from '../primitives/IconPrimitives';
+import { IconButton } from '../../ui/khaos/icon-button';
 import { useCanvasTools } from './useCanvasTools';
 
 export function CanvasToolsToolbar() {
