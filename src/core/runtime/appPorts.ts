@@ -2,11 +2,6 @@ import type { AppPorts } from '../ports/AppPorts';
 
 function createDefaultAppPorts(): AppPorts {
   return {
-    database: {
-      execute: async () => {
-        throw new Error('Database port is not configured.');
-      },
-    },
     clipboard: {
       readText: async () => '',
       writeText: async () => {},

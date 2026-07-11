@@ -44,7 +44,6 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(PACKAGE_JSON.version ?? '0.0.0'),
     __APP_LICENSE__: JSON.stringify(PACKAGE_JSON.license ?? 'MIT'),
-    'import.meta.env.CARDO_USE_RUNTIME': JSON.stringify('1'),
   },
   plugins: [react(), tailwindcss(), flattenWebRuntimeHtml()],
   // Assets and index live under /app so Runtime can map /app/* cleanly.

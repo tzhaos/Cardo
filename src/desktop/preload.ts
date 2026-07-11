@@ -18,19 +18,15 @@ import {
  * (design §6.5 Desktop attach: preload baseUrl+token, NOT long-lived token in URL).
  * hostPlatform reads window.__CARDO_RUNTIME__ and starts RuntimeClient.
  *
- * Desktop always loads Runtime-hosted /app/ same-origin; force runtime mode
- * so missing injection fails closed instead of local DatabasePort (PR4 Issue 5).
+ * Desktop always loads Runtime-hosted /app/ same-origin; missing injection fails closed.
  */
 const rawRuntimeConfig = ipcRenderer.sendSync('runtime:get-config') as unknown;
 const runtimeConfigParse = desktopRuntimeConfigSchema.safeParse(rawRuntimeConfig);
 
-// Fail-closed: Desktop after PR4 is RuntimeClient-only.
-contextBridge.exposeInMainWorld('__CARDO_USE_RUNTIME__', '1');
-
 if (runtimeConfigParse.success) {
   contextBridge.exposeInMainWorld('__CARDO_RUNTIME__', runtimeConfigParse.data);
 } else {
-  // Still expose a sentinel so hostPlatform can show a clear error (not silent local mode).
+  // Sentinel so hostPlatform can show a clear error without a local SQLite fallback.
   console.error(
     '[Cardo] Desktop preload: Runtime config missing or invalid; renderer will fail closed.',
     runtimeConfigParse.error?.message,

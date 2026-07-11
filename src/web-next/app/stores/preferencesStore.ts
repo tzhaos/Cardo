@@ -4,11 +4,7 @@ import type { InvalidationScope } from '../../../core/contracts/runtimeProtocol'
 import type { WebNextLocale } from '../../i18n/messages';
 import type { WebSearchEngineId } from '../../domain/webSearch';
 import { hasRegisteredWebNextTheme, type WebNextColorMode } from '../../themes/themeRegistry';
-import {
-  dispatchDatabaseCommand,
-  getHostPlatformMode,
-  queryPreferences,
-} from '../../platform/hostPlatform';
+import { dispatchDatabaseCommand, queryPreferences } from '../../platform/hostPlatform';
 
 interface PreferencesStore {
   colorMode: WebNextColorMode;
@@ -88,11 +84,8 @@ export async function applyPreferencesInvalidationScopes(
 
 function fireCommand(command: WorkspaceCommand) {
   void enqueue(async () => {
+    // Scopes (including preferences) applied from command.ok via RuntimeClient.
     await dispatchDatabaseCommand(command);
-    // Runtime mode: scopes (including preferences) applied from command.ok.
-    if (getHostPlatformMode() === 'local') {
-      await refreshPreferences();
-    }
   }).catch((error: unknown) => console.error('Failed to update preferences', error));
 }
 

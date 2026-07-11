@@ -56,10 +56,14 @@ export function openRuntimeDatabase(dbPath: string): RuntimeDatabaseHandle {
 
       if (request.method === 'get') {
         const row = statement.get(...params) as unknown[] | undefined;
-        return { rows: row ?? null };
+        return {
+          rows: (row ?? null) as DatabaseExecuteResponse['rows'],
+        };
       }
 
-      return { rows: statement.all(...params) as unknown[][] };
+      return {
+        rows: statement.all(...params) as unknown as DatabaseExecuteResponse['rows'],
+      };
     },
   };
 

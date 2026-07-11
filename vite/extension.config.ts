@@ -88,9 +88,6 @@ export default defineConfig(() => {
       __APP_LICENSE__: JSON.stringify(PACKAGE_JSON.license ?? 'MIT'),
     },
     plugins: [react(), tailwindcss(), copyExtensionAssets()],
-    optimizeDeps: {
-      exclude: ['@sqlite.org/sqlite-wasm'],
-    },
     build: {
       outDir: EXTENSION_OUT_DIR,
       rollupOptions: {

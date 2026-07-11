@@ -1,12 +1,14 @@
 import type { ClipboardPort } from './ClipboardPort';
-import type { DatabasePort } from './DatabasePort';
 import type { FileExportPort } from './FileExportPort';
 import type { LocalResourcePort } from './LocalResourcePort';
 import type { TabsPort } from './TabsPort';
 import type { WebsiteIconPort } from './WebsiteIconPort';
 
+/**
+ * Shell capabilities shared by Web / Extension / Desktop clients.
+ * Business database I/O is Runtime-only via RuntimeClient (PR6); no DatabasePort here.
+ */
 export interface AppPorts {
-  database: DatabasePort;
   clipboard: ClipboardPort;
   fileExport: FileExportPort;
   tabs: TabsPort;

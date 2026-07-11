@@ -1,6 +1,6 @@
 /**
  * Runtime-hosted Web entry (design §6.5 / §6.16).
- * Also used by Desktop BrowserWindow loading `${baseUrl}/app/` same-origin (PR4).
+ * Also used by Desktop BrowserWindow loading `${baseUrl}/app/` same-origin.
  * When preload exposes khaosboxDesktop, use Desktop shell ports (clipboard/dialogs/titlebar).
  */
 
@@ -13,14 +13,6 @@ import { createDesktopPorts } from '../desktop/ports/createDesktopPorts';
 
 function createWebRuntimePorts(): AppPorts {
   return {
-    // Local DatabasePort is unused in runtime mode; keep a hard-fail stub.
-    database: {
-      execute: async () => {
-        throw new Error(
-          'Web Runtime client must use RuntimeClient (no local DatabasePort).',
-        );
-      },
-    },
     clipboard: browserClipboardPort,
     fileExport: browserFileExportPort,
     tabs: {
@@ -29,10 +21,10 @@ function createWebRuntimePorts(): AppPorts {
       },
     },
     localResource: {
-      // hostPlatform.openLocalResource routes through Runtime capability in runtime mode.
+      // hostPlatform.openLocalResource routes through Runtime capability.
       requestOpen: () => ({
         status: 'failed',
-        errorMessage: 'Use hostPlatform.openLocalResource in runtime mode.',
+        errorMessage: 'Use hostPlatform.openLocalResource (Runtime capability).',
       }),
     },
     websiteIcons: {
@@ -61,11 +53,6 @@ function createWebRuntimePorts(): AppPorts {
       },
     },
   };
-}
-
-// Prefer runtime when hosted under /app (cardo open / serve static UI / Desktop).
-if (typeof window !== 'undefined' && window.__CARDO_USE_RUNTIME__ == null) {
-  window.__CARDO_USE_RUNTIME__ = '1';
 }
 
 // Desktop Electron shell: preload injects khaosboxDesktop + __CARDO_RUNTIME__.

@@ -15,7 +15,6 @@ import type { CanvasViewportSize } from '../../domain/canvasGeometry';
 import type { InvalidationScope } from '../../../core/contracts/runtimeProtocol';
 import {
   dispatchDatabaseCommand,
-  getHostPlatformMode,
   queryBoxItems,
   queryDatabaseHistoryState,
   queryPageBoxes,
@@ -363,146 +362,9 @@ function isPlainRecord(value: unknown): value is Record<string, unknown> {
 
 function runCommand(command: WorkspaceCommand) {
   return enqueue(async () => {
-    const projectionBeforeCommand = state.projection;
-    const result = await dispatchDatabaseCommand(command);
-    // Runtime mode: scopes applied from command.ok inside RuntimeClient (design §6.11.2).
-    // Local mode: keep client-side getCommandRefreshScope until PR6.
-    if (getHostPlatformMode() === 'local') {
-      await refreshAfterCommand(command, projectionBeforeCommand);
-    }
-    return result;
+    // Scopes applied from command.ok inside RuntimeClient (design §6.11.2).
+    return await dispatchDatabaseCommand(command);
   });
-}
-
-async function refreshAfterCommand(
-  command: WorkspaceCommand,
-  projectionBeforeCommand: WorkspaceProjection,
-) {
-  const scope = getCommandRefreshScope(command, projectionBeforeCommand);
-
-  if (scope.type === 'projection') {
-    await refreshProjection();
-    return;
-  }
-
-  const historyTask = queryDatabaseHistoryState();
-  let nextProjection = state.projection;
-
-  if (scope.type === 'workspaceState') {
-    const workspaceState = await queryWorkspaceState();
-    nextProjection = structurallyShare(state.projection, {
-      ...state.projection,
-      ...workspaceState,
-    });
-  } else if (scope.type === 'pageTabs') {
-    const pages = await queryPageTabs();
-    nextProjection = structurallyShare(state.projection, { ...state.projection, pages });
-  } else if (scope.type === 'pageTabsAndState') {
-    const [pages, workspaceState] = await Promise.all([queryPageTabs(), queryWorkspaceState()]);
-    nextProjection = structurallyShare(state.projection, {
-      ...state.projection,
-      ...workspaceState,
-      pages,
-    });
-  } else if (scope.type === 'pageBoxes') {
-    const pageBoxes = await queryPageBoxes(scope.pageId);
-    nextProjection = structurallyShare(state.projection, {
-      ...state.projection,
-      boxes: replacePageBoxes(state.projection.boxes, scope.pageId, pageBoxes),
-    });
-  } else if (scope.type === 'boxItems') {
-    const items = await queryBoxItems(scope.boxId);
-    nextProjection = structurallyShare(state.projection, {
-      ...state.projection,
-      boxes: state.projection.boxes.map((box) =>
-        box.id === scope.boxId ? { ...box, items } : box,
-      ),
-    });
-  }
-
-  const history = await historyTask;
-  state = {
-    ...state,
-    projection: nextProjection,
-    historyPast: history.canUndo ? [true] : [],
-    historyFuture: history.canRedo ? [true] : [],
-  };
-  emitChange();
-}
-
-type CommandRefreshScope =
-  | { type: 'projection' }
-  | { type: 'workspaceState' }
-  | { type: 'pageTabs' }
-  | { type: 'pageTabsAndState' }
-  | { type: 'pageBoxes'; pageId: string }
-  | { type: 'boxItems'; boxId: string }
-  | { type: 'historyOnly' };
-
-function getCommandRefreshScope(
-  command: WorkspaceCommand,
-  projection: WorkspaceProjection,
-): CommandRefreshScope {
-  switch (command.type) {
-    case 'page.open':
-    case 'page.setDefault':
-      return { type: 'workspaceState' };
-    case 'page.create':
-      return { type: 'pageTabsAndState' };
-    case 'page.rename':
-    case 'page.reorder':
-      return { type: 'pageTabs' };
-    case 'box.create':
-      return { type: 'pageBoxes', pageId: command.pageId };
-    case 'box.updateFrame':
-    case 'box.rename':
-    case 'box.promote':
-    case 'box.setDetailMode':
-    case 'box.setLocked':
-    case 'box.setAppearance':
-    case 'box.setViewMode':
-      return getBoxPageRefreshScope(projection, command.boxId);
-    case 'canvas.arrange':
-      return { type: 'pageBoxes', pageId: command.pageId };
-    case 'item.rename':
-    case 'item.editContent':
-    case 'item.setPinned':
-    case 'item.reorder':
-    case 'bookmark.setFavicon':
-      return { type: 'boxItems', boxId: command.boxId };
-    case 'item.create':
-      return getBoxPageRefreshScope(projection, command.boxId);
-    case 'preferences.setLocale':
-    case 'preferences.setColorMode':
-    case 'preferences.setTheme':
-    case 'preferences.setSearchEngine':
-    case 'preferences.setCustomSearchTemplate':
-      return { type: 'historyOnly' };
-    case 'workspace.import':
-    case 'page.delete':
-    case 'item.paste':
-    case 'collection.updateBoxFrame':
-    case 'collection.updateView':
-    case 'collection.arrange':
-    case 'box.moveToPage':
-    case 'box.collect':
-    case 'box.removeFromCollection':
-    case 'item.moveBetweenBoxes':
-    case 'box.delete':
-    case 'item.delete':
-    case 'system.constrainFrames':
-      return { type: 'projection' };
-    default:
-      return assertNever(command);
-  }
-}
-
-function getBoxPageRefreshScope(
-  projection: WorkspaceProjection,
-  boxId: string,
-): CommandRefreshScope {
-  const pageId = projection.boxes.find((box) => box.id === boxId)?.pageId;
-  return pageId ? { type: 'pageBoxes', pageId } : { type: 'projection' };
 }
 
 function replacePageBoxes(
@@ -517,10 +379,6 @@ function replacePageBoxes(
   return [...boxes, ...nextPageBoxes];
 }
 
-function assertNever(value: never): never {
-  throw new Error(`Unhandled workspace command: ${JSON.stringify(value)}`);
-}
-
 function fireCommand(command: WorkspaceCommand) {
   void runCommand(command).catch(reportCommandError);
 }
@@ -529,10 +387,7 @@ function fireHistoryChange(direction: 'undo' | 'redo') {
   void enqueue(async () => {
     if (direction === 'undo') await undoDatabaseHistory();
     else await redoDatabaseHistory();
-    // Runtime mode: history.ok scopes applied by RuntimeClient; local still full refresh.
-    if (getHostPlatformMode() === 'local') {
-      await refreshProjection();
-    }
+    // history.ok scopes applied by RuntimeClient.
   }).catch(reportCommandError);
 }
 

@@ -90,7 +90,7 @@ function runInTransaction(adapter: MigratorAdapter, fn: () => void): void {
 
 /**
  * Build a MigratorAdapter for any SQLite handle that exposes exec + PRAGMA user_version.
- * Suitable for node:sqlite DatabaseSync and sqlite-wasm Database with a thin wrapper.
+ * Suitable for node:sqlite DatabaseSync with a thin dialect adapter.
  *
  * Runtime (PR2) example with node:sqlite:
  * ```

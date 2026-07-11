@@ -1,9 +1,9 @@
 /**
- * Extension shell bootstrap (PR5 / design §6.4).
+ * Extension shell bootstrap (design §6.4 / PR6).
  *
  * Primary path: toolbar → app.html → NM runtime.discover → inject
  * window.__CARDO_RUNTIME__ → RuntimeClient (same revision space as Web/Desktop).
- * OPFS business database is never opened; Runtime down shows guide UI only.
+ * No OPFS / local SQLite authority path.
  */
 
 import { configureAppPorts } from '../../core/runtime/appPorts';
@@ -25,8 +25,6 @@ async function injectRuntimeFromNativeMessaging(): Promise<void> {
     token: discovery.token,
     client: 'extension',
   };
-  // Hard-force Runtime path: hostPlatform must not fall back to local OPFS.
-  window.__CARDO_USE_RUNTIME__ = '1';
 }
 
 async function clearInjectionForRetry(): Promise<void> {
@@ -35,8 +33,6 @@ async function clearInjectionForRetry(): Promise<void> {
   } catch {
     window.__CARDO_RUNTIME__ = undefined;
   }
-  // Keep __CARDO_USE_RUNTIME__='1' so accidental local fallback stays impossible;
-  // injectRuntimeFromNativeMessaging re-sets both after a successful discover.
   // Dynamic import avoids static hostPlatform in the extension entry chunk.
   const { resetHostPlatformForRetry } = await import('../../web-next/platform/hostPlatform');
   await resetHostPlatformForRetry();
@@ -54,7 +50,7 @@ async function bootstrapExtensionApp(): Promise<void> {
 
   try {
     // Non-DB ports (tabs, clipboard, icons, file export) stay available.
-    // Database port is a hard-fail stub — business I/O is RuntimeClient only.
+    // Business I/O is RuntimeClient only.
     configureAppPorts(createExtensionPorts());
 
     try {

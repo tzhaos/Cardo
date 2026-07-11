@@ -3,8 +3,7 @@
  * renders the UI. Waiting for hydration prevents the initial workspace from
  * flashing before the persisted default page is restored.
  *
- * Dual-mode: ensureHostPlatformReady resolves RuntimeClient vs local DatabasePort
- * before any workspace I/O (design §6.16).
+ * ensureHostPlatformReady connects RuntimeClient before any workspace I/O.
  */
 
 export type StartWebNextAppOptions = {

@@ -1,55 +1,26 @@
 /**
- * Dual-mode hostPlatform facade (design §6.16).
+ * Runtime-only hostPlatform facade (design §6.16 / PR6).
  *
- * - mode=runtime: RuntimeClient HTTP + fetch stream
- *   - Web: cardo open code exchange / same-origin (PR3)
- *   - Desktop: preload injects window.__CARDO_RUNTIME__ (PR4, fail-closed)
- *   - Extension: NM runtime.discover inject + __CARDO_USE_RUNTIME__='1' (PR5)
- * - mode=local: createDatabaseClient(AppPorts.database) — residual until PR6 only
- *   (never for Desktop PR4+ or Extension PR5 forceRuntime / discover path)
+ * All surfaces connect via RuntimeClient:
+ * - Web: cardo open code exchange / same-origin session token
+ * - Desktop: preload injects window.__CARDO_RUNTIME__ (fail-closed)
+ * - Extension: NM runtime.discover injects window.__CARDO_RUNTIME__
  *
- * Extension sets forceRuntime so local OPFS is never a silent second writer (PR5).
+ * Local createDatabaseClient(AppPorts.database) dual-mode is retired.
+ * AppPorts remains for non-DB shell capabilities only.
  */
 
 import { getAppPorts } from '../../core/runtime/appPorts';
-import { createDatabaseClient, type KhaosDatabase } from '../../core/database/createDatabaseClient';
-import { executeDatabaseCommand } from '../../core/application/executeDatabaseCommand';
 import type { WorkspaceCommand } from '../../core/contracts/workspaceCommands';
-import {
-  getDatabaseHistoryState,
-  redoDatabaseCommand,
-  undoDatabaseCommand,
-} from '../../core/application/historyEngine';
-import {
-  getBoxItems,
-  getPageBoxes,
-  getPageTabs,
-  getPreferences,
-  getWorkspaceProjection,
-  getWorkspaceState,
-} from '../../core/database/workspaceQueries';
-import { searchWorkspaceDatabase } from '../../core/database/globalSearchQuery';
-import {
-  getOperationLogEntries,
-  recordDatabaseActivity,
-  type ActivityLogInput,
-} from '../../core/application/operationLogService';
-import {
-  WORKSPACE_TRANSFER_VERSION,
-  workspaceTransferDocumentSchema,
-} from '../../core/contracts/workspaceTransfer';
-import {
-  initializeWorkspaceDatabase,
-  type InitialWorkspacePreferences,
-} from '../../core/database/initializeWorkspaceDatabase';
+import type { ActivityLogInput } from '../../core/application/operationLogService';
+import { workspaceTransferDocumentSchema } from '../../core/contracts/workspaceTransfer';
+import type { InitialWorkspacePreferences } from '../../core/database/initializeWorkspaceDatabase';
 import type { InvalidationScope } from '../../core/contracts/runtimeProtocol';
 import {
   exchangeOneTimeCode,
   RuntimeClient,
   type RuntimeClientKind,
 } from '../../client/runtimeClient';
-
-export type HostPlatformMode = 'local' | 'runtime';
 
 export interface CardoRuntimeInjection {
   baseUrl: string;
@@ -60,33 +31,17 @@ export interface CardoRuntimeInjection {
 declare global {
   interface Window {
     __CARDO_RUNTIME__?: CardoRuntimeInjection;
-    /** Optional override: '0' forces local, '1' prefers runtime when injection/code available. */
-    __CARDO_USE_RUNTIME__?: string;
-    /** Desktop preload fail-closed sentinel when Runtime config IPC is missing (PR4). */
+    /** Desktop preload fail-closed sentinel when Runtime config IPC is missing. */
     __CARDO_RUNTIME_MISSING__?: boolean;
   }
 }
 
-let mode: HostPlatformMode = 'local';
-let modeLocked = false;
 let runtimeClient: RuntimeClient | null = null;
-let database: KhaosDatabase | null = null;
+let readyLocked = false;
 let databaseTaskQueue: Promise<unknown> = Promise.resolve();
 /** Re-entrancy depth so applyScopes queries can run inside an active command task. */
 let databaseTaskDepth = 0;
 let ensureReadyPromise: Promise<void> | null = null;
-
-/** Explicit mode selection (call before ensureHostPlatformReady). */
-export function setHostPlatformMode(next: HostPlatformMode): void {
-  if (modeLocked && mode !== next) {
-    throw new Error(`hostPlatform mode already locked to ${mode}`);
-  }
-  mode = next;
-}
-
-export function getHostPlatformMode(): HostPlatformMode {
-  return mode;
-}
 
 export function getRuntimeClient(): RuntimeClient | null {
   return runtimeClient;
@@ -94,15 +49,13 @@ export function getRuntimeClient(): RuntimeClient | null {
 
 /**
  * Clear Runtime client state so Extension guide Retry can re-discover and re-hello
- * after a post-connect init failure (PR5 review Issue 1). Best-effort bye first.
+ * after a post-connect init failure. Best-effort bye first.
  */
 export async function resetHostPlatformForRetry(): Promise<void> {
   const previous = runtimeClient;
   runtimeClient = null;
   ensureReadyPromise = null;
-  modeLocked = false;
-  mode = 'local';
-  database = null;
+  readyLocked = false;
   if (previous) {
     try {
       await previous.close();
@@ -113,38 +66,30 @@ export async function resetHostPlatformForRetry(): Promise<void> {
 }
 
 /**
- * Resolve dual-mode bootstrap once:
+ * Resolve Runtime bootstrap once:
  * - injected window.__CARDO_RUNTIME__ (baseUrl+token) — Desktop preload / Extension NM
  * - ?code= one-time exchange (same-origin Runtime-hosted Web)
- * - CARDO_USE_RUNTIME / __CARDO_USE_RUNTIME__ gate
- * - Desktop fail-closed without injection (PR4)
- * - Extension forceRuntime never falls back to local OPFS (PR5)
+ * - sessionStorage token on Runtime-hosted pages
+ * - Desktop fail-closed without injection
+ * Never falls back to a local SQLite / OPFS writer.
  */
 export function ensureHostPlatformReady(): Promise<void> {
-  ensureReadyPromise ??= resolveHostPlatformMode().catch((error) => {
-    // Allow Extension/Web retry after failed discover/connect (PR5 guide UI).
+  ensureReadyPromise ??= resolveRuntimeConnection().catch((error) => {
+    // Allow Extension/Web retry after failed discover/connect.
     ensureReadyPromise = null;
-    modeLocked = false;
+    readyLocked = false;
     runtimeClient = null;
     throw error;
   });
   return ensureReadyPromise;
 }
 
-async function resolveHostPlatformMode(): Promise<void> {
-  if (modeLocked) return;
+async function resolveRuntimeConnection(): Promise<void> {
+  if (readyLocked) return;
 
-  const forceLocal = readUseRuntimeFlag() === '0';
-  const forceRuntime = readUseRuntimeFlag() === '1';
   const isDesktopShell =
     typeof window !== 'undefined' &&
     (Boolean(window.khaosboxDesktop) || window.__CARDO_RUNTIME_MISSING__ === true);
-
-  if (forceLocal && !isDesktopShell) {
-    mode = 'local';
-    modeLocked = true;
-    return;
-  }
 
   const injection = readRuntimeInjection();
   if (injection) {
@@ -152,7 +97,6 @@ async function resolveHostPlatformMode(): Promise<void> {
     return;
   }
 
-  // Desktop after PR4: never fall back to local DatabasePort (fail-closed).
   if (isDesktopShell) {
     throw new Error(
       'Desktop Runtime config missing. Main must inject window.__CARDO_RUNTIME__ via preload before load.',
@@ -164,7 +108,6 @@ async function resolveHostPlatformMode(): Promise<void> {
     const baseUrl = window.location.origin;
     const exchanged = await exchangeOneTimeCode(baseUrl, code);
     stripCodeFromUrl();
-    // Keep token in memory only (sessionStorage optional; design allows either).
     try {
       sessionStorage.setItem('cardo.runtime.token', exchanged.token);
     } catch {
@@ -174,27 +117,17 @@ async function resolveHostPlatformMode(): Promise<void> {
     return;
   }
 
-  // Same-origin hosted page may already have exchanged token in sessionStorage.
   const sessionToken = readSessionToken();
   if (sessionToken && isLikelyRuntimeHostedPage()) {
     await startRuntimeMode(window.location.origin, sessionToken, 'web');
     return;
   }
 
-  // PR4 Desktop + PR5 Extension forceRuntime: never silently fall back to local SQLite/OPFS.
-  if (forceRuntime || isDesktopShell) {
-    throw new Error(
-      isDesktopShell
-        ? 'Desktop requires RuntimeClient config (preload __CARDO_RUNTIME__).'
-        : isLikelyRuntimeHostedPage()
-          ? 'Runtime mode requested but no token. Open via `cardo open` (one-time code bootstrap).'
-          : 'Runtime mode requested but Cardo Runtime is not connected. Start Cardo CLI/Desktop and ensure the native messaging host is installed.',
-    );
-  }
-
-  // Residual local DatabasePort path (removed in PR6). Not used by Desktop/Extension defaults.
-  mode = 'local';
-  modeLocked = true;
+  throw new Error(
+    isLikelyRuntimeHostedPage()
+      ? 'Runtime mode requested but no token. Open via `cardo open` (one-time code bootstrap).'
+      : 'Cardo Runtime is not connected. Start Cardo CLI/Desktop and ensure the native messaging host is installed.',
+  );
 }
 
 async function startRuntimeMode(
@@ -202,7 +135,6 @@ async function startRuntimeMode(
   token: string,
   client: RuntimeClientKind,
 ): Promise<void> {
-  mode = 'runtime';
   const clientInstance = new RuntimeClient({
     baseUrl,
     token,
@@ -212,7 +144,7 @@ async function startRuntimeMode(
   });
   await clientInstance.connect();
   runtimeClient = clientInstance;
-  modeLocked = true;
+  readyLocked = true;
 
   if (typeof window !== 'undefined') {
     // once: avoid stacking listeners if startRuntimeMode is re-entered after retry reset.
@@ -242,14 +174,6 @@ export async function applyRuntimeScopes(scopes: InvalidationScope[]): Promise<v
   await applyPreferencesInvalidationScopes(scopes);
 }
 
-function getKhaosDatabase() {
-  if (mode === 'runtime') {
-    throw new Error('Local DatabasePort is not used in runtime mode.');
-  }
-  database ??= createDatabaseClient(getAppPorts().database);
-  return database;
-}
-
 function requireRuntimeClient(): RuntimeClient {
   if (!runtimeClient) {
     throw new Error('RuntimeClient is not connected.');
@@ -259,137 +183,76 @@ function requireRuntimeClient(): RuntimeClient {
 
 export function initializeWorkspace(initialPreferences: InitialWorkspacePreferences) {
   return runDatabaseTask(async () => {
-    if (mode === 'runtime') {
-      await requireRuntimeClient().ensureInitialized(initialPreferences);
-      return;
-    }
-    await initializeWorkspaceDatabase(getKhaosDatabase(), initialPreferences);
+    await requireRuntimeClient().ensureInitialized(initialPreferences);
   });
 }
 
 export function dispatchDatabaseCommand(command: WorkspaceCommand) {
   return runDatabaseTask(async () => {
-    if (mode === 'runtime') {
-      // Scopes applied inside RuntimeClient from command.ok (initiator path).
-      return await requireRuntimeClient().dispatchCommand(command);
-    }
-    const execution = await executeDatabaseCommand(getKhaosDatabase(), command);
-    return execution.result;
+    // Scopes applied inside RuntimeClient from command.ok (initiator path).
+    return await requireRuntimeClient().dispatchCommand(command);
   });
 }
 
 export function undoDatabaseHistory() {
   return runDatabaseTask(async () => {
-    if (mode === 'runtime') {
-      const ok = await requireRuntimeClient().historyUndo();
-      return ok.applied;
-    }
-    const execution = await undoDatabaseCommand(getKhaosDatabase());
-    return execution.applied;
+    const ok = await requireRuntimeClient().historyUndo();
+    return ok.applied;
   });
 }
 
 export function redoDatabaseHistory() {
   return runDatabaseTask(async () => {
-    if (mode === 'runtime') {
-      const ok = await requireRuntimeClient().historyRedo();
-      return ok.applied;
-    }
-    const execution = await redoDatabaseCommand(getKhaosDatabase());
-    return execution.applied;
+    const ok = await requireRuntimeClient().historyRedo();
+    return ok.applied;
   });
 }
 
 export function queryDatabaseHistoryState() {
   return runDatabaseTask(async () => {
-    if (mode === 'runtime') {
-      return await requireRuntimeClient().queryHistoryState();
-    }
-    return getDatabaseHistoryState(getKhaosDatabase());
+    return await requireRuntimeClient().queryHistoryState();
   });
 }
 
 export function queryWorkspaceProjection() {
   return runDatabaseTask(async () => {
-    if (mode === 'runtime') {
-      return await requireRuntimeClient().queryWorkspaceProjection();
-    }
-    return getWorkspaceProjection(getKhaosDatabase());
+    return await requireRuntimeClient().queryWorkspaceProjection();
   });
 }
 
 export function queryWorkspaceState() {
   return runDatabaseTask(async () => {
-    if (mode === 'runtime') {
-      return await requireRuntimeClient().queryWorkspaceState();
-    }
-    return getWorkspaceState(getKhaosDatabase());
+    return await requireRuntimeClient().queryWorkspaceState();
   });
 }
 
 export function queryPageTabs() {
   return runDatabaseTask(async () => {
-    if (mode === 'runtime') {
-      return await requireRuntimeClient().queryPageTabs();
-    }
-    return getPageTabs(getKhaosDatabase());
+    return await requireRuntimeClient().queryPageTabs();
   });
 }
 
 export function queryPageBoxes(pageId: string) {
   return runDatabaseTask(async () => {
-    if (mode === 'runtime') {
-      return await requireRuntimeClient().queryPageBoxes(pageId);
-    }
-    return getPageBoxes(getKhaosDatabase(), pageId);
+    return await requireRuntimeClient().queryPageBoxes(pageId);
   });
 }
 
 export function queryBoxItems(boxId: string) {
   return runDatabaseTask(async () => {
-    if (mode === 'runtime') {
-      return await requireRuntimeClient().queryBoxItems(boxId);
-    }
-    return getBoxItems(getKhaosDatabase(), boxId);
+    return await requireRuntimeClient().queryBoxItems(boxId);
   });
 }
 
 export function recordActivity(input: ActivityLogInput) {
   void runDatabaseTask(async () => {
-    if (mode === 'runtime') {
-      await requireRuntimeClient().activityRecord(input);
-      return;
-    }
-    await recordDatabaseActivity(getKhaosDatabase(), input);
+    await requireRuntimeClient().activityRecord(input);
   }).catch((error: unknown) => console.error('Failed to record activity', error));
 }
 
 export async function exportOperationLog() {
   await runDatabaseTask(async () => {
-    if (mode === 'runtime') {
-      const exported = await requireRuntimeClient().exportOperationLog();
-      const exportedAt = new Date().toISOString();
-      getAppPorts().fileExport.downloadJson(
-        `khaosbox-operation-log-${exportedAt.slice(0, 10)}.json`,
-        JSON.stringify(
-          {
-            format: 'khaosbox-operation-log',
-            version: 1,
-            exportedAt,
-            entries: exported.entries,
-          },
-          null,
-          2,
-        ),
-      );
-      await requireRuntimeClient().activityRecord({
-        action: 'journal.export',
-        details: { eventCount: exported.entries.length },
-      });
-      return;
-    }
-
-    const entries = await getOperationLogEntries(getKhaosDatabase());
+    const exported = await requireRuntimeClient().exportOperationLog();
     const exportedAt = new Date().toISOString();
     getAppPorts().fileExport.downloadJson(
       `khaosbox-operation-log-${exportedAt.slice(0, 10)}.json`,
@@ -398,60 +261,35 @@ export async function exportOperationLog() {
           format: 'khaosbox-operation-log',
           version: 1,
           exportedAt,
-          entries,
+          entries: exported.entries,
         },
         null,
         2,
       ),
     );
-    await recordDatabaseActivity(getKhaosDatabase(), {
+    await requireRuntimeClient().activityRecord({
       action: 'journal.export',
-      details: { eventCount: entries.length },
+      details: { eventCount: exported.entries.length },
     });
   });
 }
 
 export async function exportWorkspaceData() {
   await runDatabaseTask(async () => {
-    if (mode === 'runtime') {
-      const exported = await requireRuntimeClient().exportWorkspace();
-      const document = exported.document;
-      getAppPorts().fileExport.downloadJson(
-        `khaosbox-${document.exportedAt.slice(0, 10)}.json`,
-        JSON.stringify(document, null, 2),
-      );
-      await requireRuntimeClient().activityRecord({
-        action: 'workspace.export',
-        details: {
-          pageCount: document.workspace.pages.length,
-          boxCount: document.workspace.boxes.length,
-          itemCount: new Set(
-            document.workspace.boxes.flatMap((box) => box.items.map((item) => item.id)),
-          ).size,
-        },
-      });
-      return;
-    }
-
-    const workspace = await getWorkspaceProjection(getKhaosDatabase());
-    const exportedAt = new Date().toISOString();
-    const document = workspaceTransferDocumentSchema.parse({
-      format: 'khaosbox-workspace',
-      version: WORKSPACE_TRANSFER_VERSION,
-      exportedAt,
-      workspace,
-    });
+    const exported = await requireRuntimeClient().exportWorkspace();
+    const document = exported.document;
     getAppPorts().fileExport.downloadJson(
-      `khaosbox-${exportedAt.slice(0, 10)}.json`,
+      `khaosbox-${document.exportedAt.slice(0, 10)}.json`,
       JSON.stringify(document, null, 2),
     );
-    await recordDatabaseActivity(getKhaosDatabase(), {
+    await requireRuntimeClient().activityRecord({
       action: 'workspace.export',
       details: {
-        pageCount: workspace.pages.length,
-        boxCount: workspace.boxes.length,
-        itemCount: new Set(workspace.boxes.flatMap((box) => box.items.map((item) => item.id)))
-          .size,
+        pageCount: document.workspace.pages.length,
+        boxCount: document.workspace.boxes.length,
+        itemCount: new Set(
+          document.workspace.boxes.flatMap((box) => box.items.map((item) => item.id)),
+        ).size,
       },
     });
   });
@@ -467,19 +305,13 @@ export async function parseWorkspaceImportFile(file: File) {
 
 export function queryPreferences() {
   return runDatabaseTask(async () => {
-    if (mode === 'runtime') {
-      return await requireRuntimeClient().queryPreferences();
-    }
-    return getPreferences(getKhaosDatabase());
+    return await requireRuntimeClient().queryPreferences();
   });
 }
 
 export function queryGlobalSearch(query: string) {
   return runDatabaseTask(async () => {
-    if (mode === 'runtime') {
-      return await requireRuntimeClient().queryGlobalSearch(query);
-    }
-    return searchWorkspaceDatabase(getKhaosDatabase(), query);
+    return await requireRuntimeClient().queryGlobalSearch(query);
   });
 }
 
@@ -510,21 +342,18 @@ function runDatabaseTask<T>(task: () => Promise<T>): Promise<T> {
 }
 
 /**
- * The only platform boundary used by web-next. Entries configure the shared
- * core ports before rendering, so the same UI can use Chrome or Electron.
+ * Non-DB platform boundary used by web-next. Entries configure shared shell
+ * ports before rendering so the same UI can use Chrome or Electron.
  */
 export function openExternalUrl(url: string) {
   getAppPorts().tabs.openUrl(url);
 }
 
 export async function openLocalResource(path: string) {
-  if (mode === 'runtime') {
-    const opened = await requireRuntimeClient().openLocalResource(path);
-    return opened
-      ? ({ status: 'requested' } as const)
-      : ({ status: 'failed', errorMessage: 'Runtime could not open the local resource.' } as const);
-  }
-  return await getAppPorts().localResource.requestOpen(path);
+  const opened = await requireRuntimeClient().openLocalResource(path);
+  return opened
+    ? ({ status: 'requested' } as const)
+    : ({ status: 'failed', errorMessage: 'Runtime could not open the local resource.' } as const);
 }
 
 export async function writeClipboardText(text: string) {
@@ -544,22 +373,6 @@ export function resolveWebsiteIcon(url: string) {
 }
 
 // --- bootstrap helpers ---
-
-function readUseRuntimeFlag(): '0' | '1' | null {
-  if (typeof window !== 'undefined') {
-    const fromWindow = window.__CARDO_USE_RUNTIME__;
-    if (fromWindow === '0' || fromWindow === '1') return fromWindow;
-  }
-  try {
-    // Vite / build-time inject (optional).
-    const env = (import.meta as ImportMeta & { env?: Record<string, string> }).env;
-    const value = env?.CARDO_USE_RUNTIME ?? env?.VITE_CARDO_USE_RUNTIME;
-    if (value === '0' || value === '1') return value;
-  } catch {
-    // ignore
-  }
-  return null;
-}
 
 function readRuntimeInjection(): CardoRuntimeInjection | null {
   if (typeof window === 'undefined') return null;

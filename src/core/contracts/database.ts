@@ -27,32 +27,6 @@ export const databaseExecuteResponseSchema = z
   })
   .strict();
 
-export const databaseWorkerRequestSchema = z
-  .object({
-    id: z.string().uuid(),
-    request: databaseExecuteRequestSchema,
-  })
-  .strict();
-
-export const databaseWorkerResponseSchema = z.discriminatedUnion('ok', [
-  z
-    .object({
-      id: z.string().uuid(),
-      ok: z.literal(true),
-      response: databaseExecuteResponseSchema,
-    })
-    .strict(),
-  z
-    .object({
-      id: z.string().uuid(),
-      ok: z.literal(false),
-      error: z.string().min(1),
-    })
-    .strict(),
-]);
-
 export type DatabaseValue = z.infer<typeof databaseValueSchema>;
 export type DatabaseExecuteRequest = z.infer<typeof databaseExecuteRequestSchema>;
 export type DatabaseExecuteResponse = z.infer<typeof databaseExecuteResponseSchema>;
-export type DatabaseWorkerRequest = z.infer<typeof databaseWorkerRequestSchema>;
-export type DatabaseWorkerResponse = z.infer<typeof databaseWorkerResponseSchema>;
