@@ -1,3 +1,4 @@
+import { createDefaultBoxFrameCenteredAt } from '../../core/domains/layout/boxDefaults';
 import {
   constrainBoxFrameToCanvas,
   type CanvasPoint,
@@ -7,17 +8,10 @@ import type { BoxFrame, WorkspaceProjection } from './workspace';
 
 const BOX_GAP = 24;
 const SEARCH_STEP = 24;
-const DEFAULT_BOX_WIDTH = 320;
-const DEFAULT_BOX_HEIGHT = 240;
 const VIEWPORT_MARGIN = 16;
 
 export function createBoxFrameCenteredAt(point: CanvasPoint): BoxFrame {
-  return {
-    x: Math.round(point.x - DEFAULT_BOX_WIDTH / 2),
-    y: Math.round(point.y - DEFAULT_BOX_HEIGHT / 2),
-    width: DEFAULT_BOX_WIDTH,
-    height: DEFAULT_BOX_HEIGHT,
-  };
+  return createDefaultBoxFrameCenteredAt(point);
 }
 
 export function findNewBoxFrame(
