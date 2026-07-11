@@ -1,3 +1,8 @@
+import type {
+  DatabaseExecuteRequest,
+  DatabaseExecuteResponse,
+} from '../core/contracts/database';
+
 export interface DesktopBridge {
   minimizeWindow(): Promise<void>;
   toggleMaximizeWindow(): Promise<boolean>;
@@ -7,6 +12,7 @@ export interface DesktopBridge {
   storageGet(name: string): Promise<string | null>;
   storageSet(name: string, value: string): Promise<void>;
   storageRemove(name: string): Promise<void>;
+  databaseExecute(request: DatabaseExecuteRequest): Promise<DatabaseExecuteResponse>;
   readClipboardText(): Promise<string>;
   writeClipboardText(text: string): Promise<void>;
   openExternal(url: string): Promise<void>;

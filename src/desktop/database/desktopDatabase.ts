@@ -1,0 +1,70 @@
+import { app } from 'electron';
+import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
+import path from 'node:path';
+import initialMigration from '../../../drizzle/0000_crazy_obadiah_stane.sql?raw';
+import {
+  databaseExecuteRequestSchema,
+  type DatabaseExecuteResponse,
+} from '../../core/contracts/database';
+import { DATABASE_SCHEMA_VERSION } from '../../core/database/version';
+
+let database: DatabaseSync | null = null;
+
+function getDatabase() {
+  if (database) return database;
+
+  const nextDatabase = new DatabaseSync(path.join(app.getPath('userData'), 'khaosbox.sqlite'));
+  nextDatabase.exec('PRAGMA foreign_keys = ON');
+  nextDatabase.exec('PRAGMA journal_mode = WAL');
+
+  const versionRow = nextDatabase.prepare('PRAGMA user_version').get() as
+    | { user_version?: number }
+    | undefined;
+  const version = versionRow?.user_version ?? 0;
+
+  if (version === 0) {
+    nextDatabase.exec('BEGIN IMMEDIATE');
+    try {
+      nextDatabase.exec(initialMigration);
+      nextDatabase.exec(`PRAGMA user_version = ${DATABASE_SCHEMA_VERSION}`);
+      nextDatabase.exec('COMMIT');
+    } catch (error) {
+      nextDatabase.exec('ROLLBACK');
+      nextDatabase.close();
+      throw error;
+    }
+  } else if (version !== DATABASE_SCHEMA_VERSION) {
+    nextDatabase.close();
+    throw new Error(
+      `Unsupported KhaosBox database schema ${version}; expected ${DATABASE_SCHEMA_VERSION}.`,
+    );
+  }
+
+  database = nextDatabase;
+  return nextDatabase;
+}
+
+export function executeDesktopDatabase(input: unknown): DatabaseExecuteResponse {
+  const request = databaseExecuteRequestSchema.parse(input);
+  const statement = getDatabase().prepare(request.sql);
+  const params = request.params as SQLInputValue[];
+
+  if (request.method === 'run') {
+    statement.run(...params);
+    return { rows: [] };
+  }
+
+  statement.setReturnArrays(true);
+
+  if (request.method === 'get') {
+    const row = statement.get(...params) as unknown[] | undefined;
+    return { rows: row ?? [] };
+  }
+
+  return { rows: statement.all(...params) as unknown[][] };
+}
+
+export function closeDesktopDatabase() {
+  database?.close();
+  database = null;
+}

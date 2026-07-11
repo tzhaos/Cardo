@@ -18,6 +18,7 @@ import fsPromises from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { normalizeLocalResourcePath } from '../core/services/localResourcePath';
+import { executeDesktopDatabase, closeDesktopDatabase } from './database/desktopDatabase';
 
 declare const __KHAOSBOX_DEBUG_PACKAGE__: boolean;
 
@@ -359,6 +360,10 @@ function registerIpcHandlers() {
     await writeStateFile(state);
   });
 
+  ipcMain.handle('database:execute', (_event, request: unknown) =>
+    executeDesktopDatabase(request),
+  );
+
   ipcMain.handle('clipboard:read-text', () => clipboard.readText());
   ipcMain.handle('clipboard:write-text', (_event, text: string) => clipboard.writeText(text));
   ipcMain.handle('shell:open-external', (_event, url: string) => shell.openExternal(url));
@@ -486,6 +491,7 @@ if (!singleInstanceLock) {
   });
 
   app.on('will-quit', () => {
+    closeDesktopDatabase();
     tray?.destroy();
     tray = null;
   });

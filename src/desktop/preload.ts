@@ -16,6 +16,8 @@ const bridge: DesktopBridge = {
   storageGet: (name) => ipcRenderer.invoke('storage:get', name) as Promise<string | null>,
   storageSet: (name, value) => ipcRenderer.invoke('storage:set', name, value) as Promise<void>,
   storageRemove: (name) => ipcRenderer.invoke('storage:remove', name) as Promise<void>,
+  databaseExecute: (request) =>
+    ipcRenderer.invoke('database:execute', request) as ReturnType<DesktopBridge['databaseExecute']>,
   readClipboardText: () => ipcRenderer.invoke('clipboard:read-text') as Promise<string>,
   writeClipboardText: (text) => ipcRenderer.invoke('clipboard:write-text', text) as Promise<void>,
   openExternal: (url) => ipcRenderer.invoke('shell:open-external', url) as Promise<void>,

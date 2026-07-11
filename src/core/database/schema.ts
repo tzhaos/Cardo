@@ -17,8 +17,9 @@ import {
   workspaceBoxViewModes,
   workspaceItemTypes,
 } from '../contracts/workspace';
+import { DATABASE_SCHEMA_VERSION } from './version';
 
-export const DATABASE_SCHEMA_VERSION = 1;
+export { DATABASE_SCHEMA_VERSION } from './version';
 export const APP_STATE_ID = 1;
 export const PREFERENCES_ID = 1;
 
