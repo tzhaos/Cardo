@@ -54,7 +54,7 @@ export async function parseThemePackImportFile(file: File): Promise<ThemePack> {
 
 /**
  * Register an imported pack. Built-in official ids cannot be overwritten —
- * that keeps classic/ocean/orchid frozen as product presets.
+ * that keeps official built-in packs frozen as product presets.
  */
 export function importThemePackIntoRegistry(pack: ThemePack): ThemePack {
   const parsed = themePackSchema.parse(pack);

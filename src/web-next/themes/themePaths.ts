@@ -10,7 +10,7 @@
  *   - Override root: `CARDO_DATA_DIR/themes`
  * - Dev drop folder (optional local work): `themes/` at repo root (not auto-scanned)
  *
- * Official classic/ocean/orchid remain code-defined and cannot be overwritten by files.
+ * Official built-in packs remain code-defined and cannot be overwritten by files.
  */
 export const THEME_DIRECTORY_RELATIVE = 'themes';
 export const THEME_FILE_EXTENSION = '.cardo-theme.json';

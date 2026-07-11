@@ -4,7 +4,7 @@ import type { ThemeOptionDef } from '../../core/contracts/themePack';
  * Shared options for official packs.
  *
  * Identity rule: every option's default choice must apply zero token patches so
- * the current product look (classic / ocean / orchid as authored) is unchanged
+ * the current product look (classic and other official packs as authored) is unchanged
  * until the user deliberately picks a non-default option.
  */
 export const OFFICIAL_THEME_OPTIONS: ThemeOptionDef[] = [

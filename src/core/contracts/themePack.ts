@@ -294,8 +294,12 @@ export const MAX_THEME_PACK_JSON_BYTES = 256_000;
 /** Official built-in Theme Pack ids — frozen, never overwritten by disk/import. */
 export const OFFICIAL_BUILT_IN_THEME_IDS: ReadonlySet<string> = new Set([
   'classic',
-  'ocean',
-  'orchid',
+  'github',
+  'onedark',
+  'nord',
+  'solarized',
+  'paper',
+  'graphite',
 ]);
 
 /** CSS custom property names written by the Theme Runtime. */
