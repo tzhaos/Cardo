@@ -13,6 +13,7 @@ import { usePasteIntoSelectedBox } from './usePasteIntoSelectedBox';
 import { useWorkspaceHistoryShortcuts } from './useWorkspaceHistoryShortcuts';
 import { usePreferencesStore } from './stores/preferencesStore';
 import { BoxPageDropController } from './BoxPageDropController';
+import { ContextMenuHost } from '../ui/khaos/context-menu';
 import { TooltipProvider } from '../ui/primitives/tooltip';
 import './styles.css';
 
@@ -41,6 +42,7 @@ export default function WebNextApp() {
         <CanvasToolsToolbar />
         <BottomToolbar />
         <SettingsWindow />
+        <ContextMenuHost />
       </div>
     </TooltipProvider>
   );

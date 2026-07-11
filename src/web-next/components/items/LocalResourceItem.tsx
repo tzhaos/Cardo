@@ -123,7 +123,6 @@ export function LocalResourceItem({
           </motion.div>
         )}
       </AnimatePresence>
-      {contextMenu.menu}
     </div>
   );
 }

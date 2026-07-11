@@ -148,7 +148,6 @@ export function BookmarkItem({
           </motion.div>
         )}
       </AnimatePresence>
-      {contextMenu.menu}
     </div>
   );
 }

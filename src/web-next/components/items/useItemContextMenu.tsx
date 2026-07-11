@@ -18,11 +18,10 @@ export function useItemContextMenu({
   onPin: () => void;
   onDelete: () => void;
 }) {
-  const { openMenu, menu } = useContextMenu();
+  const { openMenu } = useContextMenu();
   const { t } = useI18n();
 
   return {
-    menu,
     onContextMenu: (event: MouseEvent<HTMLElement>) => {
       event.preventDefault();
       event.stopPropagation();

@@ -204,7 +204,6 @@ export function WorkspaceCanvas() {
         </motion.section>
       </AnimatePresence>
       <CanvasBoundaryFeedback pageId={activePageId} />
-      {contextMenu.menu}
     </main>
   );
 }

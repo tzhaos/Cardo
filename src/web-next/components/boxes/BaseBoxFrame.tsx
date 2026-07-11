@@ -19,7 +19,6 @@ import { animate as animateMotion, motion, useMotionValue, useSpring } from 'mot
 import type { MotionStyle } from 'motion/react';
 import {
   RECYCLE_BIN_PAGE_ID,
-  isCollectionPageId,
   isRecycleBinPageId,
   type WorkspaceBox,
   type WorkspaceBoxIcon,
@@ -89,7 +88,6 @@ export function BaseBoxFrame({
   const boxDragSession = useUiStore((state) => state.boxDragSession);
   const boxDragOverTopBar = useUiStore((state) => state.boxDragOverTopBar);
   const boxDropPageId = useUiStore((state) => state.boxDropPageId);
-  const boxDropRelease = useUiStore((state) => state.boxDropRelease);
   const selectedBoxId = useUiStore((state) => state.selectedBoxId);
   const highlightedBoxId = useUiStore((state) => state.highlightedBoxId);
   const selectBox = useUiStore((state) => state.selectBox);
@@ -99,10 +97,7 @@ export function BaseBoxFrame({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [appearanceView, setAppearanceView] = useState(false);
   const [deleteMotion, setDeleteMotion] = useState<BoxDeleteMotion | null>(null);
-  const [dragTransformOrigin, setDragTransformOrigin] = useState(
-    boxDropRelease?.boxId === box.id ? boxDropRelease.entryTransformOrigin : '50% 50%',
-  );
-  const [dropLandingStarted, setDropLandingStarted] = useState(false);
+  const [dragTransformOrigin, setDragTransformOrigin] = useState('50% 50%');
   const articleRef = useRef<HTMLElement>(null);
   const setArticleElement = useCallback(
     (element: HTMLElement | null) => {
@@ -114,9 +109,10 @@ export function BaseBoxFrame({
   const pointerSessionRef = useRef<WindowPointerSession | null>(null);
   const deleteTargetRef = useRef<HTMLElement | null>(null);
   const deleteCommittedRef = useRef(false);
-  const initialDropFrame = boxDropRelease?.boxId === box.id ? boxDropRelease.entryFrame : box.frame;
-  const boxLeft = useMotionValue(initialDropFrame.x);
-  const boxTop = useMotionValue(initialDropFrame.y);
+  const releaseFrameRef = useRef<typeof box.frame | null>(null);
+  const suppressStaleLandingRef = useRef(false);
+  const boxLeft = useMotionValue(box.frame.x);
+  const boxTop = useMotionValue(box.frame.y);
   const boxWidth = useMotionValue(box.frame.width);
   const boxHeight = useMotionValue(box.frame.height);
   const dragTiltTarget = useMotionValue(0);
@@ -162,40 +158,22 @@ export function BaseBoxFrame({
           boxTop.set(latestFrame.y);
           updateBoxDragFrame(latestFrame);
         },
-        onEnd: (reason) => {
+        onEnd: () => {
           dragTiltTarget.set(0);
-          const ui = useUiStore.getState();
-          const stillForeignDropTarget =
-            ui.boxDragOverTopBar &&
-            ui.boxDropPageId !== null &&
-            ui.boxDropPageId !== box.pageId &&
-            !isCollectionPageId(ui.boxDropPageId);
-          // Collection drop and unfinished foreign transfers are finalized by BoxPageDropController.
-          if (!stillForeignDropTarget) {
-            updateBoxFrame(box.id, latestFrame);
-          }
+          // Hold the visual at the release point until projection catches up.
+          // Database commit and endBoxDrag are owned by BoxPageDropController.
+          releaseFrameRef.current = latestFrame;
+          suppressStaleLandingRef.current = true;
+          boxLeft.set(latestFrame.x);
+          boxTop.set(latestFrame.y);
           if (pointerSessionRef.current === pointerSession) {
             pointerSessionRef.current = null;
-          }
-          if (reason === 'pointerup') {
-            window.setTimeout(endBoxDrag, 0);
-          } else {
-            endBoxDrag();
           }
         },
       });
       pointerSessionRef.current = pointerSession;
     },
-    [
-      box.id,
-      box.pageId,
-      boxLeft,
-      boxTop,
-      dragTiltTarget,
-      endBoxDrag,
-      updateBoxDragFrame,
-      updateBoxFrame,
-    ],
+    [boxLeft, boxTop, dragTiltTarget, updateBoxDragFrame],
   );
 
   useEffect(
@@ -294,7 +272,6 @@ export function BaseBoxFrame({
   const dragging = draggedBoxId === box.id;
   const draggingOverTopBar = dragging && boxDragOverTopBar;
   const draggingOverTab = draggingOverTopBar && boxDropPageId !== null;
-  const dropReleased = boxDropRelease?.boxId === box.id && boxDropRelease.pageId === box.pageId;
   const compactScale = Math.max(0.22, Math.min(0.46, 136 / box.frame.width, 86 / box.frame.height));
   const isInRecycleBin = isRecycleBinPageId(box.pageId);
   const isCollected = useWorkspaceStore((state) =>
@@ -303,21 +280,17 @@ export function BaseBoxFrame({
   const isTemporary = box.kind === 'temporary';
   const viewMode = isTemporary ? 'list' : box.viewMode;
   const detailMode = isTemporary ? 'detailed' : box.detailMode;
-  const visualScale =
-    dropReleased && !dropLandingStarted
-      ? (boxDropRelease?.entryScale ?? compactScale)
-      : draggingOverTopBar
-        ? compactScale * (draggingOverTab ? 0.9 : 1)
-        : dragging
-          ? 1.028
-          : 1;
+  const visualScale = draggingOverTopBar
+    ? compactScale * (draggingOverTab ? 0.9 : 1)
+    : dragging
+      ? 1.028
+      : 1;
   const visualClassName = [
     'wbn-box',
     dragging || deleteMotion ? 'wbn-box-dragging' : '',
     draggingOverTopBar || (deleteMotion && !deleteMotion.permanent) ? 'wbn-box-dragging-bar' : '',
     draggingOverTab || (deleteMotion && !deleteMotion.permanent) ? 'wbn-box-dragging-tab' : '',
     deleteMotion ? 'wbn-box-delete-exiting' : '',
-    dropReleased ? 'wbn-box-drop-released' : '',
     selectedBoxId === box.id ? 'wbn-box-selected' : '',
     highlightedBoxId === box.id ? 'wbn-box-highlighted' : '',
     detailMode === 'compact' ? 'wbn-box-compact' : '',
@@ -335,24 +308,39 @@ export function BaseBoxFrame({
       return;
     }
 
-    const positionTransition = dropReleased
-      ? { type: 'spring' as const, damping: 24, stiffness: 150, mass: 1.05 }
-      : { type: 'spring' as const, damping: 28, stiffness: 260 };
-    let leftAnimation: ReturnType<typeof animateMotion> | undefined;
-    let topAnimation: ReturnType<typeof animateMotion> | undefined;
-    const startLanding = () => {
-      if (dropReleased) setDropLandingStarted(true);
-      leftAnimation = animateMotion(boxLeft, box.frame.x, positionTransition);
-      topAnimation = animateMotion(boxTop, box.frame.y, positionTransition);
-    };
-    const delayId = dropReleased ? window.setTimeout(startLanding, 220) : null;
-    if (!dropReleased) {
-      startLanding();
+    // After a drag release, hold the pointer frame until the projection write lands.
+    // Never spring back to a stale pre-drag / pre-transfer page coordinate.
+    if (suppressStaleLandingRef.current) {
+      const release = releaseFrameRef.current;
+      if (
+        release &&
+        Math.abs(box.frame.x - release.x) < 1 &&
+        Math.abs(box.frame.y - release.y) < 1 &&
+        Math.abs(box.frame.width - release.width) < 1 &&
+        Math.abs(box.frame.height - release.height) < 1
+      ) {
+        suppressStaleLandingRef.current = false;
+        releaseFrameRef.current = null;
+        boxLeft.set(box.frame.x);
+        boxTop.set(box.frame.y);
+      }
+      return;
     }
+
+    const alreadyThere =
+      Math.abs(boxLeft.get() - box.frame.x) < 0.5 && Math.abs(boxTop.get() - box.frame.y) < 0.5;
+    if (alreadyThere) {
+      boxLeft.set(box.frame.x);
+      boxTop.set(box.frame.y);
+      return;
+    }
+
+    const positionTransition = { type: 'spring' as const, damping: 28, stiffness: 260 };
+    const leftAnimation = animateMotion(boxLeft, box.frame.x, positionTransition);
+    const topAnimation = animateMotion(boxTop, box.frame.y, positionTransition);
     return () => {
-      if (delayId !== null) window.clearTimeout(delayId);
-      leftAnimation?.stop();
-      topAnimation?.stop();
+      leftAnimation.stop();
+      topAnimation.stop();
     };
   }, [
     box.frame.height,
@@ -364,7 +352,6 @@ export function BaseBoxFrame({
     boxTop,
     boxWidth,
     dragging,
-    dropReleased,
   ]);
 
   const startDeleteMotion = () => {
@@ -440,9 +427,7 @@ export function BaseBoxFrame({
             : { duration: 0.52, ease: [0.22, 0.72, 0.18, 1] }
           : {
               y: { type: 'spring', damping: 30, stiffness: 420, mass: 0.55 },
-              scale: dropReleased
-                ? { type: 'spring', damping: 22, stiffness: 170, mass: 0.94 }
-                : { type: 'spring', damping: 28, stiffness: 380, mass: 0.6 },
+              scale: { type: 'spring', damping: 28, stiffness: 380, mass: 0.6 },
               borderRadius: { duration: 0.2 },
               opacity: { duration: 0.16 },
             }
@@ -714,7 +699,6 @@ export function BaseBoxFrame({
           </svg>
         </Button>
       ) : null}
-      {contextMenu.menu}
     </motion.article>
   );
 }

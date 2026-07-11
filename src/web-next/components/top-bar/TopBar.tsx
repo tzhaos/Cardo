@@ -240,7 +240,6 @@ export function TopBar() {
           </motion.div>
         ) : null}
       </AnimatePresence>
-      {contextMenu.menu}
     </header>
   );
 }

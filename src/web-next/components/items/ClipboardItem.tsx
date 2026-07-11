@@ -125,7 +125,6 @@ export function ClipboardItem({
           </motion.div>
         )}
       </AnimatePresence>
-      {contextMenu.menu}
     </div>
   );
 }

@@ -180,7 +180,6 @@ export function CollectionPage() {
           />
         ))}
       </AnimatePresence>
-      {contextMenu.menu}
     </section>
   );
 }

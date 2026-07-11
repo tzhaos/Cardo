@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronRight } from 'lucide-react';
+import { create } from 'zustand';
 import { IconFrame } from './icon-button';
 import {
   DropdownMenu,
@@ -31,18 +33,58 @@ interface ContextMenuState {
   items: ContextMenuItem[];
 }
 
-export function useContextMenu() {
-  const [state, setState] = useState<ContextMenuState | null>(null);
-  const closeMenu = useCallback(() => setState(null), []);
-  const openMenu = useCallback((x: number, y: number, items: ContextMenuItem[]) => {
-    setState({ x, y, items });
-  }, []);
+interface ContextMenuStore {
+  menu: ContextMenuState | null;
+  openMenu: (x: number, y: number, items: ContextMenuItem[]) => void;
+  closeMenu: () => void;
+}
 
-  return {
-    openMenu,
-    closeMenu,
-    menu: <ContextMenuSurface state={state} onClose={closeMenu} />,
-  };
+/**
+ * Viewport-space context menu state. The host must render outside transformed
+ * surfaces (canvas pan, box drag, page scenes) so fixed coordinates stay correct.
+ */
+export const useContextMenuStore = create<ContextMenuStore>((set) => ({
+  menu: null,
+  openMenu: (x, y, items) => {
+    if (typeof window === 'undefined') {
+      set({ menu: { x, y, items } });
+      return;
+    }
+    // Keep the 1x1 anchor fully on-screen so Radix collision logic stays stable.
+    const xClamped = Math.min(Math.max(x, 1), Math.max(1, window.innerWidth - 1));
+    const yClamped = Math.min(Math.max(y, 1), Math.max(1, window.innerHeight - 1));
+    set({ menu: { x: xClamped, y: yClamped, items } });
+  },
+  closeMenu: () => set({ menu: null }),
+}));
+
+export function useContextMenu() {
+  const openMenu = useContextMenuStore((state) => state.openMenu);
+  const closeMenu = useContextMenuStore((state) => state.closeMenu);
+  return { openMenu, closeMenu };
+}
+
+/** Single app-root host. Call once from WebNextApp, never under canvas transforms. */
+export function ContextMenuHost() {
+  const menu = useContextMenuStore((state) => state.menu);
+  const closeMenu = useContextMenuStore((state) => state.closeMenu);
+
+  useEffect(() => {
+    if (!menu) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeMenu();
+    };
+    window.addEventListener('wheel', closeMenu, true);
+    window.addEventListener('keydown', onKeyDown, true);
+    return () => {
+      window.removeEventListener('wheel', closeMenu, true);
+      window.removeEventListener('keydown', onKeyDown, true);
+    };
+  }, [closeMenu, menu]);
+
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(<ContextMenuSurface state={menu} onClose={closeMenu} />, document.body);
 }
 
 function ContextMenuSurface({
@@ -52,12 +94,6 @@ function ContextMenuSurface({
   state: ContextMenuState | null;
   onClose: () => void;
 }) {
-  useEffect(() => {
-    if (!state) return;
-    window.addEventListener('wheel', onClose, true);
-    return () => window.removeEventListener('wheel', onClose, true);
-  }, [onClose, state]);
-
   const triggerStyle = useMemo<CSSProperties>(
     () => ({
       position: 'fixed',
@@ -65,7 +101,12 @@ function ContextMenuSurface({
       top: state?.y ?? 0,
       width: 1,
       height: 1,
+      margin: 0,
+      padding: 0,
+      border: 0,
+      opacity: 0,
       pointerEvents: 'none',
+      zIndex: 200,
     }),
     [state?.x, state?.y],
   );
@@ -79,6 +120,8 @@ function ContextMenuSurface({
         <DropdownMenuContent
           align="start"
           side="bottom"
+          sideOffset={0}
+          collisionPadding={8}
           onCloseAutoFocus={(event) => event.preventDefault()}
         >
           <MenuItems items={state.items} closeMenu={onClose} />
@@ -136,4 +179,9 @@ function MenuItem({ item, closeMenu }: { item: ContextMenuItem; closeMenu: () =>
       )}
     </>
   );
+}
+
+export function useCloseContextMenuOnInteraction() {
+  const closeMenu = useContextMenuStore((state) => state.closeMenu);
+  return useCallback(() => closeMenu(), [closeMenu]);
 }
