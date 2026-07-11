@@ -2,14 +2,14 @@
 
 | Field | Value |
 | --- | --- |
-| Status | Draft |
+| Status | Active SoT（PR0 起）；Hard Decisions 变更须显式修订本文件 |
 | Author | — |
 | Date | 2026-07-12 |
 | Product name | Cardo（拉丁 cardo：门枢 / 枢纽） |
 | CLI / npm | package 优先 `cardo`（冲突则 `@cardo/cli` 等 scope）；bin 恒为 `cardo` |
 | Codebase (current) | `D:\Workspace\KhaosBox`（仓库改名另 PR） |
 | Inspired by | OpenCode local serve + multi client + event stream（模式参考，非业务复制） |
-| Related | `Agents.md`, `docs/architecture/zod-drizzle-shadcn-refactor.md` |
+| Related | `AGENTS.md`, `docs/architecture/zod-drizzle-shadcn-refactor.md`, `docs/architecture/cardo-rename-checklist.md` |
 
 ## 1. Overview
 
@@ -41,7 +41,7 @@ Cardo：拉丁语「门枢、枢纽、轴线」。
 
 ### 2.1 磁盘路径与数据连续性（命名相关）
 
-Agents.md 禁止旧格式双读 shim；但「改路径导致用户数据消失」不是双读，是数据丢失，必须显式策略。
+AGENTS.md 禁止旧格式双读 shim；但「改路径导致用户数据消失」不是双读，是数据丢失，必须显式策略。
 
 v1 路径政策（Hard Decision）：
 
@@ -874,7 +874,7 @@ function scopesFromChanges(changes: HistoryChangeSet): InvalidationScope[] {
 | `workspaceStore` / `preferencesStore` | scope→store 表；SSE；undo/redo 用 history.ok |
 | `desktop/main.ts` | attach/embed；PR4 起 renderer RuntimeClient |
 | `nativeMessaging.ts` / native-host | discover + relay |
-| `Agents.md` | PR0/1 过渡注记；PR6 终态 |
+| `AGENTS.md` | PR0/1 过渡注记；PR6 终态 |
 
 ### 7.3 删除（PR6）
 
@@ -1041,7 +1041,7 @@ graceActive: boolean
 ### PR0 — 定名 Cardo 文档与标识规划
 
 - Depends: —
-- Files: 本文档；改名清单（含 npm 先占 `cardo`、冲突 fallback、路径搬迁列为 rename 后单独 PR）；`Agents.md` 过渡注记
+- Files: 本文档；改名清单（含 npm 先占 `cardo`、冲突 fallback、路径搬迁列为 rename 后单独 PR）；`AGENTS.md` 过渡注记
 - Description: 固化命名、产品矩阵、路径政策、Extension 独立页入口。
 - Exit criteria:
   - 文档合入；矩阵含 Extension 与 CLI。
@@ -1123,7 +1123,7 @@ graceActive: boolean
 ### PR6 — 清理双写 + Agents 终态
 
 - Depends: PR5
-- Files: 删 OPFS 权威写、local hostPlatform DB、死 IPC；`Agents.md` 平台边界终态；命名残留
+- Files: 删 OPFS 权威写、local hostPlatform DB、死 IPC；`AGENTS.md` 平台边界终态；命名残留
 - Description: 唯一写者；文档一致。
 - Exit criteria:
   - 无第二权威写入口。
@@ -1157,7 +1157,7 @@ graceActive: boolean
 
 ## 17. References
 
-- `Agents.md`
+- `AGENTS.md`
 - `docs/architecture/zod-drizzle-shadcn-refactor.md`
 - `src/core/application/executeDatabaseCommand.ts`
 - `src/core/application/historyEngine.ts`
