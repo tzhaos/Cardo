@@ -15,11 +15,10 @@ let executionQueue = Promise.resolve();
 async function openDatabase() {
   const sqlite3 = await sqlite3InitModule();
 
-  if (!('opfs' in sqlite3) || !sqlite3.oo1.OpfsDb) {
-    throw new Error('KhaosBox requires OPFS-backed SQLite in the extension runtime.');
-  }
-
-  const database = new sqlite3.oo1.OpfsDb('/khaosbox.sqlite', 'c');
+  const database: Database =
+    'opfs' in sqlite3 && sqlite3.oo1.OpfsDb
+      ? new sqlite3.oo1.OpfsDb('/khaosbox.sqlite', 'c')
+      : new sqlite3.oo1.DB(':memory:', 'c');
   const versionRows = database.exec({
     sql: 'PRAGMA user_version',
     rowMode: 'array',
