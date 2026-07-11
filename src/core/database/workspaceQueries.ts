@@ -91,7 +91,7 @@ export async function getWorkspaceSnapshot(database: KhaosDatabase) {
       frame: { x: box.x, y: box.y, width: box.width, height: box.height },
       items: (placementsByBox.get(box.id) ?? []).flatMap((placement) => {
         const item = itemById.get(placement.itemId);
-        return item ? [projectItem(item, placement.isPinned)] : [];
+        return item ? [projectWorkspaceItem(item, placement.isPinned)] : [];
       }),
       viewMode: box.viewMode,
       detailMode: box.detailMode,
@@ -106,7 +106,10 @@ export async function getWorkspaceSnapshot(database: KhaosDatabase) {
   });
 }
 
-function projectItem(item: typeof items.$inferSelect, isPinned: boolean): WorkspaceItem {
+export function projectWorkspaceItem(
+  item: typeof items.$inferSelect,
+  isPinned: boolean,
+): WorkspaceItem {
   const base = {
     id: item.id,
     title: item.title,

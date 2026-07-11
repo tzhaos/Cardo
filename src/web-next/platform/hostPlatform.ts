@@ -8,6 +8,7 @@ import {
   undoDatabaseCommand,
 } from '../../core/application/historyEngine';
 import { getPreferences, getWorkspaceSnapshot } from '../../core/database/workspaceQueries';
+import { searchWorkspaceDatabase } from '../../core/database/globalSearchQuery';
 import {
   getOperationLogEntries,
   recordDatabaseActivity,
@@ -74,6 +75,10 @@ export async function exportOperationLog() {
 
 export function queryPreferences() {
   return runDatabaseTask(() => getPreferences(getKhaosDatabase()));
+}
+
+export function queryGlobalSearch(query: string) {
+  return runDatabaseTask(() => searchWorkspaceDatabase(getKhaosDatabase(), query));
 }
 
 function runDatabaseTask<T>(task: () => Promise<T>): Promise<T> {

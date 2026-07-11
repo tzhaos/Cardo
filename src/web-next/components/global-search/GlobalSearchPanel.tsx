@@ -1,32 +1,48 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AppWindow, Box, Clipboard, File, Folder, Globe, PanelTop, Search } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useCanvasStore } from '../../app/stores/canvasStore';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
-import { searchWorkspace, type GlobalSearchResult } from '../../domain/globalSearch';
+import type { GlobalSearchResult } from '../../../core/contracts/globalSearch';
 import type { BoxItem } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import {
   openExternalUrl,
   openLocalResource,
+  queryGlobalSearch,
   writeClipboardText,
 } from '../../platform/hostPlatform';
 import { recordBoxActivity, recordItemActivity } from '../../app/operationActivity';
 
 export function GlobalSearchPanel({ query }: { query: string }) {
-  const snapshot = useWorkspaceStore((state) => state.snapshot);
   const setActivePage = useWorkspaceStore((state) => state.setActivePage);
   const selectBox = useUiStore((state) => state.selectBox);
   const highlightBox = useUiStore((state) => state.highlightBox);
   const focusFrame = useCanvasStore((state) => state.focusFrame);
-  const results = useMemo(() => searchWorkspace(snapshot, query), [query, snapshot]);
+  const [results, setResults] = useState<GlobalSearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [copiedResultId, setCopiedResultId] = useState<string | null>(null);
   const copiedTimeoutRef = useRef<number | null>(null);
   const { t } = useI18n();
 
   useEffect(() => setSelectedIndex(0), [query]);
+  useEffect(() => {
+    let active = true;
+    void queryGlobalSearch(query)
+      .then((nextResults) => {
+        if (active) setResults(nextResults);
+      })
+      .catch((error: unknown) => {
+        if (active) {
+          console.error('Global search failed', error);
+          setResults([]);
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [query]);
   useEffect(
     () => () => {
       if (copiedTimeoutRef.current !== null) window.clearTimeout(copiedTimeoutRef.current);
@@ -118,7 +134,7 @@ export function GlobalSearchPanel({ query }: { query: string }) {
                   {result.detail ? (
                     <span className="wbn-global-search-detail">
                       {result.kind === 'box'
-                        ? t('search.itemCount', { count: result.box.items.length })
+                        ? t('search.itemCount', { count: result.box.itemCount })
                         : result.detail}
                     </span>
                   ) : null}

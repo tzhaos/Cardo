@@ -31,7 +31,7 @@ import {
 } from '../../app/windowPointerSession';
 import { recordItemActivity } from '../../app/operationActivity';
 import { getBoxAccent, getBoxIcon } from '../../domain/boxAppearance';
-import { getItemDetail, getItemResultTitle } from '../../domain/globalSearch';
+import { getItemDetail, getItemResultTitle } from '../../domain/itemPresentation';
 import {
   isRecycleBinPageId,
   type BoxFrame,
