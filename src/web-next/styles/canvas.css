@@ -7,6 +7,16 @@
   touch-action: none;
 }
 
+/*
+ * Dragging / delete-flight boxes live inside camera transforms (stacking context).
+ * Their own z-index cannot compete with fixed chrome (.wbn-top-bar is 50).
+ * Elevate the canvas root while any box is in the floating drag visual so the
+ * box paints above the page bar for cross-page drop / recycle flight.
+ */
+.wbn-app:has(.wbn-box-dragging) .wbn-canvas {
+  z-index: 100;
+}
+
 .wbn-canvas-locked {
   cursor: default;
 }

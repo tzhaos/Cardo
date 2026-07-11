@@ -105,7 +105,8 @@
 }
 
 .wbn-box.wbn-box-dragging {
-  z-index: 60;
+  /* Within canvas world only; root elevation is .wbn-app:has(.wbn-box-dragging) .wbn-canvas */
+  z-index: 100 !important;
   box-shadow:
     0 24px 48px rgba(15, 23, 42, 0.16),
     0 8px 18px rgba(15, 23, 42, 0.1),

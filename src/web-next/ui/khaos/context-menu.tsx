@@ -74,11 +74,31 @@ export function ContextMenuHost() {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') closeMenu();
     };
+    // Capture phase: canvas pan (and similar) stopPropagation on bubble, so Radix
+    // non-modal outside dismiss never sees pointerdown. Close before that happens.
+    const onPointerDownCapture = (event: PointerEvent) => {
+      if (event.button !== 0) return;
+      const target = event.target;
+      if (!(target instanceof Element)) {
+        closeMenu();
+        return;
+      }
+      if (
+        target.closest(
+          '[data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"]',
+        )
+      ) {
+        return;
+      }
+      closeMenu();
+    };
     window.addEventListener('wheel', closeMenu, true);
     window.addEventListener('keydown', onKeyDown, true);
+    window.addEventListener('pointerdown', onPointerDownCapture, true);
     return () => {
       window.removeEventListener('wheel', closeMenu, true);
       window.removeEventListener('keydown', onKeyDown, true);
+      window.removeEventListener('pointerdown', onPointerDownCapture, true);
     };
   }, [closeMenu, menu]);
 
