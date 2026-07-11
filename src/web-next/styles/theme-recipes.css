@@ -22,7 +22,8 @@
 
 [data-cardo-theme='classic'] .cardo-box {
   border: 1px solid var(--cardo-border);
-  border-radius: var(--cardo-radius-xl);
+  --cardo-box-radius: var(--cardo-radius-xl);
+  border-radius: var(--cardo-box-radius);
   background-image: linear-gradient(to bottom, var(--cardo-panel), var(--cardo-panel-bottom));
   box-shadow: var(--cardo-shadow);
 }
@@ -37,7 +38,8 @@
 [data-cardo-theme='github'] .cardo-box,
 [data-cardo-theme='github'] .cardo-collection-box {
   border: 1px solid var(--cardo-border);
-  border-radius: var(--cardo-radius-lg);
+  --cardo-box-radius: var(--cardo-radius-lg);
+  border-radius: var(--cardo-box-radius);
   background-image: none;
   background-color: var(--cardo-panel);
   box-shadow: var(--cardo-shadow);
@@ -75,7 +77,8 @@
 [data-cardo-theme='one'] .cardo-box,
 [data-cardo-theme='one'] .cardo-collection-box {
   border: 1px solid var(--cardo-border);
-  border-radius: var(--cardo-radius-md);
+  --cardo-box-radius: var(--cardo-radius-md);
+  border-radius: var(--cardo-box-radius);
   background-image: none;
   background-color: var(--cardo-panel);
   box-shadow: none;
@@ -126,7 +129,8 @@
 [data-cardo-theme='nord'] .cardo-box,
 [data-cardo-theme='nord'] .cardo-collection-box {
   border: 1px solid var(--cardo-border);
-  border-radius: var(--cardo-radius-lg);
+  --cardo-box-radius: var(--cardo-radius-lg);
+  border-radius: var(--cardo-box-radius);
   background-image: none;
   background-color: var(--cardo-panel);
   box-shadow: none;
@@ -154,7 +158,8 @@
 [data-cardo-theme='solarized'] .cardo-box,
 [data-cardo-theme='solarized'] .cardo-collection-box {
   border: 1px solid var(--cardo-border);
-  border-radius: var(--cardo-radius-md);
+  --cardo-box-radius: var(--cardo-radius-md);
+  border-radius: var(--cardo-box-radius);
   background-image: none;
   background-color: var(--cardo-panel);
   box-shadow: none;
@@ -182,7 +187,8 @@
 [data-cardo-theme='paper'] .cardo-box,
 [data-cardo-theme='paper'] .cardo-collection-box {
   border: 1px solid var(--cardo-border);
-  border-radius: var(--cardo-radius-xl);
+  --cardo-box-radius: var(--cardo-radius-xl);
+  border-radius: var(--cardo-box-radius);
   background-image: linear-gradient(
     165deg,
     color-mix(in srgb, var(--cardo-panel) 94%, var(--cardo-orange)) 0%,
@@ -207,12 +213,13 @@
 }
 
 /* ── Graphite: industrial square panels, hairline edge, zero soft glass ─────── */
-/* Radii tokens are 0; also force xl so motion/CSS both resolve to square. */
+/* Pack radii are 0; pin --cardo-box-radius so Motion inline styles stay square. */
 
 [data-cardo-theme='graphite'] .cardo-box,
 [data-cardo-theme='graphite'] .cardo-collection-box {
   border: 1px solid var(--cardo-border);
-  border-radius: 0;
+  --cardo-box-radius: 0;
+  border-radius: var(--cardo-box-radius);
   background-image: none;
   background-color: var(--cardo-panel);
   box-shadow: none;
@@ -253,7 +260,8 @@
 [data-cardo-theme='material'] .cardo-box,
 [data-cardo-theme='material'] .cardo-collection-box {
   border: none;
-  border-radius: var(--cardo-radius-xl);
+  --cardo-box-radius: var(--cardo-radius-xl);
+  border-radius: var(--cardo-box-radius);
   background-image: none;
   background-color: var(--cardo-panel);
   box-shadow: var(--cardo-shadow);
@@ -330,7 +338,8 @@
   contain: layout;
   isolation: isolate;
   border: 0.5px solid var(--cardo-border);
-  border-radius: var(--cardo-radius-xl);
+  --cardo-box-radius: var(--cardo-radius-xl);
+  border-radius: var(--cardo-box-radius);
   background-color: var(--cardo-panel);
   background-image: linear-gradient(
     165deg,
@@ -370,10 +379,18 @@
     inset -1px 0 0 rgba(255, 255, 255, 0.03);
 }
 
-[data-cardo-theme='apple'] .cardo-box > *,
-[data-cardo-theme='apple'] .cardo-collection-box > * {
+/* Stack content above the specular ::before rim. Never force position:relative on
+   absolute chrome (resize handle, etc.) — that drops them into flex flow and
+   drifts SE grip to the bottom-start corner. */
+[data-cardo-theme='apple'] .cardo-box > :not(.cardo-resize-handle),
+[data-cardo-theme='apple'] .cardo-collection-box > :not(.cardo-collection-resize) {
   position: relative;
   z-index: 1;
+}
+
+[data-cardo-theme='apple'] .cardo-resize-handle,
+[data-cardo-theme='apple'] .cardo-collection-resize {
+  z-index: 2;
 }
 
 [data-cardo-theme='apple'] .cardo-box-header,
@@ -471,7 +488,8 @@
 [data-cardo-theme='windows'] .cardo-collection-box {
   contain: layout;
   border: 1px solid var(--cardo-border);
-  border-radius: var(--cardo-radius-xl);
+  --cardo-box-radius: var(--cardo-radius-xl);
+  border-radius: var(--cardo-box-radius);
   background-color: var(--cardo-panel);
   background-image: linear-gradient(
     180deg,
