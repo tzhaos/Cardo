@@ -1,4 +1,4 @@
-import { asc } from 'drizzle-orm';
+import { asc, eq, inArray } from 'drizzle-orm';
 import { workspaceProjectionSchema, type WorkspaceItem } from '../contracts/workspace';
 import {
   boxItemsQuerySchema,
@@ -47,13 +47,28 @@ export async function getWorkspaceState(database: KhaosDatabase) {
 }
 
 export async function getPageBoxes(database: KhaosDatabase, pageId: string) {
-  const projection = await getWorkspaceProjection(database);
-  return pageBoxesQuerySchema.parse(projection.boxes.filter((box) => box.pageId === pageId));
+  const boxRows = await database
+    .select()
+    .from(boxes)
+    .where(eq(boxes.pageId, pageId))
+    .orderBy(asc(boxes.zIndex))
+    .all();
+  const { itemRows, placementRows } = await selectBoxContents(
+    database,
+    boxRows.map((box) => box.id),
+  );
+  return pageBoxesQuerySchema.parse(projectWorkspaceBoxes(boxRows, itemRows, placementRows));
 }
 
 export async function getBoxItems(database: KhaosDatabase, boxId: string) {
-  const projection = await getWorkspaceProjection(database);
-  return boxItemsQuerySchema.parse(projection.boxes.find((box) => box.id === boxId)?.items ?? []);
+  const { itemRows, placementRows } = await selectBoxContents(database, [boxId]);
+  const itemById = new Map(itemRows.map((item) => [item.id, item]));
+  return boxItemsQuerySchema.parse(
+    placementRows.flatMap((placement) => {
+      const item = itemById.get(placement.itemId);
+      return item ? [projectWorkspaceItem(item, placement.isPinned)] : [];
+    }),
+  );
 }
 
 export async function getPreferences(database: KhaosDatabase) {
@@ -70,14 +85,6 @@ export async function getWorkspaceProjection(database: KhaosDatabase) {
     database.select().from(boxItems).orderBy(asc(boxItems.sortOrder)).all(),
     database.select().from(collectionBoxViews).orderBy(asc(collectionBoxViews.sortOrder)).all(),
   ]);
-
-  const itemById = new Map(itemRows.map((item) => [item.id, item]));
-  const placementsByBox = new Map<string, typeof placementRows>();
-  for (const placement of placementRows) {
-    const current = placementsByBox.get(placement.boxId) ?? [];
-    current.push(placement);
-    placementsByBox.set(placement.boxId, current);
-  }
 
   const collectionViews = Object.fromEntries(
     collectionRows.map((view) => [
@@ -102,27 +109,64 @@ export async function getWorkspaceProjection(database: KhaosDatabase) {
     })),
     activePageId: state.activePageId,
     defaultPageId: state.defaultPageId,
-    boxes: boxRows.map((box) => ({
-      id: box.id,
-      pageId: box.pageId,
-      kind: box.kind,
-      title: box.title,
-      frame: { x: box.x, y: box.y, width: box.width, height: box.height },
-      items: (placementsByBox.get(box.id) ?? []).flatMap((placement) => {
-        const item = itemById.get(placement.itemId);
-        return item ? [projectWorkspaceItem(item, placement.isPinned)] : [];
-      }),
-      viewMode: box.viewMode,
-      detailMode: box.detailMode,
-      isLocked: box.isLocked,
-      icon: box.icon,
-      accent: box.accent,
-      createdAt: box.createdAt,
-      updatedAt: box.updatedAt,
-    })),
+    boxes: projectWorkspaceBoxes(boxRows, itemRows, placementRows),
     collectionBoxIds: collectionRows.map((view) => view.boxId),
     collectionViews,
   });
+}
+
+async function selectBoxContents(database: KhaosDatabase, boxIds: string[]) {
+  if (!boxIds.length) {
+    return {
+      itemRows: [] as Array<typeof items.$inferSelect>,
+      placementRows: [] as Array<typeof boxItems.$inferSelect>,
+    };
+  }
+
+  const placementRows = await database
+    .select()
+    .from(boxItems)
+    .where(inArray(boxItems.boxId, boxIds))
+    .orderBy(asc(boxItems.sortOrder))
+    .all();
+  const itemIds = [...new Set(placementRows.map((placement) => placement.itemId))];
+  const itemRows = itemIds.length
+    ? await database.select().from(items).where(inArray(items.id, itemIds)).all()
+    : [];
+  return { itemRows, placementRows };
+}
+
+function projectWorkspaceBoxes(
+  boxRows: Array<typeof boxes.$inferSelect>,
+  itemRows: Array<typeof items.$inferSelect>,
+  placementRows: Array<typeof boxItems.$inferSelect>,
+) {
+  const itemById = new Map(itemRows.map((item) => [item.id, item]));
+  const placementsByBox = new Map<string, typeof placementRows>();
+  for (const placement of placementRows) {
+    const current = placementsByBox.get(placement.boxId) ?? [];
+    current.push(placement);
+    placementsByBox.set(placement.boxId, current);
+  }
+
+  return boxRows.map((box) => ({
+    id: box.id,
+    pageId: box.pageId,
+    kind: box.kind,
+    title: box.title,
+    frame: { x: box.x, y: box.y, width: box.width, height: box.height },
+    items: (placementsByBox.get(box.id) ?? []).flatMap((placement) => {
+      const item = itemById.get(placement.itemId);
+      return item ? [projectWorkspaceItem(item, placement.isPinned)] : [];
+    }),
+    viewMode: box.viewMode,
+    detailMode: box.detailMode,
+    isLocked: box.isLocked,
+    icon: box.icon,
+    accent: box.accent,
+    createdAt: box.createdAt,
+    updatedAt: box.updatedAt,
+  }));
 }
 
 export function projectWorkspaceItem(
