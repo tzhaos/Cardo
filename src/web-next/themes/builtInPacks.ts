@@ -1,4 +1,8 @@
-import type { ColorTokenMap, ThemePack } from '../../core/contracts/themePack';
+import {
+  OFFICIAL_BUILT_IN_THEME_IDS,
+  type ColorTokenMap,
+  type ThemePack,
+} from '../../core/contracts/themePack';
 import { OFFICIAL_THEME_OPTIONS } from './builtInOptions';
 import {
   DEFAULT_ACCENT_COLORS,
@@ -279,4 +283,4 @@ export const BUILT_IN_THEME_PACKS: ThemePack[] = [
   }),
 ];
 
-export const BUILT_IN_THEME_IDS = new Set(BUILT_IN_THEME_PACKS.map((pack) => pack.id));
+export const BUILT_IN_THEME_IDS = OFFICIAL_BUILT_IN_THEME_IDS;

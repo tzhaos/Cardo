@@ -4,6 +4,7 @@
  */
 
 import type http from 'node:http';
+import path from 'node:path';
 import type { AddressInfo } from 'node:net';
 import { RuntimeAuth } from './auth';
 import { ClientRegistry } from './clients';
@@ -23,7 +24,7 @@ import {
   updateLockFile,
   type RuntimeLock,
 } from './lock';
-import { ensureDataDir } from './paths';
+import { CARDO_THEMES_DIRNAME, ensureDataDir, ensureThemesDir } from './paths';
 import { getRevision } from '../core/database/revision';
 import { DATABASE_SCHEMA_VERSION } from '../core/database/version';
 
@@ -110,6 +111,8 @@ export async function startRuntime(options: StartRuntimeOptions): Promise<Starte
   const config = buildRuntimeHostConfig(options);
 
   ensureDataDir(config.dataDir);
+  // Ensure user theme drop folder exists for Desktop/CLI Theme Pack files.
+  ensureThemesDir(path.join(config.dataDir, CARDO_THEMES_DIRNAME));
 
   const auth = new RuntimeAuth(config.token);
   const startedAt = new Date().toISOString();

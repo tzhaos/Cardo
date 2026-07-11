@@ -41,12 +41,17 @@ import {
 import type { WebNextLocale } from '../../i18n/messages';
 import {
   hasRegisteredThemePack,
+  mergeUserThemePacks,
   OFFICIAL_DEFAULT_THEME_ID,
   syncImportedThemePacks,
   type WebNextColorMode,
 } from '../../themes/themeRegistry';
 import { importThemePackIntoRegistry } from '../../themes/themeIO';
-import { dispatchDatabaseCommand, queryPreferences } from '../../platform/hostPlatform';
+import {
+  dispatchDatabaseCommand,
+  queryLocalThemePacks,
+  queryPreferences,
+} from '../../platform/hostPlatform';
 
 interface PreferencesStore {
   colorMode: WebNextColorMode;
@@ -260,8 +265,16 @@ async function refreshPreferences() {
   const cssSnippet = cssSnippetSchema.parse(preferences.cssSnippet ?? '');
   const cssSnippetEnabled = Boolean(preferences.cssSnippetEnabled);
 
-  // Official packs stay code-defined; only rehydrate user imports.
-  syncImportedThemePacks(importedThemePacks);
+  // Disk themes from Runtime dataDir/themes (fail soft if query unavailable).
+  let diskPacks: ThemePack[] = [];
+  try {
+    diskPacks = await queryLocalThemePacks();
+  } catch {
+    diskPacks = [];
+  }
+
+  // Official packs stay code-defined; rehydrate imports + local files.
+  syncImportedThemePacks(mergeUserThemePacks(importedThemePacks, diskPacks));
 
   const themeId = hasRegisteredThemePack(preferences.themeId)
     ? preferences.themeId

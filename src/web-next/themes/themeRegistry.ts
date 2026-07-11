@@ -51,7 +51,10 @@ export function registerThemePack(pack: ThemePack) {
   importedThemeIds.add(parsed.id);
 }
 
-/** Re-sync imported packs from preferences after load / invalidation. */
+/**
+ * Re-sync non-built-in packs from preferences imports + Runtime disk themes.
+ * Official packs stay code-defined. Disk packs cannot overwrite official ids.
+ */
 export function syncImportedThemePacks(packs: ThemePack[]) {
   for (const id of [...importedThemeIds]) {
     themeRegistry.delete(id);
@@ -63,6 +66,23 @@ export function syncImportedThemePacks(packs: ThemePack[]) {
     themeRegistry.set(parsed.id, parsed);
     importedThemeIds.add(parsed.id);
   }
+}
+
+/** Merge preference imports with file-scanned packs (imports win on id clash). */
+export function mergeUserThemePacks(
+  imported: ThemePack[],
+  fromDisk: ThemePack[],
+): ThemePack[] {
+  const byId = new Map<string, ThemePack>();
+  for (const pack of fromDisk) {
+    if (BUILT_IN_THEME_IDS.has(pack.id)) continue;
+    byId.set(pack.id, pack);
+  }
+  for (const pack of imported) {
+    if (BUILT_IN_THEME_IDS.has(pack.id)) continue;
+    byId.set(pack.id, pack);
+  }
+  return [...byId.values()];
 }
 
 export function unregisterImportedThemePack(themeId: string) {

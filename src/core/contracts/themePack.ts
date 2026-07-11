@@ -291,6 +291,13 @@ export const THEME_PACK_DOCUMENT_FORMAT = 'cardo-theme' as const;
 export const THEME_PACK_DOCUMENT_VERSION = 1 as const;
 export const MAX_THEME_PACK_JSON_BYTES = 256_000;
 
+/** Official built-in Theme Pack ids — frozen, never overwritten by disk/import. */
+export const OFFICIAL_BUILT_IN_THEME_IDS: ReadonlySet<string> = new Set([
+  'classic',
+  'ocean',
+  'orchid',
+]);
+
 /** CSS custom property names written by the Theme Runtime. */
 export const colorCssVariableNames = {
   canvas: '--cardo-canvas',

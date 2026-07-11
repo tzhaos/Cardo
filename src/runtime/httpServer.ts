@@ -56,6 +56,8 @@ import {
   type RuntimeEvent,
 } from '../core/contracts/runtimeProtocol';
 import { openLocalResourceViaHooks } from './capabilities';
+import { scanLocalThemePacks } from './localThemePacks';
+import { CARDO_THEMES_DIRNAME } from './paths';
 
 export interface RuntimeHttpContext {
   config: RuntimeHostConfig;
@@ -488,6 +490,7 @@ async function handleQuery(
       '/v1/query/preferences': 'query.preferences',
       '/v1/query/history-state': 'query.historyState',
       '/v1/query/operation-log': 'query.operationLog',
+      '/v1/query/local-theme-packs': 'query.localThemePacks',
     };
     queryType = map[pathname] ?? null;
     const url = new URL(req.url ?? '/', `http://127.0.0.1`);
@@ -571,6 +574,15 @@ async function dispatchQuery(
     case 'query.operationLog': {
       const data = await getOperationLogEntries(ctx.database, query.limit);
       sendJson(res, 200, { type: 'query.operationLog.ok', data });
+      return;
+    }
+    case 'query.localThemePacks': {
+      const themesDir = path.join(ctx.config.dataDir, CARDO_THEMES_DIRNAME);
+      const entries = scanLocalThemePacks(themesDir);
+      sendJson(res, 200, {
+        type: 'query.localThemePacks.ok',
+        data: entries.map((entry) => entry.pack),
+      });
       return;
     }
     default: {

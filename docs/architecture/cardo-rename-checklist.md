@@ -45,7 +45,7 @@
 | System page ids | `cardo-collection` / `cardo-recycle-bin`（schema v5 单向改写） |
 | 日志 / i18n / 错误串 | Cardo |
 | UI 封装目录 `src/web-next/ui/cardo` | 已由 `ui/khaos` 改名完成 |
-| 品牌文件 `assets/brand/khaosbox-*` | 资产文件名可后续视觉 PR 更换 |
+| 品牌文件 `assets/brand/cardo-*` | 已由 `khaosbox-*` 改名完成 |
 
 ## 4. Path SoT
 

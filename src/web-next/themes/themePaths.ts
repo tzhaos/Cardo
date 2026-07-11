@@ -1,13 +1,14 @@
 /**
- * Theme pack directory conventions (Phase D).
+ * Theme pack directory conventions.
  *
- * - Built-in packs: code-defined in `src/web-next/themes/builtInPacks.ts`
- * - User imports: preferences.importedThemePacks (Runtime-synced JSON)
- * - Future Desktop scan (not auto-loaded yet):
+ * - Built-in packs: code-defined in `builtInPacks.ts` (classic freezes official look)
+ * - Preference imports: preferences.importedThemePacks (Runtime-synced JSON)
+ * - Local file packs (Runtime scan):
  *   - Windows: `%APPDATA%/cardo/themes/*.cardo-theme.json`
  *   - macOS: `~/Library/Application Support/cardo/themes/`
  *   - Linux: `~/.config/cardo/themes/`
- * - Dev drop folder (optional local work): `themes/` at repo root
+ *   - Override root: `CARDO_DATA_DIR/themes`
+ * - Dev drop folder (optional local work): `themes/` at repo root (not auto-scanned)
  *
  * Official classic/ocean/orchid remain code-defined and cannot be overwritten by files.
  */

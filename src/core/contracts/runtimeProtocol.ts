@@ -17,6 +17,7 @@ import {
 import { globalSearchResultSchema } from './globalSearch';
 import { workspaceTransferDocumentSchema } from './workspaceTransfer';
 import { preferencesSelectSchema } from '../database/schema';
+import { themePackSchema } from './themePack';
 
 // --- Invalidation scopes (server-derived; design §6.9) ---
 
@@ -216,6 +217,11 @@ export const queryOperationLogRequestSchema = z
   })
   .strict();
 
+/** File-based Theme Packs from `%DATA%/themes` (not stored in SQLite). */
+export const queryLocalThemePacksRequestSchema = z
+  .object({ type: z.literal('query.localThemePacks') })
+  .strict();
+
 export const queryRequestSchema = z.discriminatedUnion('type', [
   queryWorkspaceProjectionRequestSchema,
   queryWorkspaceStateRequestSchema,
@@ -226,6 +232,7 @@ export const queryRequestSchema = z.discriminatedUnion('type', [
   queryHistoryStateRequestSchema,
   queryGlobalSearchRequestSchema,
   queryOperationLogRequestSchema,
+  queryLocalThemePacksRequestSchema,
 ]);
 
 export const queryOkSchema = z.discriminatedUnion('type', [
@@ -275,6 +282,12 @@ export const queryOkSchema = z.discriminatedUnion('type', [
     .object({
       type: z.literal('query.globalSearch.ok'),
       data: z.array(globalSearchResultSchema),
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal('query.localThemePacks.ok'),
+      data: z.array(themePackSchema),
     })
     .strict(),
   z

@@ -327,6 +327,13 @@ export function queryPreferences() {
   });
 }
 
+/** File-based Theme Packs from Runtime dataDir/themes. */
+export function queryLocalThemePacks() {
+  return runDatabaseTask(async () => {
+    return await requireRuntimeClient().queryLocalThemePacks();
+  });
+}
+
 export function queryGlobalSearch(query: string) {
   return runDatabaseTask(async () => {
     return await requireRuntimeClient().queryGlobalSearch(query);

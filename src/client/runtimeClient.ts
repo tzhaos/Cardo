@@ -265,6 +265,13 @@ export class RuntimeClient {
     );
   }
 
+  async queryLocalThemePacks() {
+    return this.queryData<Extract<QueryOk, { type: 'query.localThemePacks.ok' }>['data']>(
+      '/v1/query/local-theme-packs',
+      'query.localThemePacks.ok',
+    );
+  }
+
   async queryHistoryState() {
     return this.queryData<Extract<QueryOk, { type: 'query.historyState.ok' }>['data']>(
       '/v1/query/history-state',

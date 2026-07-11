@@ -13,15 +13,13 @@ staging, and reopening links, notes, and small launch surfaces.
 
 ## Files
 
-Filenames below may still use a historical asset prefix; the brand identity is Cardo.
-
-- `khaosbox-mark.svg`
+- `cardo-mark.svg`
   Primary tile symbol
-- `khaosbox-logo-horizontal.svg`
+- `cardo-logo-horizontal.svg`
   Main brand lockup
-- `khaosbox-logo-stacked.svg`
+- `cardo-logo-stacked.svg`
   Vertical lockup
-- `khaosbox-mark-monochrome.svg`
+- `cardo-mark-monochrome.svg`
   One-color fallback
 
 ## Palette

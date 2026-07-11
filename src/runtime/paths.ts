@@ -27,6 +27,8 @@ export const CARDO_DB_FILENAME = 'cardo.sqlite';
 export const CARDO_LOCK_FILENAME = 'runtime.lock';
 export const CARDO_DISCOVERY_FILENAME = 'discovery.json';
 export const CARDO_LOG_FILENAME = 'runtime.log';
+/** User Theme Pack drop folder under the Cardo data directory. */
+export const CARDO_THEMES_DIRNAME = 'themes';
 
 /**
  * Electron userData directory segment. Must match app.setName(...) on Desktop.
@@ -40,6 +42,8 @@ export interface CardoDataPaths {
   lockPath: string;
   discoveryPath: string;
   logPath: string;
+  /** `%DATA%/themes` — user `.cardo-theme.json` packs (file-based, not DB). */
+  themesDir: string;
 }
 
 function joinUserDataDir(segment: string): string {
@@ -84,9 +88,14 @@ export function resolveCardoDataPaths(dataDir?: string): CardoDataPaths {
     lockPath: path.join(resolvedDir, CARDO_LOCK_FILENAME),
     discoveryPath: path.join(resolvedDir, CARDO_DISCOVERY_FILENAME),
     logPath: path.join(resolvedDir, CARDO_LOG_FILENAME),
+    themesDir: path.join(resolvedDir, CARDO_THEMES_DIRNAME),
   };
 }
 
 export function ensureDataDir(dataDir: string): void {
   fs.mkdirSync(dataDir, { recursive: true });
+}
+
+export function ensureThemesDir(themesDir: string): void {
+  fs.mkdirSync(themesDir, { recursive: true });
 }
