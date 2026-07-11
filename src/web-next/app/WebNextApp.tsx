@@ -4,8 +4,6 @@ import { BottomToolbar } from '../components/bottom-toolbar/BottomToolbar';
 import DesktopTitleBar from '../../desktop/DesktopTitleBar';
 import { WorkspaceCanvas } from '../components/canvas/WorkspaceCanvas';
 import { CanvasToolsToolbar } from '../components/canvas/CanvasToolsToolbar';
-import { FloatingMenuLayer } from '../components/floating-menu/FloatingMenuLayer';
-import { FloatingMenuProvider } from '../components/floating-menu/useFloatingMenu';
 import { SettingsWindow } from '../components/settings/SettingsWindow';
 import { HistoryToolbar } from '../components/history-toolbar/HistoryToolbar';
 import { TopBar } from '../components/top-bar/TopBar';
@@ -34,19 +32,16 @@ export default function WebNextApp() {
 
   return (
     <TooltipProvider>
-      <FloatingMenuProvider>
-        <div className={`wbn-app${isDesktopHost ? ' wbn-app-desktop' : ''}`}>
-          <DesktopTitleBar />
-          <BoxPageDropController />
-          <TopBar />
-          <HistoryToolbar />
-          <WorkspaceCanvas />
-          <CanvasToolsToolbar />
-          <BottomToolbar />
-          <FloatingMenuLayer />
-          <SettingsWindow />
-        </div>
-      </FloatingMenuProvider>
+      <div className={`wbn-app${isDesktopHost ? ' wbn-app-desktop' : ''}`}>
+        <DesktopTitleBar />
+        <BoxPageDropController />
+        <TopBar />
+        <HistoryToolbar />
+        <WorkspaceCanvas />
+        <CanvasToolsToolbar />
+        <BottomToolbar />
+        <SettingsWindow />
+      </div>
     </TooltipProvider>
   );
 }

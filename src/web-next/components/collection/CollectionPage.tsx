@@ -46,7 +46,7 @@ import {
   writeClipboardText,
 } from '../../platform/hostPlatform';
 import { BoxAppearanceIcon } from '../boxes/boxIconRegistry';
-import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
+import { useContextMenu } from '../../ui/khaos/context-menu';
 import { Button } from '../../ui/primitives/button';
 
 export function CollectionPage() {
@@ -61,7 +61,7 @@ export function CollectionPage() {
   const highlightBox = useUiStore((state) => state.highlightBox);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
   const copiedTimeoutRef = useRef<number | null>(null);
-  const { openMenu } = useFloatingMenu();
+  const contextMenu = useContextMenu();
   const { t } = useI18n();
   const pagesById = useMemo(
     () => new Map(projection.pages.map((page) => [page.id, page])),
@@ -140,11 +140,7 @@ export function CollectionPage() {
               onRemove={() => removeBoxFromCollection(box.id)}
               onOpenMenu={(event) => {
                 event.preventDefault();
-                openMenu({
-                  id: `collection-box-${box.id}`,
-                  x: event.clientX,
-                  y: event.clientY,
-                  items: [
+                contextMenu.openMenu(event.clientX, event.clientY, [
                     {
                       id: 'view-mode',
                       label: t(view.viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList'),
@@ -185,8 +181,7 @@ export function CollectionPage() {
                       icon: <StarOff size={16} />,
                       onSelect: () => removeBoxFromCollection(box.id),
                     },
-                  ],
-                });
+                ]);
               }}
               t={t}
             />
@@ -205,6 +200,7 @@ export function CollectionPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      {contextMenu.menu}
     </section>
   );
 }

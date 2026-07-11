@@ -37,7 +37,7 @@ import {
   startWindowPointerSession,
   type WindowPointerSession,
 } from '../../app/windowPointerSession';
-import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
+import { useContextMenu } from '../../ui/khaos/context-menu';
 import { useI18n } from '../../i18n/useI18n';
 import { BoxAppearanceView } from './BoxAppearancePopover';
 import { Input } from '../../ui/primitives/input';
@@ -92,7 +92,7 @@ export function BaseBoxFrame({
   const selectBox = useUiStore((state) => state.selectBox);
   const addViewState = useUiStore((state) => state.addDrafts[box.id]);
   const closeAddView = useUiStore((state) => state.closeAddView);
-  const { openMenu, closeMenu } = useFloatingMenu();
+  const contextMenu = useContextMenu();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [appearanceView, setAppearanceView] = useState(false);
   const [deleteMotion, setDeleteMotion] = useState<BoxDeleteMotion | null>(null);
@@ -143,7 +143,7 @@ export function BaseBoxFrame({
 
     event.preventDefault();
     setAppearanceView(false);
-    closeMenu();
+    contextMenu.closeMenu();
     pointerSessionRef.current?.end();
     beginBoxDrag(box.id);
     const boxElement = event.currentTarget.closest<HTMLElement>('[data-canvas-box]');
@@ -204,7 +204,7 @@ export function BaseBoxFrame({
 
     event.stopPropagation();
     event.preventDefault();
-    closeMenu();
+    contextMenu.closeMenu();
     pointerSessionRef.current?.end();
     const startX = event.clientX;
     const startY = event.clientY;
@@ -402,14 +402,10 @@ export function BaseBoxFrame({
         setAppearanceView(false);
         selectBox(box.id);
         if (isTemporary) {
-          closeMenu();
+          contextMenu.closeMenu();
           return;
         }
-        openMenu({
-          id: `box-${box.id}`,
-          x: event.clientX,
-          y: event.clientY,
-          items: [
+        contextMenu.openMenu(event.clientX, event.clientY, [
             {
               id: 'rename',
               label: t('menu.rename'),
@@ -449,8 +445,7 @@ export function BaseBoxFrame({
               danger: true,
               onSelect: () => setConfirmDelete(true),
             },
-          ],
-        });
+        ]);
       }}
       style={
         {
@@ -496,7 +491,7 @@ export function BaseBoxFrame({
               aria-label={t('box.changePreset')}
               aria-pressed={appearanceView}
               onClick={() => {
-                closeMenu();
+                contextMenu.closeMenu();
                 setConfirmDelete(false);
                 closeAddView(box.id);
                 setAppearanceView((current) => !current);
@@ -663,6 +658,7 @@ export function BaseBoxFrame({
           </svg>
         </Button>
       ) : null}
+      {contextMenu.menu}
     </motion.article>
   );
 }
