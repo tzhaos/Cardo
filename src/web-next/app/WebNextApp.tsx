@@ -28,6 +28,8 @@ export default function WebNextApp() {
   const fontFamily = usePreferencesStore((state) => state.fontFamily);
   const fontScale = usePreferencesStore((state) => state.fontScale);
   const density = usePreferencesStore((state) => state.density);
+  const themeColorOverrides = usePreferencesStore((state) => state.themeColorOverrides);
+  const themeOptionValues = usePreferencesStore((state) => state.themeOptionValues);
   const isDesktopHost = typeof window !== 'undefined' && Boolean(window.cardoDesktop);
 
   useLayoutEffect(() => {
@@ -36,8 +38,19 @@ export default function WebNextApp() {
       fontFamily,
       fontScale,
       density,
+      colorOverrides: themeColorOverrides,
+      optionValues: themeOptionValues,
     });
-  }, [colorMode, density, fontFamily, fontScale, locale, themeId]);
+  }, [
+    colorMode,
+    density,
+    fontFamily,
+    fontScale,
+    locale,
+    themeColorOverrides,
+    themeId,
+    themeOptionValues,
+  ]);
 
   return (
     <TooltipProvider>

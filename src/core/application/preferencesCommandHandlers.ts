@@ -11,6 +11,9 @@ type PreferencesCommandType =
   | 'preferences.setFontFamily'
   | 'preferences.setFontScale'
   | 'preferences.setDensity'
+  | 'preferences.setThemeColorOverrides'
+  | 'preferences.setThemeOptionValues'
+  | 'preferences.setImportedThemePacks'
   | 'preferences.setSearchEngine'
   | 'preferences.setCustomSearchTemplate';
 
@@ -29,11 +32,7 @@ export async function executePreferencesCommand(
 
   const patch = getPatch(command);
   const after = { ...before, ...patch };
-  if (
-    Object.keys(patch).every(
-      (key) => before[key as keyof typeof before] === after[key as keyof typeof after],
-    )
-  ) {
+  if (isPreferencesUnchanged(before, after, patch)) {
     return { changes: [] };
   }
   await transaction.update(preferences).set(patch).where(eq(preferences.id, PREFERENCES_ID));
@@ -56,9 +55,32 @@ function getPatch(command: PreferencesCommand): Partial<typeof preferences.$infe
       return { fontScale: command.fontScale };
     case 'preferences.setDensity':
       return { density: command.density };
+    case 'preferences.setThemeColorOverrides':
+      return { themeColorOverrides: command.themeColorOverrides };
+    case 'preferences.setThemeOptionValues':
+      return { themeOptionValues: command.themeOptionValues };
+    case 'preferences.setImportedThemePacks':
+      return { importedThemePacks: command.importedThemePacks };
     case 'preferences.setSearchEngine':
       return { searchEngine: command.searchEngine };
     case 'preferences.setCustomSearchTemplate':
       return { customSearchTemplate: command.customSearchTemplate };
   }
+}
+
+function isPreferencesUnchanged(
+  before: typeof preferences.$inferSelect,
+  after: typeof preferences.$inferSelect,
+  patch: Partial<typeof preferences.$inferInsert>,
+): boolean {
+  for (const key of Object.keys(patch) as Array<keyof typeof patch>) {
+    const left = before[key as keyof typeof before];
+    const right = after[key as keyof typeof after];
+    if (typeof left === 'object' || typeof right === 'object') {
+      if (JSON.stringify(left) !== JSON.stringify(right)) return false;
+    } else if (left !== right) {
+      return false;
+    }
+  }
+  return true;
 }

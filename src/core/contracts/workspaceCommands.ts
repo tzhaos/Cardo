@@ -17,6 +17,11 @@ import {
   preferenceLocaleSchema,
   webSearchEngineIdSchema,
 } from './preferences';
+import {
+  importedThemePacksSchema,
+  themeColorOverridesSchema,
+  themeOptionValuesSchema,
+} from './themePack';
 
 const titleSchema = z.string().max(512);
 const itemDraftSchema = z.record(z.string(), z.string());
@@ -42,6 +47,24 @@ const commandSchemas = [
     .strict(),
   z.object({ type: z.literal('preferences.setFontScale'), fontScale: fontScaleSchema }).strict(),
   z.object({ type: z.literal('preferences.setDensity'), density: densitySchema }).strict(),
+  z
+    .object({
+      type: z.literal('preferences.setThemeColorOverrides'),
+      themeColorOverrides: themeColorOverridesSchema,
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal('preferences.setThemeOptionValues'),
+      themeOptionValues: themeOptionValuesSchema,
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal('preferences.setImportedThemePacks'),
+      importedThemePacks: importedThemePacksSchema,
+    })
+    .strict(),
   z
     .object({
       type: z.literal('preferences.setSearchEngine'),
@@ -252,6 +275,9 @@ const nonUndoableCommandTypes = new Set<WorkspaceCommandType>([
   'preferences.setFontFamily',
   'preferences.setFontScale',
   'preferences.setDensity',
+  'preferences.setThemeColorOverrides',
+  'preferences.setThemeOptionValues',
+  'preferences.setImportedThemePacks',
   'preferences.setSearchEngine',
   'preferences.setCustomSearchTemplate',
   'system.constrainFrames',

@@ -96,6 +96,10 @@ export async function initializeWorkspaceDatabase(
       fontFamily: DEFAULT_FONT_FAMILY_ID,
       fontScale: DEFAULT_FONT_SCALE,
       density: DEFAULT_DENSITY,
+      // Empty customization keeps the official classic pack pixel-identical.
+      themeColorOverrides: {},
+      themeOptionValues: {},
+      importedThemePacks: [],
       searchEngine: 'bing-cn',
       customSearchTemplate: '',
     });

@@ -10,6 +10,7 @@ import {
   Languages,
   Moon,
   Palette,
+  RotateCcw,
   Settings,
   SlidersHorizontal,
   Sun,
@@ -19,8 +20,9 @@ import {
 import { AnimatePresence, motion } from 'motion/react';
 import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import { useI18n } from '../../i18n/useI18n';
-import { getRegisteredWebNextThemes } from '../../themes/themeRegistry';
+import { getRegisteredWebNextThemes, getThemePack } from '../../themes/themeRegistry';
 import type { WebNextColorMode } from '../../themes/themeRegistry';
+import { parseThemePackImportFile } from '../../themes/themeIO';
 import { ColorModeStateIcon, LanguageStateIcon } from './StateIcons';
 import { IconButton, IconFrame } from '../../ui/khaos/icon-button';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
@@ -28,6 +30,7 @@ import type { WorkspaceProjection } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
 import {
   exportOperationLog,
+  exportThemePackFile,
   exportWorkspaceData,
   parseWorkspaceImportFile,
 } from '../../platform/hostPlatform';
@@ -43,6 +46,20 @@ import {
   type FontFamilyId,
   type FontScale,
 } from '../../../core/contracts/preferences';
+import {
+  overridableColorKeys,
+  type OverridableColorKey,
+} from '../../../core/contracts/themePack';
+import type { WebNextMessageKey } from '../../i18n/messages';
+
+const COLOR_OVERRIDE_LABEL_KEYS = {
+  canvas: 'settings.colorOverride.canvas',
+  panel: 'settings.colorOverride.panel',
+  surface: 'settings.colorOverride.surface',
+  text: 'settings.colorOverride.text',
+  blue: 'settings.colorOverride.blue',
+  createBackground: 'settings.colorOverride.createBackground',
+} as const satisfies Record<OverridableColorKey, WebNextMessageKey>;
 import {
   Select,
   SelectContent,
@@ -78,12 +95,13 @@ export function SettingsPanel({
   const setFontFamily = usePreferencesStore((state) => state.setFontFamily);
   const setFontScale = usePreferencesStore((state) => state.setFontScale);
   const setDensity = usePreferencesStore((state) => state.setDensity);
+  const importedThemePacks = usePreferencesStore((state) => state.importedThemePacks);
   const searchEngine = usePreferencesStore((state) => state.searchEngine);
   const customSearchTemplate = usePreferencesStore((state) => state.customSearchTemplate);
   const setSearchEngine = usePreferencesStore((state) => state.setSearchEngine);
   const setCustomSearchTemplate = usePreferencesStore((state) => state.setCustomSearchTemplate);
   const { t } = useI18n();
-  const themes = useMemo(() => getRegisteredWebNextThemes(), []);
+  const themes = useMemo(() => getRegisteredWebNextThemes(), [importedThemePacks]);
   const sections = [
     { id: 'general' as const, icon: SlidersHorizontal, label: t('settings.general') },
     { id: 'appearance' as const, icon: Palette, label: t('settings.appearance') },
@@ -403,6 +421,30 @@ function AppearanceSettings({
   setDensity: (density: Density) => void;
 }) {
   const { t } = useI18n();
+  const themeColorOverrides = usePreferencesStore((state) => state.themeColorOverrides);
+  const themeOptionValues = usePreferencesStore((state) => state.themeOptionValues);
+  const setThemeColorOverride = usePreferencesStore((state) => state.setThemeColorOverride);
+  const resetThemeColorOverrides = usePreferencesStore((state) => state.resetThemeColorOverrides);
+  const setThemeOptionValue = usePreferencesStore((state) => state.setThemeOptionValue);
+  const resetThemeOptionValues = usePreferencesStore((state) => state.resetThemeOptionValues);
+  const importThemePack = usePreferencesStore((state) => state.importThemePack);
+  const removeImportedThemePack = usePreferencesStore((state) => state.removeImportedThemePack);
+  const themeImportRef = useRef<HTMLInputElement>(null);
+  const [themeImportError, setThemeImportError] = useState(false);
+  const activePack = useMemo(() => getThemePack(themeId), [themeId, themes]);
+  const modeOverrides = themeColorOverrides[themeId]?.[colorMode] ?? {};
+  const hasColorOverrides = Object.keys(modeOverrides).length > 0;
+  const hasOptionOverrides = Object.keys(themeOptionValues).length > 0;
+
+  const onImportThemeFile = async (file: File) => {
+    try {
+      const pack = await parseThemePackImportFile(file);
+      importThemePack(pack);
+      setThemeImportError(false);
+    } catch {
+      setThemeImportError(true);
+    }
+  };
 
   return (
     <>
@@ -462,7 +504,12 @@ function AppearanceSettings({
                   <i style={{ background: theme.palettes[colorMode].panel }} />
                 </span>
                 <span className="wbn-theme-card-copy">
-                  <span>{theme.name[locale]}</span>
+                  <span>
+                    {theme.name[locale]}
+                    {theme.official ? (
+                      <em className="wbn-theme-official-badge">{t('settings.themeOfficial')}</em>
+                    ) : null}
+                  </span>
                   <small>{theme.description[locale]}</small>
                 </span>
                 {selected ? (
@@ -475,6 +522,178 @@ function AppearanceSettings({
           );
         })}
       </ToggleGroup>
+      <div className="wbn-data-actions wbn-theme-pack-actions">
+        <Button variant="card" onClick={() => exportThemePackFile(themeId)}>
+          <IconFrame>
+            <Download size={18} />
+          </IconFrame>
+          <span>
+            {t('settings.exportTheme')}
+            <small>{t('settings.exportThemeDescription')}</small>
+          </span>
+        </Button>
+        <Button variant="card" onClick={() => themeImportRef.current?.click()}>
+          <IconFrame>
+            <Upload size={18} />
+          </IconFrame>
+          <span>
+            {t('settings.importTheme')}
+            <small>{t('settings.importThemeDescription')}</small>
+          </span>
+        </Button>
+        {!activePack || themes.find((entry) => entry.id === themeId)?.official ? null : (
+          <Button variant="card" onClick={() => removeImportedThemePack(themeId)}>
+            <IconFrame>
+              <X size={18} />
+            </IconFrame>
+            <span>
+              {t('settings.removeImportedTheme')}
+              <small>{t('settings.removeImportedThemeDescription')}</small>
+            </span>
+          </Button>
+        )}
+      </div>
+      <input
+        ref={themeImportRef}
+        type="file"
+        accept=".json,.cardo-theme.json,application/json"
+        hidden
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          event.target.value = '';
+          if (file) void onImportThemeFile(file);
+        }}
+      />
+      {themeImportError ? <p className="wbn-import-error">{t('settings.importThemeInvalid')}</p> : null}
+
+      {(activePack.options?.length ?? 0) > 0 ? (
+        <>
+          <div className="wbn-settings-subheading">
+            <span>{t('settings.themeOptions')}</span>
+            <small>{t('settings.themeOptionsDescription')}</small>
+          </div>
+          {activePack.options!.map((option) => {
+            if (option.type === 'toggle') {
+              const value =
+                typeof themeOptionValues[option.id] === 'boolean'
+                  ? (themeOptionValues[option.id] as boolean)
+                  : option.default;
+              return (
+                <div className="wbn-settings-card" key={option.id}>
+                  <div className="wbn-settings-card-copy">
+                    <span>
+                      {option.label[locale]}
+                      {option.description ? <small>{option.description[locale]}</small> : null}
+                    </span>
+                  </div>
+                  <ToggleGroup
+                    aria-label={option.label[locale]}
+                    type="single"
+                    value={value ? 'on' : 'off'}
+                    onValueChange={(next) => {
+                      if (!next) return;
+                      setThemeOptionValue(option.id, next === 'on');
+                    }}
+                  >
+                    <SegmentButton active={!value} value="off">
+                      {t('settings.optionOff')}
+                    </SegmentButton>
+                    <SegmentButton active={value} value="on">
+                      {t('settings.optionOn')}
+                    </SegmentButton>
+                  </ToggleGroup>
+                </div>
+              );
+            }
+            const value =
+              typeof themeOptionValues[option.id] === 'string'
+                ? (themeOptionValues[option.id] as string)
+                : option.default;
+            return (
+              <div className="wbn-settings-card" key={option.id}>
+                <div className="wbn-settings-card-copy">
+                  <span>
+                    {option.label[locale]}
+                    {option.description ? <small>{option.description[locale]}</small> : null}
+                  </span>
+                </div>
+                <Select
+                  value={value}
+                  onValueChange={(next) => setThemeOptionValue(option.id, next)}
+                >
+                  <SelectTrigger aria-label={option.label[locale]} className="wbn-settings-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent align="end">
+                    {option.choices.map((choice) => (
+                      <SelectItem key={choice.id} value={choice.id}>
+                        {choice.label[locale]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            );
+          })}
+          {hasOptionOverrides ? (
+            <Button
+              variant="ghost"
+              className="wbn-theme-reset-button"
+              onClick={() => resetThemeOptionValues()}
+            >
+              <RotateCcw size={14} />
+              {t('settings.resetThemeOptions')}
+            </Button>
+          ) : null}
+        </>
+      ) : null}
+
+      <div className="wbn-settings-subheading">
+        <span>{t('settings.colorOverrides')}</span>
+        <small>{t('settings.colorOverridesDescription')}</small>
+      </div>
+      <div className="wbn-theme-color-grid">
+        {overridableColorKeys.map((key) => {
+          const base =
+            activePack.tokens.colors[colorMode]?.[key] ??
+            activePack.tokens.colors[colorMode]?.blue ??
+            '#3b82f6';
+          const current = modeOverrides[key] ?? base;
+          const pickerValue = toHexColor(current) ?? '#3b82f6';
+          return (
+            <label className="wbn-theme-color-field" key={key}>
+              <span>{t(COLOR_OVERRIDE_LABEL_KEYS[key])}</span>
+              <span className="wbn-theme-color-controls">
+                <input
+                  type="color"
+                  value={pickerValue}
+                  onChange={(event) => setThemeColorOverride(colorMode, key, event.target.value)}
+                  aria-label={t(COLOR_OVERRIDE_LABEL_KEYS[key])}
+                />
+                <Input
+                  value={modeOverrides[key] ?? ''}
+                  placeholder={String(base)}
+                  onChange={(event) => {
+                    const next = event.target.value.trim();
+                    setThemeColorOverride(colorMode, key as OverridableColorKey, next || null);
+                  }}
+                />
+              </span>
+            </label>
+          );
+        })}
+      </div>
+      {hasColorOverrides ? (
+        <Button
+          variant="ghost"
+          className="wbn-theme-reset-button"
+          onClick={() => resetThemeColorOverrides(themeId)}
+        >
+          <RotateCcw size={14} />
+          {t('settings.resetColorOverrides')}
+        </Button>
+      ) : null}
+
       <div className="wbn-settings-subheading">
         <span>{t('settings.typography')}</span>
         <small>{t('settings.typographyDescription')}</small>
@@ -553,6 +772,16 @@ function AppearanceSettings({
       </div>
     </>
   );
+}
+
+function toHexColor(value: string): string | null {
+  const trimmed = value.trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(trimmed)) return trimmed.toLowerCase();
+  if (/^#[0-9a-fA-F]{3}$/.test(trimmed)) {
+    const [, r, g, b] = trimmed;
+    return `#${r}${r}${g}${g}${b}${b}`.toLowerCase();
+  }
+  return null;
 }
 
 function AboutSettings() {

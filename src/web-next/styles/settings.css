@@ -462,6 +462,70 @@
   color: #ffffff;
 }
 
+.wbn-theme-official-badge {
+  margin-left: 6px;
+  border-radius: var(--cardo-radius-pill);
+  padding: 1px 6px;
+  background: color-mix(in srgb, var(--cardo-blue) 14%, transparent);
+  color: var(--cardo-blue);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+}
+
+.wbn-theme-pack-actions {
+  margin-top: var(--cardo-space-3);
+}
+
+.wbn-theme-color-grid {
+  display: grid;
+  gap: var(--cardo-space-3);
+  margin-bottom: var(--cardo-space-3);
+}
+
+.wbn-theme-color-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-lg);
+  padding: var(--cardo-space-3);
+  background: var(--cardo-panel-content);
+  color: var(--cardo-soft-text);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.wbn-theme-color-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--cardo-space-2);
+}
+
+.wbn-theme-color-controls input[type='color'] {
+  width: 36px;
+  height: 32px;
+  flex: 0 0 auto;
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-sm);
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.wbn-theme-color-controls .wbn-ui-input {
+  min-width: 0;
+  flex: 1;
+}
+
+.wbn-theme-reset-button {
+  margin-bottom: var(--cardo-space-3);
+  gap: 6px;
+  color: var(--cardo-secondary-text);
+}
+
 .wbn-about-card {
   display: flex;
   align-items: center;

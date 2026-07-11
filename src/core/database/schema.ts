@@ -25,6 +25,11 @@ import {
   preferenceLocales,
   webSearchEngineIds,
 } from '../contracts/preferences';
+import type {
+  ImportedThemePacks,
+  ThemeColorOverrides,
+  ThemeOptionValues,
+} from '../contracts/themePack';
 
 export { DATABASE_SCHEMA_VERSION } from './version';
 export const APP_STATE_ID = 1;
@@ -132,6 +137,18 @@ export const preferences = sqliteTable('preferences', {
   fontFamily: text('font_family', { enum: fontFamilyIds }).notNull(),
   fontScale: text('font_scale', { enum: fontScales }).notNull(),
   density: text('density', { enum: densities }).notNull(),
+  /** Per-theme color tweaks. Empty object = official pack tokens unchanged. */
+  themeColorOverrides: text('theme_color_overrides', { mode: 'json' })
+    .$type<ThemeColorOverrides>()
+    .notNull(),
+  /** Selected Style Settings-style option values. Empty uses pack option defaults. */
+  themeOptionValues: text('theme_option_values', { mode: 'json' })
+    .$type<ThemeOptionValues>()
+    .notNull(),
+  /** User-imported Theme Packs (official built-ins stay code-defined and frozen). */
+  importedThemePacks: text('imported_theme_packs', { mode: 'json' })
+    .$type<ImportedThemePacks>()
+    .notNull(),
   searchEngine: text('search_engine', {
     enum: webSearchEngineIds,
   }).notNull(),

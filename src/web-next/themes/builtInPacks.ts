@@ -1,4 +1,5 @@
 import type { ColorTokenMap, ThemePack } from '../../core/contracts/themePack';
+import { OFFICIAL_THEME_OPTIONS } from './builtInOptions';
 import {
   DEFAULT_ACCENT_COLORS,
   DEFAULT_ELEVATION_DARK,
@@ -8,6 +9,9 @@ import {
   DEFAULT_RADIUS_TOKENS,
   DEFAULT_SPACE_TOKENS,
 } from './defaultTokens';
+
+/** Official default theme id — freezes the current product visual language. */
+export const OFFICIAL_DEFAULT_THEME_ID = 'classic' as const;
 
 const classicLight: ColorTokenMap = {
   canvas: '#f0f0f2',
@@ -209,6 +213,8 @@ function packBase(
     name: partial.name,
     description: partial.description,
     layoutProfileId: 'classic',
+    // Defaults are identity: current product look is pack tokens only.
+    options: OFFICIAL_THEME_OPTIONS,
     tokens: {
       colors: partial.colors,
       fonts: DEFAULT_FONT_TOKENS,
@@ -227,17 +233,31 @@ function packBase(
   };
 }
 
+/**
+ * Official built-in Theme Packs.
+ *
+ * `classic` is the product default and freezes the current Cardo visual language
+ * (colors, radius, space, elevation, motion, chrome). Installing or upgrading
+ * must not alter classic tokens unless product design intentionally changes.
+ * Ocean / orchid are official alternate palettes on the same structure.
+ */
 export const BUILT_IN_THEME_PACKS: ThemePack[] = [
   packBase({
-    id: 'classic',
+    id: OFFICIAL_DEFAULT_THEME_ID,
     name: { en: 'Classic', zh: '经典' },
-    description: { en: 'The neutral prototype palette.', zh: '与原型一致的中性色调。' },
+    description: {
+      en: 'Official default. Freezes the current Cardo product look.',
+      zh: '官方默认主题，冻结当前 Cardo 产品视觉。',
+    },
     colors: { light: classicLight, dark: classicDark },
   }),
   packBase({
     id: 'ocean',
     name: { en: 'Ocean', zh: '海洋' },
-    description: { en: 'Cool blue-gray surfaces.', zh: '冷静的蓝灰色表面。' },
+    description: {
+      en: 'Official cool blue-gray palette on the classic structure.',
+      zh: '官方冷静蓝灰调，结构与经典主题一致。',
+    },
     colors: { light: oceanLight, dark: oceanDark },
     elevation: {
       light: oceanElevationLight,
@@ -247,7 +267,10 @@ export const BUILT_IN_THEME_PACKS: ThemePack[] = [
   packBase({
     id: 'orchid',
     name: { en: 'Orchid', zh: '兰紫' },
-    description: { en: 'A quiet violet-tinted palette.', zh: '克制的紫罗兰色调。' },
+    description: {
+      en: 'Official quiet violet palette on the classic structure.',
+      zh: '官方克制紫罗兰调，结构与经典主题一致。',
+    },
     colors: { light: orchidLight, dark: orchidDark },
     elevation: {
       light: orchidElevationLight,
@@ -255,3 +278,5 @@ export const BUILT_IN_THEME_PACKS: ThemePack[] = [
     },
   }),
 ];
+
+export const BUILT_IN_THEME_IDS = new Set(BUILT_IN_THEME_PACKS.map((pack) => pack.id));

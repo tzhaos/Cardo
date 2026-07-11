@@ -15,6 +15,8 @@ import type { ActivityLogInput } from '../../core/application/operationLogServic
 import { workspaceTransferDocumentSchema } from '../../core/contracts/workspaceTransfer';
 import type { InitialWorkspacePreferences } from '../../core/database/initializeWorkspaceDatabase';
 import type { InvalidationScope } from '../../core/contracts/runtimeProtocol';
+import { exportThemePackById } from '../themes/themeIO';
+import { getThemePack } from '../themes/themeRegistry';
 import {
   exchangeOneTimeCode,
   RuntimeClient,
@@ -309,6 +311,14 @@ export async function parseWorkspaceImportFile(file: File) {
     fileName: file.name,
     workspace: document.workspace,
   };
+}
+
+export function exportThemePackFile(themeId: string) {
+  const pack = getThemePack(themeId);
+  getAppPorts().fileExport.downloadJson(
+    `${pack.id}.cardo-theme.json`,
+    exportThemePackById(themeId),
+  );
 }
 
 export function queryPreferences() {

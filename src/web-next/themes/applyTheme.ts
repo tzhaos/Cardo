@@ -11,17 +11,12 @@ import {
   radiusCssVariableNames,
   spaceCssVariableNames,
   type ColorTokenMap,
+  type ThemeColorOverrides,
+  type ThemeOptionValues,
   type ThemePack,
 } from '../../core/contracts/themePack';
-import {
-  DEFAULT_ACCENT_COLORS,
-  DEFAULT_ELEVATION_DARK,
-  DEFAULT_ELEVATION_LIGHT,
-  DEFAULT_FONT_TOKENS,
-  DEFAULT_MOTION_TOKENS,
-  DEFAULT_RADIUS_TOKENS,
-  DEFAULT_SPACE_TOKENS,
-} from './defaultTokens';
+import { DEFAULT_FONT_TOKENS } from './defaultTokens';
+import { resolveEffectiveThemeTokens } from './resolveTheme';
 import { getThemePack } from './themeRegistry';
 
 export interface ApplyThemeOptions {
@@ -30,6 +25,8 @@ export interface ApplyThemeOptions {
   fontFamily?: FontFamilyId;
   fontScale?: FontScale;
   density?: Density;
+  colorOverrides?: ThemeColorOverrides;
+  optionValues?: ThemeOptionValues;
 }
 
 /**
@@ -39,14 +36,12 @@ export interface ApplyThemeOptions {
 export function applyTheme(root: HTMLElement, options: ApplyThemeOptions): ThemePack {
   const pack = getThemePack(options.themeId);
   const colorMode = options.colorMode;
-  const colors = resolveColors(pack, colorMode);
-  const fonts = pack.tokens.fonts ?? DEFAULT_FONT_TOKENS;
-  const radii = pack.tokens.radii ?? DEFAULT_RADIUS_TOKENS;
-  const space = pack.tokens.space ?? DEFAULT_SPACE_TOKENS;
-  const elevation =
-    pack.tokens.elevation?.[colorMode] ??
-    (colorMode === 'dark' ? DEFAULT_ELEVATION_DARK : DEFAULT_ELEVATION_LIGHT);
-  const motion = pack.tokens.motion ?? DEFAULT_MOTION_TOKENS;
+  const resolved = resolveEffectiveThemeTokens({
+    pack,
+    colorMode,
+    colorOverrides: options.colorOverrides,
+    optionValues: options.optionValues,
+  });
   const fontFamilyId = options.fontFamily ?? 'default';
   const fontScale = options.fontScale ?? 'md';
   const density = options.density ?? 'comfortable';
@@ -63,58 +58,52 @@ export function applyTheme(root: HTMLElement, options: ApplyThemeOptions): Theme
   for (const [token, cssVar] of Object.entries(colorCssVariableNames) as Array<
     [keyof ColorTokenMap, string]
   >) {
-    const value = colors[token];
+    const value = resolved.colors[token];
     if (value) root.style.setProperty(cssVar, value);
   }
 
   for (const [token, cssVar] of Object.entries(radiusCssVariableNames) as Array<
-    [keyof typeof radii, string]
+    [keyof typeof resolved.radii, string]
   >) {
-    root.style.setProperty(cssVar, radii[token]);
+    root.style.setProperty(cssVar, resolved.radii[token]);
   }
 
   const densityFactor = DENSITY_FACTORS[density];
   const spaceKeys = [1, 2, 3, 4, 5, 6, 7, 8] as const;
   for (const token of spaceKeys) {
-    // Density multiplies the spacing scale once at apply time.
-    root.style.setProperty(spaceCssVariableNames[token], `calc(${space[token]} * ${densityFactor})`);
+    root.style.setProperty(
+      spaceCssVariableNames[token],
+      `calc(${resolved.space[token]} * ${densityFactor})`,
+    );
   }
 
   for (const [token, cssVar] of Object.entries(elevationCssVariableNames) as Array<
-    [keyof typeof elevation, string]
+    [keyof typeof resolved.elevation, string]
   >) {
-    root.style.setProperty(cssVar, elevation[token]);
+    root.style.setProperty(cssVar, resolved.elevation[token]);
   }
 
   for (const [token, cssVar] of Object.entries(motionCssVariableNames) as Array<
-    [keyof typeof motion, string]
+    [keyof typeof resolved.motion, string]
   >) {
-    root.style.setProperty(cssVar, motion[token]);
+    root.style.setProperty(cssVar, resolved.motion[token]);
   }
 
-  const sansStack = FONT_FAMILY_STACKS[fontFamilyId] || fonts.sans;
+  const sansStack = FONT_FAMILY_STACKS[fontFamilyId] || resolved.fonts.sans;
   root.style.setProperty('--cardo-font-sans', sansStack);
-  root.style.setProperty('--cardo-font-mono', fonts.mono ?? DEFAULT_FONT_TOKENS.mono);
-  root.style.setProperty('--cardo-font-size-base', fonts.sizeBase ?? DEFAULT_FONT_TOKENS.sizeBase!);
+  root.style.setProperty('--cardo-font-mono', resolved.fonts.mono ?? DEFAULT_FONT_TOKENS.mono);
+  root.style.setProperty(
+    '--cardo-font-size-base',
+    resolved.fonts.sizeBase ?? DEFAULT_FONT_TOKENS.sizeBase!,
+  );
   root.style.setProperty(
     '--cardo-line-height-base',
-    fonts.lineHeightBase ?? DEFAULT_FONT_TOKENS.lineHeightBase!,
+    resolved.fonts.lineHeightBase ?? DEFAULT_FONT_TOKENS.lineHeightBase!,
   );
   root.style.setProperty('--cardo-font-scale', String(FONT_SCALE_FACTORS[fontScale]));
   root.style.setProperty('--cardo-density', String(densityFactor));
-  root.style.setProperty('--cardo-chrome-blur', pack.tokens.chrome?.blur ?? '18px');
-  root.style.setProperty('--cardo-topbar-offset', pack.tokens.chrome?.topbarOffset ?? '12px');
+  root.style.setProperty('--cardo-chrome-blur', resolved.chrome.blur ?? '18px');
+  root.style.setProperty('--cardo-topbar-offset', resolved.chrome.topbarOffset ?? '12px');
 
   return pack;
-}
-
-function resolveColors(pack: ThemePack, colorMode: ColorMode): ColorTokenMap {
-  const palette = pack.tokens.colors[colorMode];
-  if (!palette) {
-    throw new Error(`Theme pack "${pack.id}" is missing the ${colorMode} palette.`);
-  }
-  return {
-    ...DEFAULT_ACCENT_COLORS,
-    ...palette,
-  };
 }

@@ -53,6 +53,42 @@ export const colorTokenMapSchema = z
 
 export type ColorTokenMap = z.infer<typeof colorTokenMapSchema>;
 
+/** Keys users may override from Settings (L1 color tweaks). */
+export const overridableColorKeys = [
+  'canvas',
+  'panel',
+  'surface',
+  'text',
+  'blue',
+  'createBackground',
+] as const;
+
+export type OverridableColorKey = (typeof overridableColorKeys)[number];
+
+export const overridableColorMapSchema = z
+  .object({
+    canvas: z.string().min(1).optional(),
+    panel: z.string().min(1).optional(),
+    surface: z.string().min(1).optional(),
+    text: z.string().min(1).optional(),
+    blue: z.string().min(1).optional(),
+    createBackground: z.string().min(1).optional(),
+  })
+  .strict();
+
+export type OverridableColorMap = z.infer<typeof overridableColorMapSchema>;
+
+/**
+ * Per-theme, per-mode color overrides.
+ * Shape: { [themeId]: { light?: {...}, dark?: {...} } }
+ */
+export const themeColorOverridesSchema = z.record(
+  z.string().min(1),
+  z.partialRecord(colorModeSchema, overridableColorMapSchema),
+);
+
+export type ThemeColorOverrides = z.infer<typeof themeColorOverridesSchema>;
+
 export const fontTokenMapSchema = z
   .object({
     sans: z.string().min(1),
@@ -121,17 +157,78 @@ export const chromeTokenMapSchema = z
 
 export type ChromeTokenMap = z.infer<typeof chromeTokenMapSchema>;
 
+/** Partial token patch produced by a theme option choice. */
+export const themeOptionTokenPatchSchema = z
+  .object({
+    colors: z.partialRecord(colorModeSchema, colorTokenMapSchema.partial()).optional(),
+    radii: radiusTokenMapSchema.partial().optional(),
+    chrome: chromeTokenMapSchema.optional(),
+    motion: motionTokenMapSchema.partial().optional(),
+  })
+  .strict();
+
+export type ThemeOptionTokenPatch = z.infer<typeof themeOptionTokenPatchSchema>;
+
+export const themeOptionToggleSchema = z
+  .object({
+    id: z.string().min(1).max(64),
+    type: z.literal('toggle'),
+    label: themeLocaleTextSchema,
+    description: themeLocaleTextSchema.optional(),
+    default: z.boolean(),
+    whenTrue: themeOptionTokenPatchSchema.optional(),
+  })
+  .strict();
+
+export const themeOptionSelectChoiceSchema = z
+  .object({
+    id: z.string().min(1).max(64),
+    label: themeLocaleTextSchema,
+    tokens: themeOptionTokenPatchSchema.optional(),
+  })
+  .strict();
+
+export const themeOptionSelectSchema = z
+  .object({
+    id: z.string().min(1).max(64),
+    type: z.literal('select'),
+    label: themeLocaleTextSchema,
+    description: themeLocaleTextSchema.optional(),
+    default: z.string().min(1).max(64),
+    choices: z.array(themeOptionSelectChoiceSchema).min(1).max(16),
+  })
+  .strict();
+
+export const themeOptionDefSchema = z.discriminatedUnion('type', [
+  themeOptionToggleSchema,
+  themeOptionSelectSchema,
+]);
+
+export type ThemeOptionDef = z.infer<typeof themeOptionDefSchema>;
+
+/** Selected values for theme options: toggle → boolean, select → choice id. */
+export const themeOptionValuesSchema = z.record(
+  z.string().min(1),
+  z.union([z.boolean(), z.string().min(1).max(64)]),
+);
+
+export type ThemeOptionValues = z.infer<typeof themeOptionValuesSchema>;
+
 export const layoutProfileIds = ['classic', 'compact', 'immersive'] as const;
 export const layoutProfileIdSchema = z.enum(layoutProfileIds);
 export type LayoutProfileId = z.infer<typeof layoutProfileIdSchema>;
 
 /**
- * Built-in Theme Pack shape (Phase A).
- * Optional fields (options / features / cssSnippet) land in later phases.
+ * Theme Pack shape (Phase A+B).
+ * cssSnippet / features deferred to later phases.
  */
 export const themePackSchema = z
   .object({
-    id: z.string().min(1).max(64),
+    id: z
+      .string()
+      .min(1)
+      .max(64)
+      .regex(/^[a-z0-9][a-z0-9._-]*$/i, 'Theme pack id must be alphanumeric with . _ -'),
     version: z.string().min(1).max(32),
     name: themeLocaleTextSchema,
     description: themeLocaleTextSchema.optional(),
@@ -155,11 +252,30 @@ export const themePackSchema = z
           });
         }
       }),
+    options: z.array(themeOptionDefSchema).max(32).optional(),
     layoutProfileId: layoutProfileIdSchema.optional(),
   })
   .strict();
 
 export type ThemePack = z.infer<typeof themePackSchema>;
+
+export const importedThemePacksSchema = z.array(themePackSchema).max(24);
+export type ImportedThemePacks = z.infer<typeof importedThemePacksSchema>;
+
+/** On-disk / download envelope for `.cardo-theme.json`. */
+export const themePackDocumentSchema = z
+  .object({
+    format: z.literal('cardo-theme'),
+    version: z.literal(1),
+    pack: themePackSchema,
+  })
+  .strict();
+
+export type ThemePackDocument = z.infer<typeof themePackDocumentSchema>;
+
+export const THEME_PACK_DOCUMENT_FORMAT = 'cardo-theme' as const;
+export const THEME_PACK_DOCUMENT_VERSION = 1 as const;
+export const MAX_THEME_PACK_JSON_BYTES = 256_000;
 
 /** CSS custom property names written by the Theme Runtime. */
 export const colorCssVariableNames = {

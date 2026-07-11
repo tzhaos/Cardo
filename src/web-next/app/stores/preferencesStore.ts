@@ -12,8 +12,26 @@ import {
   DEFAULT_FONT_FAMILY_ID,
   DEFAULT_FONT_SCALE,
 } from '../../../core/contracts/preferences';
+import type {
+  ImportedThemePacks,
+  OverridableColorKey,
+  ThemeColorOverrides,
+  ThemeOptionValues,
+  ThemePack,
+} from '../../../core/contracts/themePack';
+import {
+  importedThemePacksSchema,
+  themeColorOverridesSchema,
+  themeOptionValuesSchema,
+} from '../../../core/contracts/themePack';
 import type { WebNextLocale } from '../../i18n/messages';
-import { hasRegisteredThemePack, type WebNextColorMode } from '../../themes/themeRegistry';
+import {
+  hasRegisteredThemePack,
+  OFFICIAL_DEFAULT_THEME_ID,
+  syncImportedThemePacks,
+  type WebNextColorMode,
+} from '../../themes/themeRegistry';
+import { importThemePackIntoRegistry } from '../../themes/themeIO';
 import { dispatchDatabaseCommand, queryPreferences } from '../../platform/hostPlatform';
 
 interface PreferencesStore {
@@ -23,6 +41,9 @@ interface PreferencesStore {
   fontFamily: FontFamilyId;
   fontScale: FontScale;
   density: Density;
+  themeColorOverrides: ThemeColorOverrides;
+  themeOptionValues: ThemeOptionValues;
+  importedThemePacks: ImportedThemePacks;
   searchEngine: WebSearchEngineId;
   customSearchTemplate: string;
   initialize: () => Promise<void>;
@@ -32,6 +53,16 @@ interface PreferencesStore {
   setFontFamily: (fontFamily: FontFamilyId) => void;
   setFontScale: (fontScale: FontScale) => void;
   setDensity: (density: Density) => void;
+  setThemeColorOverride: (
+    colorMode: WebNextColorMode,
+    key: OverridableColorKey,
+    value: string | null,
+  ) => void;
+  resetThemeColorOverrides: (themeId?: string) => void;
+  setThemeOptionValue: (optionId: string, value: boolean | string) => void;
+  resetThemeOptionValues: () => void;
+  importThemePack: (pack: ThemePack) => void;
+  removeImportedThemePack: (themeId: string) => void;
   setSearchEngine: (searchEngine: WebSearchEngineId) => void;
   setCustomSearchTemplate: (customSearchTemplate: string) => void;
   toggleColorMode: () => void;
@@ -56,6 +87,75 @@ const actions = {
   setFontScale: (fontScale: FontScale) =>
     fireCommand({ type: 'preferences.setFontScale', fontScale }),
   setDensity: (density: Density) => fireCommand({ type: 'preferences.setDensity', density }),
+  setThemeColorOverride: (
+    colorMode: WebNextColorMode,
+    key: OverridableColorKey,
+    value: string | null,
+  ) => {
+    const themeId = state.themeId;
+    const next: ThemeColorOverrides = structuredClone(state.themeColorOverrides);
+    const themeBucket = { ...(next[themeId] ?? {}) };
+    const modeBucket = { ...(themeBucket[colorMode] ?? {}) };
+    if (value == null || value.trim() === '') {
+      delete modeBucket[key];
+    } else {
+      modeBucket[key] = value.trim();
+    }
+    if (Object.keys(modeBucket).length === 0) {
+      delete themeBucket[colorMode];
+    } else {
+      themeBucket[colorMode] = modeBucket;
+    }
+    if (Object.keys(themeBucket).length === 0) {
+      delete next[themeId];
+    } else {
+      next[themeId] = themeBucket;
+    }
+    fireCommand({
+      type: 'preferences.setThemeColorOverrides',
+      themeColorOverrides: themeColorOverridesSchema.parse(next),
+    });
+  },
+  resetThemeColorOverrides: (themeId = state.themeId) => {
+    const next: ThemeColorOverrides = { ...state.themeColorOverrides };
+    delete next[themeId];
+    fireCommand({
+      type: 'preferences.setThemeColorOverrides',
+      themeColorOverrides: themeColorOverridesSchema.parse(next),
+    });
+  },
+  setThemeOptionValue: (optionId: string, value: boolean | string) => {
+    const next: ThemeOptionValues = {
+      ...state.themeOptionValues,
+      [optionId]: value,
+    };
+    fireCommand({
+      type: 'preferences.setThemeOptionValues',
+      themeOptionValues: themeOptionValuesSchema.parse(next),
+    });
+  },
+  resetThemeOptionValues: () => {
+    fireCommand({
+      type: 'preferences.setThemeOptionValues',
+      themeOptionValues: {},
+    });
+  },
+  importThemePack: (pack: ThemePack) => {
+    const registered = importThemePackIntoRegistry(pack);
+    const withoutSameId = state.importedThemePacks.filter((entry) => entry.id !== registered.id);
+    const next = importedThemePacksSchema.parse([...withoutSameId, registered]);
+    fireCommand({ type: 'preferences.setImportedThemePacks', importedThemePacks: next });
+    fireCommand({ type: 'preferences.setTheme', themeId: registered.id });
+  },
+  removeImportedThemePack: (themeId: string) => {
+    const next = importedThemePacksSchema.parse(
+      state.importedThemePacks.filter((entry) => entry.id !== themeId),
+    );
+    fireCommand({ type: 'preferences.setImportedThemePacks', importedThemePacks: next });
+    if (state.themeId === themeId) {
+      fireCommand({ type: 'preferences.setTheme', themeId: OFFICIAL_DEFAULT_THEME_ID });
+    }
+  },
   setSearchEngine: (searchEngine: WebSearchEngineId) =>
     fireCommand({ type: 'preferences.setSearchEngine', searchEngine }),
   setCustomSearchTemplate: (customSearchTemplate: string) =>
@@ -70,6 +170,9 @@ const actions = {
   | 'fontFamily'
   | 'fontScale'
   | 'density'
+  | 'themeColorOverrides'
+  | 'themeOptionValues'
+  | 'importedThemePacks'
   | 'searchEngine'
   | 'customSearchTemplate'
 >;
@@ -77,10 +180,13 @@ const actions = {
 let state: PreferencesStore = {
   colorMode: 'light',
   locale: 'en',
-  themeId: 'classic',
+  themeId: OFFICIAL_DEFAULT_THEME_ID,
   fontFamily: DEFAULT_FONT_FAMILY_ID,
   fontScale: DEFAULT_FONT_SCALE,
   density: DEFAULT_DENSITY,
+  themeColorOverrides: {},
+  themeOptionValues: {},
+  importedThemePacks: [],
   searchEngine: 'bing-cn',
   customSearchTemplate: '',
   ...actions,
@@ -89,14 +195,31 @@ let state: PreferencesStore = {
 async function refreshPreferences() {
   const preferences = await queryPreferences();
   if (!preferences) throw new Error('Cardo preferences are not initialized.');
+
+  const importedThemePacks = importedThemePacksSchema.parse(preferences.importedThemePacks ?? []);
+  const themeColorOverrides = themeColorOverridesSchema.parse(
+    preferences.themeColorOverrides ?? {},
+  );
+  const themeOptionValues = themeOptionValuesSchema.parse(preferences.themeOptionValues ?? {});
+
+  // Official packs stay code-defined; only rehydrate user imports.
+  syncImportedThemePacks(importedThemePacks);
+
+  const themeId = hasRegisteredThemePack(preferences.themeId)
+    ? preferences.themeId
+    : OFFICIAL_DEFAULT_THEME_ID;
+
   state = {
     ...state,
     colorMode: preferences.colorMode,
     locale: preferences.locale,
-    themeId: preferences.themeId,
+    themeId,
     fontFamily: preferences.fontFamily,
     fontScale: preferences.fontScale,
     density: preferences.density,
+    themeColorOverrides,
+    themeOptionValues,
+    importedThemePacks,
     searchEngine: preferences.searchEngine,
     customSearchTemplate: preferences.customSearchTemplate,
   };
@@ -118,7 +241,6 @@ export async function applyPreferencesInvalidationScopes(
 
 function fireCommand(command: WorkspaceCommand) {
   void enqueue(async () => {
-    // Scopes (including preferences) applied from command.ok via RuntimeClient.
     await dispatchDatabaseCommand(command);
   }).catch((error: unknown) => console.error('Failed to update preferences', error));
 }
