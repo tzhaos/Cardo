@@ -1,12 +1,20 @@
 import type { AppPorts } from '../../core/ports/AppPorts';
 import { getDesktopBridge } from '../bridge';
-import { databaseExecuteResponseSchema } from '../../core/contracts/database';
 
+/**
+ * Desktop AppPorts after PR4.
+ * Business reads/writes go through RuntimeClient (hostPlatform runtime mode).
+ * database port is intentionally unusable so local DatabasePort path cannot
+ * open a second SQLite writer via IPC.
+ */
 export function createDesktopPorts(): AppPorts {
   return {
     database: {
-      execute: async (request) =>
-        databaseExecuteResponseSchema.parse(await getDesktopBridge().databaseExecute(request)),
+      execute: async () => {
+        throw new Error(
+          'Desktop database:execute is retired for business I/O (PR4). Use RuntimeClient via hostPlatform.',
+        );
+      },
     },
     clipboard: {
       readText: () => getDesktopBridge().readClipboardText(),
@@ -27,6 +35,9 @@ export function createDesktopPorts(): AppPorts {
     },
     localResource: {
       requestOpen: async (resourcePath) => {
+        // Prefer Runtime capability when hostPlatform is in runtime mode;
+        // hostPlatform.openLocalResource routes there. This port remains for
+        // non-DB shell open when called directly.
         const result = await getDesktopBridge().openLocalResource(resourcePath);
         return result.ok
           ? { status: 'requested' }

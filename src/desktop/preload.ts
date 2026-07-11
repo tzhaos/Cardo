@@ -5,16 +5,29 @@ import {
   desktopClipboardWriteRequestSchema,
   desktopLocalResourceRequestSchema,
   desktopLocalResourceResponseSchema,
+  desktopRuntimeConfigSchema,
   desktopSaveFileRequestSchema,
   desktopTextResponseSchema,
   desktopUrlRequestSchema,
   desktopVoidResponseSchema,
   desktopWebsiteIconResponseSchema,
 } from '../core/contracts/desktopIpc';
-import {
-  databaseExecuteRequestSchema,
-  databaseExecuteResponseSchema,
-} from '../core/contracts/database';
+
+/**
+ * Inject Runtime connection into renderer memory before page scripts run
+ * (design §6.5 Desktop attach: preload baseUrl+token, NOT long-lived token in URL).
+ * hostPlatform reads window.__CARDO_RUNTIME__ and starts RuntimeClient.
+ */
+const rawRuntimeConfig = ipcRenderer.sendSync('runtime:get-config') as unknown;
+const runtimeConfigParse = desktopRuntimeConfigSchema.safeParse(rawRuntimeConfig);
+if (runtimeConfigParse.success) {
+  contextBridge.exposeInMainWorld('__CARDO_RUNTIME__', runtimeConfigParse.data);
+} else {
+  console.error(
+    '[Cardo] Desktop preload: Runtime config missing or invalid; renderer cannot use RuntimeClient.',
+    runtimeConfigParse.error?.message,
+  );
+}
 
 const bridge: DesktopBridge = {
   minimizeWindow: async () =>
@@ -32,10 +45,10 @@ const bridge: DesktopBridge = {
     ipcRenderer.on('window:maximized-change', listener);
     return () => ipcRenderer.off('window:maximized-change', listener);
   },
-  databaseExecute: async (request) =>
-    databaseExecuteResponseSchema.parse(
-      await ipcRenderer.invoke('database:execute', databaseExecuteRequestSchema.parse(request)),
-    ),
+  getRuntimeConfig: () => {
+    if (!runtimeConfigParse.success) return null;
+    return runtimeConfigParse.data;
+  },
   readClipboardText: async () =>
     desktopTextResponseSchema.parse(await ipcRenderer.invoke('clipboard:read-text')),
   writeClipboardText: async (text) =>

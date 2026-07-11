@@ -28,6 +28,8 @@ export default defineConfig({
     lib: {
       entry: {
         main: path.resolve(__dirname, '../src/desktop/main.ts'),
+        // Detached Runtime child for attach-first embed-if-missing (PR4 / design §6.6.1).
+        'runtime-child': path.resolve(__dirname, '../src/desktop/runtimeChild.ts'),
       },
       formats: ['es'],
     },
@@ -35,8 +37,11 @@ export default defineConfig({
       external: [
         'electron',
         'node:child_process',
+        'node:crypto',
         'node:fs',
         'node:fs/promises',
+        'node:http',
+        'node:net',
         'node:os',
         'node:path',
         'node:sqlite',

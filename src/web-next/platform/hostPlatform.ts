@@ -1,10 +1,11 @@
 /**
  * Dual-mode hostPlatform facade (design §6.16).
  *
- * - mode=local: createDatabaseClient(AppPorts.database) — Desktop/Extension default (PR3)
- * - mode=runtime: RuntimeClient HTTP + fetch stream — Runtime-hosted Web default (PR3)
+ * - mode=local: createDatabaseClient(AppPorts.database) — Extension default until PR5
+ * - mode=runtime: RuntimeClient HTTP + fetch stream — Runtime-hosted Web (PR3) and Desktop (PR4)
+ *   via window.__CARDO_RUNTIME__ injection (preload / NM / open code exchange)
  *
- * Local DatabasePort path is intentionally preserved until PR6.
+ * Local DatabasePort path is intentionally preserved until PR6 (Extension solo).
  */
 
 import { getAppPorts } from '../../core/runtime/appPorts';
@@ -144,7 +145,8 @@ async function resolveHostPlatformMode(): Promise<void> {
     );
   }
 
-  // Desktop renderer / Extension default — local DatabasePort path.
+  // Extension (until PR5) or shells without injection — local DatabasePort path.
+  // Desktop Main must inject __CARDO_RUNTIME__ via preload (PR4).
   mode = 'local';
   modeLocked = true;
 }

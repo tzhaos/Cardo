@@ -19,17 +19,24 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { normalizeLocalResourcePath } from '../core/services/localResourcePath';
 import { CARDO_USER_DATA_DIR_NAME } from '../runtime/paths';
-import { executeDesktopDatabase, closeDesktopDatabase } from './database/desktopDatabase';
+import { stopRuntime } from '../runtime/index';
+import {
+  ensureDesktopRuntime,
+  forceStopDesktopRuntime,
+  type DesktopRuntimeConnection,
+} from './ensureDesktopRuntime';
 import {
   desktopBooleanResponseSchema,
   desktopClipboardWriteRequestSchema,
   desktopLocalResourceRequestSchema,
   desktopLocalResourceResponseSchema,
+  desktopRuntimeConfigSchema,
   desktopSaveFileRequestSchema,
   desktopTextResponseSchema,
   desktopUrlRequestSchema,
   desktopVoidResponseSchema,
   desktopWebsiteIconResponseSchema,
+  type DesktopRuntimeConfig,
 } from '../core/contracts/desktopIpc';
 
 declare const __KHAOSBOX_DEBUG_PACKAGE__: boolean;
@@ -44,6 +51,9 @@ let debugLogPath: string | null = null;
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let isQuitting = false;
+/** Attach-first Runtime connection for preload injection (design §6.6). */
+let runtimeConnection: DesktopRuntimeConnection | null = null;
+let runtimeConfigForRenderer: DesktopRuntimeConfig | null = null;
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -266,10 +276,23 @@ function updateTrayMenu() {
       },
       { type: 'separator' },
       {
+        // Design §6.6.1: default quit unregisters this client only; does not kill others' Runtime.
         label: '退出',
         click: () => {
           isQuitting = true;
           app.quit();
+        },
+      },
+      {
+        label: '退出并停止 Runtime',
+        click: () => {
+          void (async () => {
+            if (runtimeConnection) {
+              await forceStopDesktopRuntime(runtimeConnection);
+            }
+            isQuitting = true;
+            app.quit();
+          })();
         },
       },
     ]),
@@ -320,6 +343,11 @@ function registerIpcHandlers() {
   const getSenderWindow = (event: IpcMainInvokeEvent) =>
     BrowserWindow.fromWebContents(event.sender);
 
+  // Sync channel: preload injects window.__CARDO_RUNTIME__ before page scripts (PR4).
+  ipcMain.on('runtime:get-config', (event) => {
+    event.returnValue = runtimeConfigForRenderer;
+  });
+
   ipcMain.handle('window:minimize', (event) => {
     getSenderWindow(event)?.minimize();
     return desktopVoidResponseSchema.parse(undefined);
@@ -350,7 +378,8 @@ function registerIpcHandlers() {
     desktopBooleanResponseSchema.parse(Boolean(getSenderWindow(event)?.isMaximized())),
   );
 
-  ipcMain.handle('database:execute', (_event, request: unknown) => executeDesktopDatabase(request));
+  // Business database:execute removed (PR4). Renderer uses RuntimeClient only.
+  // Handler intentionally absent so accidental dual-writer paths fail closed.
 
   ipcMain.handle('clipboard:read-text', () =>
     desktopTextResponseSchema.parse(clipboard.readText()),
@@ -486,6 +515,18 @@ if (!singleInstanceLock) {
     .then(async () => {
       initializeDebugLogging();
       registerDebugProcessHandlers();
+
+      // Attach-first, embed-if-missing before any renderer load (design §6.6).
+      runtimeConnection = await ensureDesktopRuntime({ desktopAppRoot });
+      runtimeConfigForRenderer = desktopRuntimeConfigSchema.parse({
+        baseUrl: runtimeConnection.baseUrl,
+        token: runtimeConnection.token,
+        client: 'desktop',
+      });
+      console.info(
+        `[Cardo] Desktop Runtime mode=${runtimeConnection.mode} baseUrl=${runtimeConnection.baseUrl}`,
+      );
+
       await createWindow();
       createTray();
 
@@ -502,7 +543,11 @@ if (!singleInstanceLock) {
   });
 
   app.on('will-quit', () => {
-    closeDesktopDatabase();
+    // Attach / detached embed: do not kill Runtime (other clients may remain).
+    // In-process embed dies with Main anyway; stopRuntime clears lock/discovery cleanly.
+    if (runtimeConnection?.inProcess) {
+      void stopRuntime();
+    }
     tray?.destroy();
     tray = null;
   });

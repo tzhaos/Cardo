@@ -1,5 +1,4 @@
-import type { DatabaseExecuteRequest, DatabaseExecuteResponse } from '../core/contracts/database';
-import type { DesktopLocalResourceResponse } from '../core/contracts/desktopIpc';
+import type { DesktopLocalResourceResponse, DesktopRuntimeConfig } from '../core/contracts/desktopIpc';
 
 export interface DesktopBridge {
   minimizeWindow(): Promise<void>;
@@ -7,7 +6,8 @@ export interface DesktopBridge {
   closeWindow(): Promise<void>;
   isWindowMaximized(): Promise<boolean>;
   onWindowMaximizedChange(callback: (isMaximized: boolean) => void): () => void;
-  databaseExecute(request: DatabaseExecuteRequest): Promise<DatabaseExecuteResponse>;
+  /** RuntimeClient config (also injected as window.__CARDO_RUNTIME__). */
+  getRuntimeConfig(): DesktopRuntimeConfig | null;
   readClipboardText(): Promise<string>;
   writeClipboardText(text: string): Promise<void>;
   openExternal(url: string): Promise<void>;

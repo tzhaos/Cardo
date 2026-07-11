@@ -22,4 +22,14 @@ export const desktopLocalResourceResponseSchema = z.discriminatedUnion('ok', [
 ]);
 export const desktopWebsiteIconResponseSchema = z.string().startsWith('data:image/').nullable();
 
+/** Injected into renderer as window.__CARDO_RUNTIME__ (design §6.5 / PR4). Never put token in URL. */
+export const desktopRuntimeConfigSchema = z
+  .object({
+    baseUrl: z.string().min(1),
+    token: z.string().min(32),
+    client: z.literal('desktop'),
+  })
+  .strict();
+
 export type DesktopLocalResourceResponse = z.infer<typeof desktopLocalResourceResponseSchema>;
+export type DesktopRuntimeConfig = z.infer<typeof desktopRuntimeConfigSchema>;
