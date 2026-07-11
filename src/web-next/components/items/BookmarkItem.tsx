@@ -33,8 +33,7 @@ export function BookmarkItem({
     openExternalUrl(item.url);
     recordItemActivity(boxId, item, 'item.open');
   };
-  const openContextMenu = useItemContextMenu({
-    itemId: item.id,
+  const contextMenu = useItemContextMenu({
     pinned: Boolean(item.isPinned),
     primaryAction: {
       label: t('item.open'),
@@ -61,7 +60,7 @@ export function BookmarkItem({
   return (
     <div
       className={`wbn-item-row wbn-bookmark-item${item.isPinned ? ' wbn-item-pinned' : ''}${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}${editView ? ' wbn-item-edit-state' : ''}`}
-      onContextMenu={rename.renaming ? rename.onContextMenu : openContextMenu}
+      onContextMenu={rename.renaming ? rename.onContextMenu : contextMenu.onContextMenu}
     >
       <AnimatePresence initial={false} mode="wait">
         {deleteView ? (
@@ -146,6 +145,7 @@ export function BookmarkItem({
           </motion.div>
         )}
       </AnimatePresence>
+      {contextMenu.menu}
     </div>
   );
 }

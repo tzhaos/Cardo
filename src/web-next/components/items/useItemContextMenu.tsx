@@ -1,10 +1,9 @@
 import type { MouseEvent, ReactNode } from 'react';
 import { Edit2, Pin, PinOff, SquarePen, Trash2 } from 'lucide-react';
-import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
 import { useI18n } from '../../i18n/useI18n';
+import { useContextMenu } from '../../ui/khaos/context-menu';
 
 export function useItemContextMenu({
-  itemId,
   pinned,
   primaryAction,
   onRename,
@@ -12,7 +11,6 @@ export function useItemContextMenu({
   onPin,
   onDelete,
 }: {
-  itemId: string;
   pinned: boolean;
   primaryAction: { label: string; icon: ReactNode; onSelect: () => void };
   onRename?: () => void;
@@ -20,17 +18,15 @@ export function useItemContextMenu({
   onPin: () => void;
   onDelete: () => void;
 }) {
-  const { openMenu } = useFloatingMenu();
+  const { openMenu, menu } = useContextMenu();
   const { t } = useI18n();
 
-  return (event: MouseEvent<HTMLElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    openMenu({
-      id: `item-${itemId}`,
-      x: event.clientX,
-      y: event.clientY,
-      items: [
+  return {
+    menu,
+    onContextMenu: (event: MouseEvent<HTMLElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+      openMenu(event.clientX, event.clientY, [
         {
           id: 'primary',
           label: primaryAction.label,
@@ -66,7 +62,7 @@ export function useItemContextMenu({
           danger: true,
           onSelect: onDelete,
         },
-      ],
-    });
+      ]);
+    },
   };
 }

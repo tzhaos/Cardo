@@ -49,8 +49,7 @@ export function ClipboardItem({
       setCopied(false);
     }
   };
-  const openContextMenu = useItemContextMenu({
-    itemId: item.id,
+  const contextMenu = useItemContextMenu({
     pinned: Boolean(item.isPinned),
     primaryAction: {
       label: t('item.copy'),
@@ -66,7 +65,7 @@ export function ClipboardItem({
     <div
       className={`wbn-item-row wbn-clipboard-item${item.isPinned ? ' wbn-item-pinned' : ''}${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}${editView ? ' wbn-item-edit-state' : ''}`}
       title={!deleteView && !editView ? t('item.copy') : undefined}
-      onContextMenu={openContextMenu}
+      onContextMenu={contextMenu.onContextMenu}
       onClick={(event) => {
         if (
           deleteView ||
@@ -126,6 +125,7 @@ export function ClipboardItem({
           </motion.div>
         )}
       </AnimatePresence>
+      {contextMenu.menu}
     </div>
   );
 }
