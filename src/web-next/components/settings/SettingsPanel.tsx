@@ -281,71 +281,75 @@ function InterfaceSettings() {
         })}
       </ToggleGroup>
 
-      <div className="wbn-settings-subheading">
-        <span>{t('settings.features')}</span>
-        <small>{t('settings.featuresDescription')}</small>
-      </div>
-      {FEATURE_CATALOG.map((feature) => (
-        <FeatureFlagRow
-          key={feature.id}
-          feature={feature}
-          onToggle={setFeatureEnabled}
-        />
-      ))}
-      {hasOverrides ? (
-        <Button
-          variant="ghost"
-          className="wbn-theme-reset-button"
-          onClick={() => resetFeatureFlags()}
-        >
-          <RotateCcw size={14} />
-          {t('settings.resetFeatures')}
-        </Button>
-      ) : null}
-
-      <div className="wbn-settings-subheading">
-        <span>{t('settings.cssSnippet')}</span>
-        <small>{t('settings.cssSnippetDescription')}</small>
-      </div>
-      <div className="wbn-settings-card">
-        <div className="wbn-settings-card-copy">
-          <span>
-            {t('settings.cssSnippetEnabled')}
-            <small>{t('settings.cssSnippetHint')}</small>
-          </span>
+      <details className="wbn-settings-advanced">
+        <summary>
+          <span>{t('settings.advancedInterface')}</span>
+          <small>{t('settings.advancedInterfaceDescription')}</small>
+        </summary>
+        <div className="wbn-settings-advanced-body">
+          {FEATURE_CATALOG.map((feature) => (
+            <FeatureFlagRow key={feature.id} feature={feature} onToggle={setFeatureEnabled} />
+          ))}
+          {hasOverrides ? (
+            <Button
+              variant="ghost"
+              className="wbn-theme-reset-button"
+              onClick={() => resetFeatureFlags()}
+            >
+              <RotateCcw size={14} />
+              {t('settings.resetFeatures')}
+            </Button>
+          ) : null}
         </div>
-        <ToggleGroup
-          aria-label={t('settings.cssSnippetEnabled')}
-          type="single"
-          value={cssSnippetEnabled ? 'on' : 'off'}
-          onValueChange={(next) => {
-            if (!next) return;
-            setCssSnippetEnabled(next === 'on');
-          }}
-        >
-          <SegmentButton active={!cssSnippetEnabled} value="off">
-            {t('settings.optionOff')}
-          </SegmentButton>
-          <SegmentButton active={cssSnippetEnabled} value="on">
-            {t('settings.optionOn')}
-          </SegmentButton>
-        </ToggleGroup>
-      </div>
-      <label className="wbn-custom-search-template">
-        <span>{t('settings.cssSnippet')}</span>
-        <Textarea
-          className={snippetError ? 'wbn-custom-search-template-invalid' : undefined}
-          value={snippetDraft}
-          onChange={(event) => {
-            setSnippetDraft(event.target.value);
-            setSnippetError(false);
-          }}
-          onBlur={() => commitSnippet(snippetDraft)}
-          placeholder={t('settings.cssSnippetPlaceholder')}
-          rows={8}
-        />
-        {snippetError ? <small>{t('settings.cssSnippetInvalid')}</small> : null}
-      </label>
+      </details>
+
+      <details className="wbn-settings-advanced">
+        <summary>
+          <span>{t('settings.expertCss')}</span>
+          <small>{t('settings.expertCssDescription')}</small>
+        </summary>
+        <div className="wbn-settings-advanced-body">
+          <div className="wbn-settings-card">
+            <div className="wbn-settings-card-copy">
+              <span>
+                {t('settings.cssSnippetEnabled')}
+                <small>{t('settings.cssSnippetHint')}</small>
+              </span>
+            </div>
+            <ToggleGroup
+              aria-label={t('settings.cssSnippetEnabled')}
+              type="single"
+              value={cssSnippetEnabled ? 'on' : 'off'}
+              onValueChange={(next) => {
+                if (!next) return;
+                setCssSnippetEnabled(next === 'on');
+              }}
+            >
+              <SegmentButton active={!cssSnippetEnabled} value="off">
+                {t('settings.optionOff')}
+              </SegmentButton>
+              <SegmentButton active={cssSnippetEnabled} value="on">
+                {t('settings.optionOn')}
+              </SegmentButton>
+            </ToggleGroup>
+          </div>
+          <label className="wbn-custom-search-template">
+            <span>{t('settings.cssSnippet')}</span>
+            <Textarea
+              className={snippetError ? 'wbn-custom-search-template-invalid' : undefined}
+              value={snippetDraft}
+              onChange={(event) => {
+                setSnippetDraft(event.target.value);
+                setSnippetError(false);
+              }}
+              onBlur={() => commitSnippet(snippetDraft)}
+              placeholder={t('settings.cssSnippetPlaceholder')}
+              rows={8}
+            />
+            {snippetError ? <small>{t('settings.cssSnippetInvalid')}</small> : null}
+          </label>
+        </div>
+      </details>
     </>
   );
 }
@@ -619,6 +623,7 @@ function AppearanceSettings({
   const resetThemeOptionValues = usePreferencesStore((state) => state.resetThemeOptionValues);
   const importThemePack = usePreferencesStore((state) => state.importThemePack);
   const removeImportedThemePack = usePreferencesStore((state) => state.removeImportedThemePack);
+  const restoreOfficialLook = usePreferencesStore((state) => state.restoreOfficialLook);
   const themeImportRef = useRef<HTMLInputElement>(null);
   const [themeImportError, setThemeImportError] = useState(false);
   const activePack = useMemo(() => getThemePack(themeId), [themeId, themes]);
@@ -642,30 +647,6 @@ function AppearanceSettings({
         title={t('settings.appearance')}
         description={t('settings.appearanceDescription')}
       />
-      <div className="wbn-settings-card">
-        <div className="wbn-settings-card-copy">
-          <ColorModeStateIcon colorMode={colorMode} />
-          <span>
-            {t('settings.mode')}
-            <small>{t('settings.modeDescription')}</small>
-          </span>
-        </div>
-        <ToggleGroup
-          aria-label={t('settings.mode')}
-          type="single"
-          value={colorMode}
-          onValueChange={(value) => value && setColorMode(colorModeSchema.parse(value))}
-        >
-          <SegmentButton active={colorMode === 'light'} value="light">
-            <Sun size={14} />
-            {t('settings.light')}
-          </SegmentButton>
-          <SegmentButton active={colorMode === 'dark'} value="dark">
-            <Moon size={14} />
-            {t('settings.dark')}
-          </SegmentButton>
-        </ToggleGroup>
-      </div>
       <div className="wbn-settings-subheading">
         <span>{t('settings.theme')}</span>
         <small>{t('settings.themeDescription')}</small>
@@ -712,177 +693,44 @@ function AppearanceSettings({
           );
         })}
       </ToggleGroup>
-      <div className="wbn-data-actions wbn-theme-pack-actions">
-        <Button variant="card" onClick={() => exportThemePackFile(themeId)}>
-          <IconFrame>
-            <Download size={18} />
-          </IconFrame>
-          <span>
-            {t('settings.exportTheme')}
-            <small>{t('settings.exportThemeDescription')}</small>
-          </span>
-        </Button>
-        <Button variant="card" onClick={() => themeImportRef.current?.click()}>
-          <IconFrame>
-            <Upload size={18} />
-          </IconFrame>
-          <span>
-            {t('settings.importTheme')}
-            <small>{t('settings.importThemeDescription')}</small>
-          </span>
-        </Button>
-        {!activePack || themes.find((entry) => entry.id === themeId)?.official ? null : (
-          <Button variant="card" onClick={() => removeImportedThemePack(themeId)}>
-            <IconFrame>
-              <X size={18} />
-            </IconFrame>
-            <span>
-              {t('settings.removeImportedTheme')}
-              <small>{t('settings.removeImportedThemeDescription')}</small>
-            </span>
-          </Button>
-        )}
-      </div>
-      <input
-        ref={themeImportRef}
-        type="file"
-        accept=".json,.cardo-theme.json,application/json"
-        hidden
-        onChange={(event) => {
-          const file = event.target.files?.[0];
-          event.target.value = '';
-          if (file) void onImportThemeFile(file);
-        }}
-      />
-      {themeImportError ? <p className="wbn-import-error">{t('settings.importThemeInvalid')}</p> : null}
+      <Button
+        variant="card"
+        className="wbn-theme-restore-official"
+        onClick={() => restoreOfficialLook()}
+      >
+        <IconFrame>
+          <RotateCcw size={18} />
+        </IconFrame>
+        <span>
+          {t('settings.restoreOfficialLook')}
+          <small>{t('settings.restoreOfficialLookDescription')}</small>
+        </span>
+      </Button>
 
-      {(activePack.options?.length ?? 0) > 0 ? (
-        <>
-          <div className="wbn-settings-subheading">
-            <span>{t('settings.themeOptions')}</span>
-            <small>{t('settings.themeOptionsDescription')}</small>
-          </div>
-          {activePack.options!.map((option) => {
-            if (option.type === 'toggle') {
-              const value =
-                typeof themeOptionValues[option.id] === 'boolean'
-                  ? (themeOptionValues[option.id] as boolean)
-                  : option.default;
-              return (
-                <div className="wbn-settings-card" key={option.id}>
-                  <div className="wbn-settings-card-copy">
-                    <span>
-                      {option.label[locale]}
-                      {option.description ? <small>{option.description[locale]}</small> : null}
-                    </span>
-                  </div>
-                  <ToggleGroup
-                    aria-label={option.label[locale]}
-                    type="single"
-                    value={value ? 'on' : 'off'}
-                    onValueChange={(next) => {
-                      if (!next) return;
-                      setThemeOptionValue(option.id, next === 'on');
-                    }}
-                  >
-                    <SegmentButton active={!value} value="off">
-                      {t('settings.optionOff')}
-                    </SegmentButton>
-                    <SegmentButton active={value} value="on">
-                      {t('settings.optionOn')}
-                    </SegmentButton>
-                  </ToggleGroup>
-                </div>
-              );
-            }
-            const value =
-              typeof themeOptionValues[option.id] === 'string'
-                ? (themeOptionValues[option.id] as string)
-                : option.default;
-            return (
-              <div className="wbn-settings-card" key={option.id}>
-                <div className="wbn-settings-card-copy">
-                  <span>
-                    {option.label[locale]}
-                    {option.description ? <small>{option.description[locale]}</small> : null}
-                  </span>
-                </div>
-                <Select
-                  value={value}
-                  onValueChange={(next) => setThemeOptionValue(option.id, next)}
-                >
-                  <SelectTrigger aria-label={option.label[locale]} className="wbn-settings-select">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent align="end">
-                    {option.choices.map((choice) => (
-                      <SelectItem key={choice.id} value={choice.id}>
-                        {choice.label[locale]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            );
-          })}
-          {hasOptionOverrides ? (
-            <Button
-              variant="ghost"
-              className="wbn-theme-reset-button"
-              onClick={() => resetThemeOptionValues()}
-            >
-              <RotateCcw size={14} />
-              {t('settings.resetThemeOptions')}
-            </Button>
-          ) : null}
-        </>
-      ) : null}
-
-      <div className="wbn-settings-subheading">
-        <span>{t('settings.colorOverrides')}</span>
-        <small>{t('settings.colorOverridesDescription')}</small>
-      </div>
-      <div className="wbn-theme-color-grid">
-        {overridableColorKeys.map((key) => {
-          const base =
-            activePack.tokens.colors[colorMode]?.[key] ??
-            activePack.tokens.colors[colorMode]?.blue ??
-            '#3b82f6';
-          const current = modeOverrides[key] ?? base;
-          const pickerValue = toHexColor(current) ?? '#3b82f6';
-          return (
-            <label className="wbn-theme-color-field" key={key}>
-              <span>{t(COLOR_OVERRIDE_LABEL_KEYS[key])}</span>
-              <span className="wbn-theme-color-controls">
-                <input
-                  type="color"
-                  value={pickerValue}
-                  onChange={(event) => setThemeColorOverride(colorMode, key, event.target.value)}
-                  aria-label={t(COLOR_OVERRIDE_LABEL_KEYS[key])}
-                />
-                <Input
-                  value={modeOverrides[key] ?? ''}
-                  placeholder={String(base)}
-                  onChange={(event) => {
-                    const next = event.target.value.trim();
-                    setThemeColorOverride(colorMode, key as OverridableColorKey, next || null);
-                  }}
-                />
-              </span>
-            </label>
-          );
-        })}
-      </div>
-      {hasColorOverrides ? (
-        <Button
-          variant="ghost"
-          className="wbn-theme-reset-button"
-          onClick={() => resetThemeColorOverrides(themeId)}
+      <div className="wbn-settings-card">
+        <div className="wbn-settings-card-copy">
+          <ColorModeStateIcon colorMode={colorMode} />
+          <span>
+            {t('settings.mode')}
+            <small>{t('settings.modeDescription')}</small>
+          </span>
+        </div>
+        <ToggleGroup
+          aria-label={t('settings.mode')}
+          type="single"
+          value={colorMode}
+          onValueChange={(value) => value && setColorMode(colorModeSchema.parse(value))}
         >
-          <RotateCcw size={14} />
-          {t('settings.resetColorOverrides')}
-        </Button>
-      ) : null}
+          <SegmentButton active={colorMode === 'light'} value="light">
+            <Sun size={14} />
+            {t('settings.light')}
+          </SegmentButton>
+          <SegmentButton active={colorMode === 'dark'} value="dark">
+            <Moon size={14} />
+            {t('settings.dark')}
+          </SegmentButton>
+        </ToggleGroup>
+      </div>
 
       <div className="wbn-settings-subheading">
         <span>{t('settings.typography')}</span>
@@ -960,6 +808,198 @@ function AppearanceSettings({
           </SegmentButton>
         </ToggleGroup>
       </div>
+
+      <details className="wbn-settings-advanced">
+        <summary>
+          <span>{t('settings.advancedTheme')}</span>
+          <small>{t('settings.advancedThemeDescription')}</small>
+        </summary>
+        <div className="wbn-settings-advanced-body">
+          <div className="wbn-data-actions wbn-theme-pack-actions">
+            <Button variant="card" onClick={() => exportThemePackFile(themeId)}>
+              <IconFrame>
+                <Download size={18} />
+              </IconFrame>
+              <span>
+                {t('settings.exportTheme')}
+                <small>{t('settings.exportThemeDescription')}</small>
+              </span>
+            </Button>
+            <Button variant="card" onClick={() => themeImportRef.current?.click()}>
+              <IconFrame>
+                <Upload size={18} />
+              </IconFrame>
+              <span>
+                {t('settings.importTheme')}
+                <small>{t('settings.importThemeDescription')}</small>
+              </span>
+            </Button>
+            {!activePack || themes.find((entry) => entry.id === themeId)?.official ? null : (
+              <Button variant="card" onClick={() => removeImportedThemePack(themeId)}>
+                <IconFrame>
+                  <X size={18} />
+                </IconFrame>
+                <span>
+                  {t('settings.removeImportedTheme')}
+                  <small>{t('settings.removeImportedThemeDescription')}</small>
+                </span>
+              </Button>
+            )}
+          </div>
+          <input
+            ref={themeImportRef}
+            type="file"
+            accept=".json,.cardo-theme.json,application/json"
+            hidden
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              event.target.value = '';
+              if (file) void onImportThemeFile(file);
+            }}
+          />
+          {themeImportError ? (
+            <p className="wbn-import-error">{t('settings.importThemeInvalid')}</p>
+          ) : null}
+
+          {(activePack.options?.length ?? 0) > 0 ? (
+            <>
+              <div className="wbn-settings-subheading">
+                <span>{t('settings.themeOptions')}</span>
+                <small>{t('settings.themeOptionsDescription')}</small>
+              </div>
+              {activePack.options!.map((option) => {
+                if (option.type === 'toggle') {
+                  const value =
+                    typeof themeOptionValues[option.id] === 'boolean'
+                      ? (themeOptionValues[option.id] as boolean)
+                      : option.default;
+                  return (
+                    <div className="wbn-settings-card" key={option.id}>
+                      <div className="wbn-settings-card-copy">
+                        <span>
+                          {option.label[locale]}
+                          {option.description ? (
+                            <small>{option.description[locale]}</small>
+                          ) : null}
+                        </span>
+                      </div>
+                      <ToggleGroup
+                        aria-label={option.label[locale]}
+                        type="single"
+                        value={value ? 'on' : 'off'}
+                        onValueChange={(next) => {
+                          if (!next) return;
+                          setThemeOptionValue(option.id, next === 'on');
+                        }}
+                      >
+                        <SegmentButton active={!value} value="off">
+                          {t('settings.optionOff')}
+                        </SegmentButton>
+                        <SegmentButton active={value} value="on">
+                          {t('settings.optionOn')}
+                        </SegmentButton>
+                      </ToggleGroup>
+                    </div>
+                  );
+                }
+                const value =
+                  typeof themeOptionValues[option.id] === 'string'
+                    ? (themeOptionValues[option.id] as string)
+                    : option.default;
+                return (
+                  <div className="wbn-settings-card" key={option.id}>
+                    <div className="wbn-settings-card-copy">
+                      <span>
+                        {option.label[locale]}
+                        {option.description ? <small>{option.description[locale]}</small> : null}
+                      </span>
+                    </div>
+                    <Select
+                      value={value}
+                      onValueChange={(next) => setThemeOptionValue(option.id, next)}
+                    >
+                      <SelectTrigger
+                        aria-label={option.label[locale]}
+                        className="wbn-settings-select"
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent align="end">
+                        {option.choices.map((choice) => (
+                          <SelectItem key={choice.id} value={choice.id}>
+                            {choice.label[locale]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                );
+              })}
+              {hasOptionOverrides ? (
+                <Button
+                  variant="ghost"
+                  className="wbn-theme-reset-button"
+                  onClick={() => resetThemeOptionValues()}
+                >
+                  <RotateCcw size={14} />
+                  {t('settings.resetThemeOptions')}
+                </Button>
+              ) : null}
+            </>
+          ) : null}
+
+          <div className="wbn-settings-subheading">
+            <span>{t('settings.colorOverrides')}</span>
+            <small>{t('settings.colorOverridesDescription')}</small>
+          </div>
+          <div className="wbn-theme-color-grid">
+            {overridableColorKeys.map((key) => {
+              const base =
+                activePack.tokens.colors[colorMode]?.[key] ??
+                activePack.tokens.colors[colorMode]?.blue ??
+                '#3b82f6';
+              const pickerValue = toHexColor(modeOverrides[key] ?? base) ?? '#3b82f6';
+              return (
+                <label className="wbn-theme-color-field" key={key}>
+                  <span>{t(COLOR_OVERRIDE_LABEL_KEYS[key])}</span>
+                  <span className="wbn-theme-color-controls">
+                    <input
+                      type="color"
+                      value={pickerValue}
+                      onChange={(event) =>
+                        setThemeColorOverride(colorMode, key, event.target.value)
+                      }
+                      aria-label={t(COLOR_OVERRIDE_LABEL_KEYS[key])}
+                    />
+                    <Input
+                      value={modeOverrides[key] ?? ''}
+                      placeholder={String(base)}
+                      onChange={(event) => {
+                        const next = event.target.value.trim();
+                        setThemeColorOverride(
+                          colorMode,
+                          key as OverridableColorKey,
+                          next || null,
+                        );
+                      }}
+                    />
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+          {hasColorOverrides ? (
+            <Button
+              variant="ghost"
+              className="wbn-theme-reset-button"
+              onClick={() => resetThemeColorOverrides(themeId)}
+            >
+              <RotateCcw size={14} />
+              {t('settings.resetColorOverrides')}
+            </Button>
+          ) : null}
+        </div>
+      </details>
     </>
   );
 }

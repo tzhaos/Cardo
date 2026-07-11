@@ -526,6 +526,64 @@
   color: var(--cardo-secondary-text);
 }
 
+.wbn-theme-restore-official {
+  width: 100%;
+  margin: var(--cardo-space-3) 0 var(--cardo-space-4);
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.wbn-settings-advanced {
+  margin: var(--cardo-space-4) 0;
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-xl);
+  background: var(--cardo-panel-content);
+}
+
+.wbn-settings-advanced > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: var(--cardo-space-3) var(--cardo-space-4);
+  color: var(--cardo-soft-text);
+  font-size: 13px;
+  font-weight: 600;
+  user-select: none;
+}
+
+.wbn-settings-advanced > summary::-webkit-details-marker {
+  display: none;
+}
+
+.wbn-settings-advanced > summary::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: 8px;
+  color: var(--cardo-muted);
+  transition: transform var(--cardo-duration-fast) var(--cardo-easing);
+}
+
+.wbn-settings-advanced[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.wbn-settings-advanced > summary small {
+  display: block;
+  margin-top: 4px;
+  margin-left: 1.1em;
+  color: var(--cardo-muted);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.wbn-settings-advanced-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cardo-space-3);
+  border-top: 1px solid var(--cardo-border);
+  padding: var(--cardo-space-3) var(--cardo-space-4) var(--cardo-space-4);
+}
+
 .wbn-about-card {
   display: flex;
   align-items: center;

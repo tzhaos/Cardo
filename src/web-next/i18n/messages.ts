@@ -136,7 +136,17 @@ export const WEB_NEXT_MESSAGES = {
     'settings.customSearchTemplateHint': 'Use {query} where the encoded search text belongs.',
     'settings.appearance': 'Appearance',
     'settings.appearanceDescription':
-      'Choose a theme pack, color mode, type scale, and interface density.',
+      'Pick how Cardo looks. Classic is the official product look and the safe default.',
+    'settings.restoreOfficialLook': 'Restore official look',
+    'settings.restoreOfficialLookDescription':
+      'Reset theme, layout, chrome features, type, and color tweaks to Cardo Classic defaults.',
+    'settings.advancedTheme': 'Advanced theme options',
+    'settings.advancedThemeDescription': 'Import packs, theme options, and color overrides.',
+    'settings.advancedInterface': 'Chrome features',
+    'settings.advancedInterfaceDescription':
+      'Show or hide shell tools. Turning items off only unmounts UI — canvas drag stays intact.',
+    'settings.expertCss': 'Expert CSS',
+    'settings.expertCssDescription': 'Optional snippet for advanced styling. Off by default.',
     'settings.mode': 'Color mode',
     'settings.modeDescription': 'Every theme includes both light and dark palettes.',
     'settings.theme': 'Theme',
@@ -421,7 +431,18 @@ export const WEB_NEXT_MESSAGES = {
     'settings.customSearchTemplatePlaceholder': 'https://example.com/search?q={query}',
     'settings.customSearchTemplateHint': '使用 {query} 标记编码后的搜索内容。',
     'settings.appearance': '外观',
-    'settings.appearanceDescription': '分别选择主题包、明暗模式、字号与界面密度。',
+    'settings.appearanceDescription':
+      '选择 Cardo 的外观。经典是官方产品默认，也是最安全的起点。',
+    'settings.restoreOfficialLook': '恢复官方外观',
+    'settings.restoreOfficialLookDescription':
+      '将主题、布局、壳层功能、字体与色板微调恢复为 Cardo 经典默认。',
+    'settings.advancedTheme': '高级主题选项',
+    'settings.advancedThemeDescription': '导入主题包、主题选项与色板覆盖。',
+    'settings.advancedInterface': '壳层功能',
+    'settings.advancedInterfaceDescription':
+      '显示或隐藏壳层工具。关闭仅卸载界面，不影响画布拖拽。',
+    'settings.expertCss': '专家 CSS',
+    'settings.expertCssDescription': '可选样式片段，默认关闭。',
     'settings.mode': '明暗模式',
     'settings.modeDescription': '每套主题都同时提供浅色与深色调色板。',
     'settings.theme': '主题',
