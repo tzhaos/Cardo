@@ -13,6 +13,7 @@ import { RecycleBinTab } from './RecycleBinTab';
 import { TabDeleteConfirmView } from './TabDeleteConfirmView';
 import { SortablePageTab } from './SortablePageTab';
 import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
+import { MotionButton } from '../../ui/primitives/motion-button';
 
 export function TopBar() {
   const snapshot = useWorkspaceStore((state) => state.snapshot);
@@ -206,7 +207,8 @@ export function TopBar() {
           ) : null}
         </Reorder.Group>
         <motion.div className="wbn-top-actions" layout="position">
-          <motion.button
+          <MotionButton
+            variant="icon"
             className="wbn-icon-button"
             type="button"
             onClick={openNewPage}
@@ -214,7 +216,7 @@ export function TopBar() {
             whileTap={{ scale: 0.9 }}
           >
             <Plus size={18} />
-          </motion.button>
+          </MotionButton>
         </motion.div>
       </motion.div>
       <AnimatePresence>

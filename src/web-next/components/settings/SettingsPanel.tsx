@@ -41,6 +41,7 @@ import {
 } from '../../ui/primitives/select';
 import { Input } from '../../ui/primitives/input';
 import { Button } from '../../ui/primitives/button';
+import { MotionButton } from '../../ui/primitives/motion-button';
 import { ToggleGroup, ToggleGroupItem } from '../../ui/primitives/toggle-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/primitives/tabs';
 
@@ -409,7 +410,8 @@ function AppearanceSettings({
           const selected = theme.id === themeId;
           return (
             <ToggleGroupItem asChild key={theme.id} value={theme.id}>
-              <motion.button
+              <MotionButton
+                variant="card"
                 className={selected ? 'wbn-theme-card wbn-theme-card-selected' : 'wbn-theme-card'}
                 type="button"
                 whileTap={{ scale: 0.985 }}
@@ -428,7 +430,7 @@ function AppearanceSettings({
                     <Check size={12} />
                   </IconFrame>
                 ) : null}
-              </motion.button>
+              </MotionButton>
             </ToggleGroupItem>
           );
         })}

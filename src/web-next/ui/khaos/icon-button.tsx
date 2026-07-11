@@ -1,6 +1,5 @@
 import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
-import { motion } from 'motion/react';
-import { Button } from '../primitives/button';
+import { MotionButton } from '../primitives/motion-button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../primitives/tooltip';
 import { cn } from '../lib/cn';
 
@@ -16,15 +15,17 @@ function IconButtonControl({
   ...props
 }: Omit<IconButtonProps, 'tooltip'>) {
   return (
-    <Button asChild variant="icon" size="icon" className={className} type={type}>
-      <motion.button
-        {...props}
-        whileTap={{ scale: 0.9 }}
-        transition={{ type: 'spring', stiffness: 520, damping: 30, mass: 0.45 }}
-      >
-        {children}
-      </motion.button>
-    </Button>
+    <MotionButton
+      {...props}
+      variant="icon"
+      size="icon"
+      className={className}
+      type={type}
+      whileTap={{ scale: 0.9 }}
+      transition={{ type: 'spring', stiffness: 520, damping: 30, mass: 0.45 }}
+    >
+      {children}
+    </MotionButton>
   );
 }
 

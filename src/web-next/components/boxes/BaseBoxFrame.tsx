@@ -42,6 +42,7 @@ import { useI18n } from '../../i18n/useI18n';
 import { BoxAppearanceView } from './BoxAppearancePopover';
 import { Input } from '../../ui/primitives/input';
 import { Button } from '../../ui/primitives/button';
+import { MotionButton } from '../../ui/primitives/motion-button';
 
 interface BaseBoxFrameProps {
   box: WorkspaceBox;
@@ -525,7 +526,8 @@ export function BaseBoxFrame({
             )}
           </div>
           <div className="wbn-box-controls">
-            <motion.button
+            <MotionButton
+              variant="icon"
               className="wbn-box-view-toggle wbn-box-lock-toggle wbn-icon-button"
               type="button"
               data-no-drag
@@ -535,8 +537,9 @@ export function BaseBoxFrame({
               title={t(box.isLocked ? 'box.unlock' : 'box.lock')}
             >
               {box.isLocked ? <Lock size={15} /> : <Unlock size={15} />}
-            </motion.button>
-            <motion.button
+            </MotionButton>
+            <MotionButton
+              variant="icon"
               className="wbn-box-view-toggle wbn-icon-button"
               type="button"
               data-no-drag
@@ -554,8 +557,9 @@ export function BaseBoxFrame({
               ) : (
                 <ChevronsUpDown size={15} />
               )}
-            </motion.button>
-            <motion.button
+            </MotionButton>
+            <MotionButton
+              variant="icon"
               className="wbn-box-view-toggle wbn-icon-button"
               type="button"
               data-no-drag
@@ -565,8 +569,9 @@ export function BaseBoxFrame({
               title={t(viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList')}
             >
               {viewMode === 'list' ? <LayoutGrid size={15} /> : <List size={15} />}
-            </motion.button>
-            <motion.button
+            </MotionButton>
+            <MotionButton
+              variant="icon"
               className="wbn-box-delete wbn-icon-button"
               type="button"
               onClick={() => {
@@ -587,7 +592,7 @@ export function BaseBoxFrame({
               }
             >
               <X size={14} />
-            </motion.button>
+            </MotionButton>
           </div>
         </header>
       )}
