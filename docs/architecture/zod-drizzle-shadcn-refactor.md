@@ -143,7 +143,7 @@ components     Page、Box、Item、Canvas 等业务组件
 ### 0. 架构基线
 
 - [x] 固化最终目标、边界、禁令和迁移顺序。
-- [ ] 在 AGENTS.md 中加入不可绕过的架构约束。
+- [x] 在 AGENTS.md 中加入不可绕过的架构约束。
 - [ ] 建立依赖方向检查和统一目录结构。
 
 ### 1. Zod 与 Drizzle 基础设施
