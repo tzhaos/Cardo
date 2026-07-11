@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap');
 @import '../styles/tokens.css';
 @import '../styles/design-system.css';
+@import '../styles/utilities.css';
 @import '../styles/settings.css';
 @import '../styles/app.css';
 @import '../styles/motion.css';

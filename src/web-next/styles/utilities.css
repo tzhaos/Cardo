@@ -1,0 +1,48 @@
+.wbn-custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--wbn-scrollbar) transparent;
+}
+
+.wbn-custom-scrollbar::-webkit-scrollbar,
+.wbn-add-view::-webkit-scrollbar,
+.wbn-box-content::-webkit-scrollbar,
+.wbn-floating-menu::-webkit-scrollbar,
+.wbn-top-bar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.wbn-custom-scrollbar::-webkit-scrollbar-track,
+.wbn-add-view::-webkit-scrollbar-track,
+.wbn-box-content::-webkit-scrollbar-track,
+.wbn-floating-menu::-webkit-scrollbar-track,
+.wbn-top-bar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.wbn-custom-scrollbar::-webkit-scrollbar-button,
+.wbn-add-view::-webkit-scrollbar-button,
+.wbn-box-content::-webkit-scrollbar-button,
+.wbn-floating-menu::-webkit-scrollbar-button,
+.wbn-top-bar::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.wbn-custom-scrollbar::-webkit-scrollbar-thumb,
+.wbn-add-view::-webkit-scrollbar-thumb,
+.wbn-box-content::-webkit-scrollbar-thumb,
+.wbn-floating-menu::-webkit-scrollbar-thumb,
+.wbn-top-bar::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--wbn-scrollbar);
+}
+
+.wbn-custom-scrollbar::-webkit-scrollbar-thumb:hover,
+.wbn-add-view::-webkit-scrollbar-thumb:hover,
+.wbn-box-content::-webkit-scrollbar-thumb:hover,
+.wbn-floating-menu::-webkit-scrollbar-thumb:hover,
+.wbn-top-bar::-webkit-scrollbar-thumb:hover {
+  background: var(--wbn-scrollbar-hover);
+}
