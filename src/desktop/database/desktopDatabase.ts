@@ -4,6 +4,7 @@ import path from 'node:path';
 import initialMigration from '../../../drizzle/0000_crazy_obadiah_stane.sql?raw';
 import {
   databaseExecuteRequestSchema,
+  databaseExecuteResponseSchema,
   type DatabaseExecuteResponse,
 } from '../../core/contracts/database';
 import { DATABASE_SCHEMA_VERSION } from '../../core/database/version';
@@ -51,17 +52,17 @@ export function executeDesktopDatabase(input: unknown): DatabaseExecuteResponse 
 
   if (request.method === 'run') {
     statement.run(...params);
-    return { rows: [] };
+    return databaseExecuteResponseSchema.parse({ rows: [] });
   }
 
   statement.setReturnArrays(true);
 
   if (request.method === 'get') {
     const row = statement.get(...params) as unknown[] | undefined;
-    return { rows: row ?? [] };
+    return databaseExecuteResponseSchema.parse({ rows: row ? [row] : [] });
   }
 
-  return { rows: statement.all(...params) as unknown as unknown[][] };
+  return databaseExecuteResponseSchema.parse({ rows: statement.all(...params) });
 }
 
 export function closeDesktopDatabase() {

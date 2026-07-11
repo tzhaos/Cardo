@@ -1,6 +1,7 @@
 import sqlite3InitModule, { type BindableValue, type Database } from '@sqlite.org/sqlite-wasm';
 import initialMigration from '../../../drizzle/0000_crazy_obadiah_stane.sql?raw';
 import {
+  databaseExecuteResponseSchema,
   databaseWorkerRequestSchema,
   type DatabaseExecuteRequest,
   type DatabaseExecuteResponse,
@@ -62,7 +63,7 @@ async function executeRequest(request: DatabaseExecuteRequest): Promise<Database
 
   if (request.method === 'run') {
     database.exec({ sql: request.sql, bind });
-    return { rows: [] };
+    return databaseExecuteResponseSchema.parse({ rows: [] });
   }
 
   const rows = database.exec({
@@ -73,10 +74,10 @@ async function executeRequest(request: DatabaseExecuteRequest): Promise<Database
   });
 
   if (request.method === 'get') {
-    return { rows: rows[0] ?? [] };
+    return databaseExecuteResponseSchema.parse({ rows: rows.length ? [rows[0]] : [] });
   }
 
-  return { rows };
+  return databaseExecuteResponseSchema.parse({ rows });
 }
 
 workerScope.addEventListener('message', (event: MessageEvent<unknown>) => {

@@ -5,6 +5,7 @@ export const databaseValueSchema = z.union([
   z.number().finite(),
   z.bigint(),
   z.null(),
+  z.instanceof(ArrayBuffer),
   z.instanceof(Uint8Array),
 ]);
 
@@ -20,7 +21,7 @@ export const databaseExecuteRequestSchema = z
 
 export const databaseExecuteResponseSchema = z
   .object({
-    rows: z.array(z.unknown()),
+    rows: z.array(z.array(databaseValueSchema)),
   })
   .strict();
 
