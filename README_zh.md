@@ -6,7 +6,6 @@ KhaosBox 是一个多宿主 TypeScript 空间工作台，用自由卡片式 box 
 
 - 浏览器扩展：Manifest V3 新标签页工作区。
 - 桌面端：复用同一套 React 体验的 Electron shell。
-- CLI：Node 命令行工作区检查工具。
 
 ## 架构
 
@@ -16,11 +15,10 @@ src/
 |-- web/        # React UI、Zustand store、用例和功能控制器
 |-- extension/  # MV3 启动入口、Chrome 适配器和扩展宿主
 |-- desktop/    # Electron main、preload、renderer 和桌面适配器
-|-- native-host/# 本地资源打开桥接
-`-- cli/        # Node CLI 入口
+`-- native-host/# 本地资源打开桥接
 ```
 
-浏览器扩展和 Electron 桌面端都复用 `src/web-next`。平台能力通过 `src/core/ports` 注入，CLI 可检查旧版导出和新版持久化工作区快照。
+浏览器扩展和 Electron 桌面端都复用 `src/web-next`。平台能力通过 `src/core/ports` 注入。
 
 ## 本地资源
 
@@ -43,16 +41,9 @@ npm install
 | `npm run native-host:build`     | 构建 Native Messaging Host exe                |
 | `npm run native-host:install`   | 为 Chrome 和 Edge 注册 host                   |
 | `npm run native-host:uninstall` | 取消注册 Native Messaging Host                |
-| `npm run cli -- --help`         | 查看 CLI 命令                                 |
 | `npm run test:ts`               | 运行 TypeScript 测试                          |
 | `npm run check`                 | 运行 TypeScript、架构检查、ESLint 和测试      |
 | `npm run clean`                 | 删除生成产物                                  |
-
-## CLI
-
-```bash
-npm run cli -- inspect workspace.json
-```
 
 ## 浏览器扩展
 

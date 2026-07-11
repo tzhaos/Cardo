@@ -18,7 +18,6 @@
     "native-host:install": "npm run native-host:build && tsx scripts/install-native-host.ts",
     "native-host:uninstall": "tsx scripts/uninstall-native-host.ts",
     "desktop:start": "npm run desktop:build && electron artifacts/desktop/main/main.js",
-    "cli": "tsx src/cli/main.ts",
     "clean": "node -e \"const fs=require('node:fs'); ['artifacts','dist'].forEach((path)=>fs.rmSync(path,{recursive:true,force:true}))\"",
     "lint": "tsc --noEmit",
     "lint:eslint": "node scripts/run-eslint.mjs .",

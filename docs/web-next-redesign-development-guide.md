@@ -519,7 +519,7 @@ Use clear boundaries:
 ### Phase 6: platform integration and verification
 
 - Wire the extension and Electron renderer entries to `web-next` through the shared platform port boundary.
-- Verify extension, desktop, and CLI workspace inspection flows.
+- Verify extension and desktop workspace flows.
 
 ### Phase 7: retired web removal and platform updates
 

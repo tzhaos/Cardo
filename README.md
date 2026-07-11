@@ -6,7 +6,6 @@ KhaosBox is a multi-host TypeScript spatial workbench for organizing links, note
 
 - Browser extension: Manifest V3 new tab workspace.
 - Desktop: Electron shell reusing the same React experience.
-- CLI: Node command line tools for workspace inspection.
 
 ## Architecture
 
@@ -16,11 +15,10 @@ src/
 |-- web-next/   # React UI, spatial workspace domain, platform integration
 |-- extension/  # MV3 bootstrap, Chrome adapters, background bridge
 |-- desktop/    # Electron main, preload, renderer, desktop adapters
-|-- native-host/# TS Native Messaging host for local resource opening
-`-- cli/        # Node CLI entry
+`-- native-host/# TS Native Messaging host for local resource opening
 ```
 
-The browser extension and Electron desktop both use `src/web-next`. Platform capabilities are injected through `src/core/ports`; the CLI can inspect both legacy exports and web-next persisted workspace snapshots.
+The browser extension and Electron desktop both use `src/web-next`. Platform capabilities are injected through `src/core/ports`.
 
 ## Local resources
 
@@ -43,16 +41,9 @@ npm install
 | `npm run native-host:build`     | Build the Native Messaging host exe into `artifacts/native-host` |
 | `npm run native-host:install`   | Register the host for Chrome and Edge                            |
 | `npm run native-host:uninstall` | Unregister the Native Messaging host                             |
-| `npm run cli -- --help`         | Show CLI commands                                                |
 | `npm run test:ts`               | Run TypeScript tests                                             |
 | `npm run check`                 | Run TypeScript, architecture, ESLint, and tests                  |
 | `npm run clean`                 | Remove generated artifacts                                       |
-
-## CLI
-
-```bash
-npm run cli -- inspect workspace.json
-```
 
 ## Browser extension
 
