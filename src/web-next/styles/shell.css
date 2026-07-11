@@ -8,6 +8,108 @@
   transition:
     color 320ms ease,
     background-color 320ms ease;
+  /*
+   * Text selection policy (SoT for product UI):
+   * - Default chrome: no selection, no caret, default cursor.
+   * - Content labels / editing fields opt in below.
+   * user-select is not inherited; with auto under a none ancestor the used
+   * value is none, so a root none is enough without a universal * override.
+   */
+  cursor: default;
+  caret-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/*
+ * Opt-in: product content labels only (circle-select / I-beam).
+ * Clipboard body keeps cursor:copy from items.css — select only, no text cursor.
+ */
+.wbn-app :where(
+  .wbn-text-label,
+  .wbn-box-title,
+  .wbn-tab-label,
+  .wbn-item-main strong,
+  .wbn-item-title-placeholder,
+  .wbn-item-secondary,
+  .wbn-item-subtitle-link,
+  .wbn-system-page-empty-label
+) {
+  cursor: text;
+  caret-color: auto;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.wbn-app :where(.wbn-clipboard-body) {
+  caret-color: auto;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* Editing fields (rename, search, settings values). */
+.wbn-app :where(input, textarea, [contenteditable='true']) {
+  cursor: text;
+  caret-color: auto;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/*
+ * Explicit chrome force-none: controls and chrome never take I-beam / selection,
+ * even when nested near opt-in labels (e.g. tab button wrapping .wbn-tab-label).
+ */
+.wbn-app :where(
+  button,
+  [role='button'],
+  a.wbn-toolbar-button,
+  .wbn-top-bar,
+  .wbn-bottom-shell,
+  .wbn-bottom-toolbar,
+  .wbn-history-controls,
+  .wbn-canvas-tools,
+  .wbn-floating-menu,
+  .wbn-menu-row,
+  .wbn-create-menu-button,
+  .wbn-settings-header,
+  .wbn-settings-nav,
+  .wbn-settings-card-static,
+  .wbn-desktop-titlebar,
+  .wbn-desktop-window-controls,
+  .wbn-item-actions,
+  .wbn-item-drag-handle,
+  .wbn-item-glyph,
+  .wbn-box-delete,
+  .wbn-box-footer,
+  .wbn-ui-menu-content,
+  .wbn-ui-select-content,
+  .wbn-ui-select-item,
+  .wbn-ui-tooltip-content,
+  .wbn-global-search-result
+) {
+  caret-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.wbn-app :where(button, [role='button'], a.wbn-toolbar-button, .wbn-menu-row, .wbn-create-menu-button) {
+  cursor: pointer;
+}
+
+/*
+ * Portal surfaces mount under document.body (outside .wbn-app). Keep the same
+ * chrome policy without depending on the app root ancestor.
+ */
+:where(
+  .wbn-floating-menu,
+  .wbn-ui-menu-content,
+  .wbn-ui-select-content,
+  .wbn-ui-select-item,
+  .wbn-ui-tooltip-content
+) {
+  caret-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .wbn-history-controls {

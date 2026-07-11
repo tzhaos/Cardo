@@ -345,21 +345,7 @@
   width: 100%;
   min-width: 0;
   cursor: default;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.wbn-item-view-content :where(strong, small, p, a) {
-  caret-color: transparent;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.wbn-item-view-content :where(input, textarea, [contenteditable='true']) {
-  cursor: text;
-  caret-color: auto;
-  user-select: text;
-  -webkit-user-select: text;
+  /* Selection policy lives in shell.css (.wbn-app opt-in labels / force-none chrome). */
 }
 
 .wbn-item-view-content-row {

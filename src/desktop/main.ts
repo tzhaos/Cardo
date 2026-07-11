@@ -81,6 +81,10 @@ function getTrayIconPath() {
   return getDesktopAppPath('main', 'tray-icon.png');
 }
 
+function getAppIconPath() {
+  return getDesktopAppPath('main', 'app-icon.png');
+}
+
 function formatLogValue(value: unknown): string {
   if (value instanceof Error) {
     return `${value.stack ?? value.name}: ${value.message}`;
@@ -459,6 +463,7 @@ async function createWindow() {
     throw new Error('createWindow requires Runtime connection (ensureDesktopRuntime first).');
   }
 
+  const appIconPath = getAppIconPath();
   const win = new BrowserWindow({
     width: 1280,
     height: 820,
@@ -466,6 +471,7 @@ async function createWindow() {
     minHeight: 620,
     title: 'Cardo',
     frame: false,
+    ...(fs.existsSync(appIconPath) ? { icon: appIconPath } : {}),
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,

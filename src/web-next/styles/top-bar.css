@@ -17,6 +17,7 @@
   caret-color: transparent;
   user-select: none;
   -webkit-user-select: none;
+  /* Selection: shell.css force-none on .wbn-top-bar; .wbn-tab-label opts in. */
   backdrop-filter: blur(12px);
   scrollbar-width: none;
   transform: translateX(-50%);
@@ -218,7 +219,8 @@
 .wbn-box-drop-target .wbn-tab-pill > button {
   background: transparent;
   box-shadow: none;
-  transform: scale(0.965);
+  /* Avoid scale fight with active-tab indicator geometry during cross-page drag. */
+  transform: none;
 }
 
 .wbn-tab-pill {

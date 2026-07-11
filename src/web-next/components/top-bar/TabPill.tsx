@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { WorkspacePage } from '../../domain/workspace';
+import { useUiStore } from '../../app/stores/uiStore';
 import { useI18n } from '../../i18n/useI18n';
 import { useInlineRename } from '../../app/useInlineRename';
 import { Input } from '../../ui/primitives/input';
@@ -29,6 +30,9 @@ export function TabPill({
   onRenameRequestHandled,
 }: TabPillProps) {
   const { t } = useI18n();
+  // Cross-page box drag flips the active page every hover. Keep shared layoutId
+  // so one indicator element moves, but snap with duration 0 (no spring lag).
+  const boxDragActive = useUiStore((state) => Boolean(state.draggedBoxId));
   const rename = useInlineRename({
     value: page.title,
     onCommit: onRename,
@@ -45,7 +49,11 @@ export function TabPill({
   return (
     <motion.div
       layout="position"
-      transition={{ layout: { type: 'spring', stiffness: 500, damping: 40, mass: 0.68 } }}
+      transition={{
+        layout: boxDragActive
+          ? { type: 'tween', duration: 0 }
+          : { type: 'spring', stiffness: 500, damping: 40, mass: 0.68 },
+      }}
       className={`wbn-tab-pill${active ? ' wbn-tab-pill-active' : ''}${rename.renaming ? ' wbn-tab-pill-renaming' : ''}${systemPage ? ' wbn-tab-pill-system' : ''}`}
     >
       <Button
@@ -65,10 +73,14 @@ export function TabPill({
             <motion.span
               className="wbn-active-tab-indicator"
               layoutId="active-tab-indicator"
-              initial={{ opacity: 0, scale: 0.94 }}
+              initial={false}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ type: 'spring', bounce: 0.16, duration: 0.52 }}
+              exit={boxDragActive ? undefined : { opacity: 0, scale: 0.96 }}
+              transition={
+                boxDragActive
+                  ? { type: 'tween', duration: 0 }
+                  : { type: 'spring', bounce: 0.16, duration: 0.52 }
+              }
             />
           ) : null}
         </AnimatePresence>

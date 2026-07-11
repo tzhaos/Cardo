@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import type { CardoDatabase } from './createDatabaseClient';
 import { bumpRevision } from './revision';
-import { APP_STATE_ID, PREFERENCES_ID, appState, boxes, pages, preferences } from './schema';
+import { APP_STATE_ID, PREFERENCES_ID, appState, boxItems, boxes, items, pages, preferences } from './schema';
 import { DATABASE_SCHEMA_VERSION } from './version';
 import {
   DEFAULT_DENSITY,
@@ -11,6 +11,8 @@ import {
   type PreferenceLocale,
 } from '../contracts/preferences';
 import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID } from '../contracts/systemPages';
+import { createWelcomeBoxFrame } from '../domains/layout/boxDefaults';
+import { getWelcomeSeedCopy } from './welcomeSeed';
 
 export interface InitialWorkspacePreferences {
   locale: PreferenceLocale;
@@ -39,6 +41,7 @@ export async function initializeWorkspaceDatabase(
   const defaultPageId = `page-${crypto.randomUUID()}`;
   const personalPageId = `page-${crypto.randomUUID()}`;
   const inspirationPageId = `page-${crypto.randomUUID()}`;
+  const welcome = createWelcomeSeed(defaultPageId, timestamp, initialPreferences.locale);
 
   await database.transaction(async (transaction) => {
     await transaction.insert(pages).values([
@@ -79,7 +82,9 @@ export async function initializeWorkspaceDatabase(
       },
     ]);
 
-    await transaction.insert(boxes).values(createInitialBox(defaultPageId, timestamp));
+    await transaction.insert(boxes).values(welcome.box);
+    await transaction.insert(items).values(welcome.items);
+    await transaction.insert(boxItems).values(welcome.placements);
 
     await transaction.insert(appState).values({
       id: APP_STATE_ID,
@@ -115,23 +120,45 @@ export async function initializeWorkspaceDatabase(
   return { created: true };
 }
 
-function createInitialBox(pageId: string, timestamp: string) {
-  return {
-    id: `box-${crypto.randomUUID()}`,
+function createWelcomeSeed(pageId: string, timestamp: string, locale: PreferenceLocale) {
+  const copy = getWelcomeSeedCopy(locale);
+  const frame = createWelcomeBoxFrame();
+  const boxId = `box-${crypto.randomUUID()}`;
+  const box = {
+    id: boxId,
     pageId,
     kind: 'normal' as const,
-    title: 'Box',
-    x: 120,
-    y: 130,
-    width: 320,
-    height: 240,
+    title: copy.boxTitle,
+    x: frame.x,
+    y: frame.y,
+    width: frame.width,
+    height: frame.height,
     viewMode: 'list' as const,
     detailMode: 'detailed' as const,
     isLocked: false,
-    icon: 'box' as const,
+    icon: 'idea' as const,
     accent: '#3b82f6',
     zIndex: 1,
     createdAt: timestamp,
     updatedAt: timestamp,
   };
+
+  const itemsRows = copy.tips.map((text) => ({
+    id: `item-${crypto.randomUUID()}`,
+    type: 'clipboard' as const,
+    title: '',
+    content: text,
+    metadata: { type: 'clipboard' as const },
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  }));
+
+  const placements = itemsRows.map((item, index) => ({
+    boxId,
+    itemId: item.id,
+    sortOrder: index,
+    isPinned: index === 0,
+  }));
+
+  return { box, items: itemsRows, placements };
 }

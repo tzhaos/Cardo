@@ -375,7 +375,7 @@ button.wbn-box-icon:focus-visible {
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
-  user-select: none;
+  /* Selectable via shell.css content-label opt-in. */
 }
 
 .wbn-box-delete {

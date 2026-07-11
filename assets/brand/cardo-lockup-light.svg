@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 88" fill="none" role="img" aria-label="Cardo lockup on light">
+  <rect width="360" height="88" rx="16" fill="#F8FAFC"/>
+  <g transform="translate(12 12)">
+    <rect width="64" height="64" rx="14" fill="#171C24"/>
+    <g transform="scale(0.5)">
+      <circle cx="64" cy="64" r="10" fill="#F8FBFF"/>
+      <ellipse
+        cx="64"
+        cy="64"
+        rx="38"
+        ry="22"
+        stroke="#38BDF8"
+        stroke-width="4"
+        transform="rotate(-25 64 64)"
+      />
+      <ellipse
+        cx="64"
+        cy="64"
+        rx="38"
+        ry="22"
+        stroke="#F8FBFF"
+        stroke-width="3"
+        opacity="0.35"
+        transform="rotate(35 64 64)"
+      />
+      <circle cx="98" cy="50" r="5" fill="#38BDF8"/>
+    </g>
+  </g>
+  <text
+    x="96"
+    y="54"
+    fill="#0F172A"
+    font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+    font-size="28"
+    font-weight="600"
+    letter-spacing="0.12em"
+  >CARDO</text>
+</svg>

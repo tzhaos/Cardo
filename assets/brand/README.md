@@ -1,41 +1,25 @@
-# Cardo Logo System
+# Cardo brand assets
 
-## Direction
+Selected identity: orbit mark + inverted-bar wordmark.
 
-This logo system follows the exact visual language of the in-app brand badge:
+| File | Use |
+| --- | --- |
+| `cardo-mark.svg` | App / extension icon base |
+| `cardo-mark-monochrome.svg` | Single-color mark |
+| `cardo-wordmark.svg` | Type only |
+| `cardo-lockup.svg` | Logo + wordmark (dark) |
+| `cardo-lockup-light.svg` | Logo + wordmark (light) |
+| `cardo-icon-256.png` | Desktop window / taskbar (dev) |
+| `cardo-icon-512.png` | electron-builder mac/linux icon source |
+| `cardo-icon.ico` | electron-builder Windows multi-size icon |
 
-- a rounded square tile
-- a package/box line icon
-- a clean product wordmark
+Extension / tray PNGs: `assets/extension-shell/icons/icon-{16,32,48,128}.png`
 
-It fits Cardo because the product is a personal box-like workspace for collecting,
-staging, and reopening links, notes, and small launch surfaces.
+Regenerate raster icons from the mark (requires temp deps):
 
-## Files
+```bash
+npm install --no-save @resvg/resvg-js png-to-ico
+node scripts/generate-brand-icons.mjs
+```
 
-- `cardo-mark.svg`
-  Primary tile symbol
-- `cardo-logo-horizontal.svg`
-  Main brand lockup
-- `cardo-logo-stacked.svg`
-  Vertical lockup
-- `cardo-mark-monochrome.svg`
-  One-color fallback
-
-## Palette
-
-- Tile: `#171C24`
-- Icon stroke: `#F8FBFF`
-- Wordmark: `#171C24`
-
-## Usage
-
-- Use the horizontal logo as the default logo in docs and marketing.
-- Use the mark for app icon, extension icon, splash badge, and favicon work.
-- Use the monochrome mark where only a single color is available.
-
-## Notes
-
-- The logo is intentionally simple and interface-native.
-- The package symbol is the core metaphor, not an abstract letterform.
-- The system should feel calm, modern, and immediately readable in-product.
+Palette: tile `#171C24` / bar `#111827`, accent `#38BDF8`, light `#F8FBFF`.

@@ -89,7 +89,9 @@
     "files": [
       "main/**"
     ],
+    "icon": "assets/brand/cardo-icon.ico",
     "win": {
+      "icon": "assets/brand/cardo-icon.ico",
       "target": [
         {
           "target": "nsis",
@@ -106,11 +108,13 @@
       ]
     },
     "mac": {
+      "icon": "assets/brand/cardo-icon-512.png",
       "target": [
         "dmg"
       ]
     },
     "linux": {
+      "icon": "assets/brand/cardo-icon-512.png",
       "target": [
         "AppImage"
       ]
