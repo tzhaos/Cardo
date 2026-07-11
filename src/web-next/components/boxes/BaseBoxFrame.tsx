@@ -121,7 +121,8 @@ export function BaseBoxFrame({
   const boxWidth = useMotionValue(box.frame.width);
   const boxHeight = useMotionValue(box.frame.height);
   const dragTiltTarget = useMotionValue(0);
-  const dragTilt = useSpring(dragTiltTarget, { stiffness: 320, damping: 26, mass: 0.45 });
+  // Overdamped so fling release does not wobble the box.
+  const dragTilt = useSpring(dragTiltTarget, { stiffness: 380, damping: 42, mass: 0.4 });
   const { t } = useI18n();
   const titleRename = useInlineRename({
     value: box.title,
@@ -342,21 +343,20 @@ export function BaseBoxFrame({
       }
     }
 
-    const alreadyThere =
-      Math.abs(boxLeft.get() - targetFrame.x) < 0.5 && Math.abs(boxTop.get() - targetFrame.y) < 0.5;
-    if (alreadyThere) {
+    const deltaX = Math.abs(boxLeft.get() - targetFrame.x);
+    const deltaY = Math.abs(boxTop.get() - targetFrame.y);
+    // Snap small corrections (edge clamp / server round-trip) — no spring bounce.
+    if (deltaX < 2 && deltaY < 2) {
       boxLeft.set(targetFrame.x);
       boxTop.set(targetFrame.y);
       if (pendingBoxLanding) clearPendingBoxLanding(box.id);
       return;
     }
 
-    const positionTransition = {
-      type: 'spring' as const,
-      damping: pendingBoxLanding ? 26 : 28,
-      stiffness: pendingBoxLanding ? 220 : 260,
-      mass: pendingBoxLanding ? 0.9 : 1,
-    };
+    // Ease-out only: springs overshoot and feel like a rubber-band when flinging.
+    const positionTransition = pendingBoxLanding
+      ? { type: 'tween' as const, duration: 0.2, ease: [0.22, 1, 0.36, 1] as const }
+      : { type: 'tween' as const, duration: 0.16, ease: [0.22, 1, 0.36, 1] as const };
     const leftAnimation = animateMotion(boxLeft, targetFrame.x, positionTransition);
     const topAnimation = animateMotion(boxTop, targetFrame.y, positionTransition);
     void leftAnimation.then(() => {
@@ -461,10 +461,11 @@ export function BaseBoxFrame({
                 opacity: { duration: 0.1 },
               }
             : {
-                y: { type: 'spring', damping: 30, stiffness: 420, mass: 0.55 },
-                scale: { type: 'spring', damping: 28, stiffness: 380, mass: 0.6 },
-                borderRadius: { duration: 0.2 },
-                opacity: { duration: 0.16 },
+                // No spring settle after drag — overshoot reads as fling bounce-back.
+                y: { type: 'tween', duration: 0.14, ease: [0.22, 1, 0.36, 1] },
+                scale: { type: 'tween', duration: 0.14, ease: [0.22, 1, 0.36, 1] },
+                borderRadius: { duration: 0.16 },
+                opacity: { duration: 0.12 },
               }
       }
       onAnimationComplete={finishDeleteMotion}
