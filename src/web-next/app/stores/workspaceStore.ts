@@ -13,8 +13,12 @@ import type {
 import type { CanvasViewportSize } from '../../domain/canvasGeometry';
 import {
   dispatchDatabaseCommand,
+  queryBoxItems,
   queryDatabaseHistoryState,
+  queryPageBoxes,
+  queryPageTabs,
   queryWorkspaceProjection,
+  queryWorkspaceState,
   redoDatabaseHistory,
   undoDatabaseHistory,
 } from '../../platform/hostPlatform';
@@ -214,7 +218,7 @@ async function refreshProjection() {
     historyPast: history.canUndo ? [true] : [],
     historyFuture: history.canRedo ? [true] : [],
   };
-  for (const listener of listeners) listener();
+  emitChange();
 }
 
 function structurallyShare<T>(previous: T, next: T): T {
@@ -259,10 +263,158 @@ function isPlainRecord(value: unknown): value is Record<string, unknown> {
 
 function runCommand(command: WorkspaceCommand) {
   return enqueue(async () => {
+    const projectionBeforeCommand = state.projection;
     const result = await dispatchDatabaseCommand(command);
-    await refreshProjection();
+    await refreshAfterCommand(command, projectionBeforeCommand);
     return result;
   });
+}
+
+async function refreshAfterCommand(
+  command: WorkspaceCommand,
+  projectionBeforeCommand: WorkspaceProjection,
+) {
+  const scope = getCommandRefreshScope(command, projectionBeforeCommand);
+
+  if (scope.type === 'projection') {
+    await refreshProjection();
+    return;
+  }
+
+  const historyTask = queryDatabaseHistoryState();
+  let nextProjection = state.projection;
+
+  if (scope.type === 'workspaceState') {
+    const workspaceState = await queryWorkspaceState();
+    nextProjection = structurallyShare(state.projection, {
+      ...state.projection,
+      ...workspaceState,
+    });
+  } else if (scope.type === 'pageTabs') {
+    const pages = await queryPageTabs();
+    nextProjection = structurallyShare(state.projection, { ...state.projection, pages });
+  } else if (scope.type === 'pageTabsAndState') {
+    const [pages, workspaceState] = await Promise.all([queryPageTabs(), queryWorkspaceState()]);
+    nextProjection = structurallyShare(state.projection, {
+      ...state.projection,
+      ...workspaceState,
+      pages,
+    });
+  } else if (scope.type === 'pageBoxes') {
+    const pageBoxes = await queryPageBoxes(scope.pageId);
+    nextProjection = structurallyShare(state.projection, {
+      ...state.projection,
+      boxes: replacePageBoxes(state.projection.boxes, scope.pageId, pageBoxes),
+    });
+  } else if (scope.type === 'boxItems') {
+    const items = await queryBoxItems(scope.boxId);
+    nextProjection = structurallyShare(state.projection, {
+      ...state.projection,
+      boxes: state.projection.boxes.map((box) =>
+        box.id === scope.boxId ? { ...box, items } : box,
+      ),
+    });
+  }
+
+  const history = await historyTask;
+  state = {
+    ...state,
+    projection: nextProjection,
+    historyPast: history.canUndo ? [true] : [],
+    historyFuture: history.canRedo ? [true] : [],
+  };
+  emitChange();
+}
+
+type CommandRefreshScope =
+  | { type: 'projection' }
+  | { type: 'workspaceState' }
+  | { type: 'pageTabs' }
+  | { type: 'pageTabsAndState' }
+  | { type: 'pageBoxes'; pageId: string }
+  | { type: 'boxItems'; boxId: string }
+  | { type: 'historyOnly' };
+
+function getCommandRefreshScope(
+  command: WorkspaceCommand,
+  projection: WorkspaceProjection,
+): CommandRefreshScope {
+  switch (command.type) {
+    case 'page.open':
+    case 'page.setDefault':
+      return { type: 'workspaceState' };
+    case 'page.create':
+      return { type: 'pageTabsAndState' };
+    case 'page.rename':
+    case 'page.reorder':
+      return { type: 'pageTabs' };
+    case 'box.create':
+      return { type: 'pageBoxes', pageId: command.pageId };
+    case 'box.updateFrame':
+    case 'box.rename':
+    case 'box.promote':
+    case 'box.setDetailMode':
+    case 'box.setLocked':
+    case 'box.setAppearance':
+    case 'box.setViewMode':
+      return getBoxPageRefreshScope(projection, command.boxId);
+    case 'canvas.arrange':
+      return { type: 'pageBoxes', pageId: command.pageId };
+    case 'item.rename':
+    case 'item.editContent':
+    case 'item.setPinned':
+    case 'item.reorder':
+    case 'bookmark.setFavicon':
+      return { type: 'boxItems', boxId: command.boxId };
+    case 'item.create':
+      return getBoxPageRefreshScope(projection, command.boxId);
+    case 'preferences.setLocale':
+    case 'preferences.setColorMode':
+    case 'preferences.setTheme':
+    case 'preferences.setSearchEngine':
+    case 'preferences.setCustomSearchTemplate':
+      return { type: 'historyOnly' };
+    case 'workspace.import':
+    case 'page.delete':
+    case 'item.paste':
+    case 'collection.updateBoxFrame':
+    case 'collection.updateView':
+    case 'collection.arrange':
+    case 'box.moveToPage':
+    case 'box.collect':
+    case 'box.removeFromCollection':
+    case 'item.moveBetweenBoxes':
+    case 'box.delete':
+    case 'item.delete':
+    case 'system.constrainFrames':
+      return { type: 'projection' };
+    default:
+      return assertNever(command);
+  }
+}
+
+function getBoxPageRefreshScope(
+  projection: WorkspaceProjection,
+  boxId: string,
+): CommandRefreshScope {
+  const pageId = projection.boxes.find((box) => box.id === boxId)?.pageId;
+  return pageId ? { type: 'pageBoxes', pageId } : { type: 'projection' };
+}
+
+function replacePageBoxes(
+  currentBoxes: WorkspaceProjection['boxes'],
+  pageId: string,
+  pageBoxes: WorkspaceProjection['boxes'],
+) {
+  const nextPageBoxes = [...pageBoxes];
+  const boxes = currentBoxes.flatMap((box) =>
+    box.pageId === pageId ? nextPageBoxes.splice(0, 1) : [box],
+  );
+  return [...boxes, ...nextPageBoxes];
+}
+
+function assertNever(value: never): never {
+  throw new Error(`Unhandled workspace command: ${JSON.stringify(value)}`);
 }
 
 function fireCommand(command: WorkspaceCommand) {
@@ -307,6 +459,10 @@ function reportCommandError(error: unknown) {
 function subscribe(listener: () => void) {
   listeners.add(listener);
   return () => listeners.delete(listener);
+}
+
+function emitChange() {
+  for (const listener of listeners) listener();
 }
 
 type WorkspaceStoreHook = {
