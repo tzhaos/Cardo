@@ -4,12 +4,17 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  /* Material treatment comes from theme-recipes.css; these are safe fallbacks. */
   border: 1px solid var(--cardo-border);
   border-radius: var(--cardo-radius-xl);
+  background-color: var(--cardo-panel);
   background-image: linear-gradient(to bottom, var(--cardo-panel), var(--cardo-panel-bottom));
   box-shadow: var(--cardo-shadow);
   contain: layout style;
-  transition: box-shadow 180ms ease;
+  transition:
+    box-shadow var(--cardo-duration-normal) var(--cardo-easing),
+    border-color var(--cardo-duration-normal) var(--cardo-easing),
+    background var(--cardo-duration-normal) var(--cardo-easing);
 }
 
 .cardo-box:hover {
@@ -33,7 +38,7 @@
     color-mix(in srgb, var(--cardo-panel) 94%, var(--box-accent)),
     var(--cardo-panel-bottom)
   );
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--cardo-shadow);
 }
 
 .cardo-box.cardo-box-temporary:hover {
@@ -108,8 +113,7 @@
   /* Within canvas world only; root elevation is .cardo-app:has(.cardo-box-dragging) .cardo-canvas */
   z-index: 100 !important;
   box-shadow:
-    0 24px 48px rgba(15, 23, 42, 0.16),
-    0 8px 18px rgba(15, 23, 42, 0.1),
+    var(--cardo-shadow-hover),
     0 0 0 1px color-mix(in srgb, var(--box-accent) 20%, transparent);
   cursor: grabbing;
 }
@@ -124,13 +128,13 @@
 
 .cardo-box.cardo-box-dragging-bar {
   box-shadow:
-    0 20px 42px rgba(15, 23, 42, 0.2),
+    var(--cardo-shadow-hover),
     0 0 0 2px color-mix(in srgb, var(--box-accent) 28%, transparent);
 }
 
 .cardo-box.cardo-box-dragging-tab {
   box-shadow:
-    0 16px 34px rgba(15, 23, 42, 0.2),
+    var(--cardo-shadow-hover),
     0 0 0 4px color-mix(in srgb, var(--cardo-blue) 15%, transparent);
 }
 

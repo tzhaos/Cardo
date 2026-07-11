@@ -154,7 +154,7 @@
   opacity: 0.97 !important;
   pointer-events: none !important;
   transform-origin: center;
-  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.14);
+  box-shadow: var(--cardo-shadow-hover);
   will-change: transform;
 }
 

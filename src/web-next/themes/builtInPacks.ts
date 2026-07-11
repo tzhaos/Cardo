@@ -152,9 +152,9 @@ const githubDark: ColorTokenMap = {
   red: '#f85149',
 };
 
-// ─── One Dark / One Light ────────────────────────────────────────────────────
+// ─── One (Atom One Light + One Dark — both modes required) ───────────────────
 
-const onedarkDark: ColorTokenMap = {
+const oneDark: ColorTokenMap = {
   canvas: '#21252b',
   surface: 'rgba(40, 44, 52, 0.94)',
   surfaceStrong: 'rgba(40, 44, 52, 0.98)',
@@ -188,7 +188,7 @@ const onedarkDark: ColorTokenMap = {
   red: '#e06c75',
 };
 
-const onedarkLight: ColorTokenMap = {
+const oneLight: ColorTokenMap = {
   canvas: '#f0f0f0',
   surface: 'rgba(250, 250, 250, 0.94)',
   surfaceStrong: 'rgba(250, 250, 250, 0.99)',
@@ -541,6 +541,205 @@ const graphiteElevation: ElevationTokenMap = {
   insetShadow: 'inset 0 1px 0 rgba(255,255,255,.04)',
 };
 
+// ─── Material (Material 3 / Material You) ────────────────────────────────────
+// Tonal surfaces, generous radius, primary-forward accents. Light + dark both full.
+
+const materialLight: ColorTokenMap = {
+  canvas: '#f0f2f5',
+  surface: 'rgba(255, 255, 255, 0.92)',
+  surfaceStrong: 'rgba(255, 255, 255, 0.98)',
+  panel: '#fffbfe',
+  panelBottom: '#f3edf7',
+  panelContent: 'rgba(243, 237, 247, 0.72)',
+  panelChrome: 'rgba(255, 251, 254, 0.9)',
+  border: 'rgba(121, 116, 126, 0.2)',
+  borderSubtle: 'rgba(121, 116, 126, 0.12)',
+  divider: 'rgba(121, 116, 126, 0.18)',
+  text: '#1c1b1f',
+  softText: '#49454f',
+  secondaryText: '#79747e',
+  muted: '#aea9b4',
+  hover: 'rgba(103, 80, 164, 0.08)',
+  active: 'rgba(103, 80, 164, 0.12)',
+  input: '#fffbfe',
+  itemHover: '#f7f2fa',
+  glyph: '#f3edf7',
+  neutralButton: '#e8def8',
+  neutralButtonHover: '#dccfee',
+  createBackground: '#6750a4',
+  createText: '#ffffff',
+  scrollbar: 'rgba(28, 27, 31, 0.16)',
+  scrollbarHover: 'rgba(28, 27, 31, 0.28)',
+  selectionRing: 'rgba(103, 80, 164, 0.24)',
+  blue: '#6750a4',
+  orange: '#e65100',
+  purple: '#7e57c2',
+  emerald: '#2e7d32',
+  red: '#b3261e',
+};
+
+const materialDark: ColorTokenMap = {
+  canvas: '#141218',
+  surface: 'rgba(29, 27, 32, 0.94)',
+  surfaceStrong: 'rgba(29, 27, 32, 0.99)',
+  panel: '#1d1b20',
+  panelBottom: '#141218',
+  panelContent: 'rgba(20, 18, 24, 0.55)',
+  panelChrome: 'rgba(29, 27, 32, 0.9)',
+  border: 'rgba(202, 196, 208, 0.14)',
+  borderSubtle: 'rgba(202, 196, 208, 0.1)',
+  divider: 'rgba(202, 196, 208, 0.12)',
+  text: '#e6e1e5',
+  softText: '#cac4d0',
+  secondaryText: '#938f99',
+  muted: '#6e6a73',
+  hover: 'rgba(208, 188, 255, 0.08)',
+  active: 'rgba(208, 188, 255, 0.14)',
+  input: '#141218',
+  itemHover: '#2b2930',
+  glyph: '#1d1b20',
+  neutralButton: '#4a4458',
+  neutralButtonHover: '#5a5368',
+  createBackground: '#d0bcff',
+  createText: '#381e72',
+  scrollbar: 'rgba(230, 225, 229, 0.16)',
+  scrollbarHover: 'rgba(230, 225, 229, 0.28)',
+  selectionRing: 'rgba(208, 188, 255, 0.28)',
+  blue: '#d0bcff',
+  orange: '#ffb59d',
+  purple: '#e8def8',
+  emerald: '#a6d2a7',
+  red: '#f2b8b5',
+};
+
+const materialRadii: RadiusTokenMap = {
+  xs: '8px',
+  sm: '12px',
+  md: '16px',
+  lg: '20px',
+  xl: '28px',
+  pill: '999px',
+};
+
+const materialElevationLight: ElevationTokenMap = {
+  shadow:
+    '0 1px 2px rgba(0,0,0,.06), 0 1px 3px 1px rgba(0,0,0,.04)',
+  shadowHover:
+    '0 1px 2px rgba(0,0,0,.06), 0 2px 6px 2px rgba(0,0,0,.06), 0 8px 16px rgba(0,0,0,.06)',
+  insetShadow: 'inset 0 1px 0 rgba(255,255,255,.4)',
+};
+
+const materialElevationDark: ElevationTokenMap = {
+  shadow:
+    '0 1px 3px 1px rgba(0,0,0,.3), 0 1px 2px rgba(0,0,0,.4)',
+  shadowHover:
+    '0 2px 6px 2px rgba(0,0,0,.35), 0 8px 20px rgba(0,0,0,.4)',
+  insetShadow: 'inset 0 1px 0 rgba(255,255,255,.04)',
+};
+
+// ─── Apple (HIG / SF style) ──────────────────────────────────────────────────
+// System grays, continuous corners feel, strong vibrancy surfaces. Light + dark.
+
+const appleLight: ColorTokenMap = {
+  canvas: '#f2f2f7',
+  surface: 'rgba(255, 255, 255, 0.72)',
+  surfaceStrong: 'rgba(255, 255, 255, 0.92)',
+  panel: '#ffffff',
+  panelBottom: '#f2f2f7',
+  panelContent: 'rgba(242, 242, 247, 0.55)',
+  panelChrome: 'rgba(255, 255, 255, 0.78)',
+  border: 'rgba(60, 60, 67, 0.12)',
+  borderSubtle: 'rgba(60, 60, 67, 0.08)',
+  divider: 'rgba(60, 60, 67, 0.14)',
+  text: '#000000',
+  softText: 'rgba(60, 60, 67, 0.85)',
+  secondaryText: 'rgba(60, 60, 67, 0.6)',
+  muted: 'rgba(60, 60, 67, 0.36)',
+  hover: 'rgba(120, 120, 128, 0.08)',
+  active: 'rgba(0, 122, 255, 0.12)',
+  input: '#ffffff',
+  itemHover: '#ffffff',
+  glyph: '#f2f2f7',
+  neutralButton: 'rgba(120, 120, 128, 0.16)',
+  neutralButtonHover: 'rgba(120, 120, 128, 0.24)',
+  createBackground: '#007aff',
+  createText: '#ffffff',
+  scrollbar: 'rgba(0, 0, 0, 0.18)',
+  scrollbarHover: 'rgba(0, 0, 0, 0.28)',
+  selectionRing: 'rgba(0, 122, 255, 0.22)',
+  blue: '#007aff',
+  orange: '#ff9500',
+  purple: '#af52de',
+  emerald: '#34c759',
+  red: '#ff3b30',
+};
+
+const appleDark: ColorTokenMap = {
+  canvas: '#000000',
+  surface: 'rgba(28, 28, 30, 0.82)',
+  surfaceStrong: 'rgba(28, 28, 30, 0.94)',
+  panel: '#1c1c1e',
+  panelBottom: '#000000',
+  panelContent: 'rgba(0, 0, 0, 0.45)',
+  panelChrome: 'rgba(28, 28, 30, 0.78)',
+  border: 'rgba(84, 84, 88, 0.55)',
+  borderSubtle: 'rgba(84, 84, 88, 0.36)',
+  divider: 'rgba(84, 84, 88, 0.55)',
+  text: '#ffffff',
+  softText: 'rgba(235, 235, 245, 0.86)',
+  secondaryText: 'rgba(235, 235, 245, 0.6)',
+  muted: 'rgba(235, 235, 245, 0.36)',
+  hover: 'rgba(120, 120, 128, 0.2)',
+  active: 'rgba(10, 132, 255, 0.2)',
+  input: '#1c1c1e',
+  itemHover: '#2c2c2e',
+  glyph: '#1c1c1e',
+  neutralButton: 'rgba(120, 120, 128, 0.28)',
+  neutralButtonHover: 'rgba(120, 120, 128, 0.4)',
+  createBackground: '#0a84ff',
+  createText: '#ffffff',
+  scrollbar: 'rgba(255, 255, 255, 0.18)',
+  scrollbarHover: 'rgba(255, 255, 255, 0.3)',
+  selectionRing: 'rgba(10, 132, 255, 0.32)',
+  blue: '#0a84ff',
+  orange: '#ff9f0a',
+  purple: '#bf5af2',
+  emerald: '#30d158',
+  red: '#ff453a',
+};
+
+const appleRadii: RadiusTokenMap = {
+  xs: '6px',
+  sm: '10px',
+  md: '12px',
+  lg: '14px',
+  xl: '18px',
+  pill: '999px',
+};
+
+const appleFonts: FontTokenMap = {
+  sans: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei UI', ui-sans-serif, system-ui, sans-serif",
+  mono: "'SF Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+  sizeBase: '14px',
+  lineHeightBase: '1.4',
+};
+
+const appleElevationLight: ElevationTokenMap = {
+  shadow:
+    '0 0.5px 0 rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06)',
+  shadowHover:
+    '0 1px 3px rgba(0,0,0,.06), 0 12px 36px rgba(0,0,0,.1)',
+  insetShadow: 'inset 0 0.5px 0 rgba(255,255,255,.6)',
+};
+
+const appleElevationDark: ElevationTokenMap = {
+  shadow:
+    '0 0 0 0.5px rgba(255,255,255,.08), 0 8px 28px rgba(0,0,0,.45)',
+  shadowHover:
+    '0 0 0 0.5px rgba(255,255,255,.1), 0 14px 40px rgba(0,0,0,.55)',
+  insetShadow: 'inset 0 0.5px 0 rgba(255,255,255,.06)',
+};
+
 const githubElevationLight: ElevationTokenMap = {
   shadow: '0 1px 0 rgba(31,35,40,.04), 0 1px 3px rgba(31,35,40,.06)',
   shadowHover: '0 1px 0 rgba(31,35,40,.04), 0 3px 12px rgba(31,35,40,.1)',
@@ -607,8 +806,8 @@ export const BUILT_IN_THEME_PACKS: ThemePack[] = [
     id: 'github',
     name: { en: 'GitHub', zh: 'GitHub' },
     description: {
-      en: 'Primer-inspired: crisp borders, clear hierarchy, familiar GitHub light/dark.',
-      zh: 'Primer 风格：清晰描边与层级，熟悉的 GitHub 浅/深色。',
+      en: 'Primer craft for both light and dark — crisp borders and clear hierarchy.',
+      zh: 'Primer 深浅双套完整设计：清晰描边与层级（非仅换色）。',
     },
     colors: { light: githubLight, dark: githubDark },
     elevation: {
@@ -626,13 +825,13 @@ export const BUILT_IN_THEME_PACKS: ThemePack[] = [
     chrome: { blur: '0px', topbarOffset: '12px' },
   }),
   packBase({
-    id: 'onedark',
-    name: { en: 'One Dark', zh: 'One Dark' },
+    id: 'one',
+    name: { en: 'One', zh: 'One' },
     description: {
-      en: 'Atom One Dark / One Light — syntax-editor contrast and cool charcoal panels.',
-      zh: 'Atom One Dark / One Light：编辑器式对比度与冷炭灰面板。',
+      en: 'Atom One — light and dark both first-class (One Light / One Dark), editor contrast.',
+      zh: 'Atom One：浅色 One Light 与深色 One Dark 同等完整，编辑器对比度。',
     },
-    colors: { light: onedarkLight, dark: onedarkDark },
+    colors: { light: oneLight, dark: oneDark },
     radii: {
       xs: '3px',
       sm: '5px',
@@ -647,8 +846,8 @@ export const BUILT_IN_THEME_PACKS: ThemePack[] = [
     id: 'nord',
     name: { en: 'Nord', zh: 'Nord' },
     description: {
-      en: 'Arctic Nord palette — polar night panels, frost accents, calm contrast.',
-      zh: 'Nord 极地配色：极夜面板、霜色强调、冷静对比。',
+      en: 'Nord snow-storm light and polar-night dark — frost accents, calm contrast.',
+      zh: 'Nord：雪暴浅色与极夜深色两套，霜色强调、冷静对比。',
     },
     colors: { light: nordLight, dark: nordDark },
     radii: {
@@ -665,8 +864,8 @@ export const BUILT_IN_THEME_PACKS: ThemePack[] = [
     id: 'solarized',
     name: { en: 'Solarized', zh: 'Solarized' },
     description: {
-      en: 'Ethan Schoonover Solarized — base03/base3 canvases and calibrated accents.',
-      zh: 'Solarized 经典：base03/base3 画布与校准强调色。',
+      en: 'Solarized light (base3) and dark (base03) — calibrated dual palettes.',
+      zh: 'Solarized 浅色 base3 与深色 base03 双套校准配色。',
     },
     colors: { light: solarizedLight, dark: solarizedDark },
     chrome: { blur: '8px', topbarOffset: '12px' },
@@ -675,8 +874,8 @@ export const BUILT_IN_THEME_PACKS: ThemePack[] = [
     id: 'paper',
     name: { en: 'Paper', zh: '纸页' },
     description: {
-      en: 'Warm editorial paper — softer corners, serif-leaning type, ink on cream.',
-      zh: '暖色纸页风：更柔圆角、偏衬线字体、奶油底上的墨色。',
+      en: 'Warm editorial paper in light and ink-on-walnut dark — softer radii, serif type.',
+      zh: '纸页风：浅色奶油纸与深色胡桃墨迹，大圆角与偏衬线字体。',
     },
     colors: { light: paperLight, dark: paperDark },
     fonts: paperFonts,
@@ -691,8 +890,8 @@ export const BUILT_IN_THEME_PACKS: ThemePack[] = [
     id: 'graphite',
     name: { en: 'Graphite', zh: '石墨' },
     description: {
-      en: 'Industrial flat UI — near-square radii, hard edges, minimal blur.',
-      zh: '工业扁平：近直角、硬边、几乎无模糊。',
+      en: 'Industrial flat light and dark — near-square radii, hard edges, no blur.',
+      zh: '工业扁平深浅双套：近直角、硬边、无模糊。',
     },
     colors: { light: graphiteLight, dark: graphiteDark },
     radii: graphiteRadii,
@@ -710,6 +909,42 @@ export const BUILT_IN_THEME_PACKS: ThemePack[] = [
       durationNormal: '120ms',
       easing: 'ease-out',
     },
+  }),
+  packBase({
+    id: 'material',
+    name: { en: 'Material', zh: 'Material' },
+    description: {
+      en: 'Material 3 — tonal surfaces, large radius, primary-forward light and dark.',
+      zh: 'Material 3：色调表面、大圆角，浅/深两套完整主色语言。',
+    },
+    colors: { light: materialLight, dark: materialDark },
+    radii: materialRadii,
+    elevation: {
+      light: materialElevationLight,
+      dark: materialElevationDark,
+    },
+    chrome: { blur: '20px', topbarOffset: '12px' },
+    motion: {
+      durationFast: '100ms',
+      durationNormal: '200ms',
+      easing: 'cubic-bezier(0.2, 0, 0, 1)',
+    },
+  }),
+  packBase({
+    id: 'apple',
+    name: { en: 'Apple', zh: 'Apple' },
+    description: {
+      en: 'Apple HIG feel — system grays, vibrancy surfaces, SF stack; light and dark.',
+      zh: 'Apple HIG 气质：系统灰、通透表面、SF 字体栈；浅色与深色均完整。',
+    },
+    colors: { light: appleLight, dark: appleDark },
+    fonts: appleFonts,
+    radii: appleRadii,
+    elevation: {
+      light: appleElevationLight,
+      dark: appleElevationDark,
+    },
+    chrome: { blur: '40px', topbarOffset: '12px' },
   }),
 ];
 

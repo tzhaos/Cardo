@@ -295,11 +295,13 @@ export const MAX_THEME_PACK_JSON_BYTES = 256_000;
 export const OFFICIAL_BUILT_IN_THEME_IDS: ReadonlySet<string> = new Set([
   'classic',
   'github',
-  'onedark',
+  'one',
   'nord',
   'solarized',
   'paper',
   'graphite',
+  'material',
+  'apple',
 ]);
 
 /** CSS custom property names written by the Theme Runtime. */

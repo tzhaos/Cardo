@@ -1,0 +1,274 @@
+/**
+ * Per-theme structural recipes for product surfaces (boxes, collection boxes).
+ * Colors come from tokens; this layer changes material treatment so themes
+ * are not “recolors of Classic boxes”.
+ */
+
+/* ── shared helpers ─────────────────────────────────────────────────────────── */
+
+.cardo-box,
+.cardo-collection-box {
+  transition:
+    box-shadow var(--cardo-duration-normal) var(--cardo-easing),
+    border-color var(--cardo-duration-normal) var(--cardo-easing),
+    background var(--cardo-duration-normal) var(--cardo-easing),
+    border-radius var(--cardo-duration-normal) var(--cardo-easing);
+}
+
+/* ── Classic: soft gradient glass (product default) ─────────────────────────── */
+
+[data-cardo-theme='classic'] .cardo-box {
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-xl);
+  background-image: linear-gradient(to bottom, var(--cardo-panel), var(--cardo-panel-bottom));
+  box-shadow: var(--cardo-shadow);
+}
+
+[data-cardo-theme='classic'] .cardo-box-header {
+  border-bottom: 1px solid var(--cardo-border-subtle);
+  background: var(--cardo-panel-chrome);
+}
+
+/* ── GitHub Primer: hard borders, flat solid panels, tight chrome ───────────── */
+
+[data-cardo-theme='github'] .cardo-box,
+[data-cardo-theme='github'] .cardo-collection-box {
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-lg);
+  background-image: none;
+  background-color: var(--cardo-panel);
+  box-shadow: var(--cardo-shadow);
+}
+
+[data-cardo-theme='github'] .cardo-box-header,
+[data-cardo-theme='github'] .cardo-collection-box-header,
+[data-cardo-theme='github'] .cardo-temporary-box-header {
+  border-bottom: 1px solid var(--cardo-border);
+  background: var(--cardo-panel-chrome);
+}
+
+[data-cardo-theme='github'] .cardo-box-footer {
+  border-top: 1px solid var(--cardo-border);
+  background: var(--cardo-panel-bottom);
+}
+
+[data-cardo-theme='github'] .cardo-box-temporary {
+  border-style: solid;
+  border-color: var(--cardo-border);
+  background-image: none;
+  background-color: var(--cardo-panel-content);
+  box-shadow: none;
+}
+
+/* ── One (Atom One Light / Dark): editor chrome, solid panels ───────────────── */
+
+[data-cardo-theme='one'] .cardo-box,
+[data-cardo-theme='one'] .cardo-collection-box {
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-md);
+  background-image: none;
+  background-color: var(--cardo-panel);
+  box-shadow: var(--cardo-shadow);
+}
+
+[data-cardo-theme='one'] .cardo-box-header,
+[data-cardo-theme='one'] .cardo-collection-box-header {
+  border-bottom: 1px solid var(--cardo-border);
+  background: color-mix(in srgb, var(--cardo-panel) 88%, var(--cardo-text));
+}
+
+[data-cardo-theme='one'] .cardo-box-title {
+  font-family: var(--cardo-font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+[data-cardo-theme='one'] .cardo-box-temporary {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--box-accent) 40%, var(--cardo-border));
+  background-image: none;
+  background-color: var(--cardo-panel);
+  box-shadow: none;
+}
+
+/* ── Nord: flat arctic panels ───────────────────────────────────────────────── */
+
+[data-cardo-theme='nord'] .cardo-box,
+[data-cardo-theme='nord'] .cardo-collection-box {
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-lg);
+  background-image: none;
+  background-color: var(--cardo-panel);
+  box-shadow: none;
+}
+
+[data-cardo-theme='nord'] .cardo-box:hover,
+[data-cardo-theme='nord'] .cardo-collection-box:hover {
+  box-shadow: var(--cardo-shadow);
+  border-color: color-mix(in srgb, var(--cardo-blue) 35%, var(--cardo-border));
+}
+
+[data-cardo-theme='nord'] .cardo-box-header,
+[data-cardo-theme='nord'] .cardo-collection-box-header {
+  border-bottom: 1px solid var(--cardo-border);
+  background: color-mix(in srgb, var(--cardo-panel) 70%, var(--cardo-canvas));
+}
+
+/* ── Solarized: dual base pairs, no glass ───────────────────────────────────── */
+
+[data-cardo-theme='solarized'] .cardo-box,
+[data-cardo-theme='solarized'] .cardo-collection-box {
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-md);
+  background-image: none;
+  background-color: var(--cardo-panel);
+  box-shadow: none;
+}
+
+[data-cardo-theme='solarized'] .cardo-box-header,
+[data-cardo-theme='solarized'] .cardo-collection-box-header {
+  border-bottom: 1px solid var(--cardo-border);
+  background: var(--cardo-panel);
+}
+
+[data-cardo-theme='solarized'] .cardo-box-content {
+  background: color-mix(in srgb, var(--cardo-canvas) 55%, var(--cardo-panel));
+}
+
+/* ── Paper: soft editorial card, warm wash ──────────────────────────────────── */
+
+[data-cardo-theme='paper'] .cardo-box,
+[data-cardo-theme='paper'] .cardo-collection-box {
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-xl);
+  background-image: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--cardo-panel) 92%, var(--cardo-orange)) 0%,
+    var(--cardo-panel) 42%,
+    var(--cardo-panel-bottom) 100%
+  );
+  box-shadow: var(--cardo-shadow);
+}
+
+[data-cardo-theme='paper'] .cardo-box-header,
+[data-cardo-theme='paper'] .cardo-collection-box-header {
+  border-bottom: 1px solid var(--cardo-border-subtle);
+  background: color-mix(in srgb, var(--cardo-panel-chrome) 88%, var(--cardo-orange));
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+[data-cardo-theme='paper'] .cardo-box-title {
+  font-family: var(--cardo-font-sans);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* ── Graphite: industrial flat, hard edge, no soft elevation ────────────────── */
+
+[data-cardo-theme='graphite'] .cardo-box,
+[data-cardo-theme='graphite'] .cardo-collection-box {
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-md);
+  background-image: none;
+  background-color: var(--cardo-panel);
+  box-shadow: none;
+}
+
+[data-cardo-theme='graphite'] .cardo-box:hover {
+  box-shadow: var(--cardo-shadow-hover);
+}
+
+[data-cardo-theme='graphite'] .cardo-box-header,
+[data-cardo-theme='graphite'] .cardo-collection-box-header {
+  border-bottom: 1px solid var(--cardo-border);
+  background: var(--cardo-panel);
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+[data-cardo-theme='graphite'] .cardo-box-footer {
+  border-top: 1px solid var(--cardo-border);
+  background: var(--cardo-panel-bottom);
+}
+
+[data-cardo-theme='graphite'] .cardo-box-temporary {
+  border-style: solid;
+  border-width: 1px;
+  background-image: none;
+  background-color: var(--cardo-panel);
+  box-shadow: none;
+}
+
+/* ── Material 3: tonal surface, no hairline border, soft elevation ──────────── */
+
+[data-cardo-theme='material'] .cardo-box,
+[data-cardo-theme='material'] .cardo-collection-box {
+  border: none;
+  border-radius: var(--cardo-radius-xl);
+  background-image: none;
+  background-color: var(--cardo-panel);
+  box-shadow: var(--cardo-shadow);
+}
+
+[data-cardo-theme='material'] .cardo-box:hover {
+  box-shadow: var(--cardo-shadow-hover);
+}
+
+[data-cardo-theme='material'] .cardo-box-header,
+[data-cardo-theme='material'] .cardo-collection-box-header {
+  border-bottom: none;
+  background: color-mix(in srgb, var(--cardo-panel) 92%, var(--cardo-blue));
+  padding: 14px 18px;
+}
+
+[data-cardo-theme='material'] .cardo-box-footer {
+  border-top: none;
+  background: color-mix(in srgb, var(--cardo-panel-bottom) 94%, var(--cardo-blue));
+}
+
+[data-cardo-theme='material'] .cardo-box-temporary {
+  border: none;
+  background-image: none;
+  background-color: color-mix(in srgb, var(--cardo-panel) 90%, var(--box-accent));
+  box-shadow: var(--cardo-shadow);
+}
+
+/* ── Apple HIG: vibrancy surface, fine separator, continuous corners ────────── */
+
+[data-cardo-theme='apple'] .cardo-box,
+[data-cardo-theme='apple'] .cardo-collection-box {
+  border: 0.5px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-xl);
+  background-image: none;
+  background-color: var(--cardo-surface);
+  box-shadow: var(--cardo-shadow);
+  backdrop-filter: blur(var(--cardo-chrome-blur));
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur));
+}
+
+[data-cardo-theme='apple'] .cardo-box-header,
+[data-cardo-theme='apple'] .cardo-collection-box-header {
+  border-bottom: 0.5px solid var(--cardo-divider);
+  background: transparent;
+  padding: 12px 14px;
+}
+
+[data-cardo-theme='apple'] .cardo-box-footer {
+  border-top: 0.5px solid var(--cardo-divider);
+  background: transparent;
+}
+
+[data-cardo-theme='apple'] .cardo-box-title {
+  font-family: var(--cardo-font-sans);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+[data-cardo-theme='apple'] .cardo-box-temporary {
+  border: 0.5px dashed color-mix(in srgb, var(--box-accent) 40%, var(--cardo-border));
+  background-image: none;
+  background-color: color-mix(in srgb, var(--cardo-surface) 88%, var(--box-accent));
+  box-shadow: var(--cardo-shadow);
+}
