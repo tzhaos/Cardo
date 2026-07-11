@@ -167,8 +167,10 @@
 .cardo-runtime-connection-banner {
   position: fixed;
   z-index: 120;
-  top: 24px;
-  left: 50%;
+  right: 20px;
+  bottom: 72px;
+  left: auto;
+  top: auto;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -182,12 +184,13 @@
   font-size: 0.85rem;
   line-height: 1.3;
   backdrop-filter: blur(12px);
-  transform: translateX(-50%);
+  transform: none;
   pointer-events: none;
 }
 
 .cardo-app-desktop .cardo-runtime-connection-banner {
-  top: 64px;
+  /* Stay above bottom chrome; no title-bar offset needed in the corner. */
+  bottom: 72px;
 }
 
 .cardo-runtime-connection-banner-dot {
