@@ -121,6 +121,8 @@ async function handleRequest(
         port: ctx.getPort(),
         startedBy: ctx.config.startedBy,
         lifetimeMode: ctx.config.lifetimeMode,
+        schemaVersion: DATABASE_SCHEMA_VERSION,
+        servesAppUi: Boolean(ctx.config.serveStaticDir),
       });
       return;
     }

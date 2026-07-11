@@ -1,10 +1,10 @@
 /**
  * Desktop attach-first, embed-if-missing (design §6.6 / §6.6.1).
  *
- * 1. discovery + health → attach (no second SQLite write, no second listen)
- * 2. else spawn detached runtime-child (lifetime=auto) and wait for health
- * 3. No in-process startRuntime fallback — Main must not host Runtime so default
- *    quit cannot kill multi-client Runtime (review PR4 Issue 2).
+ * 1. discovery + health + compatible schema + /app UI → attach
+ * 2. else if existing Runtime is incompatible (old schema / no static UI) → force-stop, then embed
+ * 3. else spawn detached runtime-child (lifetime=auto) and wait for health
+ * 4. No in-process startRuntime fallback — Main must not host Runtime
  *
  * Returns process token + baseUrl for preload injection (never put long-lived token in URL).
  * Caller should load UI from `${baseUrl}/app/` (same-origin RuntimeClient; design §6.4.2).
@@ -14,6 +14,7 @@ import { spawn, type ChildProcess } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { DATABASE_SCHEMA_VERSION } from '../core/database/version';
 import {
   probeRuntimeHealth,
   readDiscoveryFile,
@@ -30,6 +31,7 @@ export interface DesktopRuntimeConnection {
 const WAIT_HEALTH_TIMEOUT_MS = 20_000;
 const WAIT_HEALTH_POLL_MS = 200;
 const STATIC_PROBE_TIMEOUT_MS = 2_000;
+const WAIT_SHUTDOWN_TIMEOUT_MS = 8_000;
 
 let detachedChild: ChildProcess | null = null;
 let detachedChildExited = false;
@@ -48,10 +50,12 @@ export async function ensureDesktopRuntime(options: {
 
   const attached = await tryAttachExisting(paths.discoveryPath);
   if (attached) {
-    await assertRuntimeServesAppUi(attached.baseUrl);
     console.info(`[Cardo] Desktop attach Runtime at ${attached.baseUrl}`);
     return attached;
   }
+
+  // Incompatible or half-built Runtime holding the lock (old schema / no /app UI).
+  await retireIncompatibleRuntime(paths.discoveryPath);
 
   const childEntry = resolveRuntimeChildPath(options.desktopAppRoot);
   if (!childEntry) {
@@ -65,7 +69,13 @@ export async function ensureDesktopRuntime(options: {
 
   const ready = await waitForHealthyDiscovery(paths.discoveryPath, WAIT_HEALTH_TIMEOUT_MS);
   if (ready) {
-    await assertRuntimeServesAppUi(ready.baseUrl);
+    const ok = await runtimeServesAppUi(ready.baseUrl);
+    if (!ok) {
+      throw new Error(
+        `Desktop Runtime started at ${ready.baseUrl} but does not serve /app UI. ` +
+          'Run `npm run desktop:build` (includes web-runtime) and restart Desktop.',
+      );
+    }
     console.info(`[Cardo] Desktop embed-detached Runtime at ${ready.baseUrl}`);
     return {
       baseUrl: ready.baseUrl,
@@ -77,20 +87,23 @@ export async function ensureDesktopRuntime(options: {
   // Another process may have won the lock while our child failed or exited.
   const raceAttach = await tryAttachExisting(paths.discoveryPath);
   if (raceAttach) {
-    await assertRuntimeServesAppUi(raceAttach.baseUrl);
     console.info(`[Cardo] Desktop attach after race at ${raceAttach.baseUrl}`);
     return raceAttach;
   }
 
-  const exitHint =
-    detachedChildExited
-      ? ` runtime-child exited (code=${detachedChildExitCode ?? 'unknown'}).`
-      : '';
+  const exitHint = detachedChildExited
+    ? ` runtime-child exited (code=${detachedChildExitCode ?? 'unknown'}).`
+    : '';
   throw new Error(
-    `Desktop could not attach or start Runtime within ${WAIT_HEALTH_TIMEOUT_MS}ms.${exitHint} See log: ${paths.logPath}`,
+    `Desktop could not attach or start Runtime within ${WAIT_HEALTH_TIMEOUT_MS}ms.${exitHint} ` +
+      `See log: ${paths.logPath}. If a stale Runtime holds the lock, run \`cardo stop\` then retry.`,
   );
 }
 
+/**
+ * Attach only when Runtime is healthy, schema-compatible with this Desktop, and serves /app UI.
+ * Stale CLI/Desktop Runtimes from older builds are not attachable (prevents prefs Zod / blank UI).
+ */
 async function tryAttachExisting(
   discoveryPath: string,
 ): Promise<DesktopRuntimeConnection | null> {
@@ -102,11 +115,86 @@ async function tryAttachExisting(
   if (!healthy) {
     return null;
   }
+  if (discovery.schemaVersion < DATABASE_SCHEMA_VERSION) {
+    console.warn(
+      `[Cardo] Runtime schema ${discovery.schemaVersion} < required ${DATABASE_SCHEMA_VERSION}; not attaching`,
+    );
+    return null;
+  }
+  if (!(await runtimeServesAppUi(discovery.baseUrl))) {
+    console.warn(`[Cardo] Runtime at ${discovery.baseUrl} has no /app UI; not attaching`);
+    return null;
+  }
   return {
     baseUrl: discovery.baseUrl,
     token: discovery.token,
     mode: 'attach',
   };
+}
+
+/**
+ * Stop a running Runtime that blocks embed but is unusable by this Desktop build.
+ */
+async function retireIncompatibleRuntime(discoveryPath: string): Promise<void> {
+  const discovery = readDiscoveryFile(discoveryPath);
+  if (!discovery?.baseUrl || !discovery.token) {
+    return;
+  }
+  const healthy = await probeRuntimeHealth(discovery.baseUrl);
+  if (!healthy) {
+    return;
+  }
+  const schemaOk = discovery.schemaVersion >= DATABASE_SCHEMA_VERSION;
+  const uiOk = await runtimeServesAppUi(discovery.baseUrl);
+  if (schemaOk && uiOk) {
+    return;
+  }
+
+  console.warn(
+    `[Cardo] Retiring incompatible Runtime at ${discovery.baseUrl} ` +
+      `(schema=${discovery.schemaVersion}, appUi=${uiOk})`,
+  );
+  await requestRuntimeShutdown(discovery.baseUrl, discovery.token);
+  await waitForRuntimeGone(discoveryPath, discovery.baseUrl, WAIT_SHUTDOWN_TIMEOUT_MS);
+}
+
+async function requestRuntimeShutdown(baseUrl: string, token: string): Promise<void> {
+  try {
+    const response = await fetch(`${baseUrl.replace(/\/$/, '')}/v1/shutdown`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ type: 'shutdown' }),
+    });
+    if (!response.ok) {
+      console.warn(`[Cardo] Runtime shutdown HTTP ${response.status}`);
+    }
+  } catch (error) {
+    console.warn(
+      `[Cardo] Runtime shutdown request failed: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  }
+}
+
+async function waitForRuntimeGone(
+  discoveryPath: string,
+  baseUrl: string,
+  timeoutMs: number,
+): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const stillHealthy = await probeRuntimeHealth(baseUrl);
+    const discovery = readDiscoveryFile(discoveryPath);
+    if (!stillHealthy && (!discovery || discovery.baseUrl !== baseUrl)) {
+      return;
+    }
+    await sleep(WAIT_HEALTH_POLL_MS);
+  }
+  console.warn(`[Cardo] Timed out waiting for Runtime shutdown at ${baseUrl}`);
 }
 
 function resolveRuntimeChildPath(desktopAppRoot: string): string | null {
@@ -130,11 +218,7 @@ function resolveRuntimeChildPath(desktopAppRoot: string): string | null {
   return null;
 }
 
-/**
- * Runtime-hosted Web UI is required for same-origin Desktop RuntimeClient
- * (design §6.4.2 / §6.5). Desktop loads baseUrl/app/ — not file://.
- */
-export async function assertRuntimeServesAppUi(baseUrl: string): Promise<void> {
+async function runtimeServesAppUi(baseUrl: string): Promise<boolean> {
   const url = `${baseUrl.replace(/\/$/, '')}/app/`;
   try {
     const controller = new AbortController();
@@ -145,17 +229,25 @@ export async function assertRuntimeServesAppUi(baseUrl: string): Promise<void> {
       redirect: 'follow',
     });
     clearTimeout(timer);
-    if (response.ok) {
-      return;
-    }
-    throw new Error(`HTTP ${response.status}`);
-  } catch (error) {
-    const detail = error instanceof Error ? error.message : String(error);
-    throw new Error(
-      `Runtime at ${baseUrl} is healthy but does not serve /app/ UI (${detail}). ` +
-        'Build static UI with `npm run web-runtime:build` (or `npm run desktop:build` / `cardo:build`) and restart Runtime.',
-    );
+    return response.ok;
+  } catch {
+    return false;
   }
+}
+
+/**
+ * Runtime-hosted Web UI is required for same-origin Desktop RuntimeClient
+ * (design §6.4.2 / §6.5). Desktop loads baseUrl/app/ — not file://.
+ */
+export async function assertRuntimeServesAppUi(baseUrl: string): Promise<void> {
+  if (await runtimeServesAppUi(baseUrl)) {
+    return;
+  }
+  throw new Error(
+    `Runtime at ${baseUrl} is healthy but does not serve /app/ UI. ` +
+      'Build with `npm run desktop:build` (or `npm run cardo:build`) and restart Desktop / `cardo serve`. ' +
+      'If an older Runtime is still running, run `cardo stop` first.',
+  );
 }
 
 async function spawnDetachedRuntimeChild(childEntry: string, logPath: string): Promise<void> {
@@ -224,7 +316,7 @@ async function waitForHealthyDiscovery(
     const discovery = readDiscoveryFile(discoveryPath);
     if (discovery?.baseUrl && discovery.token) {
       const healthy = await probeRuntimeHealth(discovery.baseUrl);
-      if (healthy) {
+      if (healthy && discovery.schemaVersion >= DATABASE_SCHEMA_VERSION) {
         return { baseUrl: discovery.baseUrl, token: discovery.token };
       }
     }
@@ -242,23 +334,6 @@ function sleep(ms: number): Promise<void> {
  * Optional tray action — attach quit must NOT call this.
  */
 export async function forceStopDesktopRuntime(connection: DesktopRuntimeConnection): Promise<void> {
-  try {
-    const response = await fetch(`${connection.baseUrl.replace(/\/$/, '')}/v1/shutdown`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${connection.token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ type: 'shutdown' }),
-    });
-    if (!response.ok) {
-      console.warn(`[Cardo] Runtime shutdown HTTP ${response.status}`);
-    }
-  } catch (error) {
-    console.warn(
-      `[Cardo] Runtime shutdown request failed: ${error instanceof Error ? error.message : String(error)}`,
-    );
-  }
-
+  await requestRuntimeShutdown(connection.baseUrl, connection.token);
   detachedChild = null;
 }
