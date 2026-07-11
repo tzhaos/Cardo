@@ -31,7 +31,20 @@ async function main(): Promise<void> {
     // ignore log setup failures
   }
 
+  // Desktop loads `${baseUrl}/app/` same-origin (design §6.4.2 / §6.5). Static UI is required.
   const serveStaticDir = resolveServeStaticDir();
+  if (!serveStaticDir) {
+    const message =
+      'web-runtime static UI not found (artifacts/web-runtime/index.html). Run `npm run web-runtime:build` or `npm run desktop:build`.\n';
+    try {
+      fs.appendFileSync(paths.logPath, `[${new Date().toISOString()}] ${message}`);
+    } catch {
+      // ignore
+    }
+    process.stderr.write(message);
+    process.exitCode = 1;
+    return;
+  }
 
   try {
     const started = await startRuntime({
@@ -44,7 +57,7 @@ async function main(): Promise<void> {
     });
     fs.appendFileSync(
       paths.logPath,
-      `[${new Date().toISOString()}] desktop runtime-child ready ${started.baseUrl}\n`,
+      `[${new Date().toISOString()}] desktop runtime-child ready ${started.baseUrl} static=${serveStaticDir}\n`,
     );
   } catch (error) {
     const err = error as Error & { code?: string; existing?: { baseUrl?: string; pid?: number } };
@@ -76,8 +89,8 @@ async function main(): Promise<void> {
 }
 
 /**
- * Optional: serve Runtime-hosted Web UI if web-runtime artifacts exist.
- * Desktop itself loads the local renderer shell; static dir is for other clients.
+ * Resolve web-runtime artifacts (Vite base `/app/`) for Runtime static hosting.
+ * Desktop BrowserWindow loads `${baseUrl}/app/` same-origin.
  */
 function resolveServeStaticDir(): string | undefined {
   const candidates: string[] = [];

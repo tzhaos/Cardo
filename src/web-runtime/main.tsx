@@ -1,7 +1,7 @@
 /**
  * Runtime-hosted Web entry (design §6.5 / §6.16).
- * Browser AppPorts only — no local DatabasePort. hostPlatform defaults to runtime
- * when ?code= or injection is present.
+ * Also used by Desktop BrowserWindow loading `${baseUrl}/app/` same-origin (PR4).
+ * When preload exposes khaosboxDesktop, use Desktop shell ports (clipboard/dialogs/titlebar).
  */
 
 import { configureAppPorts } from '../core/runtime/appPorts';
@@ -9,6 +9,7 @@ import type { AppPorts } from '../core/ports/AppPorts';
 import { startWebNextApp } from '../web-next/app/start';
 import { browserClipboardPort } from '../extension/clipboard/browserClipboardPort';
 import { browserFileExportPort } from '../extension/files/browserFileExportPort';
+import { createDesktopPorts } from '../desktop/ports/createDesktopPorts';
 
 function createWebRuntimePorts(): AppPorts {
   return {
@@ -62,10 +63,14 @@ function createWebRuntimePorts(): AppPorts {
   };
 }
 
-// Prefer runtime when hosted under /app (cardo open / serve static UI).
+// Prefer runtime when hosted under /app (cardo open / serve static UI / Desktop).
 if (typeof window !== 'undefined' && window.__CARDO_USE_RUNTIME__ == null) {
   window.__CARDO_USE_RUNTIME__ = '1';
 }
 
-configureAppPorts(createWebRuntimePorts());
+// Desktop Electron shell: preload injects khaosboxDesktop + __CARDO_RUNTIME__.
+const useDesktopPorts =
+  typeof window !== 'undefined' && Boolean(window.khaosboxDesktop);
+
+configureAppPorts(useDesktopPorts ? createDesktopPorts() : createWebRuntimePorts());
 startWebNextApp();

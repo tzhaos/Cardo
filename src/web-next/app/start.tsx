@@ -56,7 +56,12 @@ function renderBootstrapError(message: string) {
   body.textContent = message;
   body.style.margin = '0 0 0.75rem';
   const hint = document.createElement('p');
-  hint.textContent = 'Run `cardo open` again to obtain a fresh one-time code.';
+  const isDesktop =
+    typeof window !== 'undefined' &&
+    (Boolean(window.khaosboxDesktop) || window.__CARDO_RUNTIME_MISSING__ === true);
+  hint.textContent = isDesktop
+    ? 'Desktop needs a healthy Cardo Runtime with /app UI. Restart Desktop or run `cardo serve` after `npm run desktop:build`.'
+    : 'Run `cardo open` again to obtain a fresh one-time code.';
   hint.style.cssText = 'margin:0;color:#555;font-size:0.9rem;';
   panel.append(title, body, hint);
   root.append(panel);

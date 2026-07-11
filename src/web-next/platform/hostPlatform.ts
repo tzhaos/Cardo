@@ -59,6 +59,8 @@ declare global {
     __CARDO_RUNTIME__?: CardoRuntimeInjection;
     /** Optional override: '0' forces local, '1' prefers runtime when injection/code available. */
     __CARDO_USE_RUNTIME__?: string;
+    /** Desktop preload fail-closed sentinel when Runtime config IPC is missing (PR4). */
+    __CARDO_RUNTIME_MISSING__?: boolean;
   }
 }
 
@@ -104,8 +106,11 @@ async function resolveHostPlatformMode(): Promise<void> {
 
   const forceLocal = readUseRuntimeFlag() === '0';
   const forceRuntime = readUseRuntimeFlag() === '1';
+  const isDesktopShell =
+    typeof window !== 'undefined' &&
+    (Boolean(window.khaosboxDesktop) || window.__CARDO_RUNTIME_MISSING__ === true);
 
-  if (forceLocal) {
+  if (forceLocal && !isDesktopShell) {
     mode = 'local';
     modeLocked = true;
     return;
@@ -115,6 +120,13 @@ async function resolveHostPlatformMode(): Promise<void> {
   if (injection) {
     await startRuntimeMode(injection.baseUrl, injection.token, injection.client ?? 'web');
     return;
+  }
+
+  // Desktop after PR4: never fall back to local DatabasePort (fail-closed).
+  if (isDesktopShell) {
+    throw new Error(
+      'Desktop Runtime config missing. Main must inject window.__CARDO_RUNTIME__ via preload before load.',
+    );
   }
 
   const code = readBootstrapCodeFromLocation();
@@ -139,14 +151,15 @@ async function resolveHostPlatformMode(): Promise<void> {
     return;
   }
 
-  if (forceRuntime && isLikelyRuntimeHostedPage()) {
+  if (forceRuntime || isDesktopShell) {
     throw new Error(
-      'Runtime mode requested but no token. Open via `cardo open` (one-time code bootstrap).',
+      isDesktopShell
+        ? 'Desktop requires RuntimeClient config (preload __CARDO_RUNTIME__).'
+        : 'Runtime mode requested but no token. Open via `cardo open` (one-time code bootstrap).',
     );
   }
 
   // Extension (until PR5) or shells without injection — local DatabasePort path.
-  // Desktop Main must inject __CARDO_RUNTIME__ via preload (PR4).
   mode = 'local';
   modeLocked = true;
 }

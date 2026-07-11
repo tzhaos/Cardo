@@ -19,7 +19,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { normalizeLocalResourcePath } from '../core/services/localResourcePath';
 import { CARDO_USER_DATA_DIR_NAME } from '../runtime/paths';
-import { stopRuntime } from '../runtime/index';
 import {
   ensureDesktopRuntime,
   forceStopDesktopRuntime,
@@ -69,12 +68,13 @@ function getDesktopAppPath(...segments: string[]) {
   return path.join(desktopAppRoot, ...segments);
 }
 
-function getRendererIndexPath() {
-  return getDesktopAppPath('renderer', 'assets', 'desktop-shell', 'index.html');
-}
-
 function getPreloadScriptPath() {
   return getDesktopAppPath('main', 'preload.cjs');
+}
+
+/** Same-origin Runtime-hosted UI (design §6.4.2 / §6.5). Never file:// for business RuntimeClient. */
+function getRuntimeAppUrl(baseUrl: string): string {
+  return `${baseUrl.replace(/\/$/, '')}/app/`;
 }
 
 function getTrayIconPath() {
@@ -453,10 +453,13 @@ function registerIpcHandlers() {
 
 async function createWindow() {
   const preloadScript = getPreloadScriptPath();
-  const rendererIndex = getRendererIndexPath();
 
   if (!fs.existsSync(preloadScript)) {
     console.error('Preload script is missing', preloadScript);
+  }
+
+  if (!runtimeConnection) {
+    throw new Error('createWindow requires Runtime connection (ensureDesktopRuntime first).');
   }
 
   const win = new BrowserWindow({
@@ -490,12 +493,11 @@ async function createWindow() {
     updateTrayMenu();
   });
 
-  if (process.env.KHAOSBOX_DESKTOP_DEV_SERVER_URL) {
-    await win.loadURL(process.env.KHAOSBOX_DESKTOP_DEV_SERVER_URL);
-    return;
-  }
-
-  await win.loadFile(rendererIndex);
+  // Same-origin with Runtime HTTP so RuntimeClient is not blocked by CORS (design §6.4.2).
+  // Token stays in preload memory (__CARDO_RUNTIME__), never in the URL.
+  const appUrl = getRuntimeAppUrl(runtimeConnection.baseUrl);
+  console.info(`[Cardo] Loading Desktop UI from Runtime ${appUrl}`);
+  await win.loadURL(appUrl);
 }
 
 const singleInstanceLock = app.requestSingleInstanceLock();
@@ -543,11 +545,9 @@ if (!singleInstanceLock) {
   });
 
   app.on('will-quit', () => {
-    // Attach / detached embed: do not kill Runtime (other clients may remain).
-    // In-process embed dies with Main anyway; stopRuntime clears lock/discovery cleanly.
-    if (runtimeConnection?.inProcess) {
-      void stopRuntime();
-    }
+    // Attach / detached embed: never stop Runtime on quit (design §6.6.1).
+    // Other clients may still be connected; auto lifetime + grace handles last-client stop.
+    // Force-stop is only via tray 「退出并停止 Runtime」 → /v1/shutdown.
     tray?.destroy();
     tray = null;
   });

@@ -3,9 +3,11 @@
  *
  * 1. discovery + health → attach (no second SQLite write, no second listen)
  * 2. else spawn detached runtime-child (lifetime=auto) and wait for health
- * 3. fallback: in-process startRuntime (same path resolver db) if child entry missing
+ * 3. No in-process startRuntime fallback — Main must not host Runtime so default
+ *    quit cannot kill multi-client Runtime (review PR4 Issue 2).
  *
  * Returns process token + baseUrl for preload injection (never put long-lived token in URL).
+ * Caller should load UI from `${baseUrl}/app/` (same-origin RuntimeClient; design §6.4.2).
  */
 
 import { spawn, type ChildProcess } from 'node:child_process';
@@ -13,36 +15,29 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  isRuntimeRunning,
   probeRuntimeHealth,
   readDiscoveryFile,
   resolveCardoDataPaths,
-  startRuntime,
-  type StartedRuntime,
 } from '../runtime/index';
-import { defaultOpenLocalResource } from '../runtime/openLocalResourceHook';
 
 export interface DesktopRuntimeConnection {
   baseUrl: string;
   token: string;
   /** How Desktop obtained this Runtime (diagnostics only). */
-  mode: 'attach' | 'embed-detached' | 'embed-in-process';
-  /** True when this Desktop process hosts Runtime in-process (must not kill on attach-quit). */
-  inProcess: boolean;
+  mode: 'attach' | 'embed-detached';
 }
 
 const WAIT_HEALTH_TIMEOUT_MS = 20_000;
 const WAIT_HEALTH_POLL_MS = 200;
+const STATIC_PROBE_TIMEOUT_MS = 2_000;
 
-let inProcessStarted: StartedRuntime | null = null;
 let detachedChild: ChildProcess | null = null;
-
-export function getInProcessStartedRuntime(): StartedRuntime | null {
-  return inProcessStarted;
-}
+let detachedChildExited = false;
+let detachedChildExitCode: number | null = null;
 
 /**
- * Discover a healthy Runtime or embed one (detached preferred).
+ * Discover a healthy Runtime or embed a detached one.
+ * Never starts Runtime inside the Electron Main process.
  */
 export async function ensureDesktopRuntime(options: {
   /** Absolute path to desktop app root (parent of `main/`). */
@@ -53,75 +48,47 @@ export async function ensureDesktopRuntime(options: {
 
   const attached = await tryAttachExisting(paths.discoveryPath);
   if (attached) {
+    await assertRuntimeServesAppUi(attached.baseUrl);
     console.info(`[Cardo] Desktop attach Runtime at ${attached.baseUrl}`);
     return attached;
   }
 
   const childEntry = resolveRuntimeChildPath(options.desktopAppRoot);
-  if (childEntry) {
-    console.info(`[Cardo] Desktop embed: spawning detached runtime-child at ${childEntry}`);
-    await spawnDetachedRuntimeChild(childEntry, paths.logPath);
-    const ready = await waitForHealthyDiscovery(paths.discoveryPath, WAIT_HEALTH_TIMEOUT_MS);
-    if (ready) {
-      console.info(`[Cardo] Desktop embed-detached Runtime at ${ready.baseUrl}`);
-      return {
-        baseUrl: ready.baseUrl,
-        token: ready.token,
-        mode: 'embed-detached',
-        inProcess: false,
-      };
-    }
-    console.warn(
-      `[Cardo] Detached runtime-child did not become healthy; trying in-process embed. Log: ${paths.logPath}`,
+  if (!childEntry) {
+    throw new Error(
+      'Desktop Runtime child entry missing (main/runtime-child.js). Run `npm run desktop:build`.',
     );
-  } else {
-    console.warn('[Cardo] runtime-child.js not found; using in-process startRuntime embed');
   }
 
-  // Race: another process may have won the lock while we waited.
+  console.info(`[Cardo] Desktop embed: spawning detached runtime-child at ${childEntry}`);
+  await spawnDetachedRuntimeChild(childEntry, paths.logPath);
+
+  const ready = await waitForHealthyDiscovery(paths.discoveryPath, WAIT_HEALTH_TIMEOUT_MS);
+  if (ready) {
+    await assertRuntimeServesAppUi(ready.baseUrl);
+    console.info(`[Cardo] Desktop embed-detached Runtime at ${ready.baseUrl}`);
+    return {
+      baseUrl: ready.baseUrl,
+      token: ready.token,
+      mode: 'embed-detached',
+    };
+  }
+
+  // Another process may have won the lock while our child failed or exited.
   const raceAttach = await tryAttachExisting(paths.discoveryPath);
   if (raceAttach) {
+    await assertRuntimeServesAppUi(raceAttach.baseUrl);
     console.info(`[Cardo] Desktop attach after race at ${raceAttach.baseUrl}`);
     return raceAttach;
   }
 
-  if (isRuntimeRunning()) {
-    const info = getInProcessInfoOrThrow();
-    return info;
-  }
-
-  try {
-    inProcessStarted = await startRuntime({
-      startedBy: 'desktop',
-      lifetimeMode: 'auto',
-      serveStaticDir: resolveOptionalServeStaticDir(options.desktopAppRoot),
-      hooks: {
-        openLocalResource: defaultOpenLocalResource,
-      },
-    });
-  } catch (error) {
-    const err = error as Error & { code?: string };
-    if (err.code === 'runtime_already_running') {
-      const after = await waitForHealthyDiscovery(paths.discoveryPath, WAIT_HEALTH_TIMEOUT_MS);
-      if (after) {
-        return {
-          baseUrl: after.baseUrl,
-          token: after.token,
-          mode: 'attach',
-          inProcess: false,
-        };
-      }
-    }
-    throw error;
-  }
-
-  console.info(`[Cardo] Desktop embed-in-process Runtime at ${inProcessStarted.baseUrl}`);
-  return {
-    baseUrl: inProcessStarted.baseUrl,
-    token: inProcessStarted.token,
-    mode: 'embed-in-process',
-    inProcess: true,
-  };
+  const exitHint =
+    detachedChildExited
+      ? ` runtime-child exited (code=${detachedChildExitCode ?? 'unknown'}).`
+      : '';
+  throw new Error(
+    `Desktop could not attach or start Runtime within ${WAIT_HEALTH_TIMEOUT_MS}ms.${exitHint} See log: ${paths.logPath}`,
+  );
 }
 
 async function tryAttachExisting(
@@ -139,26 +106,12 @@ async function tryAttachExisting(
     baseUrl: discovery.baseUrl,
     token: discovery.token,
     mode: 'attach',
-    inProcess: false,
-  };
-}
-
-function getInProcessInfoOrThrow(): DesktopRuntimeConnection {
-  if (!inProcessStarted) {
-    throw new Error('In-process Runtime is running but connection info is missing.');
-  }
-  return {
-    baseUrl: inProcessStarted.baseUrl,
-    token: inProcessStarted.token,
-    mode: 'embed-in-process',
-    inProcess: true,
   };
 }
 
 function resolveRuntimeChildPath(desktopAppRoot: string): string | null {
   const candidates = [
     path.join(desktopAppRoot, 'main', 'runtime-child.js'),
-    // When desktopAppRoot is artifacts/desktop
     path.resolve(desktopAppRoot, 'main', 'runtime-child.js'),
   ];
 
@@ -177,22 +130,39 @@ function resolveRuntimeChildPath(desktopAppRoot: string): string | null {
   return null;
 }
 
-function resolveOptionalServeStaticDir(desktopAppRoot: string): string | undefined {
-  const candidates = [
-    path.resolve(desktopAppRoot, '../web-runtime'),
-    path.resolve(process.cwd(), 'artifacts/web-runtime'),
-  ];
-  for (const dir of candidates) {
-    if (fs.existsSync(path.join(dir, 'index.html'))) {
-      return dir;
+/**
+ * Runtime-hosted Web UI is required for same-origin Desktop RuntimeClient
+ * (design §6.4.2 / §6.5). Desktop loads baseUrl/app/ — not file://.
+ */
+export async function assertRuntimeServesAppUi(baseUrl: string): Promise<void> {
+  const url = `${baseUrl.replace(/\/$/, '')}/app/`;
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), STATIC_PROBE_TIMEOUT_MS);
+    const response = await fetch(url, {
+      method: 'GET',
+      signal: controller.signal,
+      redirect: 'follow',
+    });
+    clearTimeout(timer);
+    if (response.ok) {
+      return;
     }
+    throw new Error(`HTTP ${response.status}`);
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Runtime at ${baseUrl} is healthy but does not serve /app/ UI (${detail}). ` +
+        'Build static UI with `npm run web-runtime:build` (or `npm run desktop:build` / `cardo:build`) and restart Runtime.',
+    );
   }
-  return undefined;
 }
 
 async function spawnDetachedRuntimeChild(childEntry: string, logPath: string): Promise<void> {
   fs.mkdirSync(path.dirname(logPath), { recursive: true });
   const logFd = fs.openSync(logPath, 'a');
+  detachedChildExited = false;
+  detachedChildExitCode = null;
 
   try {
     // Electron as Node runner so packaged Desktop does not depend on system node.
@@ -204,6 +174,22 @@ async function spawnDetachedRuntimeChild(childEntry: string, logPath: string): P
         ELECTRON_RUN_AS_NODE: '1',
       },
       windowsHide: true,
+    });
+    child.once('exit', (code) => {
+      detachedChildExited = true;
+      detachedChildExitCode = code;
+      if (detachedChild === child) {
+        detachedChild = null;
+      }
+      console.warn(
+        `[Cardo] runtime-child exited code=${code ?? 'null'} (pid was ${child.pid ?? 'unknown'})`,
+      );
+    });
+    child.once('error', (error) => {
+      detachedChildExited = true;
+      console.error(
+        `[Cardo] runtime-child spawn error: ${error instanceof Error ? error.message : String(error)}`,
+      );
     });
     child.unref();
     detachedChild = child;
@@ -223,6 +209,18 @@ async function waitForHealthyDiscovery(
 ): Promise<{ baseUrl: string; token: string } | null> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
+    // Abort early if our child already died without producing a healthy Runtime.
+    if (detachedChildExited) {
+      const discovery = readDiscoveryFile(discoveryPath);
+      if (discovery?.baseUrl && discovery.token) {
+        const healthy = await probeRuntimeHealth(discovery.baseUrl);
+        if (healthy) {
+          return { baseUrl: discovery.baseUrl, token: discovery.token };
+        }
+      }
+      return null;
+    }
+
     const discovery = readDiscoveryFile(discoveryPath);
     if (discovery?.baseUrl && discovery.token) {
       const healthy = await probeRuntimeHealth(discovery.baseUrl);
@@ -262,7 +260,5 @@ export async function forceStopDesktopRuntime(connection: DesktopRuntimeConnecti
     );
   }
 
-  // Detached child may already be exiting; clear local refs.
   detachedChild = null;
-  inProcessStarted = null;
 }
