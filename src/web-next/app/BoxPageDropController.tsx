@@ -13,7 +13,10 @@ import {
   clientPointToCanvasWorld,
   constrainBoxFrameToCanvas,
   createCanvasWorldBounds,
+  getCanvasViewportCenter,
+  getVisibleCanvasWorldBounds,
 } from '../domain/canvasGeometry';
+import { findViewportAdaptiveFrame, isFrameFreeInViewport } from '../domain/placement';
 import type { BoxFrame } from '../domain/workspace';
 import { isCollectionPageId, isRecycleBinPageId } from '../domain/workspace';
 
@@ -64,23 +67,28 @@ export function BoxPageDropController() {
       activeTransferPageIdRef.current = pageId;
 
       const dragSession = useUiStore.getState().boxDragSession;
-      const frameSource = dragSession?.latestFrame ?? movingBox.frame;
-      const nextFrame = frameUnderPointer(clientX, clientY, pageId, frameSource);
+      const sizeSource = dragSession?.latestFrame ?? movingBox.frame;
+      const transformOrigin = dragSession?.transformOrigin ?? '50% 50%';
+      // Keep the grab point under the cursor across page cameras so the compact
+      // floating box does not jump when the destination page mounts.
+      const nextFrame = framePreservingGrabUnderPointer(
+        clientX,
+        clientY,
+        pageId,
+        sizeSource,
+        transformOrigin,
+      );
       if (!nextFrame) return;
 
+      // Rebase before the async write so remounted frames read stable coordinates.
+      useUiStore.getState().rebaseBoxDragSession(nextFrame, clientX, clientY);
+
       const generation = ++transferGenerationRef.current;
-      void workspace
-        .moveBoxToPage(draggedBoxId, pageId, nextFrame)
-        .then(() => {
-          if (generation !== transferGenerationRef.current) return;
-          if (useUiStore.getState().draggedBoxId !== draggedBoxId) return;
-          useUiStore.getState().rebaseBoxDragSession(nextFrame, clientX, clientY);
-        })
-        .catch(() => {
-          if (generation === transferGenerationRef.current) {
-            activeTransferPageIdRef.current = null;
-          }
-        });
+      void workspace.moveBoxToPage(draggedBoxId, pageId, nextFrame).catch(() => {
+        if (generation === transferGenerationRef.current) {
+          activeTransferPageIdRef.current = null;
+        }
+      });
     };
 
     const updateDropTarget = ({ clientX, clientY }: { clientX: number; clientY: number }) => {
@@ -119,10 +127,6 @@ export function BoxPageDropController() {
   return null;
 }
 
-/**
- * Single write path for box-drag completion: always place at the pointer's
- * world position on the destination page. No center landing, no scale-from-origin.
- */
 function commitBoxDragRelease(draggedBoxId: string, event: PointerEvent) {
   const ui = useUiStore.getState();
   const workspace = useWorkspaceStore.getState();
@@ -142,35 +146,68 @@ function commitBoxDragRelease(draggedBoxId: string, event: PointerEvent) {
 
   const destinationPageId =
     tabPageId && !isCollectionPageId(tabPageId) ? tabPageId : movingBox.pageId;
+  const canvas = useCanvasStore.getState();
+  const pageCanvas = getPageCanvasState(canvas, destinationPageId);
+  const viewportBounds = getVisibleCanvasWorldBounds(pageCanvas.camera, canvas.viewportSize);
+  const canvasBounds = createCanvasWorldBounds(canvas.viewportSize);
+  const occupiedFrames = workspace.projection.boxes
+    .filter((box) => box.pageId === destinationPageId && box.id !== draggedBoxId)
+    .map((box) => box.frame);
 
-  // Prefer the live drag frame (mouse-followed top-left). Only reproject when the
-  // destination page is not yet the box's page (hover transfer still in flight).
-  const releaseFrame =
-    movingBox.pageId === destinationPageId
-      ? dragSession.latestFrame
-      : (frameUnderPointer(
-          event.clientX,
-          event.clientY,
-          destinationPageId,
-          dragSession.latestFrame,
-        ) ?? dragSession.latestFrame);
+  const pointerFrame =
+    framePreservingGrabUnderPointer(
+      event.clientX,
+      event.clientY,
+      destinationPageId,
+      dragSession.latestFrame,
+      dragSession.transformOrigin,
+    ) ?? dragSession.latestFrame;
+
+  const releasedOnTab = Boolean(tabPageId) && ui.boxDragOverTopBar;
+  const preferredCenter = releasedOnTab
+    ? getCanvasViewportCenter(pageCanvas.camera, canvas.viewportSize)
+    : {
+        x: pointerFrame.x + pointerFrame.width / 2,
+        y: pointerFrame.y + pointerFrame.height / 2,
+      };
+
+  // Keep the free pointer drop when it already sits cleanly in the viewport.
+  // Otherwise (tab release, crowded, off-screen) adapt into the visible area.
+  const landingFrame =
+    !releasedOnTab && isFrameFreeInViewport(pointerFrame, viewportBounds, occupiedFrames)
+      ? constrainBoxFrameToCanvas(pointerFrame, canvasBounds)
+      : findViewportAdaptiveFrame({
+          size: { width: pointerFrame.width, height: pointerFrame.height },
+          preferredCenter,
+          viewportBounds,
+          canvasBounds,
+          occupiedFrames,
+        });
+
+  ui.setPendingBoxLanding(draggedBoxId, landingFrame);
 
   if (movingBox.pageId !== destinationPageId) {
-    void workspace.moveBoxToPage(draggedBoxId, destinationPageId, releaseFrame);
+    void workspace.moveBoxToPage(draggedBoxId, destinationPageId, landingFrame);
     return;
   }
 
   if (workspace.projection.activePageId !== destinationPageId) {
     workspace.setActivePage(destinationPageId);
   }
-  workspace.updateBoxFrame(draggedBoxId, releaseFrame);
+  workspace.updateBoxFrame(draggedBoxId, landingFrame);
 }
 
-function frameUnderPointer(
+/**
+ * Convert the pointer into a destination-page world frame so the grab point
+ * (transform origin) stays under the cursor. This is camera-invariant and avoids
+ * recentering jumps when the active page switches mid-drag.
+ */
+function framePreservingGrabUnderPointer(
   clientX: number,
   clientY: number,
   pageId: string,
   sizeSource: BoxFrame,
+  transformOrigin: string,
 ): BoxFrame | null {
   const canvas = useCanvasStore.getState();
   const canvasRect = getCanvasElement()?.getBoundingClientRect();
@@ -182,13 +219,31 @@ function frameUnderPointer(
     canvasRect,
     pageCanvas.camera,
   );
+  const grabLocal = resolveGrabLocalOffset(transformOrigin, sizeSource);
 
   return constrainBoxFrameToCanvas(
     {
       ...sizeSource,
-      x: Math.round(pointerWorld.x - sizeSource.width / 2),
-      y: Math.round(pointerWorld.y - sizeSource.height / 2),
+      x: Math.round(pointerWorld.x - grabLocal.x),
+      y: Math.round(pointerWorld.y - grabLocal.y),
     },
     createCanvasWorldBounds(canvas.viewportSize),
   );
+}
+
+function resolveGrabLocalOffset(origin: string, frame: BoxFrame) {
+  const [rawX = '50%', rawY = '50%'] = origin.trim().split(/\s+/);
+  return {
+    x: parseOriginToken(rawX, frame.width),
+    y: parseOriginToken(rawY, frame.height),
+  };
+}
+
+function parseOriginToken(token: string, size: number) {
+  if (token.endsWith('%')) {
+    const percent = Number.parseFloat(token);
+    return Number.isFinite(percent) ? (size * percent) / 100 : size / 2;
+  }
+  const pixels = Number.parseFloat(token);
+  return Number.isFinite(pixels) ? pixels : size / 2;
 }

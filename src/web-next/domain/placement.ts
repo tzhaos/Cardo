@@ -9,6 +9,7 @@ const BOX_GAP = 24;
 const SEARCH_STEP = 24;
 const DEFAULT_BOX_WIDTH = 320;
 const DEFAULT_BOX_HEIGHT = 240;
+const VIEWPORT_MARGIN = 16;
 
 export function createBoxFrameCenteredAt(point: CanvasPoint): BoxFrame {
   return {
@@ -47,24 +48,64 @@ export function findPageLandingFrame(
     return null;
   }
 
-  const { width, height } = movingBox.frame;
+  return findViewportAdaptiveFrame({
+    size: { width: movingBox.frame.width, height: movingBox.frame.height },
+    preferredCenter,
+    viewportBounds: bounds,
+    canvasBounds: bounds,
+    occupiedFrames: projection.boxes
+      .filter((box) => box.pageId === pageId && box.id !== boxId)
+      .map((box) => box.frame),
+  });
+}
+
+/**
+ * Place a box inside the current viewport:
+ * 1. Prefer a free slot near preferredCenter (no overlap, with gap).
+ * 2. If the viewport is full, choose the lowest-overlap slot among existing boxes.
+ * Always clamp to both the visible viewport and the canvas world bounds.
+ */
+export function findViewportAdaptiveFrame({
+  size,
+  preferredCenter,
+  viewportBounds,
+  canvasBounds,
+  occupiedFrames,
+  gap = BOX_GAP,
+}: {
+  size: { width: number; height: number };
+  preferredCenter: CanvasPoint;
+  viewportBounds: CanvasWorldBounds;
+  canvasBounds: CanvasWorldBounds;
+  occupiedFrames: BoxFrame[];
+  gap?: number;
+}): BoxFrame {
+  const placementBounds = intersectBounds(viewportBounds, canvasBounds, VIEWPORT_MARGIN);
   const preferredFrame = constrainBoxFrameToCanvas(
     {
-      x: Math.round(preferredCenter.x - width / 2),
-      y: Math.round(preferredCenter.y - height / 2),
-      width,
-      height,
+      x: Math.round(preferredCenter.x - size.width / 2),
+      y: Math.round(preferredCenter.y - size.height / 2),
+      width: size.width,
+      height: size.height,
     },
-    bounds,
+    placementBounds,
   );
-  const occupiedFrames = projection.boxes
-    .filter((box) => box.pageId === pageId && box.id !== boxId)
-    .map((box) => box.frame);
 
   return (
-    findAvailableFrame(preferredFrame, occupiedFrames, bounds) ??
-    findLowestOverlapFrame(preferredFrame, occupiedFrames, bounds)
+    findAvailableFrame(preferredFrame, occupiedFrames, placementBounds, gap) ??
+    findLowestOverlapFrame(preferredFrame, occupiedFrames, placementBounds)
   );
+}
+
+export function isFrameFreeInViewport(
+  frame: BoxFrame,
+  viewportBounds: CanvasWorldBounds,
+  occupiedFrames: BoxFrame[],
+  gap = BOX_GAP,
+) {
+  const padded = insetBounds(viewportBounds, VIEWPORT_MARGIN);
+  if (!frameContainedBy(frame, padded)) return false;
+  return occupiedFrames.every((occupied) => !framesOverlap(frame, occupied, gap));
 }
 
 export function findAvailableFrame(
@@ -165,4 +206,47 @@ function framesOverlap(first: BoxFrame, second: BoxFrame, gap: number) {
     first.y < second.y + second.height + gap &&
     first.y + first.height + gap > second.y
   );
+}
+
+function frameContainedBy(frame: BoxFrame, bounds: CanvasWorldBounds) {
+  return (
+    frame.x >= bounds.minX &&
+    frame.y >= bounds.minY &&
+    frame.x + frame.width <= bounds.maxX &&
+    frame.y + frame.height <= bounds.maxY
+  );
+}
+
+function insetBounds(bounds: CanvasWorldBounds, margin: number): CanvasWorldBounds {
+  const minX = bounds.minX + margin;
+  const minY = bounds.minY + margin;
+  const maxX = bounds.maxX - margin;
+  const maxY = bounds.maxY - margin;
+  return {
+    minX,
+    minY,
+    maxX: Math.max(minX, maxX),
+    maxY: Math.max(minY, maxY),
+    width: Math.max(0, maxX - minX),
+    height: Math.max(0, maxY - minY),
+  };
+}
+
+function intersectBounds(
+  first: CanvasWorldBounds,
+  second: CanvasWorldBounds,
+  margin = 0,
+): CanvasWorldBounds {
+  const minX = Math.max(first.minX, second.minX) + margin;
+  const minY = Math.max(first.minY, second.minY) + margin;
+  const maxX = Math.min(first.maxX, second.maxX) - margin;
+  const maxY = Math.min(first.maxY, second.maxY) - margin;
+  return {
+    minX,
+    minY,
+    maxX: Math.max(minX, maxX),
+    maxY: Math.max(minY, maxY),
+    width: Math.max(0, maxX - minX),
+    height: Math.max(0, maxY - minY),
+  };
 }

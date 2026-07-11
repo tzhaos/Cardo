@@ -31,6 +31,7 @@ interface UiStore {
     entryScale: number;
     entryTransformOrigin: string;
   } | null;
+  pendingBoxLanding: { boxId: string; frame: BoxFrame } | null;
   selectedBoxId: string | null;
   highlightedBoxId: string | null;
   searchQuery: string;
@@ -55,6 +56,8 @@ interface UiStore {
     entryTransformOrigin: string,
   ) => void;
   clearBoxDropRelease: () => void;
+  setPendingBoxLanding: (boxId: string, frame: BoxFrame) => void;
+  clearPendingBoxLanding: (boxId?: string) => void;
   endBoxDrag: () => void;
 }
 
@@ -68,6 +71,7 @@ export const useUiStore = create<UiStore>((set) => ({
   boxDragOverTopBar: false,
   boxDropPageId: null,
   boxDropRelease: null,
+  pendingBoxLanding: null,
   selectedBoxId: null,
   highlightedBoxId: null,
   searchQuery: '',
@@ -119,6 +123,7 @@ export const useUiStore = create<UiStore>((set) => ({
       boxDragOverTopBar: false,
       boxDropPageId: null,
       boxDropRelease: null,
+      pendingBoxLanding: null,
       selectedBoxId: session.boxId,
     }),
   updateBoxDragFrame: (frame) =>
@@ -154,6 +159,13 @@ export const useUiStore = create<UiStore>((set) => ({
   finishBoxDrop: (boxId, pageId, entryFrame, entryScale, entryTransformOrigin) =>
     set({ boxDropRelease: { boxId, pageId, entryFrame, entryScale, entryTransformOrigin } }),
   clearBoxDropRelease: () => set({ boxDropRelease: null }),
+  setPendingBoxLanding: (boxId, frame) => set({ pendingBoxLanding: { boxId, frame } }),
+  clearPendingBoxLanding: (boxId) =>
+    set((state) =>
+      !state.pendingBoxLanding || (boxId && state.pendingBoxLanding.boxId !== boxId)
+        ? state
+        : { pendingBoxLanding: null },
+    ),
   endBoxDrag: () =>
     set({
       draggedBoxId: null,

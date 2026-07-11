@@ -84,8 +84,12 @@ export function BaseBoxFrame({
   const beginBoxDrag = useUiStore((state) => state.beginBoxDrag);
   const updateBoxDragFrame = useUiStore((state) => state.updateBoxDragFrame);
   const endBoxDrag = useUiStore((state) => state.endBoxDrag);
+  const clearPendingBoxLanding = useUiStore((state) => state.clearPendingBoxLanding);
   const draggedBoxId = useUiStore((state) => state.draggedBoxId);
   const boxDragSession = useUiStore((state) => state.boxDragSession);
+  const pendingBoxLanding = useUiStore((state) =>
+    state.pendingBoxLanding?.boxId === box.id ? state.pendingBoxLanding : null,
+  );
   const boxDragOverTopBar = useUiStore((state) => state.boxDragOverTopBar);
   const boxDropPageId = useUiStore((state) => state.boxDropPageId);
   const selectedBoxId = useUiStore((state) => state.selectedBoxId);
@@ -109,8 +113,7 @@ export function BaseBoxFrame({
   const pointerSessionRef = useRef<WindowPointerSession | null>(null);
   const deleteTargetRef = useRef<HTMLElement | null>(null);
   const deleteCommittedRef = useRef(false);
-  const releaseFrameRef = useRef<typeof box.frame | null>(null);
-  const suppressStaleLandingRef = useRef(false);
+  const holdVisualUntilLandingRef = useRef(false);
   const boxLeft = useMotionValue(box.frame.x);
   const boxTop = useMotionValue(box.frame.y);
   const boxWidth = useMotionValue(box.frame.width);
@@ -129,13 +132,16 @@ export function BaseBoxFrame({
       startClientX: number;
       startClientY: number;
       startFrame: (typeof box)['frame'];
+      latestFrame?: (typeof box)['frame'];
       transformOrigin: string;
     }) => {
       pointerSessionRef.current?.dispose();
       setDragTransformOrigin(session.transformOrigin);
-      boxLeft.set(session.startFrame.x);
-      boxTop.set(session.startFrame.y);
-      let latestFrame = session.startFrame;
+      // Prefer latestFrame so page-transfer rebases do not flash the pre-switch coords.
+      const initialFrame = session.latestFrame ?? session.startFrame;
+      boxLeft.set(initialFrame.x);
+      boxTop.set(initialFrame.y);
+      let latestFrame = initialFrame;
       const pointerSession = startWindowPointerSession({
         pointerId: session.pointerId,
         onMove: (moveEvent) => {
@@ -160,10 +166,8 @@ export function BaseBoxFrame({
         },
         onEnd: () => {
           dragTiltTarget.set(0);
-          // Hold the visual at the release point until projection catches up.
-          // Database commit and endBoxDrag are owned by BoxPageDropController.
-          releaseFrameRef.current = latestFrame;
-          suppressStaleLandingRef.current = true;
+          // Hold the floating visual until the adaptive landing is applied.
+          holdVisualUntilLandingRef.current = true;
           boxLeft.set(latestFrame.x);
           boxTop.set(latestFrame.y);
           if (pointerSessionRef.current === pointerSession) {
@@ -308,36 +312,52 @@ export function BaseBoxFrame({
       return;
     }
 
-    // After a drag release, hold the pointer frame until the projection write lands.
-    // Never spring back to a stale pre-drag / pre-transfer page coordinate.
-    if (suppressStaleLandingRef.current) {
-      const release = releaseFrameRef.current;
-      if (
-        release &&
-        Math.abs(box.frame.x - release.x) < 1 &&
-        Math.abs(box.frame.y - release.y) < 1 &&
-        Math.abs(box.frame.width - release.width) < 1 &&
-        Math.abs(box.frame.height - release.height) < 1
-      ) {
-        suppressStaleLandingRef.current = false;
-        releaseFrameRef.current = null;
-        boxLeft.set(box.frame.x);
-        boxTop.set(box.frame.y);
+    const projectedFrame = {
+      x: box.frame.x,
+      y: box.frame.y,
+      width: box.frame.width,
+      height: box.frame.height,
+    };
+    const targetFrame = pendingBoxLanding?.frame ?? projectedFrame;
+
+    // After release, ignore stale projection snapshots (old page / old frame)
+    // until the adaptive landing intent is available or projection matches visual.
+    if (holdVisualUntilLandingRef.current) {
+      const visualMatchesProjection =
+        Math.abs(projectedFrame.x - boxLeft.get()) < 2 &&
+        Math.abs(projectedFrame.y - boxTop.get()) < 2;
+      if (pendingBoxLanding) {
+        holdVisualUntilLandingRef.current = false;
+      } else if (visualMatchesProjection) {
+        holdVisualUntilLandingRef.current = false;
+        boxLeft.set(projectedFrame.x);
+        boxTop.set(projectedFrame.y);
+        return;
+      } else {
+        return;
       }
-      return;
     }
 
     const alreadyThere =
-      Math.abs(boxLeft.get() - box.frame.x) < 0.5 && Math.abs(boxTop.get() - box.frame.y) < 0.5;
+      Math.abs(boxLeft.get() - targetFrame.x) < 0.5 && Math.abs(boxTop.get() - targetFrame.y) < 0.5;
     if (alreadyThere) {
-      boxLeft.set(box.frame.x);
-      boxTop.set(box.frame.y);
+      boxLeft.set(targetFrame.x);
+      boxTop.set(targetFrame.y);
+      if (pendingBoxLanding) clearPendingBoxLanding(box.id);
       return;
     }
 
-    const positionTransition = { type: 'spring' as const, damping: 28, stiffness: 260 };
-    const leftAnimation = animateMotion(boxLeft, box.frame.x, positionTransition);
-    const topAnimation = animateMotion(boxTop, box.frame.y, positionTransition);
+    const positionTransition = {
+      type: 'spring' as const,
+      damping: pendingBoxLanding ? 26 : 28,
+      stiffness: pendingBoxLanding ? 220 : 260,
+      mass: pendingBoxLanding ? 0.9 : 1,
+    };
+    const leftAnimation = animateMotion(boxLeft, targetFrame.x, positionTransition);
+    const topAnimation = animateMotion(boxTop, targetFrame.y, positionTransition);
+    void leftAnimation.then(() => {
+      if (pendingBoxLanding) clearPendingBoxLanding(box.id);
+    });
     return () => {
       leftAnimation.stop();
       topAnimation.stop();
@@ -347,11 +367,14 @@ export function BaseBoxFrame({
     box.frame.width,
     box.frame.x,
     box.frame.y,
+    box.id,
     boxHeight,
     boxLeft,
     boxTop,
     boxWidth,
+    clearPendingBoxLanding,
     dragging,
+    pendingBoxLanding,
   ]);
 
   const startDeleteMotion = () => {
