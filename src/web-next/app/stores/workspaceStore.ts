@@ -218,17 +218,21 @@ async function refreshProjection() {
 }
 
 function structurallyShare<T>(previous: T, next: T): T {
+  return structurallyShareValue(previous, next) as T;
+}
+
+function structurallyShareValue(previous: unknown, next: unknown): unknown {
   if (Object.is(previous, next)) return previous;
 
   if (Array.isArray(previous) && Array.isArray(next)) {
     if (previous.length !== next.length) return next;
     let unchanged = true;
     const shared = next.map((value, index) => {
-      const sharedValue = structurallyShare(previous[index], value);
+      const sharedValue = structurallyShareValue(previous[index], value);
       if (!Object.is(sharedValue, previous[index])) unchanged = false;
       return sharedValue;
     });
-    return (unchanged ? previous : shared) as T;
+    return unchanged ? previous : shared;
   }
 
   if (isPlainRecord(previous) && isPlainRecord(next)) {
@@ -239,11 +243,11 @@ function structurallyShare<T>(previous: T, next: T): T {
     const shared: Record<string, unknown> = {};
     for (const key of nextKeys) {
       if (!(key in previous)) return next;
-      const sharedValue = structurallyShare(previous[key], next[key]);
+      const sharedValue = structurallyShareValue(previous[key], next[key]);
       if (!Object.is(sharedValue, previous[key])) unchanged = false;
       shared[key] = sharedValue;
     }
-    return (unchanged ? previous : shared) as T;
+    return unchanged ? previous : shared;
   }
 
   return next;

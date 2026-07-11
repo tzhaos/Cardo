@@ -1,9 +1,10 @@
-import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
+import type { HTMLMotionProps } from 'motion/react';
 import { MotionButton } from '../primitives/motion-button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../primitives/tooltip';
 import { cn } from '../lib/cn';
 
-export interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface IconButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'> {
   children: ReactNode;
   tooltip?: ReactNode;
 }

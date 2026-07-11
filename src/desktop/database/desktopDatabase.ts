@@ -61,7 +61,7 @@ export function executeDesktopDatabase(input: unknown): DatabaseExecuteResponse 
     return { rows: row ?? [] };
   }
 
-  return { rows: statement.all(...params) as unknown[][] };
+  return { rows: statement.all(...params) as unknown as unknown[][] };
 }
 
 export function closeDesktopDatabase() {

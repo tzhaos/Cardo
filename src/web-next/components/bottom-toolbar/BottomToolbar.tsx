@@ -48,7 +48,7 @@ export function BottomToolbar() {
       createBoxFrameCenteredAt(center),
       createCanvasWorldBounds(viewportSize),
     );
-    createBox('general', frame, t('box.general'));
+    createBox(frame, t('box.general'));
   };
 
   const closeSearch = () => {

@@ -117,9 +117,12 @@ export function BookmarkItem({
                   onContextMenu={rename.onContextMenu}
                 />
               ) : item.title ? (
-                <strong onDoubleClick={rename.startRenaming}>{item.title}</strong>
+                <strong onDoubleClick={() => rename.startRenaming()}>{item.title}</strong>
               ) : (
-                <strong className="wbn-item-title-placeholder" onDoubleClick={rename.startRenaming}>
+                <strong
+                  className="wbn-item-title-placeholder"
+                  onDoubleClick={() => rename.startRenaming()}
+                >
                   {t('item.untitled')}
                 </strong>
               )}

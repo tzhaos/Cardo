@@ -16,7 +16,7 @@ import {
 import { createBoxFrameCenteredAt } from '../../domain/placement';
 import { isCollectionPageId, isRecycleBinPageId } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
-import { useContextMenu } from '../../ui/khaos/context-menu';
+import { useContextMenu, type ContextMenuItem } from '../../ui/khaos/context-menu';
 import { WorkspaceBoxRenderer } from './WorkspaceBoxRenderer';
 import { useCanvasTools } from './useCanvasTools';
 import { CollectionPage } from '../collection/CollectionPage';
@@ -93,6 +93,20 @@ export function WorkspaceCanvas() {
         const camera = getPageCanvasState(useCanvasStore.getState(), activePageId).camera;
         const point = clientPointToCanvasWorld(event, rect, camera);
         const canCreate = !isRecycleBin && !isCollection;
+        const tools: ContextMenuItem[] = [
+          ...(!isRecycleBin && !isCollection
+            ? [
+                {
+                  id: 'set-default-page',
+                  label: t(activePageId === defaultPageId ? 'page.default' : 'page.setDefault'),
+                  icon: <House size={16} />,
+                  disabled: activePageId === defaultPageId,
+                  onSelect: () => setDefaultPage(activePageId),
+                },
+              ]
+            : []),
+          ...canvasTools,
+        ];
         contextMenu.openMenu(event.clientX, event.clientY, [
           ...(canCreate
             ? [
@@ -114,20 +128,7 @@ export function WorkspaceCanvas() {
                 },
               ]
             : []),
-          ...[
-            ...(!isRecycleBin && !isCollection
-              ? [
-                  {
-                    id: 'set-default-page',
-                    label: t(activePageId === defaultPageId ? 'page.default' : 'page.setDefault'),
-                    icon: <House size={16} />,
-                    disabled: activePageId === defaultPageId,
-                    onSelect: () => setDefaultPage(activePageId),
-                  },
-                ]
-              : []),
-            ...canvasTools,
-          ].map((item, index) => ({
+          ...tools.map((item, index) => ({
             ...item,
             separatorBefore: index === 0 && canCreate ? true : item.separatorBefore,
           })),
@@ -244,7 +245,7 @@ function CanvasWorld({ pageId, children }: { pageId: string; children: ReactNode
   );
 }
 
-function cameraTransform(camera: { panX: number; panY: number; zoom: number }) {
+function cameraTransform(camera: { panX: number; panY: number; zoom?: number }) {
   return `translate3d(${camera.panX}px, ${camera.panY}px, 0)`;
 }
 

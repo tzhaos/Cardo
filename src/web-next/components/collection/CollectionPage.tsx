@@ -1,9 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type {
-  CSSProperties,
-  MouseEvent as ReactMouseEvent,
-  PointerEvent as ReactPointerEvent,
-} from 'react';
+import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from 'react';
 import {
   AppWindow,
   ChevronsDownUp,
@@ -22,6 +18,7 @@ import {
   X,
 } from 'lucide-react';
 import { AnimatePresence, motion, useMotionValue } from 'motion/react';
+import type { MotionStyle } from 'motion/react';
 import { useCanvasStore } from '../../app/stores/canvasStore';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
@@ -302,7 +299,7 @@ function CollectionBox({
           width,
           height,
           zIndex: 10 + view.order,
-        } as CSSProperties
+        } as MotionStyle & { '--box-accent': string }
       }
       initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}

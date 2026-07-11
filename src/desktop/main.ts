@@ -1,5 +1,4 @@
 import {
-  desktopBooleanResponseSchema,
   app,
   BrowserWindow,
   clipboard,
@@ -21,6 +20,7 @@ import { fileURLToPath } from 'node:url';
 import { normalizeLocalResourcePath } from '../core/services/localResourcePath';
 import { executeDesktopDatabase, closeDesktopDatabase } from './database/desktopDatabase';
 import {
+  desktopBooleanResponseSchema,
   desktopClipboardWriteRequestSchema,
   desktopLocalResourceRequestSchema,
   desktopLocalResourceResponseSchema,

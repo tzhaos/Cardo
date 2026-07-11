@@ -16,7 +16,6 @@ import {
   workspaceBoxViewModes,
   workspaceItemTypes,
 } from '../contracts/workspace';
-import { DATABASE_SCHEMA_VERSION } from './version';
 import { colorModes, preferenceLocales, webSearchEngineIds } from '../contracts/preferences';
 
 export { DATABASE_SCHEMA_VERSION } from './version';

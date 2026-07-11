@@ -8,7 +8,10 @@ import {
 } from '../../core/contracts/database';
 import { DATABASE_SCHEMA_VERSION } from '../../core/database/version';
 
-const workerScope = self as unknown as DedicatedWorkerGlobalScope;
+const workerScope = self as unknown as {
+  addEventListener(type: 'message', listener: (event: MessageEvent<unknown>) => void): void;
+  postMessage(message: DatabaseWorkerResponse): void;
+};
 let databasePromise: Promise<Database> | null = null;
 let executionQueue = Promise.resolve();
 

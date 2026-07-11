@@ -107,7 +107,7 @@ export function LocalResourceItem({
               ) : (
                 <strong
                   className={item.title ? undefined : 'wbn-item-title-placeholder'}
-                  onDoubleClick={rename.startRenaming}
+                  onDoubleClick={() => rename.startRenaming()}
                 >
                   {item.title || t('item.untitled')}
                 </strong>
