@@ -10,6 +10,8 @@ export const databaseValueSchema = z.union([
 ]);
 
 export const databaseExecuteMethodSchema = z.enum(['run', 'all', 'values', 'get']);
+export const databaseRowSchema = z.array(databaseValueSchema);
+export const databaseRowsSchema = z.array(databaseRowSchema);
 
 export const databaseExecuteRequestSchema = z
   .object({
@@ -21,7 +23,7 @@ export const databaseExecuteRequestSchema = z
 
 export const databaseExecuteResponseSchema = z
   .object({
-    rows: z.array(z.array(databaseValueSchema)),
+    rows: z.union([databaseRowSchema, databaseRowsSchema]).nullable(),
   })
   .strict();
 

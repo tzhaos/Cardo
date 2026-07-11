@@ -74,7 +74,7 @@ async function executeRequest(request: DatabaseExecuteRequest): Promise<Database
   });
 
   if (request.method === 'get') {
-    return databaseExecuteResponseSchema.parse({ rows: rows.length ? [rows[0]] : [] });
+    return databaseExecuteResponseSchema.parse({ rows: rows[0] ?? null });
   }
 
   return databaseExecuteResponseSchema.parse({ rows });

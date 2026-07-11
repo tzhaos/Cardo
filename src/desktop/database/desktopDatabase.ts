@@ -59,7 +59,7 @@ export function executeDesktopDatabase(input: unknown): DatabaseExecuteResponse 
 
   if (request.method === 'get') {
     const row = statement.get(...params) as unknown[] | undefined;
-    return databaseExecuteResponseSchema.parse({ rows: row ? [row] : [] });
+    return databaseExecuteResponseSchema.parse({ rows: row ?? null });
   }
 
   return databaseExecuteResponseSchema.parse({ rows: statement.all(...params) });

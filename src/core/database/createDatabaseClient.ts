@@ -9,7 +9,9 @@ export function createDatabaseClient(port: DatabasePort) {
       const response = await port.execute(
         databaseExecuteRequestSchema.parse({ sql, params, method }),
       );
-      return { rows: response.rows };
+      // sqlite-proxy uses null as the runtime sentinel for an empty `get`,
+      // although its public callback type only declares array results.
+      return { rows: response.rows as unknown[] };
     },
     { schema: databaseSchema },
   );
