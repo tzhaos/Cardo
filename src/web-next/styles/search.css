@@ -1,0 +1,109 @@
+.wbn-global-search-panel-wrap {
+  position: absolute;
+  bottom: 64px;
+  left: 50%;
+  width: min(620px, calc(100vw - 32px));
+  transform: translateX(-50%);
+}
+
+.wbn-global-search-panel {
+  width: 100%;
+  max-height: min(560px, calc(100vh - 150px));
+  overflow: hidden;
+  border: 1px solid var(--wbn-border);
+  border-radius: 16px;
+  background: var(--wbn-surface-strong);
+  box-shadow: var(--wbn-shadow-hover);
+  transform-origin: bottom center;
+  backdrop-filter: blur(20px);
+}
+
+.wbn-global-search-results {
+  max-height: min(560px, calc(100vh - 150px));
+  overflow-y: auto;
+  padding: 7px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--wbn-scrollbar) transparent;
+}
+
+.wbn-global-search-result {
+  display: grid;
+  width: 100%;
+  min-height: 64px;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 11px;
+  padding: 7px 10px;
+  background: transparent;
+  color: var(--wbn-secondary-text);
+  text-align: left;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.wbn-global-search-result > svg {
+  justify-self: center;
+  color: var(--wbn-muted);
+}
+
+.wbn-global-search-result:hover,
+.wbn-global-search-result-active {
+  background: var(--wbn-hover);
+  color: var(--wbn-text);
+}
+
+.wbn-global-search-result-active > svg {
+  color: var(--wbn-blue);
+}
+
+.wbn-global-search-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wbn-global-search-title,
+.wbn-global-search-path,
+.wbn-global-search-detail {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wbn-global-search-title {
+  color: var(--wbn-soft-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.wbn-global-search-path {
+  color: var(--wbn-muted);
+  font-size: 11px;
+}
+
+.wbn-global-search-detail {
+  color: var(--wbn-secondary-text);
+  font-size: 11px;
+}
+
+.wbn-global-search-kind {
+  border: 1px solid var(--wbn-border-subtle);
+  border-radius: 999px;
+  padding: 3px 7px;
+  color: var(--wbn-muted);
+  font-size: 10px;
+}
+
+.wbn-global-search-empty {
+  display: flex;
+  min-height: 128px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--wbn-muted);
+  font-size: 13px;
+}
