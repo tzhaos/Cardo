@@ -1,5 +1,13 @@
 import type { StateStorage } from 'zustand/middleware';
 import { getAppPorts } from '../../core/runtime/appPorts';
+import { createDatabaseClient, type KhaosDatabase } from '../../core/database/createDatabaseClient';
+
+let database: KhaosDatabase | null = null;
+
+export function getKhaosDatabase() {
+  database ??= createDatabaseClient(getAppPorts().database);
+  return database;
+}
 
 /**
  * The only platform boundary used by web-next. Entries configure the shared

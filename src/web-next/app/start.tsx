@@ -11,6 +11,8 @@ export function startWebNextApp() {
     import('./stores/workspaceStore'),
     import('./stores/operationJournalStore'),
     import('./stores/independentMenuStore'),
+    import('../platform/hostPlatform'),
+    import('../../core/database/initializeWorkspaceDatabase'),
   ]).then(
     async ([
       { default: WebNextApp },
@@ -19,7 +21,13 @@ export function startWebNextApp() {
       { useWorkspaceStore },
       { useOperationJournalStore },
       { useIndependentMenuStore },
+      { getKhaosDatabase },
+      { initializeWorkspaceDatabase },
     ]) => {
+      await initializeWorkspaceDatabase(getKhaosDatabase(), {
+        locale: navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en',
+        colorMode: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+      });
       await Promise.all([
         usePreferencesStore.persist.rehydrate(),
         useWorkspaceStore.persist.rehydrate(),
