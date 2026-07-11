@@ -40,8 +40,8 @@ import {
 
 declare const __CARDO_DEBUG_PACKAGE__: boolean;
 
-// Align Electron userData with shared path resolver (`khaosbox` data dir for continuity),
-// not productName display string (`Cardo`). Must run before getPath('userData') / single-instance.
+// Align Electron userData with shared path resolver (`cardo`), not productName casing.
+// Must run before getPath('userData') / single-instance.
 app.setName(CARDO_USER_DATA_DIR_NAME);
 
 const isDebugPackage = __CARDO_DEBUG_PACKAGE__ || process.env.CARDO_DEBUG_PACKAGE === '1';

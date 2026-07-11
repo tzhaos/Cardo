@@ -5,7 +5,7 @@ export default defineConfig({
   schema: './src/core/database/schema.ts',
   out: './drizzle',
   dbCredentials: {
-    url: './artifacts/development/khaosbox.sqlite',
+    url: './artifacts/development/cardo.sqlite',
   },
   strict: true,
   verbose: true,

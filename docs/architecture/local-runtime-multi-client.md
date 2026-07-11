@@ -37,19 +37,21 @@ Cardo：拉丁语「门枢、枢纽、轴线」。
 - 枢纽：零散能力汇聚
 - 短、好拼、适合 CLI（`cardo serve` / `cardo open`）
 
-仓库、包名、native host 名从 KhaosBox 迁到 Cardo 的工作单独排期（见 PR0）。本文起统一称 Cardo。OpenCode 仅作本地 HTTP / 多 client / 事件流的模式参考；协议与类型以 Zod 为唯一 SoT，不复制 OpenCode 业务模型。
+产品标识统一为 Cardo。OpenCode 仅作本地 HTTP / 多 client / 事件流的模式参考；协议与类型以 Zod 为唯一 SoT，不复制 OpenCode 业务模型。
 
-### 2.1 磁盘路径与数据连续性（命名相关）
+### 2.1 磁盘路径（Path SoT）
 
-AGENTS.md 禁止旧格式双读 shim；但「改路径导致用户数据消失」不是双读，是数据丢失，必须显式策略。
+Path SoT 由 `src/runtime/paths.ts` 的 `resolveCardoDataPaths()` 定义：
 
-v1 路径政策（Hard Decision）：
-
-1. 权威 SQLite 文件名在迁移完成前保持 `khaosbox.sqlite`（或当前 Desktop 实际文件名），目录由统一 path resolver 解析。
-2. Desktop 今日路径：`path.join(app.getPath('userData'), 'khaosbox.sqlite')`。在 productName 仍为 KhaosBox 期间，userData 目录不变，文件名不变。
-3. CLI 与 Desktop 共用同一 path resolver 函数（例如 `resolveCardoDataPaths()`），在 rename 完成前解析到与 Desktop 相同的 userData/AppData 目录与同一 sqlite 文件，禁止 CLI 默认写到独立 `%APPDATA%/Cardo/cardo.sqlite` 而 Desktop 仍写旧路径。
-4. 产品/仓库 rename 完成后，另开单独「路径搬迁 PR」（不与 rename 同 PR）：一次性 move/copy `khaosbox.sqlite` → Cardo 路径，写 marker「已搬迁」，之后只打开新路径。不是双读；旧路径在 marker 存在后忽略。v1 Runtime 上线阶段始终保持与今日 Desktop 同路径的 `khaosbox.sqlite`。
-5. Extension OPFS `khaosbox.sqlite`：v1 不自动合并进 Runtime。PR5 切换 Runtime 模式后 OPFS 写死禁用；用户若需保留扩展数据，用旧版导出 JSON → Runtime 侧 `workspace.import`（PR5/PR7 提供引导文案与导出入口，不静默丢数据无说明）。接受「未导出则扩展 solo 数据不进入 Runtime」为过渡现实，不是静默双写。
+1. 目录段：`cardo`（`CARDO_USER_DATA_DIR_NAME`）。Desktop 在取 `userData` 前 `app.setName('cardo')`。
+2. 权威 SQLite 文件名：`cardo.sqlite`。
+3. 默认位置：
+   - win32：`%APPDATA%/cardo/cardo.sqlite`
+   - darwin：`~/Library/Application Support/cardo/cardo.sqlite`
+   - linux：`${XDG_CONFIG_HOME:-~/.config}/cardo/cardo.sqlite`
+4. CLI 与 Desktop 共用同一 resolver；可用 `CARDO_DATA_DIR` 覆盖数据目录。
+5. 若 SoT 路径尚无库文件，且默认安装位置下存在上一代目录中的数据库，则首次打开时一次性 move 到 SoT 路径；之后只打开 `cardo.sqlite`。
+6. Extension 不持权威库；业务数据只经 Runtime。此前扩展侧本地库中的数据需用户导出 JSON 后经 `workspace.import` 进入 Runtime。
 
 ## 3. Background & Motivation
 
@@ -76,14 +78,12 @@ flowchart LR
 
 现状对照代码：
 
-1. Desktop 与 Extension 共享 core，却各持一份写库与 history。
-   - Desktop：`src/desktop/database/desktopDatabase.ts` 在 Electron Main 打开 `userData/khaosbox.sqlite`，IPC 通道 `database:execute` 接近原始 SQL（见 `src/desktop/main.ts`、`src/desktop/preload.ts`）。
-   - Extension：`src/extension/database/databaseWorker.ts` 在 OPFS 打开独立 `khaosbox.sqlite`。
-2. UI 侧通过 `src/web-next/platform/hostPlatform.ts` 在进程内 `createDatabaseClient(getAppPorts().database)`，再调用 `executeDatabaseCommand` / typed queries。平台边界过薄：业务写虽走 Command Registry，但 DatabasePort 仍是 raw SQL 执行面。三端共享同一 `hostPlatform` 模块。
-3. 无法多 client 并行观察同一 workspace：Desktop 与 Extension 数据不互通。
-4. 浏览器系统能力靠补丁式 Native Messaging（`src/native-host/main.ts`，仅 `open-local-resource`），不是统一 Runtime。
-5. 数据库 opener 只接受 `user_version == 0`（跑 baseline）或精确等于 `DATABASE_SCHEMA_VERSION`（当前 3），否则抛错；无 N→N+1 forward migrator。
-6. 野外实际 schema 版本：仅 0（空库）与 3（当前 baseline 直接写 `user_version = 3`）。不存在可运行的 1/2 迁移链（仅有 `drizzle/0000_*.sql`）。
+1. 历史状态曾是 Desktop 与 Extension 各持写库；当前目标为单一 Runtime 持库（见 Goals）。
+2. UI 经 RuntimeClient / hostPlatform 访问数据；业务写只经 Runtime Command 队列。
+3. 多 client 并行观察同一 workspace：revision + InvalidationScope + typed re-query。
+4. Native Messaging 仅 discover（+ optional relay），永不写 SQLite。
+5. Schema 经 `src/core/database/migrator.ts` 做 N→N+1 forward migrate；`DATABASE_SCHEMA_VERSION` 为当前目标版本。
+6. 野外可前进版本：0（空库）→ 3（baseline）→ 4（runtime_meta）→ 5（system page ids）；1/2 无迁移链则 fail hard。
 
 ### 3.2 目标产品矩阵
 
@@ -157,7 +157,7 @@ flowchart LR
 7. revision 存 `runtime_meta`，永不进入 history change set；undo/redo 也 +1。
 8. 必须有 forward migration runner，实现位于 `src/core/database/migrator.ts`；PR1 起接入 Desktop/Extension opener 与 Runtime。
 9. Token 默认开启，与 Runtime HTTP 同阶段上线；`auth.bootstrap` 使用 Bearer processToken（discovery 同一 token）。
-10. 无旧 schema/snapshot 兼容双读；仅单向迁移。路径搬迁是 rename 完成后的单独 PR（一次性 move），不是双读；v1 保持 `khaosbox.sqlite` 同路径。
+10. 无旧 schema/snapshot 双读；仅单向 N→N+1 迁移。Path SoT 为 `cardo` / `cardo.sqlite`（§2.1）。
 11. InvalidationScope 由 Runtime 根据 DB/changeset 服务端推导，不信任 client projection。
 12. import 只走 command `workspace.import`；无独立 import HTTP 写路径。
 13. v1 共享 `activePageId` 与全局 undo 栈；产品文案说明多窗口互相影响。
@@ -170,7 +170,7 @@ flowchart LR
 20. `activity.record` 永不递增 revision，永不写 `history_entries`。
 21. Native Messaging host 保持独立瘦进程：只读 discovery（+ optional relay），永不打开 SQLite；Desktop 与 CLI 安装时注册 NM。
 22. hostPlatform：PR6 后仅 RuntimeClient（bootstrap 注入 baseUrl+token / one-time code）；local DatabasePort 业务路径与 `CARDO_USE_RUNTIME` 已删除。
-23. 野外 schema 版本仅 0 与 3；3→4 创建 `runtime_meta`；若见 1/2 则 fail hard。
+23. 野外 schema 前进：0→3 baseline，3→4 `runtime_meta`，4→5 system page ids；若见 1/2 则 fail hard。
 24. 所有成功 mutation 的 HTTP 响应（`command.ok`、`history.ok`、`ensureInitialized.ok` 当 created）必须带 `revision` + `scopes`，供 initiator 在忽略 self-echo SSE 时 apply。
 25. `workspace.ensureInitialized` 首次写入 +revision 并发 SSE（无 history_entries）；幂等 no-op 不涨。
 26. Extension v1 主入口：工具栏打开独立扩展页；newtab 非 v1 主入口。
@@ -989,7 +989,7 @@ graceActive: boolean
 | OPFS 与文件库分叉 | 高 | PR5 硬禁用 OPFS 写；PR5 前不宣称同 workspace |
 | scope 漏刷 | 中 | projection 过宽；store 映射表 |
 | 自回显双 apply | 中 | sourceClientId + ignore self |
-| 迁移卡死 | 高 | 事务；fail hard；仅 0/3→4 |
+| 迁移卡死 | 高 | 事务；fail hard；0→3→4→5 |
 
 ## 13. Rollout Plan
 
@@ -1007,7 +1007,7 @@ graceActive: boolean
 | Extension 主入口形态 | 独立扩展页（工具栏打开）；newtab 非 v1 主入口（§6.4、HD26） |
 | Runtime / Desktop embed 生命周期 | 零 client + grace 才可自动停；非 Desktop 一退就停（§6.6.1、HD27） |
 | npm 包名 | 先占 `cardo`；冲突则 `@cardo/cli` 等；bin 仍为 `cardo`（HD1） |
-| 路径搬迁与 rename | rename 完成后单独搬迁 PR；v1 保持 khaosbox.sqlite 同路径（§2.1、HD10） |
+| 数据路径 | Path SoT：`cardo` / `cardo.sqlite`；首次打开可一次性 move 上一代库（§2.1、HD10） |
 
 此前已关闭：serve/open 进程模型；动态端口；Desktop HTTP 对称；activity 不 +revision；SSE fetch stream；NM 瘦 host；history.ok；core migrator；bootstrap Bearer processToken。
 
@@ -1023,10 +1023,10 @@ graceActive: boolean
 8. 动态端口 + discovery；lock 无 token。
 9. Desktop v1 HTTP 对称；IPC tunnel 非 v1。
 10. revision 在 runtime_meta；undo/redo +1 且 HTTP 返回 history.ok；activity 不 +1；ensureInitialized 仅首次写 +revision。
-11. Migrator 在 `src/core/database/migrator.ts`；仅 0 与 3 野外版本；3→4 = runtime_meta。
+11. Migrator 在 `src/core/database/migrator.ts`；0→3 baseline，3→4 runtime_meta，4→5 system page ids。
 12. Token 默认 on；bootstrap Bearer processToken；fetch stream；CORS reflect 扩展 Origin。
 13. 服务端 scopes + store 映射；hello clientId；忽略 self SSE；mutating HTTP 统一 apply。
-14. hostPlatform 双模直至 PR6；PR5 OPFS 写硬禁用。
+14. hostPlatform 仅 RuntimeClient；Extension 不权威写库。
 15. 磁盘路径：v1 与 Desktop 同文件；rename 后单独搬迁 PR。
 16. Host config：Zod 字段 + TS hooks。
 17. exportOperationLog 进协议；非 DB ports 留 AppPorts。

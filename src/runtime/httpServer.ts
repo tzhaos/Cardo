@@ -372,7 +372,7 @@ async function handleAuthenticated(
   if (method === 'GET' && pathname === '/v1/workspace/export') {
     const workspace = await getWorkspaceProjection(ctx.database);
     const document = workspaceTransferDocumentSchema.parse({
-      format: 'khaosbox-workspace',
+      format: 'cardo-workspace',
       version: WORKSPACE_TRANSFER_VERSION,
       exportedAt: new Date().toISOString(),
       workspace,

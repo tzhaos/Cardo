@@ -15,6 +15,13 @@
       "when": 1783830000000,
       "tag": "0001_runtime_meta",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1783880000000,
+      "tag": "0002_system_page_ids",
+      "breakpoints": true
     }
   ]
 }

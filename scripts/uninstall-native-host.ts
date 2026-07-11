@@ -1,12 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { CARDO_NATIVE_HOST_NAME } from '../src/core/protocols/nativeMessaging';
 
-/** Current host plus legacy KhaosBox registration cleaned on uninstall. */
-const NATIVE_HOST_NAMES_TO_UNREGISTER = [
-  CARDO_NATIVE_HOST_NAME,
-  'com.khaosbox.local_bridge',
-] as const;
-
 const WINDOWS_BROWSER_NATIVE_HOST_KEYS = [
   'Google\\Chrome',
   'Google\\Chrome Beta',
@@ -36,11 +30,9 @@ function main() {
   }
 
   for (const browserKey of WINDOWS_BROWSER_NATIVE_HOST_KEYS) {
-    for (const hostName of NATIVE_HOST_NAMES_TO_UNREGISTER) {
-      deleteWindowsNativeHost(browserKey, hostName);
-    }
+    deleteWindowsNativeHost(browserKey, CARDO_NATIVE_HOST_NAME);
   }
-  console.log(`Unregistered ${NATIVE_HOST_NAMES_TO_UNREGISTER.join(', ')}`);
+  console.log(`Unregistered ${CARDO_NATIVE_HOST_NAME}`);
 }
 
 main();

@@ -3,11 +3,11 @@ import test from 'node:test';
 import { createPasteItemDraft } from './paste';
 
 test('creates folder items from local paths', () => {
-  assert.deepEqual(createPasteItemDraft('C:\\Workspace\\KhaosBox'), {
+  assert.deepEqual(createPasteItemDraft('C:\\Workspace\\MyProject'), {
     type: 'folder',
     draft: {
-      title: 'KhaosBox',
-      path: 'C:\\Workspace\\KhaosBox',
+      title: 'MyProject',
+      path: 'C:\\Workspace\\MyProject',
     },
   });
 });

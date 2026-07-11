@@ -110,17 +110,13 @@ function getBrowserPreferenceFiles() {
   return preferenceFiles;
 }
 
-/** Install-time extension discovery: Cardo paths plus historical KhaosBox paths. */
+/** Install-time discovery of loaded Cardo extension paths. */
 function pathLooksLikeCardoExtension(value: unknown) {
   if (typeof value !== 'string') {
     return false;
   }
   const normalized = value.toLowerCase().replaceAll('\\', '/');
-  return (
-    normalized.includes('/cardo') ||
-    normalized.includes('/khaosbox') ||
-    normalized.includes('khaosbox')
-  );
+  return normalized.includes('/cardo') || normalized.includes('cardo');
 }
 
 function addCardoExtensionIdsFromText(text: string, extensionIds: Set<string>) {
@@ -171,12 +167,7 @@ function discoverCardoExtensionIdsFromPreferences() {
         if (
           /^[a-p]{32}$/.test(extensionId) &&
           (pathLooksLikeCardoExtension(extension.path) ||
-            JSON.stringify(extension.manifest ?? {})
-              .toLowerCase()
-              .includes('cardo') ||
-            JSON.stringify(extension.manifest ?? {})
-              .toLowerCase()
-              .includes('khaosbox'))
+            JSON.stringify(extension.manifest ?? {}).toLowerCase().includes('cardo'))
         ) {
           extensionIds.add(extensionId);
         }
@@ -186,10 +177,7 @@ function discoverCardoExtensionIdsFromPreferences() {
         preferences.safebrowsing?.extension_telemetry_file_data ?? {},
       )) {
         const telemetryText = JSON.stringify(telemetry);
-        if (
-          /^[a-p]{32}$/.test(extensionId) &&
-          (telemetryText.includes('Cardo') || telemetryText.includes('KhaosBox'))
-        ) {
+        if (/^[a-p]{32}$/.test(extensionId) && telemetryText.includes('Cardo')) {
           extensionIds.add(extensionId);
         }
       }

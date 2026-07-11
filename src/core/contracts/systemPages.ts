@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-export const COLLECTION_PAGE_ID = 'khaosbox-collection';
-export const RECYCLE_BIN_PAGE_ID = 'khaosbox-recycle-bin';
+export const COLLECTION_PAGE_ID = 'cardo-collection';
+export const RECYCLE_BIN_PAGE_ID = 'cardo-recycle-bin';
 export const systemPageIds = [COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID] as const;
 export const systemPageIdSchema = z.enum(systemPageIds);
 
