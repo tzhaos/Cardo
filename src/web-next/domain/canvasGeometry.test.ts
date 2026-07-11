@@ -26,6 +26,7 @@ test('camera panning stops at the reduced canvas boundary', () => {
   assert.deepEqual(panCanvasCamera({ panX: 900, panY: -700 }, { x: 500, y: -500 }, viewport), {
     panX: 720,
     panY: -480,
+    zoom: 1,
   });
 });
 

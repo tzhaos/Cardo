@@ -20,11 +20,11 @@ test('keeps camera and lock state isolated between workspace pages', () => {
 
   const state = useCanvasStore.getState();
   assert.deepEqual(getPageCanvasState(state, 'page-a'), {
-    camera: { panX: 180, panY: -90 },
+    camera: { panX: 180, panY: -90, zoom: 1 },
     isLocked: true,
   });
   assert.deepEqual(getPageCanvasState(state, 'page-b'), {
-    camera: { panX: 0, panY: 0 },
+    camera: { panX: 0, panY: 0, zoom: 1 },
     isLocked: false,
   });
 });
@@ -39,5 +39,6 @@ test('clamps existing page cameras when the viewport changes', () => {
   assert.deepEqual(getPageCanvasState(useCanvasStore.getState(), 'page-a').camera, {
     panX: 600,
     panY: 400,
+    zoom: 1,
   });
 });
