@@ -1,0 +1,238 @@
+{
+  "format": "cardo-theme",
+  "version": 1,
+  "pack": {
+    "id": "apple",
+    "version": "1.0.0",
+    "name": {
+      "en": "Apple",
+      "zh": "Apple"
+    },
+    "description": {
+      "en": "Apple HIG feel — system grays, vibrancy surfaces, SF stack; light and dark.",
+      "zh": "Apple HIG 气质：系统灰、通透表面、SF 字体栈；浅色与深色均完整。"
+    },
+    "tokens": {
+      "colors": {
+        "light": {
+          "canvas": "#f2f2f7",
+          "surface": "rgba(255, 255, 255, 0.72)",
+          "surfaceStrong": "rgba(255, 255, 255, 0.92)",
+          "panel": "#ffffff",
+          "panelBottom": "#f2f2f7",
+          "panelContent": "rgba(242, 242, 247, 0.55)",
+          "panelChrome": "rgba(255, 255, 255, 0.78)",
+          "border": "rgba(60, 60, 67, 0.12)",
+          "borderSubtle": "rgba(60, 60, 67, 0.08)",
+          "divider": "rgba(60, 60, 67, 0.14)",
+          "text": "#000000",
+          "softText": "rgba(60, 60, 67, 0.85)",
+          "secondaryText": "rgba(60, 60, 67, 0.6)",
+          "muted": "rgba(60, 60, 67, 0.36)",
+          "hover": "rgba(120, 120, 128, 0.08)",
+          "active": "rgba(0, 122, 255, 0.12)",
+          "input": "#ffffff",
+          "itemHover": "#ffffff",
+          "glyph": "#f2f2f7",
+          "neutralButton": "rgba(120, 120, 128, 0.16)",
+          "neutralButtonHover": "rgba(120, 120, 128, 0.24)",
+          "createBackground": "#007aff",
+          "createText": "#ffffff",
+          "scrollbar": "rgba(0, 0, 0, 0.18)",
+          "scrollbarHover": "rgba(0, 0, 0, 0.28)",
+          "selectionRing": "rgba(0, 122, 255, 0.22)",
+          "blue": "#007aff",
+          "orange": "#ff9500",
+          "purple": "#af52de",
+          "emerald": "#34c759",
+          "red": "#ff3b30"
+        },
+        "dark": {
+          "canvas": "#000000",
+          "surface": "rgba(28, 28, 30, 0.82)",
+          "surfaceStrong": "rgba(28, 28, 30, 0.94)",
+          "panel": "#1c1c1e",
+          "panelBottom": "#000000",
+          "panelContent": "rgba(0, 0, 0, 0.45)",
+          "panelChrome": "rgba(28, 28, 30, 0.78)",
+          "border": "rgba(84, 84, 88, 0.55)",
+          "borderSubtle": "rgba(84, 84, 88, 0.36)",
+          "divider": "rgba(84, 84, 88, 0.55)",
+          "text": "#ffffff",
+          "softText": "rgba(235, 235, 245, 0.86)",
+          "secondaryText": "rgba(235, 235, 245, 0.6)",
+          "muted": "rgba(235, 235, 245, 0.36)",
+          "hover": "rgba(120, 120, 128, 0.2)",
+          "active": "rgba(10, 132, 255, 0.2)",
+          "input": "#1c1c1e",
+          "itemHover": "#2c2c2e",
+          "glyph": "#1c1c1e",
+          "neutralButton": "rgba(120, 120, 128, 0.28)",
+          "neutralButtonHover": "rgba(120, 120, 128, 0.4)",
+          "createBackground": "#0a84ff",
+          "createText": "#ffffff",
+          "scrollbar": "rgba(255, 255, 255, 0.18)",
+          "scrollbarHover": "rgba(255, 255, 255, 0.3)",
+          "selectionRing": "rgba(10, 132, 255, 0.32)",
+          "blue": "#0a84ff",
+          "orange": "#ff9f0a",
+          "purple": "#bf5af2",
+          "emerald": "#30d158",
+          "red": "#ff453a"
+        }
+      },
+      "fonts": {
+        "sans": "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei UI', ui-sans-serif, system-ui, sans-serif",
+        "mono": "'SF Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+        "sizeBase": "14px",
+        "lineHeightBase": "1.4"
+      },
+      "radii": {
+        "xs": "6px",
+        "sm": "10px",
+        "md": "12px",
+        "lg": "14px",
+        "xl": "18px",
+        "pill": "999px"
+      },
+      "space": {
+        "1": "4px",
+        "2": "8px",
+        "3": "12px",
+        "4": "16px",
+        "5": "20px",
+        "6": "24px",
+        "7": "32px",
+        "8": "40px"
+      },
+      "elevation": {
+        "light": {
+          "shadow": "0 0.5px 0 rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06)",
+          "shadowHover": "0 1px 3px rgba(0,0,0,.06), 0 12px 36px rgba(0,0,0,.1)",
+          "insetShadow": "inset 0 0.5px 0 rgba(255,255,255,.6)"
+        },
+        "dark": {
+          "shadow": "0 0 0 0.5px rgba(255,255,255,.08), 0 8px 28px rgba(0,0,0,.45)",
+          "shadowHover": "0 0 0 0.5px rgba(255,255,255,.1), 0 14px 40px rgba(0,0,0,.55)",
+          "insetShadow": "inset 0 0.5px 0 rgba(255,255,255,.06)"
+        }
+      },
+      "motion": {
+        "durationFast": "120ms",
+        "durationNormal": "160ms",
+        "easing": "ease"
+      },
+      "chrome": {
+        "blur": "40px",
+        "topbarOffset": "12px"
+      }
+    },
+    "options": [
+      {
+        "id": "chrome.surface",
+        "type": "select",
+        "label": {
+          "en": "Chrome surface",
+          "zh": "壳层表面"
+        },
+        "description": {
+          "en": "Glass matches the current product chrome. Solid is an optional alternate.",
+          "zh": "玻璃为当前产品默认壳层；实心为可选变体。"
+        },
+        "default": "glass",
+        "choices": [
+          {
+            "id": "glass",
+            "label": {
+              "en": "Glass (official)",
+              "zh": "玻璃（官方）"
+            }
+          },
+          {
+            "id": "solid",
+            "label": {
+              "en": "Solid",
+              "zh": "实心"
+            },
+            "tokens": {
+              "colors": {
+                "light": {
+                  "surface": "rgba(255, 255, 255, 0.98)",
+                  "surfaceStrong": "#ffffff",
+                  "panelContent": "rgba(255, 255, 255, 0.88)",
+                  "panelChrome": "rgba(255, 255, 255, 0.94)"
+                },
+                "dark": {
+                  "surface": "rgba(42, 42, 43, 0.98)",
+                  "surfaceStrong": "#2a2a2b",
+                  "panelContent": "rgba(28, 28, 29, 0.92)",
+                  "panelChrome": "rgba(34, 34, 35, 0.96)"
+                }
+              },
+              "chrome": {
+                "blur": "0px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "corners",
+        "type": "select",
+        "label": {
+          "en": "Corners",
+          "zh": "圆角"
+        },
+        "description": {
+          "en": "Default matches the official radius scale used by the product shell.",
+          "zh": "默认与当前产品圆角尺度一致。"
+        },
+        "default": "default",
+        "choices": [
+          {
+            "id": "default",
+            "label": {
+              "en": "Default (official)",
+              "zh": "默认（官方）"
+            }
+          },
+          {
+            "id": "soft",
+            "label": {
+              "en": "Soft",
+              "zh": "柔和"
+            },
+            "tokens": {
+              "radii": {
+                "xs": "6px",
+                "sm": "8px",
+                "md": "12px",
+                "lg": "16px",
+                "xl": "20px",
+                "pill": "999px"
+              }
+            }
+          },
+          {
+            "id": "sharp",
+            "label": {
+              "en": "Sharp",
+              "zh": "硬朗"
+            },
+            "tokens": {
+              "radii": {
+                "xs": "2px",
+                "sm": "3px",
+                "md": "5px",
+                "lg": "7px",
+                "xl": "10px",
+                "pill": "999px"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "layoutProfileId": "classic"
+  }
+}

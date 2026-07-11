@@ -291,6 +291,12 @@ export const THEME_PACK_DOCUMENT_FORMAT = 'cardo-theme' as const;
 export const THEME_PACK_DOCUMENT_VERSION = 1 as const;
 export const MAX_THEME_PACK_JSON_BYTES = 256_000;
 
+/** Required entry filename inside a theme directory pack (`themes/<name>/…`). */
+export const THEME_PACK_ENTRY_FILENAME = 'theme.cardo-theme.json';
+
+/** Flat-file extension for single-file packs under the themes drop folder. */
+export const THEME_FILE_EXTENSION = '.cardo-theme.json';
+
 /** Official built-in Theme Pack ids — frozen, never overwritten by disk/import. */
 export const OFFICIAL_BUILT_IN_THEME_IDS: ReadonlySet<string> = new Set([
   'classic',

@@ -53,7 +53,7 @@ export function registerThemePack(pack: ThemePack) {
 
 /**
  * Re-sync non-built-in packs from preferences imports + Runtime disk themes.
- * Official packs stay code-defined. Disk packs cannot overwrite official ids.
+ * Official packs load from themes/builtin JSON. Disk packs cannot overwrite official ids.
  */
 export function syncImportedThemePacks(packs: ThemePack[]) {
   for (const id of [...importedThemeIds]) {
