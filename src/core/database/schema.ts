@@ -195,6 +195,9 @@ export const boxItemSelectSchema = createSelectSchema(boxItems);
 export const boxItemInsertSchema = createInsertSchema(boxItems);
 export const preferencesSelectSchema = createSelectSchema(preferences);
 export const preferencesInsertSchema = createInsertSchema(preferences);
+export const appStateSelectSchema = createSelectSchema(appState);
+export const boxSelectSchemaStrict = createSelectSchema(boxes);
+export const collectionBoxViewSelectSchema = createSelectSchema(collectionBoxViews);
 
 export const databaseSchema = {
   appState,

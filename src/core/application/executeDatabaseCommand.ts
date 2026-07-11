@@ -5,6 +5,7 @@ import {
 } from '../contracts/workspaceCommands';
 import { historyChangeSetSchema } from '../contracts/workspace';
 import type { KhaosDatabase } from '../database/createDatabaseClient';
+import { eq } from 'drizzle-orm';
 import { historyEntries, operationLog } from '../database/schema';
 import type { DatabaseCommandResult } from './commandTypes';
 import { executePageCommand, type PageCommand } from './pageCommandHandlers';
@@ -37,6 +38,7 @@ export async function executeDatabaseCommand(
     });
 
     if (definition.undoable) {
+      await transaction.delete(historyEntries).where(eq(historyEntries.state, 'undone'));
       await transaction.insert(historyEntries).values({
         id: crypto.randomUUID(),
         transactionId,
