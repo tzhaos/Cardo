@@ -5,7 +5,7 @@ export const WEB_NEXT_MESSAGES = {
     'page.recycleBinEmpty':
       'Deleted boxes appear here. Drag one to a workspace page to restore it.',
     'page.collectionEmpty':
-      'Favorite boxes appear here. Drag a box onto Favorites to add a synced read-only view.',
+      'Favorite boxes appear here. Drag a box onto Favorites to add a read-only view.',
     'page.untitled': 'Untitled',
     'page.workspacePages': 'Workspace pages',
     'page.add': 'Add page',
@@ -185,7 +185,7 @@ export const WEB_NEXT_MESSAGES = {
     'page.recycleBin': '回收站',
     'page.collection': '收藏',
     'page.recycleBinEmpty': '已删除的盒子会出现在这里。拖回任一工作页面即可恢复。',
-    'page.collectionEmpty': '收藏的盒子会出现在这里。将盒子拖到顶部“收藏”即可添加只读视图。',
+    'page.collectionEmpty': '收藏的盒子会出现在这里。拖到顶部“收藏”即可添加只读视图。',
     'page.deleteWithRecycleBinQuestion': '删除“{title}”？其中 {count} 个{boxes}将移至回收站。',
     'common.moveToRecycleBin': '移至回收站',
     'common.deletePermanently': '永久删除',

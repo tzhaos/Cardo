@@ -436,23 +436,44 @@
   transform: translate3d(0, 0, 0);
 }
 
+/* Icon center is locked to viewport center; label hangs below so copy length never shifts icon. */
 .wbn-system-page-empty {
   position: absolute;
   top: 50%;
   left: 50%;
+  z-index: 1;
   display: flex;
-  max-width: min(360px, calc(100vw - 48px));
+  width: min(320px, calc(100vw - 48px));
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  pointer-events: none;
+  translate: -50% 0;
+  margin-top: -11px;
+}
+
+.wbn-system-page-empty-icon {
+  display: flex;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  color: var(--wbn-secondary-text);
+}
+
+.wbn-system-page-empty-icon svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+}
+
+.wbn-system-page-empty-label {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
   color: var(--wbn-muted);
   font-size: 13px;
   line-height: 1.5;
   text-align: center;
-  pointer-events: none;
-  translate: -50% -50%;
-}
-
-.wbn-system-page-empty svg {
-  color: var(--wbn-secondary-text);
+  text-wrap: balance;
 }

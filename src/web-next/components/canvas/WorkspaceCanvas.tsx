@@ -46,6 +46,20 @@ export function WorkspaceCanvas() {
   const { t } = useI18n();
   const isRecycleBin = isRecycleBinPageId(activePageId);
   const isCollection = isCollectionPageId(activePageId);
+  const systemPageEmpty =
+    isRecycleBin && activePageBoxCount === 0
+      ? {
+          key: 'recycle-bin-empty',
+          icon: <Trash2 size={22} strokeWidth={1.75} />,
+          label: t('page.recycleBinEmpty'),
+        }
+      : isCollection && isCollectionEmpty
+        ? {
+            key: 'collection-empty',
+            icon: <Star size={22} strokeWidth={1.75} />,
+            label: t('page.collectionEmpty'),
+          }
+        : null;
   const previousActivePageIdRef = useRef(activePageId);
   const canvasRef = useRef<HTMLElement>(null);
   const setCanvasElement = useCallback((element: HTMLElement | null) => {
@@ -166,26 +180,18 @@ export function WorkspaceCanvas() {
             </CanvasWorld>
           )}
           <AnimatePresence>
-            {isRecycleBin && activePageBoxCount === 0 ? (
+            {systemPageEmpty ? (
               <motion.div
                 className="wbn-system-page-empty"
+                key={systemPageEmpty.key}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 8 }}
               >
-                <Trash2 size={22} />
-                <span>{t('page.recycleBinEmpty')}</span>
-              </motion.div>
-            ) : null}
-            {isCollection && isCollectionEmpty ? (
-              <motion.div
-                className="wbn-system-page-empty"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 8 }}
-              >
-                <Star size={22} />
-                <span>{t('page.collectionEmpty')}</span>
+                <span className="wbn-system-page-empty-icon" aria-hidden="true">
+                  {systemPageEmpty.icon}
+                </span>
+                <span className="wbn-system-page-empty-label">{systemPageEmpty.label}</span>
               </motion.div>
             ) : null}
           </AnimatePresence>
