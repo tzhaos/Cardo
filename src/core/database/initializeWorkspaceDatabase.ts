@@ -3,7 +3,13 @@ import type { CardoDatabase } from './createDatabaseClient';
 import { bumpRevision } from './revision';
 import { APP_STATE_ID, PREFERENCES_ID, appState, boxes, pages, preferences } from './schema';
 import { DATABASE_SCHEMA_VERSION } from './version';
-import type { ColorMode, PreferenceLocale } from '../contracts/preferences';
+import {
+  DEFAULT_DENSITY,
+  DEFAULT_FONT_FAMILY_ID,
+  DEFAULT_FONT_SCALE,
+  type ColorMode,
+  type PreferenceLocale,
+} from '../contracts/preferences';
 import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID } from '../contracts/systemPages';
 
 export interface InitialWorkspacePreferences {
@@ -87,6 +93,9 @@ export async function initializeWorkspaceDatabase(
       locale: initialPreferences.locale,
       colorMode: initialPreferences.colorMode,
       themeId: 'classic',
+      fontFamily: DEFAULT_FONT_FAMILY_ID,
+      fontScale: DEFAULT_FONT_SCALE,
+      density: DEFAULT_DENSITY,
       searchEngine: 'bing-cn',
       customSearchTemplate: '',
     });

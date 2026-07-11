@@ -9,11 +9,11 @@
   left: 50%;
   max-width: calc(100vw - 32px);
   overflow-x: auto;
-  border: 1px solid var(--wbn-border);
-  border-radius: 999px;
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-pill);
   padding: 6px;
-  background: var(--wbn-surface);
-  box-shadow: var(--wbn-shadow);
+  background: var(--cardo-surface);
+  box-shadow: var(--cardo-shadow);
   caret-color: transparent;
   user-select: none;
   -webkit-user-select: none;
@@ -46,7 +46,7 @@
   position: relative;
   display: flex;
   align-items: center;
-  border-radius: 999px;
+  border-radius: var(--cardo-radius-pill);
   transition: background 180ms ease;
 }
 
@@ -56,7 +56,7 @@
   z-index: 1;
   min-height: 36px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--cardo-radius-pill);
   background: transparent;
   outline: none;
 }
@@ -66,7 +66,7 @@
   align-items: center;
   justify-content: center;
   padding: 0 20px;
-  color: var(--wbn-secondary-text);
+  color: var(--cardo-secondary-text);
   font-size: 14px;
   font-weight: 500;
   white-space: nowrap;
@@ -78,19 +78,19 @@
 }
 
 .wbn-tab-pill:not(.wbn-tab-pill-active) button:hover {
-  color: var(--wbn-soft-text);
+  color: var(--cardo-soft-text);
 }
 
 .wbn-active-tab-indicator {
   position: absolute;
   inset: 0;
-  border-radius: 999px;
-  background: var(--wbn-active);
-  box-shadow: var(--wbn-inset-shadow);
+  border-radius: var(--cardo-radius-pill);
+  background: var(--cardo-active);
+  box-shadow: var(--cardo-inset-shadow);
 }
 
 .wbn-tab-pill-active button {
-  color: var(--wbn-text);
+  color: var(--cardo-text);
 }
 
 .wbn-tab-label {
@@ -100,10 +100,10 @@
 .wbn-tab-pill input {
   max-width: 150px;
   padding: 0 12px;
-  color: var(--wbn-text);
+  color: var(--cardo-text);
   font-size: 14px;
   font-weight: 500;
-  box-shadow: inset 0 -1px 0 var(--wbn-blue);
+  box-shadow: inset 0 -1px 0 var(--cardo-blue);
 }
 
 .wbn-top-actions {
@@ -111,7 +111,7 @@
   align-items: center;
   gap: 4px;
   margin-left: 4px;
-  border-left: 1px solid var(--wbn-divider);
+  border-left: 1px solid var(--cardo-divider);
   padding-left: 8px;
 }
 
@@ -123,22 +123,22 @@
   align-items: center;
   justify-content: center;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--cardo-radius-pill);
   background: transparent;
-  color: var(--wbn-secondary-text);
+  color: var(--cardo-secondary-text);
   font-size: 15px;
   font-weight: 500;
   transition:
-    color 160ms ease,
-    background 160ms ease,
-    box-shadow 160ms ease,
-    transform 120ms ease;
+    color var(--cardo-duration-normal) var(--cardo-easing),
+    background var(--cardo-duration-normal) var(--cardo-easing),
+    box-shadow var(--cardo-duration-normal) var(--cardo-easing),
+    transform var(--cardo-duration-fast) var(--cardo-easing);
 }
 
 .wbn-top-actions button:hover,
 .wbn-bottom-toolbar button:hover {
-  background: var(--wbn-hover);
-  color: var(--wbn-text);
+  background: var(--cardo-hover);
+  color: var(--cardo-text);
 }
 
 .wbn-tab-confirm {
@@ -149,7 +149,7 @@
   justify-content: space-between;
   gap: 16px;
   padding: 0 2px 0 14px;
-  color: var(--wbn-soft-text);
+  color: var(--cardo-soft-text);
   font-size: 14px;
   font-weight: 500;
 }
@@ -161,7 +161,7 @@
   display: flex;
   min-width: 0;
   align-items: center;
-  border-radius: 999px;
+  border-radius: var(--cardo-radius-pill);
 }
 
 .wbn-tab-confirm > span {
@@ -181,20 +181,20 @@
 .wbn-danger-button {
   height: 36px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--cardo-radius-pill);
   padding: 0 14px;
-  background: var(--wbn-hover);
-  color: var(--wbn-soft-text);
+  background: var(--cardo-hover);
+  color: var(--cardo-soft-text);
 }
 
 .wbn-danger-button {
   background: rgba(239, 68, 68, 0.1) !important;
-  color: var(--wbn-red) !important;
+  color: var(--cardo-red) !important;
 }
 
 .wbn-top-bar-drop-mode {
-  border-color: color-mix(in srgb, var(--wbn-blue) 12%, var(--wbn-border));
-  box-shadow: var(--wbn-shadow);
+  border-color: color-mix(in srgb, var(--cardo-blue) 12%, var(--cardo-border));
+  box-shadow: var(--cardo-shadow);
   transition:
     border-color 180ms ease,
     box-shadow 180ms ease,
@@ -202,11 +202,11 @@
 }
 
 .wbn-top-bar-drag-over {
-  border-color: color-mix(in srgb, var(--wbn-blue) 32%, var(--wbn-border));
-  background: color-mix(in srgb, var(--wbn-surface) 94%, var(--wbn-blue));
+  border-color: color-mix(in srgb, var(--cardo-blue) 32%, var(--cardo-border));
+  background: color-mix(in srgb, var(--cardo-surface) 94%, var(--cardo-blue));
   box-shadow:
-    var(--wbn-shadow-hover),
-    0 0 0 5px color-mix(in srgb, var(--wbn-blue) 8%, transparent);
+    var(--cardo-shadow-hover),
+    0 0 0 5px color-mix(in srgb, var(--cardo-blue) 8%, transparent);
   backdrop-filter: none;
 }
 
@@ -248,7 +248,7 @@
   display: flex;
   align-items: center;
   padding: 0 20px;
-  border-radius: 999px;
+  border-radius: var(--cardo-radius-pill);
   background: transparent;
 }
 
@@ -258,7 +258,7 @@
   max-width: 160px;
   border: 0;
   background: transparent;
-  color: var(--wbn-text);
+  color: var(--cardo-text);
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
@@ -275,11 +275,11 @@
   width: auto;
   height: 20px;
   min-height: 20px !important;
-  color: var(--wbn-secondary-text);
+  color: var(--cardo-secondary-text);
   font-size: 14px;
   line-height: 20px;
 }
 
 .wbn-tab-pill-active .wbn-tab-rename-input {
-  color: var(--wbn-text);
+  color: var(--cardo-text);
 }

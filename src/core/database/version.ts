@@ -1,5 +1,5 @@
 /** PRAGMA user_version / DATABASE_SCHEMA_VERSION. Wild installs historically only had 0 or 3. */
-export const DATABASE_SCHEMA_VERSION = 5;
+export const DATABASE_SCHEMA_VERSION = 6;
 
 /**
  * Schema version established by drizzle/0000_crazy_obadiah_stane.sql (business tables only).

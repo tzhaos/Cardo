@@ -1,6 +1,6 @@
 .wbn-custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: var(--wbn-scrollbar) transparent;
+  scrollbar-color: var(--cardo-scrollbar) transparent;
 }
 
 .wbn-custom-scrollbar::-webkit-scrollbar,
@@ -35,8 +35,8 @@
 .wbn-box-content::-webkit-scrollbar-thumb,
 .wbn-floating-menu::-webkit-scrollbar-thumb,
 .wbn-top-bar::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: var(--wbn-scrollbar);
+  border-radius: var(--cardo-radius-pill);
+  background: var(--cardo-scrollbar);
 }
 
 .wbn-custom-scrollbar::-webkit-scrollbar-thumb:hover,
@@ -44,5 +44,5 @@
 .wbn-box-content::-webkit-scrollbar-thumb:hover,
 .wbn-floating-menu::-webkit-scrollbar-thumb:hover,
 .wbn-top-bar::-webkit-scrollbar-thumb:hover {
-  background: var(--wbn-scrollbar-hover);
+  background: var(--cardo-scrollbar-hover);
 }

@@ -71,10 +71,10 @@
   border-radius: 0 !important;
   padding: 0 !important;
   background: transparent !important;
-  box-shadow: inset 0 -2px 0 var(--wbn-blue) !important;
+  box-shadow: inset 0 -2px 0 var(--cardo-blue) !important;
   caret-color: currentColor;
   cursor: text;
-  font-family: var(--wbn-font-sans);
+  font-family: var(--cardo-font-sans);
   font-weight: 500;
   letter-spacing: 0;
   outline: none;
@@ -86,7 +86,7 @@
   width: auto;
   height: 20px;
   flex: 0 1 auto;
-  color: var(--wbn-soft-text);
+  color: var(--cardo-soft-text);
   font-size: 14px;
   line-height: 20px;
 }

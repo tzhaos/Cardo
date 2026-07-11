@@ -9,7 +9,14 @@ import {
   workspaceItemTypeSchema,
   workspaceProjectionSchema,
 } from './workspace';
-import { colorModeSchema, preferenceLocaleSchema, webSearchEngineIdSchema } from './preferences';
+import {
+  colorModeSchema,
+  densitySchema,
+  fontFamilyIdSchema,
+  fontScaleSchema,
+  preferenceLocaleSchema,
+  webSearchEngineIdSchema,
+} from './preferences';
 
 const titleSchema = z.string().max(512);
 const itemDraftSchema = z.record(z.string(), z.string());
@@ -30,6 +37,11 @@ const commandSchemas = [
   z.object({ type: z.literal('preferences.setLocale'), locale: preferenceLocaleSchema }).strict(),
   z.object({ type: z.literal('preferences.setColorMode'), colorMode: colorModeSchema }).strict(),
   z.object({ type: z.literal('preferences.setTheme'), themeId: entityIdSchema }).strict(),
+  z
+    .object({ type: z.literal('preferences.setFontFamily'), fontFamily: fontFamilyIdSchema })
+    .strict(),
+  z.object({ type: z.literal('preferences.setFontScale'), fontScale: fontScaleSchema }).strict(),
+  z.object({ type: z.literal('preferences.setDensity'), density: densitySchema }).strict(),
   z
     .object({
       type: z.literal('preferences.setSearchEngine'),
@@ -237,6 +249,9 @@ const nonUndoableCommandTypes = new Set<WorkspaceCommandType>([
   'preferences.setLocale',
   'preferences.setColorMode',
   'preferences.setTheme',
+  'preferences.setFontFamily',
+  'preferences.setFontScale',
+  'preferences.setDensity',
   'preferences.setSearchEngine',
   'preferences.setCustomSearchTemplate',
   'system.constrainFrames',

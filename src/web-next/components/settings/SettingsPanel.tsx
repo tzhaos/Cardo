@@ -34,8 +34,14 @@ import {
 import { isValidCustomSearchTemplate, type WebSearchEngineId } from '../../domain/webSearch';
 import {
   colorModeSchema,
+  densitySchema,
+  fontFamilyIdSchema,
+  fontScaleSchema,
   preferenceLocaleSchema,
   webSearchEngineIdSchema,
+  type Density,
+  type FontFamilyId,
+  type FontScale,
 } from '../../../core/contracts/preferences';
 import {
   Select,
@@ -66,6 +72,12 @@ export function SettingsPanel({
   const setLocale = usePreferencesStore((state) => state.setLocale);
   const setThemeId = usePreferencesStore((state) => state.setThemeId);
   const themeId = usePreferencesStore((state) => state.themeId);
+  const fontFamily = usePreferencesStore((state) => state.fontFamily);
+  const fontScale = usePreferencesStore((state) => state.fontScale);
+  const density = usePreferencesStore((state) => state.density);
+  const setFontFamily = usePreferencesStore((state) => state.setFontFamily);
+  const setFontScale = usePreferencesStore((state) => state.setFontScale);
+  const setDensity = usePreferencesStore((state) => state.setDensity);
   const searchEngine = usePreferencesStore((state) => state.searchEngine);
   const customSearchTemplate = usePreferencesStore((state) => state.customSearchTemplate);
   const setSearchEngine = usePreferencesStore((state) => state.setSearchEngine);
@@ -141,6 +153,12 @@ export function SettingsPanel({
                   setThemeId={setThemeId}
                   themeId={themeId}
                   themes={themes}
+                  fontFamily={fontFamily}
+                  fontScale={fontScale}
+                  density={density}
+                  setFontFamily={setFontFamily}
+                  setFontScale={setFontScale}
+                  setDensity={setDensity}
                 />
               ) : null}
               {section === 'data' ? <DataSettings /> : null}
@@ -364,6 +382,12 @@ function AppearanceSettings({
   setThemeId,
   themeId,
   themes,
+  fontFamily,
+  fontScale,
+  density,
+  setFontFamily,
+  setFontScale,
+  setDensity,
 }: {
   colorMode: WebNextColorMode;
   locale: 'en' | 'zh';
@@ -371,6 +395,12 @@ function AppearanceSettings({
   setThemeId: (themeId: string) => void;
   themeId: string;
   themes: ReturnType<typeof getRegisteredWebNextThemes>;
+  fontFamily: FontFamilyId;
+  fontScale: FontScale;
+  density: Density;
+  setFontFamily: (fontFamily: FontFamilyId) => void;
+  setFontScale: (fontScale: FontScale) => void;
+  setDensity: (density: Density) => void;
 }) {
   const { t } = useI18n();
 
@@ -445,6 +475,82 @@ function AppearanceSettings({
           );
         })}
       </ToggleGroup>
+      <div className="wbn-settings-subheading">
+        <span>{t('settings.typography')}</span>
+        <small>{t('settings.typographyDescription')}</small>
+      </div>
+      <div className="wbn-settings-card">
+        <div className="wbn-settings-card-copy">
+          <IconFrame>
+            <Languages size={16} />
+          </IconFrame>
+          <span>
+            {t('settings.fontFamily')}
+            <small>{t('settings.fontFamilyDescription')}</small>
+          </span>
+        </div>
+        <Select
+          value={fontFamily}
+          onValueChange={(value) => setFontFamily(fontFamilyIdSchema.parse(value))}
+        >
+          <SelectTrigger aria-label={t('settings.fontFamily')} className="wbn-settings-select">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent align="end">
+            <SelectItem value="default">{t('settings.fontFamily.default')}</SelectItem>
+            <SelectItem value="system-ui">{t('settings.fontFamily.systemUi')}</SelectItem>
+            <SelectItem value="serif">{t('settings.fontFamily.serif')}</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="wbn-settings-card">
+        <div className="wbn-settings-card-copy">
+          <span>
+            {t('settings.fontScale')}
+            <small>{t('settings.fontScaleDescription')}</small>
+          </span>
+        </div>
+        <ToggleGroup
+          aria-label={t('settings.fontScale')}
+          type="single"
+          value={fontScale}
+          onValueChange={(value) => value && setFontScale(fontScaleSchema.parse(value))}
+        >
+          <SegmentButton active={fontScale === 'sm'} value="sm">
+            {t('settings.fontScale.sm')}
+          </SegmentButton>
+          <SegmentButton active={fontScale === 'md'} value="md">
+            {t('settings.fontScale.md')}
+          </SegmentButton>
+          <SegmentButton active={fontScale === 'lg'} value="lg">
+            {t('settings.fontScale.lg')}
+          </SegmentButton>
+        </ToggleGroup>
+      </div>
+      <div className="wbn-settings-card">
+        <div className="wbn-settings-card-copy">
+          <span>
+            {t('settings.density')}
+            <small>{t('settings.densityDescription')}</small>
+          </span>
+        </div>
+        <ToggleGroup
+          aria-label={t('settings.density')}
+          type="single"
+          value={density}
+          onValueChange={(value) => value && setDensity(densitySchema.parse(value))}
+        >
+          <SegmentButton active={density === 'compact'} value="compact">
+            {t('settings.density.compact')}
+          </SegmentButton>
+          <SegmentButton active={density === 'comfortable'} value="comfortable">
+            {t('settings.density.comfortable')}
+          </SegmentButton>
+          <SegmentButton active={density === 'spacious'} value="spacious">
+            {t('settings.density.spacious')}
+          </SegmentButton>
+        </ToggleGroup>
+      </div>
     </>
   );
 }
@@ -471,7 +577,7 @@ function AboutSettings() {
         </div>
         <div>
           <dt>{t('settings.themeSystem')}</dt>
-          <dd>{t('settings.dualPalette')}</dd>
+          <dd>{t('settings.tokenThemePack')}</dd>
         </div>
       </dl>
     </>

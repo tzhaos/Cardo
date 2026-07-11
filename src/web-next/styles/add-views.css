@@ -7,7 +7,7 @@
   gap: 8px;
   overflow-y: auto;
   padding: 8px 12px 10px;
-  scrollbar-color: var(--wbn-scrollbar) transparent;
+  scrollbar-color: var(--cardo-scrollbar) transparent;
   scrollbar-width: thin;
 }
 
@@ -25,19 +25,19 @@
   align-items: center;
   justify-content: center;
   border: 1px solid transparent;
-  border-radius: 8px;
-  background: var(--wbn-neutral-button);
-  color: var(--wbn-muted);
+  border-radius: var(--cardo-radius-md);
+  background: var(--cardo-neutral-button);
+  color: var(--cardo-muted);
 }
 
 .wbn-item-type-picker button:hover {
-  background: var(--wbn-hover);
-  color: var(--wbn-soft-text);
+  background: var(--cardo-hover);
+  color: var(--cardo-soft-text);
 }
 
 .wbn-item-type-picker .wbn-item-type-active {
-  border-color: color-mix(in srgb, var(--box-accent) 28%, var(--wbn-border-subtle));
-  background: color-mix(in srgb, var(--box-accent) 10%, var(--wbn-panel-content));
+  border-color: color-mix(in srgb, var(--box-accent) 28%, var(--cardo-border-subtle));
+  background: color-mix(in srgb, var(--box-accent) 10%, var(--cardo-panel-content));
   color: var(--box-accent);
 }
 
@@ -46,7 +46,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  color: var(--wbn-soft-text);
+  color: var(--cardo-soft-text);
 }
 
 .wbn-add-view h3 {
@@ -58,10 +58,10 @@
 .wbn-add-view header button,
 .wbn-add-primary {
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--cardo-radius-md);
   padding: 6px 8px;
-  background: var(--wbn-hover);
-  color: var(--wbn-secondary-text);
+  background: var(--cardo-hover);
+  color: var(--cardo-secondary-text);
   font-size: 12px;
 }
 
@@ -69,20 +69,20 @@
 .wbn-add-view textarea,
 .wbn-add-view select {
   width: 100%;
-  border: 1px solid var(--wbn-border-subtle);
-  border-radius: 10px;
+  border: 1px solid var(--cardo-border-subtle);
+  border-radius: var(--cardo-radius-md);
   min-height: 42px;
   padding: 10px 12px;
-  background: var(--wbn-input);
-  color: var(--wbn-text);
+  background: var(--cardo-input);
+  color: var(--cardo-text);
   font-size: 13px;
   outline: none;
 }
 
 .wbn-add-view input:focus,
 .wbn-add-view textarea:focus {
-  border-color: var(--wbn-blue);
-  box-shadow: 0 0 0 1px var(--wbn-blue);
+  border-color: var(--cardo-blue);
+  box-shadow: 0 0 0 1px var(--cardo-blue);
 }
 
 .wbn-add-view textarea {
@@ -109,14 +109,14 @@
   align-items: center;
   justify-content: center;
   border: 0;
-  border-radius: 10px;
+  border-radius: var(--cardo-radius-md);
   font-size: 14px;
   font-weight: 600;
 }
 
 .wbn-add-cancel {
-  background: var(--wbn-neutral-button);
-  color: var(--wbn-soft-text);
+  background: var(--cardo-neutral-button);
+  color: var(--cardo-soft-text);
 }
 
 .wbn-add-primary {
@@ -131,6 +131,6 @@
 
 .wbn-field-error {
   margin: -2px 2px 0;
-  color: var(--wbn-red);
+  color: var(--cardo-red);
   font-size: 12px;
 }

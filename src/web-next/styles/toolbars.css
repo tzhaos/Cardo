@@ -13,7 +13,7 @@
   width: 1px;
   height: 24px;
   margin: 0 4px;
-  background: var(--wbn-divider);
+  background: var(--cardo-divider);
 }
 
 .wbn-search-pill {
@@ -22,8 +22,8 @@
   height: 40px;
   align-items: center;
   overflow: hidden;
-  border-radius: 999px;
-  background: var(--wbn-hover);
+  border-radius: var(--cardo-radius-pill);
+  background: var(--cardo-hover);
 }
 
 .wbn-search-pill .wbn-search-local-trigger {
@@ -41,7 +41,7 @@
   pointer-events: none;
   transition:
     visibility 0s linear 160ms,
-    opacity 160ms ease;
+    opacity var(--cardo-duration-normal) var(--cardo-easing);
 }
 
 .wbn-search-pill-active .wbn-search-web-trigger {
@@ -62,15 +62,15 @@
   border: 0;
   padding: 0 48px 0 40px;
   background: transparent;
-  color: var(--wbn-text);
+  color: var(--cardo-text);
   font-size: 14px;
   outline: none;
-  transition: opacity 160ms ease;
+  transition: opacity var(--cardo-duration-normal) var(--cardo-easing);
 }
 
 .wbn-search-pill input,
 .wbn-search-pill input::placeholder {
-  font-family: var(--wbn-font-sans);
+  font-family: var(--cardo-font-sans);
   font-weight: 400;
   letter-spacing: 0;
 }
@@ -79,11 +79,11 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: 1px solid var(--wbn-border);
-  border-radius: 999px;
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-pill);
   padding: 6px;
-  background: var(--wbn-surface);
-  box-shadow: var(--wbn-shadow);
+  background: var(--cardo-surface);
+  box-shadow: var(--cardo-shadow);
   backdrop-filter: blur(12px);
 }
 
@@ -95,8 +95,8 @@
 }
 
 .wbn-bottom-toolbar .wbn-toolbar-button-active {
-  background: var(--wbn-active);
-  color: var(--wbn-text);
+  background: var(--cardo-active);
+  color: var(--cardo-text);
 }
 
 .wbn-tab-pill-system button {
@@ -106,14 +106,14 @@
 
 .wbn-toolbar-create {
   order: 5;
-  background: var(--wbn-create-background) !important;
-  color: var(--wbn-create-text) !important;
-  box-shadow: var(--wbn-shadow);
+  background: var(--cardo-create-background) !important;
+  color: var(--cardo-create-text) !important;
+  box-shadow: var(--cardo-shadow);
   will-change: transform;
 }
 
 .wbn-toolbar-create:hover {
-  box-shadow: 0 7px 16px color-mix(in srgb, var(--wbn-create-background) 30%, transparent);
+  box-shadow: 0 7px 16px color-mix(in srgb, var(--cardo-create-background) 30%, transparent);
   transform: translateY(-1px) scale(1.04);
 }
 

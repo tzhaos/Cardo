@@ -17,7 +17,14 @@ import {
   workspaceBoxViewModes,
   workspaceItemTypes,
 } from '../contracts/workspace';
-import { colorModes, preferenceLocales, webSearchEngineIds } from '../contracts/preferences';
+import {
+  colorModes,
+  densities,
+  fontFamilyIds,
+  fontScales,
+  preferenceLocales,
+  webSearchEngineIds,
+} from '../contracts/preferences';
 
 export { DATABASE_SCHEMA_VERSION } from './version';
 export const APP_STATE_ID = 1;
@@ -122,6 +129,9 @@ export const preferences = sqliteTable('preferences', {
   locale: text('locale', { enum: preferenceLocales }).notNull(),
   colorMode: text('color_mode', { enum: colorModes }).notNull(),
   themeId: text('theme_id').notNull(),
+  fontFamily: text('font_family', { enum: fontFamilyIds }).notNull(),
+  fontScale: text('font_scale', { enum: fontScales }).notNull(),
+  density: text('density', { enum: densities }).notNull(),
   searchEngine: text('search_engine', {
     enum: webSearchEngineIds,
   }).notNull(),

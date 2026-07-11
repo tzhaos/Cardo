@@ -25,12 +25,19 @@ export default function WebNextApp() {
   const colorMode = usePreferencesStore((state) => state.colorMode);
   const locale = usePreferencesStore((state) => state.locale);
   const themeId = usePreferencesStore((state) => state.themeId);
+  const fontFamily = usePreferencesStore((state) => state.fontFamily);
+  const fontScale = usePreferencesStore((state) => state.fontScale);
+  const density = usePreferencesStore((state) => state.density);
   const isDesktopHost = typeof window !== 'undefined' && Boolean(window.cardoDesktop);
 
   useLayoutEffect(() => {
     document.documentElement.lang = locale === 'zh' ? 'zh-CN' : 'en';
-    applyWebNextTheme(document.documentElement, themeId, colorMode);
-  }, [colorMode, locale, themeId]);
+    applyWebNextTheme(document.documentElement, themeId, colorMode, {
+      fontFamily,
+      fontScale,
+      density,
+    });
+  }, [colorMode, density, fontFamily, fontScale, locale, themeId]);
 
   return (
     <TooltipProvider>

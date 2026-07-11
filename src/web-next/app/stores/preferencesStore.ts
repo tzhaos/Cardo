@@ -1,21 +1,37 @@
 import { useSyncExternalStore } from 'react';
 import type { WorkspaceCommand } from '../../../core/contracts/workspaceCommands';
 import type { InvalidationScope } from '../../../core/contracts/runtimeProtocol';
+import type {
+  Density,
+  FontFamilyId,
+  FontScale,
+  WebSearchEngineId,
+} from '../../../core/contracts/preferences';
+import {
+  DEFAULT_DENSITY,
+  DEFAULT_FONT_FAMILY_ID,
+  DEFAULT_FONT_SCALE,
+} from '../../../core/contracts/preferences';
 import type { WebNextLocale } from '../../i18n/messages';
-import type { WebSearchEngineId } from '../../domain/webSearch';
-import { hasRegisteredWebNextTheme, type WebNextColorMode } from '../../themes/themeRegistry';
+import { hasRegisteredThemePack, type WebNextColorMode } from '../../themes/themeRegistry';
 import { dispatchDatabaseCommand, queryPreferences } from '../../platform/hostPlatform';
 
 interface PreferencesStore {
   colorMode: WebNextColorMode;
   locale: WebNextLocale;
   themeId: string;
+  fontFamily: FontFamilyId;
+  fontScale: FontScale;
+  density: Density;
   searchEngine: WebSearchEngineId;
   customSearchTemplate: string;
   initialize: () => Promise<void>;
   setColorMode: (colorMode: WebNextColorMode) => void;
   setLocale: (locale: WebNextLocale) => void;
   setThemeId: (themeId: string) => void;
+  setFontFamily: (fontFamily: FontFamilyId) => void;
+  setFontScale: (fontScale: FontScale) => void;
+  setDensity: (density: Density) => void;
   setSearchEngine: (searchEngine: WebSearchEngineId) => void;
   setCustomSearchTemplate: (customSearchTemplate: string) => void;
   toggleColorMode: () => void;
@@ -31,10 +47,15 @@ const actions = {
     fireCommand({ type: 'preferences.setColorMode', colorMode }),
   setLocale: (locale: WebNextLocale) => fireCommand({ type: 'preferences.setLocale', locale }),
   setThemeId: (themeId: string) => {
-    if (hasRegisteredWebNextTheme(themeId)) {
+    if (hasRegisteredThemePack(themeId)) {
       fireCommand({ type: 'preferences.setTheme', themeId });
     }
   },
+  setFontFamily: (fontFamily: FontFamilyId) =>
+    fireCommand({ type: 'preferences.setFontFamily', fontFamily }),
+  setFontScale: (fontScale: FontScale) =>
+    fireCommand({ type: 'preferences.setFontScale', fontScale }),
+  setDensity: (density: Density) => fireCommand({ type: 'preferences.setDensity', density }),
   setSearchEngine: (searchEngine: WebSearchEngineId) =>
     fireCommand({ type: 'preferences.setSearchEngine', searchEngine }),
   setCustomSearchTemplate: (customSearchTemplate: string) =>
@@ -43,13 +64,23 @@ const actions = {
   toggleLocale: () => actions.setLocale(state.locale === 'en' ? 'zh' : 'en'),
 } satisfies Omit<
   PreferencesStore,
-  'colorMode' | 'locale' | 'themeId' | 'searchEngine' | 'customSearchTemplate'
+  | 'colorMode'
+  | 'locale'
+  | 'themeId'
+  | 'fontFamily'
+  | 'fontScale'
+  | 'density'
+  | 'searchEngine'
+  | 'customSearchTemplate'
 >;
 
 let state: PreferencesStore = {
   colorMode: 'light',
   locale: 'en',
   themeId: 'classic',
+  fontFamily: DEFAULT_FONT_FAMILY_ID,
+  fontScale: DEFAULT_FONT_SCALE,
+  density: DEFAULT_DENSITY,
   searchEngine: 'bing-cn',
   customSearchTemplate: '',
   ...actions,
@@ -63,6 +94,9 @@ async function refreshPreferences() {
     colorMode: preferences.colorMode,
     locale: preferences.locale,
     themeId: preferences.themeId,
+    fontFamily: preferences.fontFamily,
+    fontScale: preferences.fontScale,
+    density: preferences.density,
     searchEngine: preferences.searchEngine,
     customSearchTemplate: preferences.customSearchTemplate,
   };

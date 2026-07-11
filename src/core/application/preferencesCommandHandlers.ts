@@ -8,6 +8,9 @@ type PreferencesCommandType =
   | 'preferences.setLocale'
   | 'preferences.setColorMode'
   | 'preferences.setTheme'
+  | 'preferences.setFontFamily'
+  | 'preferences.setFontScale'
+  | 'preferences.setDensity'
   | 'preferences.setSearchEngine'
   | 'preferences.setCustomSearchTemplate';
 
@@ -47,6 +50,12 @@ function getPatch(command: PreferencesCommand): Partial<typeof preferences.$infe
       return { colorMode: command.colorMode };
     case 'preferences.setTheme':
       return { themeId: command.themeId };
+    case 'preferences.setFontFamily':
+      return { fontFamily: command.fontFamily };
+    case 'preferences.setFontScale':
+      return { fontScale: command.fontScale };
+    case 'preferences.setDensity':
+      return { density: command.density };
     case 'preferences.setSearchEngine':
       return { searchEngine: command.searchEngine };
     case 'preferences.setCustomSearchTemplate':

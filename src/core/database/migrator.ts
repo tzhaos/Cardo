@@ -11,6 +11,7 @@
 import baselineMigrationSql from '../../../drizzle/0000_crazy_obadiah_stane.sql?raw';
 import runtimeMetaMigrationSql from '../../../drizzle/0001_runtime_meta.sql?raw';
 import systemPageIdsMigrationSql from '../../../drizzle/0002_system_page_ids.sql?raw';
+import themePreferencesMigrationSql from '../../../drizzle/0003_theme_preferences.sql?raw';
 import { BASELINE_SCHEMA_VERSION, DATABASE_SCHEMA_VERSION } from './version';
 
 export interface MigratorAdapter {
@@ -30,6 +31,7 @@ export interface MigratorAdapter {
 const FORWARD_MIGRATIONS: Readonly<Record<number, string>> = {
   4: runtimeMetaMigrationSql,
   5: systemPageIdsMigrationSql,
+  6: themePreferencesMigrationSql,
 };
 
 /**
