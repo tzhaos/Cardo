@@ -1,6 +1,7 @@
 import {
-  isNativeHostResponse,
   KHAOSBOX_NATIVE_HOST_NAME,
+  nativeHostRequestSchema,
+  nativeHostResponseSchema,
   type NativeHostRequest,
 } from '../../core/protocols/nativeMessaging';
 import type { LocalResourcePort } from '../../core/ports/LocalResourcePort';
@@ -17,7 +18,7 @@ function sendNativeMessage(message: NativeHostRequest) {
     try {
       const maybePromise = runtime.sendNativeMessage?.(
         KHAOSBOX_NATIVE_HOST_NAME,
-        message,
+        nativeHostRequestSchema.parse(message),
         (response) => {
           const lastErrorMessage = runtime.lastError?.message;
 
@@ -47,16 +48,17 @@ export const nativeMessagingLocalResourcePort: LocalResourcePort = {
         resourcePath,
       });
 
-      if (!isNativeHostResponse(response)) {
+      const parsedResponse = nativeHostResponseSchema.safeParse(response);
+      if (!parsedResponse.success) {
         return {
           status: 'failed',
           errorMessage: 'Native host returned an invalid response.',
         };
       }
 
-      return response.ok
+      return parsedResponse.data.ok
         ? { status: 'requested' }
-        : { status: 'failed', errorMessage: response.errorMessage };
+        : { status: 'failed', errorMessage: parsedResponse.data.errorMessage };
     } catch (error) {
       return {
         status: 'failed',
