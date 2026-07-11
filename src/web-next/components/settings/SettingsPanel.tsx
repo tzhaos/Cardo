@@ -1,17 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import type { PointerEventHandler } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import type { PointerEventHandler, ReactNode } from 'react';
 import {
   Check,
   CircleHelp,
   Database,
   Download,
   FileDown,
-  Globe2,
   Languages,
-  LayoutGrid,
   Moon,
   Palette,
-  RotateCcw,
   Settings,
   SlidersHorizontal,
   Sun,
@@ -21,57 +18,24 @@ import {
 import { AnimatePresence, motion } from 'motion/react';
 import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import { useI18n } from '../../i18n/useI18n';
-import { getRegisteredWebNextThemes, getThemePack } from '../../themes/themeRegistry';
+import { getRegisteredWebNextThemes } from '../../themes/themeRegistry';
 import type { WebNextColorMode } from '../../themes/themeRegistry';
-import { parseThemePackImportFile } from '../../themes/themeIO';
 import { ColorModeStateIcon, LanguageStateIcon } from './StateIcons';
 import { IconButton, IconFrame } from '../../ui/cardo/icon-button';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import type { WorkspaceProjection } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
-import { useFeatureEnabled } from '../../shell/FeatureGate';
 import {
   exportOperationLog,
-  exportThemePackFile,
   exportWorkspaceData,
   parseWorkspaceImportFile,
 } from '../../platform/hostPlatform';
 import { isValidCustomSearchTemplate, type WebSearchEngineId } from '../../domain/webSearch';
 import {
-  FEATURE_CATALOG,
-  type FeatureDefinition,
-  type FeatureId,
-} from '../../../core/contracts/featureCatalog';
-import { validateCssSnippet } from '../../../core/contracts/cssSnippet';
-import {
-  LAYOUT_PROFILES,
-  layoutProfileIdSchema,
-} from '../../../core/contracts/layoutProfile';
-import {
   colorModeSchema,
-  densitySchema,
-  fontFamilyIdSchema,
-  fontScaleSchema,
   preferenceLocaleSchema,
   webSearchEngineIdSchema,
-  type Density,
-  type FontFamilyId,
-  type FontScale,
 } from '../../../core/contracts/preferences';
-import {
-  overridableColorKeys,
-  type OverridableColorKey,
-} from '../../../core/contracts/themePack';
-import type { WebNextMessageKey } from '../../i18n/messages';
-
-const COLOR_OVERRIDE_LABEL_KEYS = {
-  canvas: 'settings.colorOverride.canvas',
-  panel: 'settings.colorOverride.panel',
-  surface: 'settings.colorOverride.surface',
-  text: 'settings.colorOverride.text',
-  blue: 'settings.colorOverride.blue',
-  createBackground: 'settings.colorOverride.createBackground',
-} as const satisfies Record<OverridableColorKey, WebNextMessageKey>;
 import {
   Select,
   SelectContent,
@@ -80,14 +44,18 @@ import {
   SelectValue,
 } from '../../ui/primitives/select';
 import { Input } from '../../ui/primitives/input';
-import { Textarea } from '../../ui/primitives/textarea';
 import { Button } from '../../ui/primitives/button';
 import { MotionButton } from '../../ui/primitives/motion-button';
 import { ToggleGroup, ToggleGroupItem } from '../../ui/primitives/toggle-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/primitives/tabs';
 
-type SettingsSection = 'general' | 'interface' | 'appearance' | 'data' | 'about';
+type SettingsSection = 'general' | 'appearance' | 'data' | 'about';
 
+/**
+ * Product settings stay intentionally simple: language, search, theme pack,
+ * light/dark, backup. Layout/CSS/feature/color-override editors belong in
+ * future extension surface, not the default shell.
+ */
 export function SettingsPanel({
   onClose,
   onHeaderPointerDown,
@@ -102,12 +70,6 @@ export function SettingsPanel({
   const setLocale = usePreferencesStore((state) => state.setLocale);
   const setThemeId = usePreferencesStore((state) => state.setThemeId);
   const themeId = usePreferencesStore((state) => state.themeId);
-  const fontFamily = usePreferencesStore((state) => state.fontFamily);
-  const fontScale = usePreferencesStore((state) => state.fontScale);
-  const density = usePreferencesStore((state) => state.density);
-  const setFontFamily = usePreferencesStore((state) => state.setFontFamily);
-  const setFontScale = usePreferencesStore((state) => state.setFontScale);
-  const setDensity = usePreferencesStore((state) => state.setDensity);
   const importedThemePacks = usePreferencesStore((state) => state.importedThemePacks);
   const searchEngine = usePreferencesStore((state) => state.searchEngine);
   const customSearchTemplate = usePreferencesStore((state) => state.customSearchTemplate);
@@ -117,7 +79,6 @@ export function SettingsPanel({
   const themes = useMemo(() => getRegisteredWebNextThemes(), [importedThemePacks]);
   const sections = [
     { id: 'general' as const, icon: SlidersHorizontal, label: t('settings.general') },
-    { id: 'interface' as const, icon: LayoutGrid, label: t('settings.interface') },
     { id: 'appearance' as const, icon: Palette, label: t('settings.appearance') },
     { id: 'data' as const, icon: Database, label: t('settings.data') },
     { id: 'about' as const, icon: CircleHelp, label: t('settings.about') },
@@ -177,7 +138,6 @@ export function SettingsPanel({
                   setCustomSearchTemplate={setCustomSearchTemplate}
                 />
               ) : null}
-              {section === 'interface' ? <InterfaceSettings /> : null}
               {section === 'appearance' ? (
                 <AppearanceSettings
                   colorMode={colorMode}
@@ -186,12 +146,6 @@ export function SettingsPanel({
                   setThemeId={setThemeId}
                   themeId={themeId}
                   themes={themes}
-                  fontFamily={fontFamily}
-                  fontScale={fontScale}
-                  density={density}
-                  setFontFamily={setFontFamily}
-                  setFontScale={setFontScale}
-                  setDensity={setDensity}
                 />
               ) : null}
               {section === 'data' ? <DataSettings /> : null}
@@ -200,192 +154,6 @@ export function SettingsPanel({
           </AnimatePresence>
         </TabsContent>
       </Tabs>
-    </div>
-  );
-}
-
-function InterfaceSettings() {
-  const { t } = useI18n();
-  const featureFlags = usePreferencesStore((state) => state.featureFlags);
-  const setFeatureEnabled = usePreferencesStore((state) => state.setFeatureEnabled);
-  const resetFeatureFlags = usePreferencesStore((state) => state.resetFeatureFlags);
-  const layoutProfileId = usePreferencesStore((state) => state.layoutProfileId);
-  const setLayoutProfileId = usePreferencesStore((state) => state.setLayoutProfileId);
-  const cssSnippet = usePreferencesStore((state) => state.cssSnippet);
-  const cssSnippetEnabled = usePreferencesStore((state) => state.cssSnippetEnabled);
-  const setCssSnippet = usePreferencesStore((state) => state.setCssSnippet);
-  const setCssSnippetEnabled = usePreferencesStore((state) => state.setCssSnippetEnabled);
-  const [snippetDraft, setSnippetDraft] = useState(cssSnippet);
-  const [snippetError, setSnippetError] = useState(false);
-  const hasOverrides = Object.keys(featureFlags).length > 0;
-
-  useEffect(() => {
-    setSnippetDraft(cssSnippet);
-  }, [cssSnippet]);
-
-  const commitSnippet = (value: string) => {
-    const result = validateCssSnippet(value);
-    if (!result.ok && value.trim()) {
-      setSnippetError(true);
-      return;
-    }
-    setSnippetError(false);
-    setCssSnippet(result.sanitized);
-  };
-
-  return (
-    <>
-      <SettingsHeading
-        title={t('settings.interface')}
-        description={t('settings.interfaceDescription')}
-      />
-      <div className="cardo-settings-subheading">
-        <span>{t('settings.layout')}</span>
-        <small>{t('settings.layoutDescription')}</small>
-      </div>
-      <ToggleGroup
-        className="cardo-layout-list"
-        type="single"
-        variant="plain"
-        value={layoutProfileId}
-        onValueChange={(value) => value && setLayoutProfileId(layoutProfileIdSchema.parse(value))}
-        aria-label={t('settings.layout')}
-      >
-        {LAYOUT_PROFILES.map((profile) => {
-          const selected = profile.id === layoutProfileId;
-          return (
-            <ToggleGroupItem asChild key={profile.id} value={profile.id}>
-              <MotionButton
-                variant="card"
-                className={selected ? 'cardo-layout-card cardo-layout-card-selected' : 'cardo-layout-card'}
-                type="button"
-                whileTap={{ scale: 0.99 }}
-              >
-                <span className="cardo-layout-card-copy">
-                  <span>
-                    {t(profile.labelKey as WebNextMessageKey)}
-                    {profile.isOfficialDefault ? (
-                      <em className="cardo-theme-official-badge">{t('settings.themeOfficial')}</em>
-                    ) : null}
-                  </span>
-                  <small>{t(profile.descriptionKey as WebNextMessageKey)}</small>
-                </span>
-                {selected ? (
-                  <IconFrame className="cardo-theme-check">
-                    <Check size={12} />
-                  </IconFrame>
-                ) : null}
-              </MotionButton>
-            </ToggleGroupItem>
-          );
-        })}
-      </ToggleGroup>
-
-      <div className="cardo-settings-subheading">
-        <span>{t('settings.advancedInterface')}</span>
-        <small>{t('settings.advancedInterfaceDescription')}</small>
-      </div>
-      <div className="cardo-settings-stack">
-        {FEATURE_CATALOG.map((feature) => (
-          <FeatureFlagRow key={feature.id} feature={feature} onToggle={setFeatureEnabled} />
-        ))}
-        {hasOverrides ? (
-          <Button
-            variant="ghost"
-            className="cardo-theme-reset-button"
-            onClick={() => resetFeatureFlags()}
-          >
-            <RotateCcw size={14} />
-            {t('settings.resetFeatures')}
-          </Button>
-        ) : null}
-      </div>
-
-      <div className="cardo-settings-subheading">
-        <span>{t('settings.expertCss')}</span>
-        <small>{t('settings.expertCssDescription')}</small>
-      </div>
-      <div className="cardo-settings-stack">
-        <div className="cardo-settings-card">
-          <div className="cardo-settings-card-copy">
-            <span>
-              {t('settings.cssSnippetEnabled')}
-              <small>{t('settings.cssSnippetHint')}</small>
-            </span>
-          </div>
-          <ToggleGroup
-            aria-label={t('settings.cssSnippetEnabled')}
-            type="single"
-            value={cssSnippetEnabled ? 'on' : 'off'}
-            onValueChange={(next) => {
-              if (!next) return;
-              setCssSnippetEnabled(next === 'on');
-            }}
-          >
-            <SegmentButton active={!cssSnippetEnabled} value="off">
-              {t('settings.optionOff')}
-            </SegmentButton>
-            <SegmentButton active={cssSnippetEnabled} value="on">
-              {t('settings.optionOn')}
-            </SegmentButton>
-          </ToggleGroup>
-        </div>
-        <label className="cardo-custom-search-template">
-          <span>{t('settings.cssSnippet')}</span>
-          <Textarea
-            className={snippetError ? 'cardo-custom-search-template-invalid' : undefined}
-            value={snippetDraft}
-            onChange={(event) => {
-              setSnippetDraft(event.target.value);
-              setSnippetError(false);
-            }}
-            onBlur={() => commitSnippet(snippetDraft)}
-            placeholder={t('settings.cssSnippetPlaceholder')}
-            rows={8}
-          />
-          {snippetError ? <small>{t('settings.cssSnippetInvalid')}</small> : null}
-        </label>
-      </div>
-    </>
-  );
-}
-
-function FeatureFlagRow({
-  feature,
-  onToggle,
-}: {
-  feature: FeatureDefinition;
-  onToggle: (featureId: FeatureId, enabled: boolean) => void;
-}) {
-  const { t } = useI18n();
-  const enabled = useFeatureEnabled(feature.id);
-  const label = t(feature.labelKey as WebNextMessageKey);
-  const description = t(feature.descriptionKey as WebNextMessageKey);
-
-  return (
-    <div className="cardo-settings-card">
-      <div className="cardo-settings-card-copy">
-        <span>
-          {label}
-          <small>{description}</small>
-        </span>
-      </div>
-      <ToggleGroup
-        aria-label={label}
-        type="single"
-        value={enabled ? 'on' : 'off'}
-        onValueChange={(next) => {
-          if (!next) return;
-          onToggle(feature.id, next === 'on');
-        }}
-      >
-        <SegmentButton active={!enabled} value="off">
-          {t('settings.optionOff')}
-        </SegmentButton>
-        <SegmentButton active={enabled} value="on">
-          {t('settings.optionOn')}
-        </SegmentButton>
-      </ToggleGroup>
     </div>
   );
 }
@@ -504,9 +272,11 @@ function GeneralSettings({
   searchEngine: WebSearchEngineId;
   customSearchTemplate: string;
   setSearchEngine: (searchEngine: WebSearchEngineId) => void;
-  setCustomSearchTemplate: (customSearchTemplate: string) => void;
+  setCustomSearchTemplate: (template: string) => void;
 }) {
   const { t } = useI18n();
+  const templateInvalid =
+    searchEngine === 'custom' && !isValidCustomSearchTemplate(customSearchTemplate);
 
   return (
     <>
@@ -528,11 +298,11 @@ function GeneralSettings({
           value={locale}
           onValueChange={(value) => value && setLocale(preferenceLocaleSchema.parse(value))}
         >
-          <SegmentButton active={locale === 'en'} value="en">
-            EN
-          </SegmentButton>
           <SegmentButton active={locale === 'zh'} value="zh">
-            文
+            中文
+          </SegmentButton>
+          <SegmentButton active={locale === 'en'} value="en">
+            English
           </SegmentButton>
         </ToggleGroup>
       </div>
@@ -540,11 +310,8 @@ function GeneralSettings({
         <span>{t('settings.searchEngine')}</span>
         <small>{t('settings.searchEngineDescription')}</small>
       </div>
-      <div className="cardo-settings-card cardo-search-engine-settings">
+      <div className="cardo-settings-card">
         <div className="cardo-settings-card-copy">
-          <IconFrame>
-            <Globe2 size={18} />
-          </IconFrame>
           <span>{t('settings.searchEngine')}</span>
         </div>
         <Select
@@ -567,11 +334,7 @@ function GeneralSettings({
         <label className="cardo-custom-search-template">
           <span>{t('settings.customSearchTemplate')}</span>
           <Input
-            className={
-              customSearchTemplate && !isValidCustomSearchTemplate(customSearchTemplate)
-                ? 'cardo-custom-search-template-invalid'
-                : undefined
-            }
+            className={templateInvalid ? 'cardo-custom-search-template-invalid' : undefined}
             value={customSearchTemplate}
             onChange={(event) => setCustomSearchTemplate(event.target.value)}
             placeholder={t('settings.customSearchTemplatePlaceholder')}
@@ -590,12 +353,6 @@ function AppearanceSettings({
   setThemeId,
   themeId,
   themes,
-  fontFamily,
-  fontScale,
-  density,
-  setFontFamily,
-  setFontScale,
-  setDensity,
 }: {
   colorMode: WebNextColorMode;
   locale: 'en' | 'zh';
@@ -603,39 +360,8 @@ function AppearanceSettings({
   setThemeId: (themeId: string) => void;
   themeId: string;
   themes: ReturnType<typeof getRegisteredWebNextThemes>;
-  fontFamily: FontFamilyId;
-  fontScale: FontScale;
-  density: Density;
-  setFontFamily: (fontFamily: FontFamilyId) => void;
-  setFontScale: (fontScale: FontScale) => void;
-  setDensity: (density: Density) => void;
 }) {
   const { t } = useI18n();
-  const themeColorOverrides = usePreferencesStore((state) => state.themeColorOverrides);
-  const themeOptionValues = usePreferencesStore((state) => state.themeOptionValues);
-  const setThemeColorOverride = usePreferencesStore((state) => state.setThemeColorOverride);
-  const resetThemeColorOverrides = usePreferencesStore((state) => state.resetThemeColorOverrides);
-  const setThemeOptionValue = usePreferencesStore((state) => state.setThemeOptionValue);
-  const resetThemeOptionValues = usePreferencesStore((state) => state.resetThemeOptionValues);
-  const importThemePack = usePreferencesStore((state) => state.importThemePack);
-  const removeImportedThemePack = usePreferencesStore((state) => state.removeImportedThemePack);
-  const restoreOfficialLook = usePreferencesStore((state) => state.restoreOfficialLook);
-  const themeImportRef = useRef<HTMLInputElement>(null);
-  const [themeImportError, setThemeImportError] = useState(false);
-  const activePack = useMemo(() => getThemePack(themeId), [themeId, themes]);
-  const modeOverrides = themeColorOverrides[themeId]?.[colorMode] ?? {};
-  const hasColorOverrides = Object.keys(modeOverrides).length > 0;
-  const hasOptionOverrides = Object.keys(themeOptionValues).length > 0;
-
-  const onImportThemeFile = async (file: File) => {
-    try {
-      const pack = await parseThemePackImportFile(file);
-      importThemePack(pack);
-      setThemeImportError(false);
-    } catch {
-      setThemeImportError(true);
-    }
-  };
 
   return (
     <>
@@ -662,7 +388,9 @@ function AppearanceSettings({
               <MotionButton
                 variant="card"
                 className={
-                  selected ? 'cardo-theme-pack-card cardo-theme-pack-card-selected' : 'cardo-theme-pack-card'
+                  selected
+                    ? 'cardo-theme-pack-card cardo-theme-pack-card-selected'
+                    : 'cardo-theme-pack-card'
                 }
                 type="button"
                 whileTap={{ scale: 0.99 }}
@@ -691,21 +419,8 @@ function AppearanceSettings({
           );
         })}
       </ToggleGroup>
-      <Button
-        variant="card"
-        className="cardo-theme-restore-official"
-        onClick={() => restoreOfficialLook()}
-      >
-        <IconFrame>
-          <RotateCcw size={18} />
-        </IconFrame>
-        <span>
-          {t('settings.restoreOfficialLook')}
-          <small>{t('settings.restoreOfficialLookDescription')}</small>
-        </span>
-      </Button>
 
-      <div className="cardo-settings-card">
+      <div className="cardo-settings-card" style={{ marginTop: 16 }}>
         <div className="cardo-settings-card-copy">
           <ColorModeStateIcon colorMode={colorMode} />
           <span>
@@ -729,281 +444,8 @@ function AppearanceSettings({
           </SegmentButton>
         </ToggleGroup>
       </div>
-
-      <div className="cardo-settings-subheading">
-        <span>{t('settings.typography')}</span>
-        <small>{t('settings.typographyDescription')}</small>
-      </div>
-      <div className="cardo-settings-card">
-        <div className="cardo-settings-card-copy">
-          <IconFrame>
-            <Languages size={16} />
-          </IconFrame>
-          <span>
-            {t('settings.fontFamily')}
-            <small>{t('settings.fontFamilyDescription')}</small>
-          </span>
-        </div>
-        <Select
-          value={fontFamily}
-          onValueChange={(value) => setFontFamily(fontFamilyIdSchema.parse(value))}
-        >
-          <SelectTrigger aria-label={t('settings.fontFamily')} className="cardo-settings-select">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent align="end">
-            <SelectItem value="default">{t('settings.fontFamily.default')}</SelectItem>
-            <SelectItem value="system-ui">{t('settings.fontFamily.systemUi')}</SelectItem>
-            <SelectItem value="serif">{t('settings.fontFamily.serif')}</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="cardo-settings-card">
-        <div className="cardo-settings-card-copy">
-          <span>
-            {t('settings.fontScale')}
-            <small>{t('settings.fontScaleDescription')}</small>
-          </span>
-        </div>
-        <ToggleGroup
-          aria-label={t('settings.fontScale')}
-          type="single"
-          value={fontScale}
-          onValueChange={(value) => value && setFontScale(fontScaleSchema.parse(value))}
-        >
-          <SegmentButton active={fontScale === 'sm'} value="sm">
-            {t('settings.fontScale.sm')}
-          </SegmentButton>
-          <SegmentButton active={fontScale === 'md'} value="md">
-            {t('settings.fontScale.md')}
-          </SegmentButton>
-          <SegmentButton active={fontScale === 'lg'} value="lg">
-            {t('settings.fontScale.lg')}
-          </SegmentButton>
-        </ToggleGroup>
-      </div>
-      <div className="cardo-settings-card">
-        <div className="cardo-settings-card-copy">
-          <span>
-            {t('settings.density')}
-            <small>{t('settings.densityDescription')}</small>
-          </span>
-        </div>
-        <ToggleGroup
-          aria-label={t('settings.density')}
-          type="single"
-          value={density}
-          onValueChange={(value) => value && setDensity(densitySchema.parse(value))}
-        >
-          <SegmentButton active={density === 'compact'} value="compact">
-            {t('settings.density.compact')}
-          </SegmentButton>
-          <SegmentButton active={density === 'comfortable'} value="comfortable">
-            {t('settings.density.comfortable')}
-          </SegmentButton>
-          <SegmentButton active={density === 'spacious'} value="spacious">
-            {t('settings.density.spacious')}
-          </SegmentButton>
-        </ToggleGroup>
-      </div>
-
-      <div className="cardo-settings-subheading">
-        <span>{t('settings.advancedTheme')}</span>
-        <small>{t('settings.advancedThemeDescription')}</small>
-      </div>
-      <div className="cardo-settings-stack">
-        <div className="cardo-data-actions cardo-theme-pack-actions">
-          <Button variant="card" onClick={() => exportThemePackFile(themeId)}>
-            <IconFrame>
-              <Download size={18} />
-            </IconFrame>
-            <span>
-              {t('settings.exportTheme')}
-              <small>{t('settings.exportThemeDescription')}</small>
-            </span>
-          </Button>
-          <Button variant="card" onClick={() => themeImportRef.current?.click()}>
-            <IconFrame>
-              <Upload size={18} />
-            </IconFrame>
-            <span>
-              {t('settings.importTheme')}
-              <small>{t('settings.importThemeDescription')}</small>
-            </span>
-          </Button>
-          {!activePack || themes.find((entry) => entry.id === themeId)?.official ? null : (
-            <Button variant="card" onClick={() => removeImportedThemePack(themeId)}>
-              <IconFrame>
-                <X size={18} />
-              </IconFrame>
-              <span>
-                {t('settings.removeImportedTheme')}
-                <small>{t('settings.removeImportedThemeDescription')}</small>
-              </span>
-            </Button>
-          )}
-        </div>
-        <input
-          ref={themeImportRef}
-          type="file"
-          accept=".json,.cardo-theme.json,application/json"
-          hidden
-          onChange={(event) => {
-            const file = event.target.files?.[0];
-            event.target.value = '';
-            if (file) void onImportThemeFile(file);
-          }}
-        />
-        {themeImportError ? (
-          <p className="cardo-import-error">{t('settings.importThemeInvalid')}</p>
-        ) : null}
-      </div>
-
-      {(activePack.options?.length ?? 0) > 0 ? (
-        <>
-          <div className="cardo-settings-subheading">
-            <span>{t('settings.themeOptions')}</span>
-            <small>{t('settings.themeOptionsDescription')}</small>
-          </div>
-          <div className="cardo-settings-stack">
-            {activePack.options!.map((option) => {
-              if (option.type === 'toggle') {
-                const value =
-                  typeof themeOptionValues[option.id] === 'boolean'
-                    ? (themeOptionValues[option.id] as boolean)
-                    : option.default;
-                return (
-                  <div className="cardo-settings-card" key={option.id}>
-                    <div className="cardo-settings-card-copy">
-                      <span>
-                        {option.label[locale]}
-                        {option.description ? (
-                          <small>{option.description[locale]}</small>
-                        ) : null}
-                      </span>
-                    </div>
-                    <ToggleGroup
-                      aria-label={option.label[locale]}
-                      type="single"
-                      value={value ? 'on' : 'off'}
-                      onValueChange={(next) => {
-                        if (!next) return;
-                        setThemeOptionValue(option.id, next === 'on');
-                      }}
-                    >
-                      <SegmentButton active={!value} value="off">
-                        {t('settings.optionOff')}
-                      </SegmentButton>
-                      <SegmentButton active={value} value="on">
-                        {t('settings.optionOn')}
-                      </SegmentButton>
-                    </ToggleGroup>
-                  </div>
-                );
-              }
-              const value =
-                typeof themeOptionValues[option.id] === 'string'
-                  ? (themeOptionValues[option.id] as string)
-                  : option.default;
-              return (
-                <div className="cardo-settings-card" key={option.id}>
-                  <div className="cardo-settings-card-copy">
-                    <span>
-                      {option.label[locale]}
-                      {option.description ? <small>{option.description[locale]}</small> : null}
-                    </span>
-                  </div>
-                  <Select
-                    value={value}
-                    onValueChange={(next) => setThemeOptionValue(option.id, next)}
-                  >
-                    <SelectTrigger
-                      aria-label={option.label[locale]}
-                      className="cardo-settings-select"
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent align="end">
-                      {option.choices.map((choice) => (
-                        <SelectItem key={choice.id} value={choice.id}>
-                          {choice.label[locale]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              );
-            })}
-            {hasOptionOverrides ? (
-              <Button
-                variant="ghost"
-                className="cardo-theme-reset-button"
-                onClick={() => resetThemeOptionValues()}
-              >
-                <RotateCcw size={14} />
-                {t('settings.resetThemeOptions')}
-              </Button>
-            ) : null}
-          </div>
-        </>
-      ) : null}
-
-      <div className="cardo-settings-subheading">
-        <span>{t('settings.colorOverrides')}</span>
-        <small>{t('settings.colorOverridesDescription')}</small>
-      </div>
-      <div className="cardo-theme-color-grid">
-        {overridableColorKeys.map((key) => {
-          const base =
-            activePack.tokens.colors[colorMode]?.[key] ??
-            activePack.tokens.colors[colorMode]?.blue ??
-            '#3b82f6';
-          const pickerValue = toHexColor(modeOverrides[key] ?? base) ?? '#3b82f6';
-          return (
-            <label className="cardo-theme-color-field" key={key}>
-              <span>{t(COLOR_OVERRIDE_LABEL_KEYS[key])}</span>
-              <span className="cardo-theme-color-controls">
-                <input
-                  type="color"
-                  value={pickerValue}
-                  onChange={(event) => setThemeColorOverride(colorMode, key, event.target.value)}
-                  aria-label={t(COLOR_OVERRIDE_LABEL_KEYS[key])}
-                />
-                <Input
-                  value={modeOverrides[key] ?? ''}
-                  placeholder={String(base)}
-                  onChange={(event) => {
-                    const next = event.target.value.trim();
-                    setThemeColorOverride(colorMode, key as OverridableColorKey, next || null);
-                  }}
-                />
-              </span>
-            </label>
-          );
-        })}
-      </div>
-      {hasColorOverrides ? (
-        <Button
-          variant="ghost"
-          className="cardo-theme-reset-button"
-          onClick={() => resetThemeColorOverrides(themeId)}
-        >
-          <RotateCcw size={14} />
-          {t('settings.resetColorOverrides')}
-        </Button>
-      ) : null}
     </>
   );
-}
-
-function toHexColor(value: string): string | null {
-  const trimmed = value.trim();
-  if (/^#[0-9a-fA-F]{6}$/.test(trimmed)) return trimmed.toLowerCase();
-  if (/^#[0-9a-fA-F]{3}$/.test(trimmed)) {
-    const [, r, g, b] = trimmed;
-    return `#${r}${r}${g}${g}${b}${b}`.toLowerCase();
-  }
-  return null;
 }
 
 function AboutSettings() {
@@ -1022,10 +464,6 @@ function AboutSettings() {
         </span>
       </div>
       <dl className="cardo-about-details">
-        <div>
-          <dt>{t('settings.interface')}</dt>
-          <dd>web-next</dd>
-        </div>
         <div>
           <dt>{t('settings.themeSystem')}</dt>
           <dd>{t('settings.tokenThemePack')}</dd>
@@ -1050,7 +488,7 @@ function SegmentButton({
   value,
 }: {
   active: boolean;
-  children: React.ReactNode;
+  children: ReactNode;
   value: string;
 }) {
   return (

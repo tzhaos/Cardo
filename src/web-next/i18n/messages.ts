@@ -136,7 +136,7 @@ export const WEB_NEXT_MESSAGES = {
     'settings.customSearchTemplateHint': 'Use {query} where the encoded search text belongs.',
     'settings.appearance': 'Appearance',
     'settings.appearanceDescription':
-      'Pick how Cardo looks. Classic is the official product look and the safe default.',
+      'Choose a theme and light or dark mode. Finer controls will live in extensions later.',
     'settings.restoreOfficialLook': 'Restore official look',
     'settings.restoreOfficialLookDescription':
       'Reset theme, layout, chrome features, type, and color tweaks to Cardo Classic defaults.',
@@ -149,9 +149,8 @@ export const WEB_NEXT_MESSAGES = {
     'settings.expertCssDescription': 'Optional snippet for advanced styling. Off by default.',
     'settings.mode': 'Color mode',
     'settings.modeDescription': 'Every theme includes both light and dark palettes.',
-    'settings.theme': 'Theme pack',
-    'settings.themeDescription':
-      'Choose a designed theme pack to switch the whole look. Classic is the official product default.',
+    'settings.theme': 'Theme',
+    'settings.themeDescription': 'Pick a theme. Advanced styling belongs in extensions later.',
     'settings.themeOfficial': 'Official',
     'settings.exportTheme': 'Export theme pack',
     'settings.exportThemeDescription': 'Download the selected pack as .cardo-theme.json.',
@@ -432,7 +431,7 @@ export const WEB_NEXT_MESSAGES = {
     'settings.customSearchTemplateHint': '使用 {query} 标记编码后的搜索内容。',
     'settings.appearance': '外观',
     'settings.appearanceDescription':
-      '选择 Cardo 的外观。经典是官方产品默认，也是最安全的起点。',
+      '选择主题与明暗模式。更细的定制留给后续扩展。',
     'settings.restoreOfficialLook': '恢复官方外观',
     'settings.restoreOfficialLookDescription':
       '将主题、布局、壳层功能、字体与色板微调恢复为 Cardo 经典默认。',
@@ -445,9 +444,8 @@ export const WEB_NEXT_MESSAGES = {
     'settings.expertCssDescription': '可选样式片段，默认关闭。',
     'settings.mode': '明暗模式',
     'settings.modeDescription': '每套主题都同时提供浅色与深色调色板。',
-    'settings.theme': '主题包',
-    'settings.themeDescription':
-      '选择一套设计好的主题包来切换整体外观。经典为主官方默认。',
+    'settings.theme': '主题',
+    'settings.themeDescription': '选择一套主题切换整体外观。更细的定制留给后续扩展。',
     'settings.themeOfficial': '官方',
     'settings.exportTheme': '导出主题包',
     'settings.exportThemeDescription': '将当前选中主题下载为 .cardo-theme.json。',
