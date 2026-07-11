@@ -9,6 +9,7 @@ import {
   preferences,
 } from './schema';
 import { DATABASE_SCHEMA_VERSION } from './version';
+import { getDefaultBoxAccent, getDefaultBoxIcon } from '../domains/boxAppearance';
 
 export const COLLECTION_PAGE_ID = 'khaosbox-collection';
 export const RECYCLE_BIN_PAGE_ID = 'khaosbox-recycle-bin';
@@ -123,8 +124,8 @@ function createInitialBox(
     viewMode: 'list' as const,
     detailMode: 'detailed' as const,
     isLocked: false,
-    icon: null,
-    accent: null,
+    icon: getDefaultBoxIcon(preset),
+    accent: getDefaultBoxAccent(preset),
     zIndex,
     createdAt: timestamp,
     updatedAt: timestamp,

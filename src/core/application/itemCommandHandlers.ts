@@ -17,6 +17,7 @@ import type {
   DatabaseCommandMutation,
   DatabaseTransaction,
 } from './commandTypes';
+import { chooseAvailableBoxAccent, getDefaultBoxIcon } from '../domains/boxAppearance';
 
 type ItemCommandType =
   | 'item.paste'
@@ -84,13 +85,12 @@ async function pasteItem(
   }
 
   if (!targetBox) {
-    const topBox = await transaction
-      .select({ zIndex: boxes.zIndex })
+    const pageBoxes = await transaction
+      .select({ zIndex: boxes.zIndex, accent: boxes.accent })
       .from(boxes)
       .where(eq(boxes.pageId, command.pageId))
       .orderBy(desc(boxes.zIndex))
-      .limit(1)
-      .get();
+      .all();
     const timestamp = new Date().toISOString();
     targetBox = {
       id: `box-${crypto.randomUUID()}`,
@@ -105,9 +105,9 @@ async function pasteItem(
       viewMode: 'list',
       detailMode: 'detailed',
       isLocked: false,
-      icon: null,
-      accent: null,
-      zIndex: (topBox?.zIndex ?? 0) + 1,
+      icon: getDefaultBoxIcon('general'),
+      accent: chooseAvailableBoxAccent(pageBoxes.map((box) => box.accent)),
+      zIndex: (pageBoxes[0]?.zIndex ?? 0) + 1,
       createdAt: timestamp,
       updatedAt: timestamp,
     };

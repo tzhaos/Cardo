@@ -128,8 +128,8 @@ export const workspaceBoxSchema = z
     viewMode: workspaceBoxViewModeSchema,
     detailMode: workspaceBoxDetailModeSchema,
     isLocked: z.boolean(),
-    icon: workspaceBoxIconSchema.optional(),
-    accent: colorHexSchema.optional(),
+    icon: workspaceBoxIconSchema,
+    accent: colorHexSchema,
     createdAt: isoDateTimeSchema,
     updatedAt: isoDateTimeSchema,
   })

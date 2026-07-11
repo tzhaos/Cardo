@@ -18,6 +18,7 @@ import type {
   DatabaseCommandMutation,
   DatabaseTransaction,
 } from './commandTypes';
+import { chooseAvailableBoxAccent, getDefaultBoxIcon } from '../domains/boxAppearance';
 
 type BoxCommandType =
   | 'box.create'
@@ -40,17 +41,6 @@ type BoxCommandType =
   | 'system.constrainFrames';
 
 export type BoxCommand = Extract<WorkspaceCommand, { type: BoxCommandType }>;
-
-const ACCENT_PRESETS = [
-  '#3b82f6',
-  '#f97316',
-  '#10b981',
-  '#8b5cf6',
-  '#f43f5e',
-  '#f59e0b',
-  '#06b6d4',
-  '#6366f1',
-] as const;
 
 export async function executeBoxCommand(
   transaction: DatabaseTransaction,
@@ -116,11 +106,7 @@ async function createBox(
     .all();
   const timestamp = new Date().toISOString();
   const boxId = `box-${crypto.randomUUID()}`;
-  const usedAccents = new Set(pageBoxes.map((box) => box.accent).filter(Boolean));
-  const availableAccents = ACCENT_PRESETS.filter((accent) => !usedAccents.has(accent));
-  const accent = availableAccents.length
-    ? availableAccents[Math.floor(Math.random() * availableAccents.length)]!
-    : '#64748b';
+  const accent = chooseAvailableBoxAccent(pageBoxes.map((box) => box.accent));
   const box = {
     id: boxId,
     pageId: command.pageId,
@@ -131,7 +117,7 @@ async function createBox(
     viewMode: 'list' as const,
     detailMode: 'detailed' as const,
     isLocked: false,
-    icon: null,
+    icon: getDefaultBoxIcon(command.preset),
     accent,
     zIndex: (pageBoxes[0]?.zIndex ?? 0) + 1,
     createdAt: timestamp,

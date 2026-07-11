@@ -1,17 +1,12 @@
-import type { WorkspaceBox, WorkspaceBoxIcon, WorkspaceBoxPreset } from './workspace';
+import { workspaceBoxIconSchema } from '../../core/contracts/workspace';
+import {
+  BOX_ACCENT_PRESETS,
+  DEFAULT_BOX_ACCENT,
+  chooseAvailableBoxAccent as chooseAccent,
+} from '../../core/domains/boxAppearance';
+import type { WorkspaceBox, WorkspaceBoxIcon } from './workspace';
 
-export const BOX_ACCENT_PRESETS = [
-  '#3b82f6',
-  '#f97316',
-  '#10b981',
-  '#8b5cf6',
-  '#f43f5e',
-  '#f59e0b',
-  '#06b6d4',
-  '#6366f1',
-] as const;
-
-export const DEFAULT_BOX_ACCENT = '#64748b';
+export { BOX_ACCENT_PRESETS, DEFAULT_BOX_ACCENT };
 
 export const BOX_ICON_PRESETS: WorkspaceBoxIcon[] = [
   'box',
@@ -29,7 +24,7 @@ export const BOX_ICON_PRESETS: WorkspaceBoxIcon[] = [
 ];
 
 export function isWorkspaceBoxIcon(value: unknown): value is WorkspaceBoxIcon {
-  return typeof value === 'string' && BOX_ICON_PRESETS.includes(value as WorkspaceBoxIcon);
+  return workspaceBoxIconSchema.safeParse(value).success;
 }
 
 export function normalizeBoxAccent(value: string) {
@@ -44,43 +39,14 @@ export function normalizeBoxAccent(value: string) {
   return /^[0-9a-fA-F]{6}$/.test(hex) ? `#${hex.toLowerCase()}` : null;
 }
 
-export function getBoxAccent(box: Pick<WorkspaceBox, 'accent' | 'preset'>) {
-  return normalizeBoxAccent(box.accent ?? '') ?? getLegacyPresetAccent(box.preset);
+export function getBoxAccent(box: Pick<WorkspaceBox, 'accent'>) {
+  return box.accent;
 }
 
-export function getBoxIcon(box: Pick<WorkspaceBox, 'icon' | 'preset'>): WorkspaceBoxIcon {
-  return box.icon ?? getLegacyPresetIcon(box.preset);
+export function getBoxIcon(box: Pick<WorkspaceBox, 'icon'>): WorkspaceBoxIcon {
+  return box.icon;
 }
 
-export function chooseAvailableBoxAccent(boxes: Pick<WorkspaceBox, 'accent' | 'preset'>[]) {
-  const usedAccents = new Set(boxes.map((box) => getBoxAccent(box).toLowerCase()));
-  const availableAccents = BOX_ACCENT_PRESETS.filter((accent) => !usedAccents.has(accent));
-  if (!availableAccents.length) return DEFAULT_BOX_ACCENT;
-  return availableAccents[Math.floor(Math.random() * availableAccents.length)]!;
-}
-
-function getLegacyPresetAccent(preset: WorkspaceBoxPreset) {
-  switch (preset) {
-    case 'folder':
-      return '#3b82f6';
-    case 'bookmark':
-      return '#f97316';
-    case 'clipboard':
-      return '#10b981';
-    case 'general':
-      return '#8b5cf6';
-  }
-}
-
-function getLegacyPresetIcon(preset: WorkspaceBoxPreset): WorkspaceBoxIcon {
-  switch (preset) {
-    case 'folder':
-      return 'folder';
-    case 'bookmark':
-      return 'bookmark';
-    case 'clipboard':
-      return 'clipboard';
-    case 'general':
-      return 'box';
-  }
+export function chooseAvailableBoxAccent(boxes: Pick<WorkspaceBox, 'accent'>[]) {
+  return chooseAccent(boxes.map((box) => box.accent));
 }
