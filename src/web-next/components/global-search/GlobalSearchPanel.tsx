@@ -14,6 +14,7 @@ import {
   writeClipboardText,
 } from '../../platform/hostPlatform';
 import { recordBoxActivity, recordItemActivity } from '../../app/operationActivity';
+import { Button } from '../../ui/primitives/button';
 
 export function GlobalSearchPanel({ query }: { query: string }) {
   const setActivePage = useWorkspaceStore((state) => state.setActivePage);
@@ -116,7 +117,8 @@ export function GlobalSearchPanel({ query }: { query: string }) {
         {results.length ? (
           <div className="wbn-global-search-results" role="listbox">
             {results.map((result, index) => (
-              <button
+              <Button
+                variant="ghost"
                 className={`wbn-global-search-result${index === selectedIndex ? ' wbn-global-search-result-active' : ''}`}
                 type="button"
                 role="option"
@@ -140,7 +142,7 @@ export function GlobalSearchPanel({ query }: { query: string }) {
                   ) : null}
                 </span>
                 <span className="wbn-global-search-kind">{t(`search.kind.${result.kind}`)}</span>
-              </button>
+              </Button>
             ))}
           </div>
         ) : (

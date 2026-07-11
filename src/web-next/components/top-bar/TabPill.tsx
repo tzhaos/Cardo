@@ -5,6 +5,7 @@ import type { WorkspacePage } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { useInlineRename } from '../../app/useInlineRename';
 import { Input } from '../../ui/primitives/input';
+import { Button } from '../../ui/primitives/button';
 
 interface TabPillProps {
   page: WorkspacePage;
@@ -46,7 +47,8 @@ export function TabPill({
       transition={{ layout: { type: 'spring', stiffness: 500, damping: 40, mass: 0.68 } }}
       className={`wbn-tab-pill${active ? ' wbn-tab-pill-active' : ''}${rename.renaming ? ' wbn-tab-pill-renaming' : ''}${systemPage ? ' wbn-tab-pill-system' : ''}`}
     >
-      <button
+      <Button
+        variant="ghost"
         type="button"
         aria-current={active ? 'page' : undefined}
         title={systemPage ? page.title : undefined}
@@ -70,7 +72,7 @@ export function TabPill({
           ) : null}
         </AnimatePresence>
         <span className="wbn-tab-label">{icon ?? page.title}</span>
-      </button>
+      </Button>
       {rename.renaming ? (
         <div className="wbn-tab-rename-layer" onContextMenu={rename.onContextMenu}>
           <Input

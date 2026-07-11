@@ -47,6 +47,7 @@ import {
 } from '../../platform/hostPlatform';
 import { BoxAppearanceIcon } from '../boxes/boxIconRegistry';
 import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
+import { Button } from '../../ui/primitives/button';
 
 export function CollectionPage() {
   const snapshot = useWorkspaceStore((state) => state.snapshot);
@@ -318,7 +319,8 @@ function CollectionBox({
         onPointerDown={(event) => beginFrameChange(event, 'move')}
       >
         <span className="wbn-collection-box-grip" aria-hidden="true" />
-        <button
+        <Button
+          variant="ghost"
           className="wbn-collection-box-icon"
           type="button"
           data-no-collection-drag
@@ -326,12 +328,13 @@ function CollectionBox({
           title={t('collection.locateSource')}
         >
           <BoxAppearanceIcon icon={getBoxIcon(box)} size={16} />
-        </button>
+        </Button>
         <span className="wbn-collection-box-heading">
           <strong>{box.title}</strong>
           <small>{pageTitle}</small>
         </span>
-        <button
+        <Button
+          variant="ghost"
           type="button"
           data-no-collection-drag
           onClick={() =>
@@ -344,16 +347,18 @@ function CollectionBox({
           ) : (
             <ChevronsUpDown size={14} />
           )}
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
           type="button"
           data-no-collection-drag
           onClick={() => onViewChange({ viewMode: view.viewMode === 'list' ? 'grid' : 'list' })}
           title={t(view.viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList')}
         >
           {view.viewMode === 'list' ? <LayoutGrid size={14} /> : <List size={14} />}
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
           className="wbn-collection-remove"
           type="button"
           data-no-collection-drag
@@ -362,12 +367,12 @@ function CollectionBox({
           title={t('collection.remove', { title: box.title })}
         >
           <X size={14} />
-        </button>
+        </Button>
       </header>
       <div className="wbn-collection-box-items">
         {box.items.length ? (
           box.items.map((item) => (
-            <button type="button" key={item.id} onClick={() => onActivateItem(item)}>
+            <Button variant="ghost" key={item.id} onClick={() => onActivateItem(item)}>
               <span className="wbn-collection-item-icon">
                 <CollectionItemIcon item={item} />
               </span>
@@ -380,20 +385,21 @@ function CollectionBox({
                 <small>{getItemDetail(item)}</small>
               </span>
               {item.type === 'clipboard' ? <Copy size={13} /> : <ExternalLink size={13} />}
-            </button>
+            </Button>
           ))
         ) : (
           <div className="wbn-collection-box-empty">{t('box.empty')}</div>
         )}
       </div>
-      <button
+      <Button
+        variant="ghost"
         className="wbn-collection-resize"
         type="button"
         aria-label={t('box.resize', { title: box.title })}
         onPointerDown={(event) => beginFrameChange(event, 'resize')}
       >
         <span />
-      </button>
+      </Button>
     </motion.article>
   );
 }

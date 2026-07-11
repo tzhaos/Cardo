@@ -5,6 +5,7 @@ import { useI18n } from '../../../i18n/useI18n';
 import { BookmarkAddView } from './BookmarkAddView';
 import { ClipboardAddView } from './ClipboardAddView';
 import { LocalResourceAddView } from './LocalResourceAddView';
+import { Button } from '../../../ui/primitives/button';
 
 const ITEM_TYPES = [
   { type: 'file' as const, icon: File, label: 'itemType.file' as const },
@@ -27,7 +28,8 @@ export function UniversalAddView({
   const typePicker = (
     <div className="wbn-item-type-picker" aria-label={t('add.itemType')}>
       {ITEM_TYPES.map(({ type, icon: Icon, label }) => (
-        <button
+        <Button
+          variant="ghost"
           className={selectedType === type ? 'wbn-item-type-active' : undefined}
           key={type}
           type="button"
@@ -37,7 +39,7 @@ export function UniversalAddView({
           onClick={() => selectAddItemType(boxId, type)}
         >
           <Icon size={15} />
-        </button>
+        </Button>
       ))}
     </div>
   );

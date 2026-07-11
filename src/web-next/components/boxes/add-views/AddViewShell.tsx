@@ -2,6 +2,7 @@ import type { WorkspaceItemType } from '../../../domain/workspace';
 import { useUiStore } from '../../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../../app/stores/workspaceStore';
 import { useI18n } from '../../../i18n/useI18n';
+import { Button } from '../../../ui/primitives/button';
 
 interface AddViewShellProps {
   boxId: string;
@@ -45,12 +46,12 @@ export function AddViewShell({
       {typePicker}
       {children}
       <div className="wbn-add-actions">
-        <button className="wbn-add-cancel" type="button" onClick={() => closeAddView(boxId)}>
+        <Button className="wbn-add-cancel" variant="ghost" onClick={() => closeAddView(boxId)}>
           {t('common.cancel')}
-        </button>
-        <button className="wbn-add-primary" type="submit" disabled={!canSubmit}>
+        </Button>
+        <Button className="wbn-add-primary" type="submit" disabled={!canSubmit}>
           {primaryLabel ?? t('common.save')}
-        </button>
+        </Button>
       </div>
     </form>
   );

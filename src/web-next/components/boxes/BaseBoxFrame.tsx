@@ -469,7 +469,7 @@ export function BaseBoxFrame({
       {isTemporary ? (
         <header className="wbn-temporary-box-header" onPointerDown={beginDrag}>
           <span className="wbn-temporary-box-grip" aria-hidden="true" />
-          <button
+          <Button
             type="button"
             data-no-drag
             onClick={() => {
@@ -482,12 +482,12 @@ export function BaseBoxFrame({
           >
             <PackageCheck size={15} />
             <span>{t('box.keep')}</span>
-          </button>
+          </Button>
         </header>
       ) : (
         <header className="wbn-box-header" onPointerDown={beginDrag}>
           <div className="wbn-box-title-group">
-            <button
+            <Button
               className="wbn-box-icon wbn-icon-frame"
               type="button"
               data-no-drag
@@ -502,7 +502,7 @@ export function BaseBoxFrame({
               }}
             >
               {icon}
-            </button>
+            </Button>
             {titleRename.renaming ? (
               <Input
                 ref={titleRename.inputRef}
@@ -632,14 +632,14 @@ export function BaseBoxFrame({
       </div>
       {!isTemporary && !addViewState?.mode && !appearanceView && !confirmDelete ? (
         <footer className="wbn-box-footer">
-          <button type="button" onClick={onAddItem}>
+          <Button variant="ghost" onClick={onAddItem}>
             <Plus size={14} />
             <span>{t('box.addItem')}</span>
-          </button>
+          </Button>
         </footer>
       ) : null}
       {!isTemporary ? (
-        <button
+        <Button
           className="wbn-resize-handle"
           type="button"
           disabled={box.isLocked}
@@ -656,7 +656,7 @@ export function BaseBoxFrame({
               strokeWidth="2"
             />
           </svg>
-        </button>
+        </Button>
       ) : null}
     </motion.article>
   );

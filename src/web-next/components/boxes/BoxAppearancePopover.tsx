@@ -12,6 +12,7 @@ import type { WorkspaceBox, WorkspaceBoxIcon } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { BoxAppearanceIcon } from './boxIconRegistry';
 import { Input } from '../../ui/primitives/input';
+import { Button } from '../../ui/primitives/button';
 
 export function BoxAppearanceView({
   box,
@@ -62,7 +63,8 @@ export function BoxAppearanceView({
         <span className="wbn-box-appearance-label">{t('box.icon')}</span>
         <div className="wbn-box-icon-grid">
           {BOX_ICON_PRESETS.map((candidate) => (
-            <button
+            <Button
+              variant="ghost"
               className={candidate === icon ? 'wbn-box-icon-choice-active' : undefined}
               type="button"
               key={candidate}
@@ -72,7 +74,7 @@ export function BoxAppearanceView({
             >
               <BoxAppearanceIcon icon={candidate} size={17} />
               {candidate === icon ? <Check className="wbn-box-choice-check" size={10} /> : null}
-            </button>
+            </Button>
           ))}
         </div>
       </section>
@@ -80,7 +82,8 @@ export function BoxAppearanceView({
         <span className="wbn-box-appearance-label">{t('box.color')}</span>
         <div className="wbn-box-color-grid">
           {BOX_ACCENT_PRESETS.map((candidate) => (
-            <button
+            <Button
+              variant="ghost"
               className={candidate === accent.toLowerCase() ? 'wbn-box-color-active' : undefined}
               type="button"
               key={candidate}
@@ -94,7 +97,7 @@ export function BoxAppearanceView({
               }}
             >
               {candidate === accent.toLowerCase() ? <Check size={11} /> : null}
-            </button>
+            </Button>
           ))}
         </div>
         <div className="wbn-box-custom-color-row">
