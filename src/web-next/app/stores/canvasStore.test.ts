@@ -22,6 +22,7 @@ test('keeps camera and lock state isolated between workspace pages', () => {
   assert.deepEqual(getPageCanvasState(state, 'page-a'), {
     camera: { panX: 180, panY: -90, zoom: 1 },
     isLocked: true,
+    isCameraAnimating: false,
   });
   assert.deepEqual(getPageCanvasState(state, 'page-b'), {
     camera: { panX: 0, panY: 0, zoom: 1 },
