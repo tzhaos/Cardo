@@ -12,7 +12,7 @@
     "48": "extension/icons/icon-48.png",
     "128": "extension/icons/icon-128.png"
   },
-  "permissions": ["storage", "nativeMessaging", "_favicon"],
+  "permissions": ["nativeMessaging", "_favicon"],
   "optional_permissions": ["bookmarks"],
   "host_permissions": ["https://*/*", "http://*/*"],
   "content_security_policy": {

@@ -275,22 +275,6 @@ function createTray() {
   updateTrayMenu();
 }
 
-async function readStateFile() {
-  const statePath = path.join(app.getPath('userData'), 'state.json');
-
-  try {
-    return JSON.parse(await fsPromises.readFile(statePath, 'utf8')) as Record<string, string>;
-  } catch {
-    return {};
-  }
-}
-
-async function writeStateFile(state: Record<string, string>) {
-  const statePath = path.join(app.getPath('userData'), 'state.json');
-  await fsPromises.mkdir(path.dirname(statePath), { recursive: true });
-  await fsPromises.writeFile(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
-}
-
 async function resolveWebsiteIcon(urlValue: string) {
   try {
     const pageUrl = new URL(urlValue);
@@ -342,23 +326,6 @@ function registerIpcHandlers() {
   });
 
   ipcMain.handle('window:is-maximized', (event) => Boolean(getSenderWindow(event)?.isMaximized()));
-
-  ipcMain.handle('storage:get', async (_event, name: string) => {
-    const state = await readStateFile();
-    return state[name] ?? null;
-  });
-
-  ipcMain.handle('storage:set', async (_event, name: string, value: string) => {
-    const state = await readStateFile();
-    state[name] = value;
-    await writeStateFile(state);
-  });
-
-  ipcMain.handle('storage:remove', async (_event, name: string) => {
-    const state = await readStateFile();
-    delete state[name];
-    await writeStateFile(state);
-  });
 
   ipcMain.handle('database:execute', (_event, request: unknown) =>
     executeDesktopDatabase(request),

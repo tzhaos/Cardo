@@ -28,15 +28,6 @@ type ChromePermissionsApi = {
   ) => Promise<boolean> | void;
 };
 
-type ChromeStorageArea = {
-  get?: (
-    keys: string,
-    callback?: (items: Record<string, string | undefined>) => void,
-  ) => Promise<Record<string, string | undefined>> | void;
-  set?: (items: Record<string, string>, callback?: () => void) => Promise<void> | void;
-  remove?: (keys: string, callback?: () => void) => Promise<void> | void;
-};
-
 type ChromeLikeRuntime = {
   bookmarks?: ChromeBookmarksApi;
   permissions?: ChromePermissionsApi;
@@ -56,9 +47,6 @@ type ChromeLikeRuntime = {
       callback?: (response: unknown) => void,
     ) => Promise<unknown> | void;
   };
-  storage?: {
-    local?: ChromeStorageArea;
-  };
 };
 
 export function getChromeLikeRuntime(): ChromeLikeRuntime | undefined {
@@ -71,10 +59,6 @@ export function getChromeBookmarksApi() {
 
 export function getChromePermissionsApi() {
   return getChromeLikeRuntime()?.permissions;
-}
-
-export function getChromeStorageArea() {
-  return getChromeLikeRuntime()?.storage?.local;
 }
 
 export function getChromeRuntimeApi() {

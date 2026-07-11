@@ -9,9 +9,6 @@ export interface DesktopBridge {
   closeWindow(): Promise<void>;
   isWindowMaximized(): Promise<boolean>;
   onWindowMaximizedChange(callback: (isMaximized: boolean) => void): () => void;
-  storageGet(name: string): Promise<string | null>;
-  storageSet(name: string, value: string): Promise<void>;
-  storageRemove(name: string): Promise<void>;
   databaseExecute(request: DatabaseExecuteRequest): Promise<DatabaseExecuteResponse>;
   readClipboardText(): Promise<string>;
   writeClipboardText(text: string): Promise<void>;

@@ -9,7 +9,6 @@ export function startWebNextApp() {
     import('./bootstrap'),
     import('./stores/preferencesStore'),
     import('./stores/workspaceStore'),
-    import('./stores/independentMenuStore'),
     import('../platform/hostPlatform'),
     import('../../core/database/initializeWorkspaceDatabase'),
   ]).then(
@@ -18,7 +17,6 @@ export function startWebNextApp() {
       { renderWebNextRoot },
       { usePreferencesStore },
       { useWorkspaceStore },
-      { useIndependentMenuStore },
       { getKhaosDatabase },
       { initializeWorkspaceDatabase },
     ]) => {
@@ -28,9 +26,6 @@ export function startWebNextApp() {
       });
       await useWorkspaceStore.initialize();
       await usePreferencesStore.initialize();
-      await Promise.all([
-        useIndependentMenuStore.persist.rehydrate(),
-      ]);
       renderWebNextRoot(<WebNextApp />);
     },
   );

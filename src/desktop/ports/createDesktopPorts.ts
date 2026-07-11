@@ -15,11 +15,6 @@ export function createDesktopPorts(): AppPorts {
       execute: async (request) =>
         databaseExecuteResponseSchema.parse(await getDesktopBridge().databaseExecute(request)),
     },
-    workspaceStorage: {
-      getItem: (name) => getDesktopBridge().storageGet(name),
-      setItem: (name, value) => getDesktopBridge().storageSet(name, value),
-      removeItem: (name) => getDesktopBridge().storageRemove(name),
-    },
     clipboard: {
       readText: () => getDesktopBridge().readClipboardText(),
       writeText: (text) => getDesktopBridge().writeClipboardText(text),

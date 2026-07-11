@@ -6,7 +6,6 @@ import { browserFileImportPort } from '../files/browserFileImportPort';
 import { nativeMessagingLocalResourcePort } from '../local-resource/nativeMessagingLocalResourcePort';
 import { browserTabsPort } from '../navigation/browserTabsPort';
 import { browserRuntimeDocumentPort } from '../runtime/browserRuntimeDocumentPort';
-import { extensionStateStorage } from '../storage/stateStorage';
 import { extensionWebDavPort } from '../sync/extensionWebDavPort';
 import { browserWebsiteIconPort } from '../website-icons/browserWebsiteIconPort';
 import { extensionDatabasePort } from '../database/extensionDatabasePort';
@@ -18,7 +17,6 @@ export function createExtensionPorts(): AppPorts {
   return {
     browserBookmarks: browserBookmarksPort,
     database: extensionDatabasePort,
-    workspaceStorage: extensionStateStorage,
     clipboard: browserClipboardPort,
     fileExport: browserFileExportPort,
     fileImport: browserFileImportPort,

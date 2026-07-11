@@ -13,9 +13,6 @@ const bridge: DesktopBridge = {
     ipcRenderer.on('window:maximized-change', listener);
     return () => ipcRenderer.off('window:maximized-change', listener);
   },
-  storageGet: (name) => ipcRenderer.invoke('storage:get', name) as Promise<string | null>,
-  storageSet: (name, value) => ipcRenderer.invoke('storage:set', name, value) as Promise<void>,
-  storageRemove: (name) => ipcRenderer.invoke('storage:remove', name) as Promise<void>,
   databaseExecute: (request) =>
     ipcRenderer.invoke('database:execute', request) as ReturnType<DesktopBridge['databaseExecute']>,
   readClipboardText: () => ipcRenderer.invoke('clipboard:read-text') as Promise<string>,

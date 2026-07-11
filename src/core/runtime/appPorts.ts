@@ -1,7 +1,5 @@
 import type { AppPorts } from '../ports/AppPorts';
 
-const memoryStorage = new Map<string, string>();
-
 function createDefaultAppPorts(): AppPorts {
   return {
     browserBookmarks: {
@@ -13,15 +11,6 @@ function createDefaultAppPorts(): AppPorts {
     database: {
       execute: async () => {
         throw new Error('Database port is not configured.');
-      },
-    },
-    workspaceStorage: {
-      getItem: (name) => memoryStorage.get(name) ?? null,
-      setItem: (name, value) => {
-        memoryStorage.set(name, value);
-      },
-      removeItem: (name) => {
-        memoryStorage.delete(name);
       },
     },
     clipboard: {
