@@ -1,0 +1,123 @@
+.wbn-bottom-shell {
+  position: fixed;
+  z-index: 50;
+  bottom: 32px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateX(-50%);
+}
+
+.wbn-toolbar-divider {
+  width: 1px;
+  height: 24px;
+  margin: 0 4px;
+  background: var(--wbn-divider);
+}
+
+.wbn-search-pill {
+  position: relative;
+  display: flex;
+  height: 40px;
+  align-items: center;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--wbn-hover);
+}
+
+.wbn-search-pill .wbn-search-local-trigger {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 1;
+}
+
+.wbn-search-pill .wbn-search-web-trigger {
+  position: absolute;
+  z-index: 1;
+  inset: 0 0 0 auto;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    visibility 0s linear 160ms,
+    opacity 160ms ease;
+}
+
+.wbn-search-pill-active .wbn-search-web-trigger {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
+.wbn-search-pill-active .wbn-search-web-trigger:disabled {
+  cursor: default;
+  opacity: 0.32;
+}
+
+.wbn-search-pill input {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  padding: 0 48px 0 40px;
+  background: transparent;
+  color: var(--wbn-text);
+  font-size: 14px;
+  outline: none;
+  transition: opacity 160ms ease;
+}
+
+.wbn-search-pill input,
+.wbn-search-pill input::placeholder {
+  font-family: var(--wbn-font-sans);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.wbn-bottom-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--wbn-border);
+  border-radius: 999px;
+  padding: 6px;
+  background: var(--wbn-surface);
+  box-shadow: var(--wbn-shadow);
+  backdrop-filter: blur(12px);
+}
+
+.wbn-bottom-toolbar button {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  font-size: 13px;
+}
+
+.wbn-bottom-toolbar .wbn-toolbar-button-active {
+  background: var(--wbn-active);
+  color: var(--wbn-text);
+}
+
+.wbn-tab-pill-system button {
+  width: 36px;
+  padding: 0;
+}
+
+
+.wbn-toolbar-create {
+  order: 5;
+  background: var(--wbn-create-background) !important;
+  color: var(--wbn-create-text) !important;
+  box-shadow: var(--wbn-shadow);
+  will-change: transform;
+}
+
+.wbn-toolbar-create:hover {
+  box-shadow: 0 7px 16px color-mix(in srgb, var(--wbn-create-background) 30%, transparent);
+  transform: translateY(-1px) scale(1.04);
+}
+
+.wbn-toolbar-create:active {
+  transform: scale(0.95);
+}
