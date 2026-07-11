@@ -27,8 +27,8 @@ export function startWebNextApp() {
         colorMode: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
       });
       await useWorkspaceStore.initialize();
+      await usePreferencesStore.initialize();
       await Promise.all([
-        usePreferencesStore.persist.rehydrate(),
         useIndependentMenuStore.persist.rehydrate(),
       ]);
       renderWebNextRoot(<WebNextApp />);

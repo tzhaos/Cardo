@@ -25,6 +25,23 @@ const commandSchemas = [
   z.object({ type: z.literal('page.reorder'), orderedPageIds: idListSchema }).strict(),
   z.object({ type: z.literal('page.setDefault'), pageId: entityIdSchema }).strict(),
   z.object({ type: z.literal('page.open'), pageId: entityIdSchema }).strict(),
+  z.object({ type: z.literal('preferences.setLocale'), locale: z.enum(['en', 'zh']) }).strict(),
+  z
+    .object({ type: z.literal('preferences.setColorMode'), colorMode: z.enum(['light', 'dark']) })
+    .strict(),
+  z.object({ type: z.literal('preferences.setTheme'), themeId: entityIdSchema }).strict(),
+  z
+    .object({
+      type: z.literal('preferences.setSearchEngine'),
+      searchEngine: z.enum(['bing-cn', 'bing', 'baidu', 'google', 'custom']),
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal('preferences.setCustomSearchTemplate'),
+      customSearchTemplate: z.string().max(2048),
+    })
+    .strict(),
   z
     .object({
       type: z.literal('box.create'),
@@ -212,6 +229,7 @@ export interface WorkspaceCommandDefinition {
     | 'box'
     | 'item'
     | 'bookmark'
+    | 'preferences'
     | 'collection'
     | 'canvas'
     | 'system';
@@ -220,6 +238,11 @@ export interface WorkspaceCommandDefinition {
 const nonUndoableCommandTypes = new Set<WorkspaceCommandType>([
   'bookmark.setFavicon',
   'page.open',
+  'preferences.setLocale',
+  'preferences.setColorMode',
+  'preferences.setTheme',
+  'preferences.setSearchEngine',
+  'preferences.setCustomSearchTemplate',
   'system.constrainFrames',
 ]);
 

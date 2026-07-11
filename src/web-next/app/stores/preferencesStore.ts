@@ -1,21 +1,12 @@
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
-import { webNextStorage } from '../../platform/hostPlatform';
+import { useSyncExternalStore } from 'react';
+import type { WorkspaceCommand } from '../../../core/contracts/workspaceCommands';
 import type { WebNextLocale } from '../../i18n/messages';
-import {
-  DEFAULT_WEB_SEARCH_ENGINE,
-  isWebSearchEngineId,
-  type WebSearchEngineId,
-} from '../../domain/webSearch';
+import type { WebSearchEngineId } from '../../domain/webSearch';
 import { isRegisteredWebNextTheme, type WebNextColorMode } from '../../themes/themeRegistry';
-
-interface StoredPreferences {
-  colorMode: WebNextColorMode;
-  locale: WebNextLocale;
-  themeId: string;
-  searchEngine: WebSearchEngineId;
-  customSearchTemplate: string;
-}
+import {
+  dispatchDatabaseCommand,
+  queryPreferences,
+} from '../../platform/hostPlatform';
 
 interface PreferencesStore {
   colorMode: WebNextColorMode;
@@ -23,6 +14,7 @@ interface PreferencesStore {
   themeId: string;
   searchEngine: WebSearchEngineId;
   customSearchTemplate: string;
+  initialize: () => Promise<void>;
   setColorMode: (colorMode: WebNextColorMode) => void;
   setLocale: (locale: WebNextLocale) => void;
   setThemeId: (themeId: string) => void;
@@ -32,77 +24,88 @@ interface PreferencesStore {
   toggleLocale: () => void;
 }
 
-const STORAGE_KEY = 'khaosbox.web-next.preferences';
+const listeners = new Set<() => void>();
+let preferenceQueue: Promise<unknown> = Promise.resolve();
 
-export const usePreferencesStore = create<PreferencesStore>()(
-  persist(
-    (set) => ({
-      ...getInitialPreferences(),
-      setColorMode: (colorMode) => set({ colorMode }),
-      setLocale: (locale) => set({ locale }),
-      setThemeId: (themeId) => {
-        if (isRegisteredWebNextTheme(themeId)) {
-          set({ themeId });
-        }
-      },
-      setSearchEngine: (searchEngine) => set({ searchEngine }),
-      setCustomSearchTemplate: (customSearchTemplate) => set({ customSearchTemplate }),
-      toggleColorMode: () =>
-        set((state) => ({ colorMode: state.colorMode === 'light' ? 'dark' : 'light' })),
-      toggleLocale: () => set((state) => ({ locale: state.locale === 'en' ? 'zh' : 'en' })),
-    }),
-    {
-      name: STORAGE_KEY,
-      storage: createJSONStorage(() => webNextStorage),
-      skipHydration: true,
-      partialize: ({ colorMode, locale, themeId, searchEngine, customSearchTemplate }) => ({
-        colorMode,
-        locale,
-        themeId,
-        searchEngine,
-        customSearchTemplate,
-      }),
-      merge: (persistedState, currentState) => ({
-        ...currentState,
-        ...normalizePreferences(persistedState, currentState),
-      }),
-    },
-  ),
-);
+const actions = {
+  initialize: refreshPreferences,
+  setColorMode: (colorMode: WebNextColorMode) =>
+    fireCommand({ type: 'preferences.setColorMode', colorMode }),
+  setLocale: (locale: WebNextLocale) =>
+    fireCommand({ type: 'preferences.setLocale', locale }),
+  setThemeId: (themeId: string) => {
+    if (isRegisteredWebNextTheme(themeId)) {
+      fireCommand({ type: 'preferences.setTheme', themeId });
+    }
+  },
+  setSearchEngine: (searchEngine: WebSearchEngineId) =>
+    fireCommand({ type: 'preferences.setSearchEngine', searchEngine }),
+  setCustomSearchTemplate: (customSearchTemplate: string) =>
+    fireCommand({ type: 'preferences.setCustomSearchTemplate', customSearchTemplate }),
+  toggleColorMode: () =>
+    actions.setColorMode(state.colorMode === 'light' ? 'dark' : 'light'),
+  toggleLocale: () => actions.setLocale(state.locale === 'en' ? 'zh' : 'en'),
+} satisfies Omit<
+  PreferencesStore,
+  'colorMode' | 'locale' | 'themeId' | 'searchEngine' | 'customSearchTemplate'
+>;
 
-function getInitialPreferences(): StoredPreferences {
-  return {
-    locale:
-      typeof navigator !== 'undefined' && navigator.language.toLowerCase().startsWith('zh')
-        ? 'zh'
-        : 'en',
-    colorMode:
-      typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light',
-    themeId: 'classic',
-    searchEngine: DEFAULT_WEB_SEARCH_ENGINE,
-    customSearchTemplate: '',
+let state: PreferencesStore = {
+  colorMode: 'light',
+  locale: 'en',
+  themeId: 'classic',
+  searchEngine: 'bing-cn',
+  customSearchTemplate: '',
+  ...actions,
+};
+
+async function refreshPreferences() {
+  const preferences = await queryPreferences();
+  if (!preferences) throw new Error('KhaosBox preferences are not initialized.');
+  state = {
+    ...state,
+    colorMode: preferences.colorMode,
+    locale: preferences.locale,
+    themeId: preferences.themeId,
+    searchEngine: preferences.searchEngine,
+    customSearchTemplate: preferences.customSearchTemplate,
   };
+  for (const listener of listeners) listener();
 }
 
-function normalizePreferences(input: unknown, fallback: StoredPreferences): StoredPreferences {
-  const parsed = (input ?? {}) as Partial<StoredPreferences & { theme: string }>;
-  const legacyColorMode = parsed.theme === 'dark' || parsed.theme === 'light' ? parsed.theme : null;
-
-  return {
-    colorMode:
-      parsed.colorMode === 'dark' || parsed.colorMode === 'light'
-        ? parsed.colorMode
-        : (legacyColorMode ?? fallback.colorMode),
-    locale: parsed.locale === 'zh' ? 'zh' : parsed.locale === 'en' ? 'en' : fallback.locale,
-    themeId: isRegisteredWebNextTheme(parsed.themeId) ? parsed.themeId : fallback.themeId,
-    searchEngine: isWebSearchEngineId(parsed.searchEngine)
-      ? parsed.searchEngine
-      : fallback.searchEngine,
-    customSearchTemplate:
-      typeof parsed.customSearchTemplate === 'string'
-        ? parsed.customSearchTemplate
-        : fallback.customSearchTemplate,
-  };
+function fireCommand(command: WorkspaceCommand) {
+  void enqueue(async () => {
+    await dispatchDatabaseCommand(command);
+    await refreshPreferences();
+  }).catch((error: unknown) => console.error('Failed to update preferences', error));
 }
+
+function enqueue<T>(task: () => Promise<T>): Promise<T> {
+  const result = preferenceQueue.then(task, task);
+  preferenceQueue = result.then(
+    () => undefined,
+    () => undefined,
+  );
+  return result;
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+type PreferencesStoreHook = {
+  <T>(selector: (current: PreferencesStore) => T): T;
+  getState(): PreferencesStore;
+  initialize(): Promise<void>;
+};
+
+export const usePreferencesStore = Object.assign(
+  function usePreferencesSelector<T>(selector: (current: PreferencesStore) => T) {
+    return useSyncExternalStore(subscribe, () => selector(state), () => selector(state));
+  },
+  {
+    getState: () => state,
+    initialize: refreshPreferences,
+  },
+) as PreferencesStoreHook;

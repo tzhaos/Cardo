@@ -8,7 +8,7 @@ import {
   redoDatabaseCommand,
   undoDatabaseCommand,
 } from '../../core/application/historyEngine';
-import { getWorkspaceSnapshot } from '../../core/database/workspaceQueries';
+import { getPreferences, getWorkspaceSnapshot } from '../../core/database/workspaceQueries';
 import {
   getOperationLogEntries,
   recordDatabaseActivity,
@@ -16,6 +16,7 @@ import {
 } from '../../core/application/operationLogService';
 
 let database: KhaosDatabase | null = null;
+let databaseTaskQueue: Promise<unknown> = Promise.resolve();
 
 export function getKhaosDatabase() {
   database ??= createDatabaseClient(getAppPorts().database);
@@ -23,51 +24,66 @@ export function getKhaosDatabase() {
 }
 
 export function dispatchDatabaseCommand(command: WorkspaceCommand) {
-  return executeDatabaseCommand(getKhaosDatabase(), command);
+  return runDatabaseTask(() => executeDatabaseCommand(getKhaosDatabase(), command));
 }
 
 export function undoDatabaseHistory() {
-  return undoDatabaseCommand(getKhaosDatabase());
+  return runDatabaseTask(() => undoDatabaseCommand(getKhaosDatabase()));
 }
 
 export function redoDatabaseHistory() {
-  return redoDatabaseCommand(getKhaosDatabase());
+  return runDatabaseTask(() => redoDatabaseCommand(getKhaosDatabase()));
 }
 
 export function queryDatabaseHistoryState() {
-  return getDatabaseHistoryState(getKhaosDatabase());
+  return runDatabaseTask(() => getDatabaseHistoryState(getKhaosDatabase()));
 }
 
 export function queryWorkspaceSnapshot() {
-  return getWorkspaceSnapshot(getKhaosDatabase());
+  return runDatabaseTask(() => getWorkspaceSnapshot(getKhaosDatabase()));
 }
 
 export function recordActivity(input: ActivityLogInput) {
-  void recordDatabaseActivity(getKhaosDatabase(), input).catch((error: unknown) =>
-    console.error('Failed to record activity', error),
+  void runDatabaseTask(() => recordDatabaseActivity(getKhaosDatabase(), input)).catch(
+    (error: unknown) => console.error('Failed to record activity', error),
   );
 }
 
 export async function exportOperationLog() {
-  const entries = await getOperationLogEntries(getKhaosDatabase());
-  const exportedAt = new Date().toISOString();
-  getAppPorts().fileExport.downloadJson(
-    `khaosbox-operation-log-${exportedAt.slice(0, 10)}.json`,
-    JSON.stringify(
-      {
-        format: 'khaosbox-operation-log',
-        version: 1,
-        exportedAt,
-        entries,
-      },
-      null,
-      2,
-    ),
-  );
-  await recordDatabaseActivity(getKhaosDatabase(), {
-    action: 'journal.export',
-    details: { eventCount: entries.length },
+  await runDatabaseTask(async () => {
+    const entries = await getOperationLogEntries(getKhaosDatabase());
+    const exportedAt = new Date().toISOString();
+    getAppPorts().fileExport.downloadJson(
+      `khaosbox-operation-log-${exportedAt.slice(0, 10)}.json`,
+      JSON.stringify(
+        {
+          format: 'khaosbox-operation-log',
+          version: 1,
+          exportedAt,
+          entries,
+        },
+        null,
+        2,
+      ),
+    );
+    await recordDatabaseActivity(getKhaosDatabase(), {
+      action: 'journal.export',
+      details: { eventCount: entries.length },
+    });
   });
+}
+
+export function queryPreferences() {
+  return runDatabaseTask(() => getPreferences(getKhaosDatabase()));
+}
+
+function runDatabaseTask<T>(task: () => Promise<T>): Promise<T> {
+  const result = databaseTaskQueue.then(task, task);
+  databaseTaskQueue = result.then(
+    () => undefined,
+    () => undefined,
+  );
+  return result;
 }
 
 /**

@@ -12,6 +12,10 @@ import { executePageCommand, type PageCommand } from './pageCommandHandlers';
 import { executeBoxCommand, type BoxCommand } from './boxCommandHandlers';
 import { executeItemCommand, type ItemCommand } from './itemCommandHandlers';
 import { executeWorkspaceImport } from './workspaceCommandHandlers';
+import {
+  executePreferencesCommand,
+  type PreferencesCommand,
+} from './preferencesCommandHandlers';
 
 export async function executeDatabaseCommand(
   database: KhaosDatabase,
@@ -26,7 +30,14 @@ export async function executeDatabaseCommand(
     command.type === 'system.constrainFrames';
   const isItemCommand = command.type.startsWith('item.') || command.type === 'bookmark.setFavicon';
   const isWorkspaceImport = command.type === 'workspace.import';
-  if (!isPageCommand && !isBoxCommand && !isItemCommand && !isWorkspaceImport) {
+  const isPreferencesCommand = command.type.startsWith('preferences.');
+  if (
+    !isPageCommand &&
+    !isBoxCommand &&
+    !isItemCommand &&
+    !isWorkspaceImport &&
+    !isPreferencesCommand
+  ) {
     throw new Error(`Database handler for ${command.type} is not implemented.`);
   }
 
@@ -35,7 +46,9 @@ export async function executeDatabaseCommand(
   const timestamp = new Date().toISOString();
 
   return await database.transaction(async (transaction) => {
-    const mutation = isWorkspaceImport
+    const mutation = isPreferencesCommand
+      ? await executePreferencesCommand(transaction, command as PreferencesCommand)
+      : isWorkspaceImport
       ? await executeWorkspaceImport(transaction, command)
       : isPageCommand
         ? await executePageCommand(transaction, command as PageCommand)
