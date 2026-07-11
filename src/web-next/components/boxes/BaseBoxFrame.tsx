@@ -361,10 +361,13 @@ export function BaseBoxFrame({
       return;
     }
 
+    // Distance-aware landing: short hops stay snappy, cross-page tab place takes longer.
+    const travel = Math.hypot(deltaX, deltaY);
+    const duration = Math.min(0.52, Math.max(0.32, 0.22 + travel / 1400));
     const positionTransition = {
       type: 'tween' as const,
-      duration: 0.18,
-      ease: [0.22, 1, 0.36, 1] as const,
+      duration,
+      ease: [0.22, 0.82, 0.2, 1] as const,
     };
     const leftAnimation = animateMotion(boxLeft, targetFrame.x, positionTransition);
     const topAnimation = animateMotion(boxTop, targetFrame.y, positionTransition);
@@ -470,11 +473,19 @@ export function BaseBoxFrame({
                 opacity: { duration: 0.1 },
               }
             : {
-                // No spring settle after drag — overshoot reads as fling bounce-back.
-                y: { type: 'tween', duration: 0.14, ease: [0.22, 1, 0.36, 1] },
-                scale: { type: 'tween', duration: 0.14, ease: [0.22, 1, 0.36, 1] },
-                borderRadius: { duration: 0.16 },
-                opacity: { duration: 0.12 },
+                // Match landing pace after tab release (compact → full size).
+                y: {
+                  type: 'tween',
+                  duration: pendingBoxLanding ? 0.36 : 0.16,
+                  ease: [0.22, 0.82, 0.2, 1],
+                },
+                scale: {
+                  type: 'tween',
+                  duration: pendingBoxLanding ? 0.4 : 0.16,
+                  ease: [0.22, 0.82, 0.2, 1],
+                },
+                borderRadius: { duration: pendingBoxLanding ? 0.32 : 0.16 },
+                opacity: { duration: pendingBoxLanding ? 0.28 : 0.12 },
               }
       }
       onAnimationComplete={finishDeleteMotion}
