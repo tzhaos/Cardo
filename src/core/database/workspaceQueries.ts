@@ -1,8 +1,15 @@
-import { asc, eq } from 'drizzle-orm';
+import { asc } from 'drizzle-orm';
 import { workspaceProjectionSchema, type WorkspaceItem } from '../contracts/workspace';
+import {
+  boxItemsQuerySchema,
+  pageBoxesQuerySchema,
+  pageTabsQuerySchema,
+  workspaceStateQuerySchema,
+} from '../contracts/workspaceQueries';
 import type { KhaosDatabase } from './createDatabaseClient';
 import {
   appState,
+  appStateSelectSchema,
   boxes,
   pages,
   pageSelectSchema,
@@ -15,20 +22,37 @@ import {
 
 export async function getPageTabs(database: KhaosDatabase) {
   const rows = await database.select().from(pages).orderBy(asc(pages.sortOrder)).all();
-  return pageSelectSchema.array().parse(rows);
+  return pageTabsQuerySchema.parse(
+    pageSelectSchema.array().parse(rows).map((page) => ({
+      id: page.id,
+      title: page.title,
+      order: page.sortOrder,
+      createdAt: page.createdAt,
+      updatedAt: page.updatedAt,
+    })),
+  );
 }
 
 export async function getWorkspaceState(database: KhaosDatabase) {
-  return await database.select().from(appState).limit(1).get();
+  const row = await database.select().from(appState).limit(1).get();
+  if (!row) throw new Error('KhaosBox app state is not initialized.');
+  const state = appStateSelectSchema.parse(row);
+  return workspaceStateQuerySchema.parse({
+    activePageId: state.activePageId,
+    defaultPageId: state.defaultPageId,
+  });
 }
 
 export async function getPageBoxes(database: KhaosDatabase, pageId: string) {
-  return await database
-    .select()
-    .from(boxes)
-    .where(eq(boxes.pageId, pageId))
-    .orderBy(asc(boxes.zIndex))
-    .all();
+  const projection = await getWorkspaceProjection(database);
+  return pageBoxesQuerySchema.parse(projection.boxes.filter((box) => box.pageId === pageId));
+}
+
+export async function getBoxItems(database: KhaosDatabase, boxId: string) {
+  const projection = await getWorkspaceProjection(database);
+  return boxItemsQuerySchema.parse(
+    projection.boxes.find((box) => box.id === boxId)?.items ?? [],
+  );
 }
 
 export async function getPreferences(database: KhaosDatabase) {
@@ -49,7 +73,6 @@ export async function getWorkspaceProjection(database: KhaosDatabase) {
       .orderBy(asc(collectionBoxViews.sortOrder))
       .all(),
   ]);
-  if (!state) throw new Error('KhaosBox app state is not initialized.');
 
   const itemById = new Map(itemRows.map((item) => [item.id, item]));
   const placementsByBox = new Map<string, typeof placementRows>();
@@ -95,8 +118,8 @@ export async function getWorkspaceProjection(database: KhaosDatabase) {
       viewMode: box.viewMode,
       detailMode: box.detailMode,
       isLocked: box.isLocked,
-      ...(box.icon ? { icon: box.icon } : {}),
-      ...(box.accent ? { accent: box.accent } : {}),
+      icon: box.icon,
+      accent: box.accent,
       createdAt: box.createdAt,
       updatedAt: box.updatedAt,
     })),

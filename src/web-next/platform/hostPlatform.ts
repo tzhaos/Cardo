@@ -7,7 +7,14 @@ import {
   redoDatabaseCommand,
   undoDatabaseCommand,
 } from '../../core/application/historyEngine';
-import { getPreferences, getWorkspaceProjection } from '../../core/database/workspaceQueries';
+import {
+  getBoxItems,
+  getPageBoxes,
+  getPageTabs,
+  getPreferences,
+  getWorkspaceProjection,
+  getWorkspaceState,
+} from '../../core/database/workspaceQueries';
 import { searchWorkspaceDatabase } from '../../core/database/globalSearchQuery';
 import {
   getOperationLogEntries,
@@ -55,6 +62,22 @@ export function queryDatabaseHistoryState() {
 
 export function queryWorkspaceProjection() {
   return runDatabaseTask(() => getWorkspaceProjection(getKhaosDatabase()));
+}
+
+export function queryWorkspaceState() {
+  return runDatabaseTask(() => getWorkspaceState(getKhaosDatabase()));
+}
+
+export function queryPageTabs() {
+  return runDatabaseTask(() => getPageTabs(getKhaosDatabase()));
+}
+
+export function queryPageBoxes(pageId: string) {
+  return runDatabaseTask(() => getPageBoxes(getKhaosDatabase(), pageId));
+}
+
+export function queryBoxItems(boxId: string) {
+  return runDatabaseTask(() => getBoxItems(getKhaosDatabase(), boxId));
 }
 
 export function recordActivity(input: ActivityLogInput) {
