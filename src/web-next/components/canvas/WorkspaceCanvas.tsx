@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { AnimatePresence, motion, type Variants } from 'motion/react';
 import { House, Trash2 } from 'lucide-react';
@@ -6,6 +6,7 @@ import { useCanvasPan } from '../../app/useCanvasPan';
 import { useCanvasViewport } from '../../app/useCanvasViewport';
 import { getPageCanvasState, useCanvasStore } from '../../app/stores/canvasStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
+import { registerCanvasElement } from '../../app/interactionElementRegistry';
 import {
   clientPointToCanvasWorld,
   constrainBoxFrameToCanvas,
@@ -41,6 +42,10 @@ export function WorkspaceCanvas() {
   const isCollection = isCollectionPageId(snapshot.activePageId);
   const previousActivePageIdRef = useRef(snapshot.activePageId);
   const canvasRef = useRef<HTMLElement>(null);
+  const setCanvasElement = useCallback((element: HTMLElement | null) => {
+    canvasRef.current = element;
+    registerCanvasElement(element);
+  }, []);
   const { handlePointerDownCapture, isLocked, isPanModifierActive, isPanning } = useCanvasPan(
     snapshot.activePageId,
   );
@@ -80,7 +85,7 @@ export function WorkspaceCanvas() {
     <main
       className={canvasClassName}
       data-workspace-canvas
-      ref={canvasRef}
+      ref={setCanvasElement}
       onPointerDownCapture={handlePointerDownCapture}
       onContextMenu={(event) => {
         if (event.target instanceof Element && event.target.closest('[data-canvas-box]')) {

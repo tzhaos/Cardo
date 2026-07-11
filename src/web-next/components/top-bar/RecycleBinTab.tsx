@@ -1,6 +1,8 @@
 import { Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useCallback } from 'react';
 import type { MouseEventHandler } from 'react';
+import { registerPageDropElement } from '../../app/interactionElementRegistry';
 import type { WorkspacePage } from '../../domain/workspace';
 import { TabPill } from './TabPill';
 
@@ -21,8 +23,13 @@ export function RecycleBinTab({
   onActivate,
   onContextMenu,
 }: RecycleBinTabProps) {
+  const registerDropElement = useCallback(
+    (element: HTMLDivElement | null) => registerPageDropElement(page.id, element),
+    [page.id],
+  );
   return (
     <motion.div
+      ref={registerDropElement}
       className={[
         'wbn-recycle-bin-tab',
         highlighted ? 'wbn-box-drop-target' : '',

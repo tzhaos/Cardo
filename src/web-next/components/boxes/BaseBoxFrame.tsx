@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import {
   ChevronsDownUp,
@@ -27,6 +27,7 @@ import { useCanvasStore } from '../../app/stores/canvasStore';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { useInlineRename } from '../../app/useInlineRename';
+import { getPageDropElement, registerBoxElement } from '../../app/interactionElementRegistry';
 import {
   constrainBoxFrameToCanvas,
   constrainBoxResizeToCanvas,
@@ -97,6 +98,13 @@ export function BaseBoxFrame({
   );
   const [dropLandingStarted, setDropLandingStarted] = useState(false);
   const articleRef = useRef<HTMLElement>(null);
+  const setArticleElement = useCallback(
+    (element: HTMLElement | null) => {
+      articleRef.current = element;
+      registerBoxElement(box.id, element);
+    },
+    [box.id],
+  );
   const pointerSessionRef = useRef<WindowPointerSession | null>(null);
   const deleteTargetRef = useRef<HTMLElement | null>(null);
   const deleteCommittedRef = useRef(false);
@@ -318,9 +326,7 @@ export function BaseBoxFrame({
       return;
     }
 
-    const target = document.querySelector<HTMLElement>(
-      `[data-page-drop-id="${RECYCLE_BIN_PAGE_ID}"]`,
-    );
+    const target = getPageDropElement(RECYCLE_BIN_PAGE_ID);
     const targetRect = target?.getBoundingClientRect();
     if (target) {
       deleteTargetRef.current = target;
@@ -356,7 +362,7 @@ export function BaseBoxFrame({
 
   return (
     <motion.article
-      ref={articleRef}
+      ref={setArticleElement}
       className={visualClassName}
       data-canvas-box
       data-box-id={box.id}

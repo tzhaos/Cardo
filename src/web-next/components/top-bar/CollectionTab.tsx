@@ -1,6 +1,8 @@
 import { Star } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useCallback } from 'react';
 import type { MouseEventHandler } from 'react';
+import { registerPageDropElement } from '../../app/interactionElementRegistry';
 import type { WorkspacePage } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { TabPill } from './TabPill';
@@ -23,8 +25,13 @@ export function CollectionTab({
   onContextMenu,
 }: CollectionTabProps) {
   const { t } = useI18n();
+  const registerDropElement = useCallback(
+    (element: HTMLDivElement | null) => registerPageDropElement(page.id, element),
+    [page.id],
+  );
   return (
     <motion.div
+      ref={registerDropElement}
       className={[
         'wbn-collection-tab',
         highlighted ? 'wbn-box-drop-target' : '',

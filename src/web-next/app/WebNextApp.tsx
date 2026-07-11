@@ -14,6 +14,7 @@ import { useCancelActivePointerOnWindowExit } from './useCancelActivePointerOnWi
 import { usePasteIntoSelectedBox } from './usePasteIntoSelectedBox';
 import { useWorkspaceHistoryShortcuts } from './useWorkspaceHistoryShortcuts';
 import { usePreferencesStore } from './stores/preferencesStore';
+import { BoxPageDropController } from './BoxPageDropController';
 import './styles.css';
 
 export default function WebNextApp() {
@@ -34,6 +35,7 @@ export default function WebNextApp() {
     <FloatingMenuProvider>
       <div className={`wbn-app${isDesktopHost ? ' wbn-app-desktop' : ''}`}>
         <DesktopTitleBar />
+        <BoxPageDropController />
         <TopBar />
         <HistoryToolbar />
         <WorkspaceCanvas />

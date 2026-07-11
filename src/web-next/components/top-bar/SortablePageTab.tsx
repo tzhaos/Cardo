@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { Reorder, useDragControls } from 'motion/react';
 import type { WorkspacePage } from '../../domain/workspace';
+import { registerPageDropElement } from '../../app/interactionElementRegistry';
 import { TabPill } from './TabPill';
 
 const LONG_PRESS_MS = 320;
@@ -31,6 +32,10 @@ export function SortablePageTab({
   onReorderEnd: () => void;
 }) {
   const controls = useDragControls();
+  const registerDropElement = useCallback(
+    (element: HTMLDivElement | null) => registerPageDropElement(page.id, element),
+    [page.id],
+  );
   const cancelLongPressRef = useRef<(() => void) | null>(null);
   const suppressClickRef = useRef(false);
 
@@ -73,6 +78,7 @@ export function SortablePageTab({
 
   return (
     <Reorder.Item
+      ref={registerDropElement}
       as="div"
       className={className}
       data-page-drop-id={page.id}
