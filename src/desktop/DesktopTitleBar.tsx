@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Box, Maximize2, Minus, Square, X } from 'lucide-react';
 import { useI18n } from '../web-next/i18n/useI18n';
+import { Button } from '../web-next/ui/primitives/button';
 
 export default function DesktopTitleBar() {
   const [isMaximized, setMaximized] = useState(false);
@@ -45,33 +46,33 @@ export default function DesktopTitleBar() {
         className="wbn-desktop-window-controls"
         onDoubleClick={(event) => event.stopPropagation()}
       >
-        <button
-          type="button"
+        <Button
+          variant="ghost"
           className="wbn-desktop-window-control"
           title={t('desktop.minimize')}
           aria-label={t('desktop.minimize')}
           onClick={() => void bridge.minimizeWindow()}
         >
           <Minus size={14} strokeWidth={1.8} />
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="ghost"
           className="wbn-desktop-window-control"
           title={t(isMaximized ? 'desktop.restore' : 'desktop.maximize')}
           aria-label={t(isMaximized ? 'desktop.restore' : 'desktop.maximize')}
           onClick={async () => setMaximized(await bridge.toggleMaximizeWindow())}
         >
           {isMaximized ? <Maximize2 size={13} strokeWidth={1.8} /> : <Square size={12} />}
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="ghost"
           className="wbn-desktop-window-control wbn-desktop-window-control-close"
           title={t('desktop.close')}
           aria-label={t('desktop.close')}
           onClick={() => void bridge.closeWindow()}
         >
           <X size={15} strokeWidth={1.8} />
-        </button>
+        </Button>
       </div>
     </header>
   );
