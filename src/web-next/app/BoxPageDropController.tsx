@@ -16,7 +16,7 @@ import {
   getCanvasViewportCenter,
   getVisibleCanvasWorldBounds,
 } from '../domain/canvasGeometry';
-import { findViewportAdaptiveFrame, isFrameFreeInViewport } from '../domain/placement';
+import { findViewportAdaptiveFrame, isFrameInViewport } from '../domain/placement';
 import type { BoxFrame } from '../domain/workspace';
 import { isCollectionPageId, isRecycleBinPageId } from '../domain/workspace';
 
@@ -157,9 +157,6 @@ function commitBoxDragRelease(
   const pageCanvas = getPageCanvasState(canvas, destinationPageId);
   const viewportBounds = getVisibleCanvasWorldBounds(pageCanvas.camera, canvas.viewportSize);
   const canvasBounds = createCanvasWorldBounds(canvas.viewportSize);
-  const occupiedFrames = workspace.projection.boxes
-    .filter((box) => box.pageId === destinationPageId && box.id !== draggedBoxId)
-    .map((box) => box.frame);
 
   const pointerFrame =
     framePreservingGrabUnderPointer(
@@ -178,17 +175,16 @@ function commitBoxDragRelease(
         y: pointerFrame.y + pointerFrame.height / 2,
       };
 
-  // Keep the free pointer drop when it already sits cleanly in the viewport.
-  // Otherwise (tab release, crowded, off-screen) adapt into the visible area.
+  // Prefer the pointer frame when it is still inside the viewport. Tab release
+  // (or off-screen drop) recenters into the visible area. Overlap is allowed.
   const landingFrame =
-    !releasedOnTab && isFrameFreeInViewport(pointerFrame, viewportBounds, occupiedFrames)
+    !releasedOnTab && isFrameInViewport(pointerFrame, viewportBounds)
       ? constrainBoxFrameToCanvas(pointerFrame, canvasBounds)
       : findViewportAdaptiveFrame({
           size: { width: pointerFrame.width, height: pointerFrame.height },
           preferredCenter,
           viewportBounds,
           canvasBounds,
-          occupiedFrames,
         });
 
   ui.setPendingBoxLanding(draggedBoxId, landingFrame);

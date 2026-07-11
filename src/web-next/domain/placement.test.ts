@@ -46,7 +46,7 @@ test('findPageLandingFrame centers a box on an empty page', () => {
   assert.deepEqual(frame, { x: 460, y: 300, width: 280, height: 200 });
 });
 
-test('findPageLandingFrame chooses a nearby free position when center is occupied', () => {
+test('findPageLandingFrame allows overlap when preferred center is occupied', () => {
   const projection = createProjection();
   projection.boxes.push({
     id: 'occupied',
@@ -72,6 +72,6 @@ test('findPageLandingFrame chooses a nearby free position when center is occupie
     createCanvasWorldBounds({ width: 1200, height: 800 }),
   );
 
-  assert.ok(frame);
-  assert.notDeepEqual(frame, { x: 460, y: 300, width: 280, height: 200 });
+  // No mutual exclusion: still lands centered on preferred point.
+  assert.deepEqual(frame, { x: 460, y: 300, width: 280, height: 200 });
 });
