@@ -102,7 +102,8 @@ themes/
 ### 推荐
 
 - 同时写满 light + dark，不要只做“换色滤镜”。
-- 用 `radii` / `fonts` / `elevation` / `chrome.blur` 拉开结构差异。
+- 主题气质主要靠材质：`radii`、`elevation`、`chrome.blur`、边框语言、header/content 分层；产品级 recipe 也走这一路。
+- 字体要慎重：默认沿用产品 UI 无衬线栈（Inter + 中文 fallback）。不要把整站标题改成等宽或衬线来“假装主题感”——等宽只留给代码/色值等真正的 mono 场景。系统主题（如 Apple）可用系统栈；其它经典主题优先不改 `fonts.sans`。
 - `cssSnippet` 中选择器尽量带 `[data-cardo-theme="your-id"]`；注入时会包在 `[data-cardo-root]` 下。禁止 `@import`、远程 `url(http…)` 等危险构造。
 
 ## 从内置主题起步

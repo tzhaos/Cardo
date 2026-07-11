@@ -9,8 +9,8 @@
       "zh": "纸页"
     },
     "description": {
-      "en": "Warm editorial paper in light and ink-on-walnut dark — softer radii, serif type.",
-      "zh": "纸页风：浅色奶油纸与深色胡桃墨迹，大圆角与偏衬线字体。"
+      "en": "Warm editorial paper in light and ink-on-walnut dark — soft radii and paper wash, product UI sans.",
+      "zh": "纸页风：浅色奶油纸与深色胡桃墨迹，大圆角与纸质渐变；沿用产品 UI 字体。"
     },
     "tokens": {
       "colors": {
@@ -82,10 +82,10 @@
         }
       },
       "fonts": {
-        "sans": "'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', 'Noto Serif SC', 'Songti SC', Georgia, 'Times New Roman', serif",
+        "sans": "'Inter Variable', Inter, 'Noto Sans SC', 'Microsoft YaHei UI', 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans CJK SC', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         "mono": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-        "sizeBase": "15px",
-        "lineHeightBase": "1.55"
+        "sizeBase": "14px",
+        "lineHeightBase": "1.45"
       },
       "radii": {
         "xs": "6px",

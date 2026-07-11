@@ -9,8 +9,8 @@
       "zh": "One"
     },
     "description": {
-      "en": "Atom One — light and dark both first-class (One Light / One Dark), editor contrast.",
-      "zh": "Atom One：浅色 One Light 与深色 One Dark 同等完整，编辑器对比度。"
+      "en": "Atom One Light / One Dark — flat solid chrome, gutter hierarchy; product UI sans (mono only for code).",
+      "zh": "Atom One 浅/深：扁平实色壳层与 gutter 分层；UI 用产品字体，等宽仅用于代码。"
     },
     "tokens": {
       "colors": {
@@ -107,23 +107,23 @@
       },
       "elevation": {
         "light": {
-          "shadow": "0 1px 1px rgba(0,0,0,.02), 0 2px 2px rgba(0,0,0,.02), 0 4px 4px rgba(0,0,0,.02), 0 8px 8px rgba(0,0,0,.02), 0 16px 16px rgba(0,0,0,.02)",
-          "shadowHover": "0 2px 2px rgba(0,0,0,.03), 0 4px 4px rgba(0,0,0,.03), 0 8px 8px rgba(0,0,0,.03), 0 16px 16px rgba(0,0,0,.03), 0 32px 32px rgba(0,0,0,.03), 0 64px 64px rgba(0,0,0,.03)",
-          "insetShadow": "inset 0 1px 2px rgba(0, 0, 0, 0.05)"
+          "shadow": "none",
+          "shadowHover": "none",
+          "insetShadow": "inset 0 1px 0 rgba(255,255,255,.35)"
         },
         "dark": {
-          "shadow": "0 1px 1px rgba(0,0,0,.1), 0 2px 2px rgba(0,0,0,.1), 0 4px 4px rgba(0,0,0,.1), 0 8px 8px rgba(0,0,0,.1), 0 16px 16px rgba(0,0,0,.1), inset 0 1px 0 rgba(255,255,255,.05)",
-          "shadowHover": "0 2px 2px rgba(0,0,0,.15), 0 4px 4px rgba(0,0,0,.15), 0 8px 8px rgba(0,0,0,.15), 0 16px 16px rgba(0,0,0,.15), 0 32px 32px rgba(0,0,0,.15), 0 64px 64px rgba(0,0,0,.15), inset 0 1px 0 rgba(255,255,255,.05)",
-          "insetShadow": "inset 0 1px 2px rgba(0, 0, 0, 0.28)"
+          "shadow": "none",
+          "shadowHover": "none",
+          "insetShadow": "inset 0 1px 0 rgba(255,255,255,.04)"
         }
       },
       "motion": {
-        "durationFast": "120ms",
-        "durationNormal": "160ms",
-        "easing": "ease"
+        "durationFast": "100ms",
+        "durationNormal": "140ms",
+        "easing": "ease-out"
       },
       "chrome": {
-        "blur": "10px",
+        "blur": "0px",
         "topbarOffset": "12px"
       }
     },

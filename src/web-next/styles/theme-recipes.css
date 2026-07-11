@@ -1,7 +1,10 @@
 /**
- * Per-theme structural recipes for product surfaces (boxes, collection boxes).
- * Colors come from tokens; this layer changes material treatment so themes
- * are not “recolors of Classic boxes”.
+ * Per-theme material recipes for product surfaces.
+ *
+ * Principle: classic themes differ by material language — border vs elevation,
+ * glass vs solid, density, chrome treatment — not by swapping UI fonts.
+ * Keep product sans (Inter) unless a pack deliberately sets a system stack
+ * (e.g. Apple). Never force mono/serif onto titles or chrome labels.
  */
 
 /* ── shared helpers ─────────────────────────────────────────────────────────── */
@@ -29,7 +32,7 @@
   background: var(--cardo-panel-chrome);
 }
 
-/* ── GitHub Primer: hard borders, flat solid panels, tight chrome ───────────── */
+/* ── GitHub Primer: border-first hierarchy, flat solid, no glass ────────────── */
 
 [data-cardo-theme='github'] .cardo-box,
 [data-cardo-theme='github'] .cardo-collection-box {
@@ -44,7 +47,7 @@
 [data-cardo-theme='github'] .cardo-collection-box-header,
 [data-cardo-theme='github'] .cardo-temporary-box-header {
   border-bottom: 1px solid var(--cardo-border);
-  background: var(--cardo-panel-chrome);
+  background: var(--cardo-panel-bottom);
 }
 
 [data-cardo-theme='github'] .cardo-box-footer {
@@ -52,15 +55,22 @@
   background: var(--cardo-panel-bottom);
 }
 
+[data-cardo-theme='github'] .cardo-box-content,
+[data-cardo-theme='github'] .cardo-collection-box-content {
+  background: var(--cardo-panel);
+}
+
 [data-cardo-theme='github'] .cardo-box-temporary {
   border-style: solid;
   border-color: var(--cardo-border);
   background-image: none;
-  background-color: var(--cardo-panel-content);
+  background-color: var(--cardo-canvas);
   box-shadow: none;
 }
 
-/* ── One (Atom One Light / Dark): editor chrome, solid panels ───────────────── */
+/* ── One (Atom): solid editor chrome, gutter bands, no glass / no mono UI ───── */
+/* Atom One UI is Source Sans-like proportional UI + flat #282c34 surfaces.
+   Syntax mono is for code only — never for box titles. */
 
 [data-cardo-theme='one'] .cardo-box,
 [data-cardo-theme='one'] .cardo-collection-box {
@@ -68,31 +78,50 @@
   border-radius: var(--cardo-radius-md);
   background-image: none;
   background-color: var(--cardo-panel);
-  box-shadow: var(--cardo-shadow);
+  box-shadow: none;
+}
+
+[data-cardo-theme='one'] .cardo-box:hover,
+[data-cardo-theme='one'] .cardo-collection-box:hover {
+  border-color: color-mix(in srgb, var(--cardo-border) 70%, var(--cardo-blue));
 }
 
 [data-cardo-theme='one'] .cardo-box-header,
 [data-cardo-theme='one'] .cardo-collection-box-header {
   border-bottom: 1px solid var(--cardo-border);
-  background: color-mix(in srgb, var(--cardo-panel) 88%, var(--cardo-text));
+  /* Tab-bar strip: slightly mixed toward canvas, not a tinted glass slab */
+  background: color-mix(in srgb, var(--cardo-panel) 82%, var(--cardo-canvas));
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
-[data-cardo-theme='one'] .cardo-box-title {
-  font-family: var(--cardo-font-mono);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
+[data-cardo-theme='one'] .cardo-box-title,
+[data-cardo-theme='one'] .cardo-collection-box-title {
+  /* Keep product UI sans; only tighten weight for editor chrome hierarchy */
+  font-weight: 600;
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='one'] .cardo-box-content,
+[data-cardo-theme='one'] .cardo-collection-box-content {
+  /* Editor body sits a hair darker/lighter than chrome — gutter separation */
+  background: color-mix(in srgb, var(--cardo-panel) 92%, var(--cardo-canvas));
+}
+
+[data-cardo-theme='one'] .cardo-box-footer {
+  border-top: 1px solid var(--cardo-border);
+  background: color-mix(in srgb, var(--cardo-panel) 88%, var(--cardo-canvas));
 }
 
 [data-cardo-theme='one'] .cardo-box-temporary {
   border-style: solid;
-  border-color: color-mix(in srgb, var(--box-accent) 40%, var(--cardo-border));
+  border-color: color-mix(in srgb, var(--box-accent) 35%, var(--cardo-border));
   background-image: none;
   background-color: var(--cardo-panel);
   box-shadow: none;
 }
 
-/* ── Nord: flat arctic panels ───────────────────────────────────────────────── */
+/* ── Nord: frost flat panels, calm polar contrast, soft frost hover ─────────── */
 
 [data-cardo-theme='nord'] .cardo-box,
 [data-cardo-theme='nord'] .cardo-collection-box {
@@ -105,17 +134,22 @@
 
 [data-cardo-theme='nord'] .cardo-box:hover,
 [data-cardo-theme='nord'] .cardo-collection-box:hover {
-  box-shadow: var(--cardo-shadow);
-  border-color: color-mix(in srgb, var(--cardo-blue) 35%, var(--cardo-border));
+  border-color: color-mix(in srgb, var(--cardo-blue) 40%, var(--cardo-border));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--cardo-blue) 18%, transparent);
 }
 
 [data-cardo-theme='nord'] .cardo-box-header,
 [data-cardo-theme='nord'] .cardo-collection-box-header {
   border-bottom: 1px solid var(--cardo-border);
-  background: color-mix(in srgb, var(--cardo-panel) 70%, var(--cardo-canvas));
+  background: color-mix(in srgb, var(--cardo-panel) 65%, var(--cardo-canvas));
 }
 
-/* ── Solarized: dual base pairs, no glass ───────────────────────────────────── */
+[data-cardo-theme='nord'] .cardo-box-content,
+[data-cardo-theme='nord'] .cardo-collection-box-content {
+  background: var(--cardo-panel);
+}
+
+/* ── Solarized: dual base layers (base3/base03 canvas + base2/base02 panel) ─── */
 
 [data-cardo-theme='solarized'] .cardo-box,
 [data-cardo-theme='solarized'] .cardo-collection-box {
@@ -132,11 +166,18 @@
   background: var(--cardo-panel);
 }
 
-[data-cardo-theme='solarized'] .cardo-box-content {
-  background: color-mix(in srgb, var(--cardo-canvas) 55%, var(--cardo-panel));
+[data-cardo-theme='solarized'] .cardo-box-content,
+[data-cardo-theme='solarized'] .cardo-collection-box-content {
+  /* Content uses the other base of the pair — calibrated dual surface */
+  background: var(--cardo-canvas);
 }
 
-/* ── Paper: soft editorial card, warm wash ──────────────────────────────────── */
+[data-cardo-theme='solarized'] .cardo-box-footer {
+  border-top: 1px solid var(--cardo-border);
+  background: var(--cardo-panel);
+}
+
+/* ── Paper: warm editorial card material (sans UI; no forced serif) ─────────── */
 
 [data-cardo-theme='paper'] .cardo-box,
 [data-cardo-theme='paper'] .cardo-collection-box {
@@ -144,8 +185,8 @@
   border-radius: var(--cardo-radius-xl);
   background-image: linear-gradient(
     165deg,
-    color-mix(in srgb, var(--cardo-panel) 92%, var(--cardo-orange)) 0%,
-    var(--cardo-panel) 42%,
+    color-mix(in srgb, var(--cardo-panel) 94%, var(--cardo-orange)) 0%,
+    var(--cardo-panel) 40%,
     var(--cardo-panel-bottom) 100%
   );
   box-shadow: var(--cardo-shadow);
@@ -154,18 +195,18 @@
 [data-cardo-theme='paper'] .cardo-box-header,
 [data-cardo-theme='paper'] .cardo-collection-box-header {
   border-bottom: 1px solid var(--cardo-border-subtle);
-  background: color-mix(in srgb, var(--cardo-panel-chrome) 88%, var(--cardo-orange));
+  background: color-mix(in srgb, var(--cardo-panel-chrome) 90%, var(--cardo-orange));
   padding-top: 14px;
   padding-bottom: 14px;
 }
 
-[data-cardo-theme='paper'] .cardo-box-title {
-  font-family: var(--cardo-font-sans);
+[data-cardo-theme='paper'] .cardo-box-title,
+[data-cardo-theme='paper'] .cardo-collection-box-title {
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.005em;
 }
 
-/* ── Graphite: industrial flat, hard edge, no soft elevation ────────────────── */
+/* ── Graphite: industrial flat, hairline edge, zero soft glass ──────────────── */
 
 [data-cardo-theme='graphite'] .cardo-box,
 [data-cardo-theme='graphite'] .cardo-collection-box {
@@ -191,6 +232,11 @@
 [data-cardo-theme='graphite'] .cardo-box-footer {
   border-top: 1px solid var(--cardo-border);
   background: var(--cardo-panel-bottom);
+}
+
+[data-cardo-theme='graphite'] .cardo-box-content,
+[data-cardo-theme='graphite'] .cardo-collection-box-content {
+  background: var(--cardo-panel);
 }
 
 [data-cardo-theme='graphite'] .cardo-box-temporary {
@@ -236,6 +282,7 @@
 }
 
 /* ── Apple HIG: vibrancy surface, fine separator, continuous corners ────────── */
+/* System font stack comes from the pack tokens; do not redeclare here. */
 
 [data-cardo-theme='apple'] .cardo-box,
 [data-cardo-theme='apple'] .cardo-collection-box {
@@ -260,8 +307,8 @@
   background: transparent;
 }
 
-[data-cardo-theme='apple'] .cardo-box-title {
-  font-family: var(--cardo-font-sans);
+[data-cardo-theme='apple'] .cardo-box-title,
+[data-cardo-theme='apple'] .cardo-collection-box-title {
   font-weight: 600;
   letter-spacing: -0.01em;
 }
