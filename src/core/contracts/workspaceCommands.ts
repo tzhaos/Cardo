@@ -17,7 +17,9 @@ import {
   preferenceLocaleSchema,
   webSearchEngineIdSchema,
 } from './preferences';
+import { cssSnippetSchema } from './cssSnippet';
 import { featureFlagOverridesSchema } from './featureCatalog';
+import { layoutProfileIdSchema } from './layoutProfile';
 import {
   importedThemePacksSchema,
   themeColorOverridesSchema,
@@ -70,6 +72,24 @@ const commandSchemas = [
     .object({
       type: z.literal('preferences.setFeatureFlags'),
       featureFlags: featureFlagOverridesSchema,
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal('preferences.setLayoutProfile'),
+      layoutProfileId: layoutProfileIdSchema,
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal('preferences.setCssSnippet'),
+      cssSnippet: cssSnippetSchema,
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal('preferences.setCssSnippetEnabled'),
+      cssSnippetEnabled: z.boolean(),
     })
     .strict(),
   z
@@ -286,6 +306,9 @@ const nonUndoableCommandTypes = new Set<WorkspaceCommandType>([
   'preferences.setThemeOptionValues',
   'preferences.setImportedThemePacks',
   'preferences.setFeatureFlags',
+  'preferences.setLayoutProfile',
+  'preferences.setCssSnippet',
+  'preferences.setCssSnippetEnabled',
   'preferences.setSearchEngine',
   'preferences.setCustomSearchTemplate',
   'system.constrainFrames',

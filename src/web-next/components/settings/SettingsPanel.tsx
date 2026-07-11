@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { PointerEventHandler } from 'react';
 import {
   Check,
@@ -42,6 +42,11 @@ import {
   type FeatureDefinition,
   type FeatureId,
 } from '../../../core/contracts/featureCatalog';
+import { validateCssSnippet } from '../../../core/contracts/cssSnippet';
+import {
+  LAYOUT_PROFILES,
+  layoutProfileIdSchema,
+} from '../../../core/contracts/layoutProfile';
 import {
   colorModeSchema,
   densitySchema,
@@ -75,6 +80,7 @@ import {
   SelectValue,
 } from '../../ui/primitives/select';
 import { Input } from '../../ui/primitives/input';
+import { Textarea } from '../../ui/primitives/textarea';
 import { Button } from '../../ui/primitives/button';
 import { MotionButton } from '../../ui/primitives/motion-button';
 import { ToggleGroup, ToggleGroupItem } from '../../ui/primitives/toggle-group';
@@ -203,7 +209,29 @@ function InterfaceSettings() {
   const featureFlags = usePreferencesStore((state) => state.featureFlags);
   const setFeatureEnabled = usePreferencesStore((state) => state.setFeatureEnabled);
   const resetFeatureFlags = usePreferencesStore((state) => state.resetFeatureFlags);
+  const layoutProfileId = usePreferencesStore((state) => state.layoutProfileId);
+  const setLayoutProfileId = usePreferencesStore((state) => state.setLayoutProfileId);
+  const cssSnippet = usePreferencesStore((state) => state.cssSnippet);
+  const cssSnippetEnabled = usePreferencesStore((state) => state.cssSnippetEnabled);
+  const setCssSnippet = usePreferencesStore((state) => state.setCssSnippet);
+  const setCssSnippetEnabled = usePreferencesStore((state) => state.setCssSnippetEnabled);
+  const [snippetDraft, setSnippetDraft] = useState(cssSnippet);
+  const [snippetError, setSnippetError] = useState(false);
   const hasOverrides = Object.keys(featureFlags).length > 0;
+
+  useEffect(() => {
+    setSnippetDraft(cssSnippet);
+  }, [cssSnippet]);
+
+  const commitSnippet = (value: string) => {
+    const result = validateCssSnippet(value);
+    if (!result.ok && value.trim()) {
+      setSnippetError(true);
+      return;
+    }
+    setSnippetError(false);
+    setCssSnippet(result.sanitized);
+  };
 
   return (
     <>
@@ -211,6 +239,52 @@ function InterfaceSettings() {
         title={t('settings.interface')}
         description={t('settings.interfaceDescription')}
       />
+      <div className="wbn-settings-subheading">
+        <span>{t('settings.layout')}</span>
+        <small>{t('settings.layoutDescription')}</small>
+      </div>
+      <ToggleGroup
+        className="wbn-theme-grid"
+        type="single"
+        variant="plain"
+        value={layoutProfileId}
+        onValueChange={(value) => value && setLayoutProfileId(layoutProfileIdSchema.parse(value))}
+        aria-label={t('settings.layout')}
+      >
+        {LAYOUT_PROFILES.map((profile) => {
+          const selected = profile.id === layoutProfileId;
+          return (
+            <ToggleGroupItem asChild key={profile.id} value={profile.id}>
+              <MotionButton
+                variant="card"
+                className={selected ? 'wbn-theme-card wbn-theme-card-selected' : 'wbn-theme-card'}
+                type="button"
+                whileTap={{ scale: 0.985 }}
+              >
+                <span className="wbn-theme-card-copy">
+                  <span>
+                    {t(profile.labelKey as WebNextMessageKey)}
+                    {profile.isOfficialDefault ? (
+                      <em className="wbn-theme-official-badge">{t('settings.themeOfficial')}</em>
+                    ) : null}
+                  </span>
+                  <small>{t(profile.descriptionKey as WebNextMessageKey)}</small>
+                </span>
+                {selected ? (
+                  <IconFrame className="wbn-theme-check">
+                    <Check size={12} />
+                  </IconFrame>
+                ) : null}
+              </MotionButton>
+            </ToggleGroupItem>
+          );
+        })}
+      </ToggleGroup>
+
+      <div className="wbn-settings-subheading">
+        <span>{t('settings.features')}</span>
+        <small>{t('settings.featuresDescription')}</small>
+      </div>
       {FEATURE_CATALOG.map((feature) => (
         <FeatureFlagRow
           key={feature.id}
@@ -228,6 +302,50 @@ function InterfaceSettings() {
           {t('settings.resetFeatures')}
         </Button>
       ) : null}
+
+      <div className="wbn-settings-subheading">
+        <span>{t('settings.cssSnippet')}</span>
+        <small>{t('settings.cssSnippetDescription')}</small>
+      </div>
+      <div className="wbn-settings-card">
+        <div className="wbn-settings-card-copy">
+          <span>
+            {t('settings.cssSnippetEnabled')}
+            <small>{t('settings.cssSnippetHint')}</small>
+          </span>
+        </div>
+        <ToggleGroup
+          aria-label={t('settings.cssSnippetEnabled')}
+          type="single"
+          value={cssSnippetEnabled ? 'on' : 'off'}
+          onValueChange={(next) => {
+            if (!next) return;
+            setCssSnippetEnabled(next === 'on');
+          }}
+        >
+          <SegmentButton active={!cssSnippetEnabled} value="off">
+            {t('settings.optionOff')}
+          </SegmentButton>
+          <SegmentButton active={cssSnippetEnabled} value="on">
+            {t('settings.optionOn')}
+          </SegmentButton>
+        </ToggleGroup>
+      </div>
+      <label className="wbn-custom-search-template">
+        <span>{t('settings.cssSnippet')}</span>
+        <Textarea
+          className={snippetError ? 'wbn-custom-search-template-invalid' : undefined}
+          value={snippetDraft}
+          onChange={(event) => {
+            setSnippetDraft(event.target.value);
+            setSnippetError(false);
+          }}
+          onBlur={() => commitSnippet(snippetDraft)}
+          placeholder={t('settings.cssSnippetPlaceholder')}
+          rows={8}
+        />
+        {snippetError ? <small>{t('settings.cssSnippetInvalid')}</small> : null}
+      </label>
     </>
   );
 }

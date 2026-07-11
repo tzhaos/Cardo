@@ -15,6 +15,9 @@ type PreferencesCommandType =
   | 'preferences.setThemeOptionValues'
   | 'preferences.setImportedThemePacks'
   | 'preferences.setFeatureFlags'
+  | 'preferences.setLayoutProfile'
+  | 'preferences.setCssSnippet'
+  | 'preferences.setCssSnippetEnabled'
   | 'preferences.setSearchEngine'
   | 'preferences.setCustomSearchTemplate';
 
@@ -64,6 +67,12 @@ function getPatch(command: PreferencesCommand): Partial<typeof preferences.$infe
       return { importedThemePacks: command.importedThemePacks };
     case 'preferences.setFeatureFlags':
       return { featureFlags: command.featureFlags };
+    case 'preferences.setLayoutProfile':
+      return { layoutProfileId: command.layoutProfileId };
+    case 'preferences.setCssSnippet':
+      return { cssSnippet: command.cssSnippet };
+    case 'preferences.setCssSnippetEnabled':
+      return { cssSnippetEnabled: command.cssSnippetEnabled };
     case 'preferences.setSearchEngine':
       return { searchEngine: command.searchEngine };
     case 'preferences.setCustomSearchTemplate':

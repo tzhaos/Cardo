@@ -70,6 +70,27 @@ export const WEB_NEXT_MESSAGES = {
     'settings.interface': 'Interface',
     'settings.interfaceDescription':
       'Toggle Cardo chrome and workspace slots. Defaults match the official product shell.',
+    'settings.layout': 'Layout profile',
+    'settings.layoutDescription':
+      'Shell structure variants. Classic freezes the official Cardo product look.',
+    'settings.layout.classic': 'Classic',
+    'settings.layout.classicDescription':
+      'Official default: top bar, bottom bar, infinite canvas.',
+    'settings.layout.compact': 'Compact',
+    'settings.layout.compactDescription':
+      'Tighter chrome radius and spacing without changing canvas hit-testing.',
+    'settings.layout.immersive': 'Immersive',
+    'settings.layout.immersiveDescription':
+      'Auto-hide chrome; move pointer to screen edges or press Alt+` to reveal.',
+    'settings.cssSnippet': 'CSS snippet',
+    'settings.cssSnippetDescription':
+      'Optional advanced CSS. Disabled by default. Scopes under [data-cardo-root]; blocks @import and remote url().',
+    'settings.cssSnippetEnabled': 'Apply snippet',
+    'settings.cssSnippetPlaceholder':
+      '/* optional Cardo CSS */\n.wbn-box { /* … */ }',
+    'settings.cssSnippetInvalid': 'Snippet failed validation and was not applied.',
+    'settings.cssSnippetHint':
+      'Max size limited. Prefer targeting classes under the Cardo root.',
     'settings.features': 'Feature catalog',
     'settings.featuresDescription':
       'Closed catalog only. Turning a feature off unmounts its UI and does not break canvas drag.',
@@ -341,6 +362,24 @@ export const WEB_NEXT_MESSAGES = {
     'settings.interface': '界面',
     'settings.interfaceDescription':
       '开关 Cardo 壳层与工作区槽位。默认与官方产品外壳一致。',
+    'settings.layout': '布局配置',
+    'settings.layoutDescription': '壳层结构变体。经典布局冻结官方 Cardo 产品外观。',
+    'settings.layout.classic': '经典',
+    'settings.layout.classicDescription': '官方默认：顶栏、底栏与无限画布。',
+    'settings.layout.compact': '紧凑',
+    'settings.layout.compactDescription':
+      '收紧壳层圆角与间距，不改变画布命中模型。',
+    'settings.layout.immersive': '沉浸',
+    'settings.layout.immersiveDescription':
+      '自动隐藏壳层；指针移到屏幕边缘或按 Alt+` 唤出。',
+    'settings.cssSnippet': 'CSS 片段',
+    'settings.cssSnippetDescription':
+      '可选高级 CSS。默认关闭。作用在 [data-cardo-root] 下；禁止 @import 与远程 url()。',
+    'settings.cssSnippetEnabled': '启用片段',
+    'settings.cssSnippetPlaceholder':
+      '/* 可选 Cardo CSS */\n.wbn-box { /* … */ }',
+    'settings.cssSnippetInvalid': '片段校验失败，未应用。',
+    'settings.cssSnippetHint': '有体积上限。请优先写 Cardo 根节点下的选择器。',
     'settings.features': '功能目录',
     'settings.featuresDescription':
       '仅含封闭目录。关闭某项会卸载其界面，且不会影响画布拖拽。',

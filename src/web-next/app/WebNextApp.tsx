@@ -10,6 +10,9 @@ import { RuntimeConnectionBanner } from '../components/runtime/RuntimeConnection
 import { TopBar } from '../components/top-bar/TopBar';
 import { applyWebNextTheme } from '../themes/themeRegistry';
 import { FeatureGate } from '../shell/FeatureGate';
+import { applyLayoutProfile } from '../shell/layouts/applyLayoutProfile';
+import { applyCssSnippet } from '../shell/layouts/applyCssSnippet';
+import { useImmersiveChrome } from '../shell/layouts/useImmersiveChrome';
 import { useCancelActivePointerOnWindowExit } from './useCancelActivePointerOnWindowExit';
 import { usePasteIntoSelectedBox } from './usePasteIntoSelectedBox';
 import { useWorkspaceHistoryShortcuts } from './useWorkspaceHistoryShortcuts';
@@ -31,7 +34,12 @@ export default function WebNextApp() {
   const density = usePreferencesStore((state) => state.density);
   const themeColorOverrides = usePreferencesStore((state) => state.themeColorOverrides);
   const themeOptionValues = usePreferencesStore((state) => state.themeOptionValues);
+  const layoutProfileId = usePreferencesStore((state) => state.layoutProfileId);
+  const cssSnippet = usePreferencesStore((state) => state.cssSnippet);
+  const cssSnippetEnabled = usePreferencesStore((state) => state.cssSnippetEnabled);
   const isDesktopHost = typeof window !== 'undefined' && Boolean(window.cardoDesktop);
+
+  useImmersiveChrome(layoutProfileId);
 
   useLayoutEffect(() => {
     document.documentElement.lang = locale === 'zh' ? 'zh-CN' : 'en';
@@ -42,11 +50,20 @@ export default function WebNextApp() {
       colorOverrides: themeColorOverrides,
       optionValues: themeOptionValues,
     });
+    applyLayoutProfile(document.documentElement, layoutProfileId);
+    applyCssSnippet({
+      themeId,
+      userSnippet: cssSnippet,
+      userSnippetEnabled: cssSnippetEnabled,
+    });
   }, [
     colorMode,
+    cssSnippet,
+    cssSnippetEnabled,
     density,
     fontFamily,
     fontScale,
+    layoutProfileId,
     locale,
     themeColorOverrides,
     themeId,
@@ -58,6 +75,13 @@ export default function WebNextApp() {
       <div className={`wbn-app${isDesktopHost ? ' wbn-app-desktop' : ''}`}>
         <DesktopTitleBar />
         <BoxPageDropController />
+        {layoutProfileId === 'immersive' ? (
+          <>
+            <div className="wbn-immersive-edge wbn-immersive-edge-top" aria-hidden="true" />
+            <div className="wbn-immersive-edge wbn-immersive-edge-bottom" aria-hidden="true" />
+            <div className="wbn-immersive-edge wbn-immersive-edge-left" aria-hidden="true" />
+          </>
+        ) : null}
         <FeatureGate feature="chrome.topBar">
           <TopBar />
         </FeatureGate>

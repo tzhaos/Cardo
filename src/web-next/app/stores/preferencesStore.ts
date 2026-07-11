@@ -20,6 +20,12 @@ import {
   featureFlagOverridesSchema,
   withFeatureEnabled,
 } from '../../../core/contracts/featureCatalog';
+import {
+  DEFAULT_LAYOUT_PROFILE_ID,
+  layoutProfileIdSchema,
+  type LayoutProfileId,
+} from '../../../core/contracts/layoutProfile';
+import { cssSnippetSchema } from '../../../core/contracts/cssSnippet';
 import type {
   ImportedThemePacks,
   OverridableColorKey,
@@ -53,6 +59,9 @@ interface PreferencesStore {
   themeOptionValues: ThemeOptionValues;
   importedThemePacks: ImportedThemePacks;
   featureFlags: FeatureFlagOverrides;
+  layoutProfileId: LayoutProfileId;
+  cssSnippet: string;
+  cssSnippetEnabled: boolean;
   searchEngine: WebSearchEngineId;
   customSearchTemplate: string;
   initialize: () => Promise<void>;
@@ -74,6 +83,9 @@ interface PreferencesStore {
   removeImportedThemePack: (themeId: string) => void;
   setFeatureEnabled: (featureId: FeatureId, enabled: boolean) => void;
   resetFeatureFlags: () => void;
+  setLayoutProfileId: (layoutProfileId: LayoutProfileId) => void;
+  setCssSnippet: (cssSnippet: string) => void;
+  setCssSnippetEnabled: (cssSnippetEnabled: boolean) => void;
   setSearchEngine: (searchEngine: WebSearchEngineId) => void;
   setCustomSearchTemplate: (customSearchTemplate: string) => void;
   toggleColorMode: () => void;
@@ -176,6 +188,18 @@ const actions = {
   resetFeatureFlags: () => {
     fireCommand({ type: 'preferences.setFeatureFlags', featureFlags: {} });
   },
+  setLayoutProfileId: (layoutProfileId: LayoutProfileId) =>
+    fireCommand({
+      type: 'preferences.setLayoutProfile',
+      layoutProfileId: layoutProfileIdSchema.parse(layoutProfileId),
+    }),
+  setCssSnippet: (cssSnippet: string) =>
+    fireCommand({
+      type: 'preferences.setCssSnippet',
+      cssSnippet: cssSnippetSchema.parse(cssSnippet),
+    }),
+  setCssSnippetEnabled: (cssSnippetEnabled: boolean) =>
+    fireCommand({ type: 'preferences.setCssSnippetEnabled', cssSnippetEnabled }),
   setSearchEngine: (searchEngine: WebSearchEngineId) =>
     fireCommand({ type: 'preferences.setSearchEngine', searchEngine }),
   setCustomSearchTemplate: (customSearchTemplate: string) =>
@@ -194,6 +218,9 @@ const actions = {
   | 'themeOptionValues'
   | 'importedThemePacks'
   | 'featureFlags'
+  | 'layoutProfileId'
+  | 'cssSnippet'
+  | 'cssSnippetEnabled'
   | 'searchEngine'
   | 'customSearchTemplate'
 >;
@@ -209,6 +236,9 @@ let state: PreferencesStore = {
   themeOptionValues: {},
   importedThemePacks: [],
   featureFlags: {},
+  layoutProfileId: DEFAULT_LAYOUT_PROFILE_ID,
+  cssSnippet: '',
+  cssSnippetEnabled: false,
   searchEngine: 'bing-cn',
   customSearchTemplate: '',
   ...actions,
@@ -224,6 +254,11 @@ async function refreshPreferences() {
   );
   const themeOptionValues = themeOptionValuesSchema.parse(preferences.themeOptionValues ?? {});
   const featureFlags = featureFlagOverridesSchema.parse(preferences.featureFlags ?? {});
+  const layoutProfileId = layoutProfileIdSchema.parse(
+    preferences.layoutProfileId ?? DEFAULT_LAYOUT_PROFILE_ID,
+  );
+  const cssSnippet = cssSnippetSchema.parse(preferences.cssSnippet ?? '');
+  const cssSnippetEnabled = Boolean(preferences.cssSnippetEnabled);
 
   // Official packs stay code-defined; only rehydrate user imports.
   syncImportedThemePacks(importedThemePacks);
@@ -244,6 +279,9 @@ async function refreshPreferences() {
     themeOptionValues,
     importedThemePacks,
     featureFlags,
+    layoutProfileId,
+    cssSnippet,
+    cssSnippetEnabled,
     searchEngine: preferences.searchEngine,
     customSearchTemplate: preferences.customSearchTemplate,
   };

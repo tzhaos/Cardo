@@ -101,6 +101,9 @@ export async function initializeWorkspaceDatabase(
       themeOptionValues: {},
       importedThemePacks: [],
       featureFlags: {},
+      layoutProfileId: 'classic',
+      cssSnippet: '',
+      cssSnippetEnabled: false,
       searchEngine: 'bing-cn',
       customSearchTemplate: '',
     });

@@ -1,5 +1,13 @@
 import { z } from 'zod';
+import { MAX_CSS_SNIPPET_CHARS, validateCssSnippet } from './cssSnippet';
+import {
+  layoutProfileIds,
+  layoutProfileIdSchema,
+  type LayoutProfileId,
+} from './layoutProfile';
 import { colorModeSchema } from './preferences';
+
+export { layoutProfileIds, layoutProfileIdSchema, type LayoutProfileId };
 
 /** Localized display strings used by Theme Pack and Settings. */
 export const themeLocaleTextSchema = z
@@ -214,13 +222,9 @@ export const themeOptionValuesSchema = z.record(
 
 export type ThemeOptionValues = z.infer<typeof themeOptionValuesSchema>;
 
-export const layoutProfileIds = ['classic', 'compact', 'immersive'] as const;
-export const layoutProfileIdSchema = z.enum(layoutProfileIds);
-export type LayoutProfileId = z.infer<typeof layoutProfileIdSchema>;
-
 /**
- * Theme Pack shape (Phase A+B).
- * cssSnippet / features deferred to later phases.
+ * Theme Pack shape (Phase A–D).
+ * Optional cssSnippet is validated with the same rules as user snippets.
  */
 export const themePackSchema = z
   .object({
@@ -254,8 +258,18 @@ export const themePackSchema = z
       }),
     options: z.array(themeOptionDefSchema).max(32).optional(),
     layoutProfileId: layoutProfileIdSchema.optional(),
+    cssSnippet: z.string().max(MAX_CSS_SNIPPET_CHARS).optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((pack, ctx) => {
+    if (!pack.cssSnippet) return;
+    const result = validateCssSnippet(pack.cssSnippet);
+    if (!result.ok) {
+      for (const message of result.errors) {
+        ctx.addIssue({ code: 'custom', message, path: ['cssSnippet'] });
+      }
+    }
+  });
 
 export type ThemePack = z.infer<typeof themePackSchema>;
 

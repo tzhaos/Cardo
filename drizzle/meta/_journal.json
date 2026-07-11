@@ -43,6 +43,13 @@
       "when": 1784030000000,
       "tag": "0005_feature_flags",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1784080000000,
+      "tag": "0006_layout_snippet",
+      "breakpoints": true
     }
   ]
 }

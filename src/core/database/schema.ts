@@ -26,6 +26,7 @@ import {
   webSearchEngineIds,
 } from '../contracts/preferences';
 import type { FeatureFlagOverrides } from '../contracts/featureCatalog';
+import { layoutProfileIds } from '../contracts/layoutProfile';
 import type {
   ImportedThemePacks,
   ThemeColorOverrides,
@@ -155,6 +156,11 @@ export const preferences = sqliteTable('preferences', {
    * Only stores deviations so classic shell stays unchanged out of the box.
    */
   featureFlags: text('feature_flags', { mode: 'json' }).$type<FeatureFlagOverrides>().notNull(),
+  /** Shell layout variant. classic freezes the official product shell. */
+  layoutProfileId: text('layout_profile_id', { enum: layoutProfileIds }).notNull(),
+  /** User CSS snippet (validated on apply). Empty + disabled = no injection. */
+  cssSnippet: text('css_snippet').notNull(),
+  cssSnippetEnabled: integer('css_snippet_enabled', { mode: 'boolean' }).notNull(),
   searchEngine: text('search_engine', {
     enum: webSearchEngineIds,
   }).notNull(),
