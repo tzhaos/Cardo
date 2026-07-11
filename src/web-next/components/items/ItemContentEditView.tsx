@@ -6,6 +6,8 @@ import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { parseFolderPathInput } from '../../domain/itemMetadata';
 import type { BoxItem } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
+import { Input } from '../../ui/primitives/input';
+import { Textarea } from '../../ui/primitives/textarea';
 
 export function ItemContentEditView({
   boxId,
@@ -45,7 +47,7 @@ export function ItemContentEditView({
       }}
     >
       {item.type === 'clipboard' ? (
-        <textarea
+        <Textarea
           autoFocus
           aria-invalid={showInvalid}
           placeholder={t('field.clipText')}
@@ -53,7 +55,7 @@ export function ItemContentEditView({
           onChange={(event) => setDraft(event.target.value)}
         />
       ) : (
-        <input
+        <Input
           autoFocus
           aria-invalid={showInvalid}
           placeholder={t(item.type === 'bookmark' ? 'field.pasteUrl' : 'field.localPath')}

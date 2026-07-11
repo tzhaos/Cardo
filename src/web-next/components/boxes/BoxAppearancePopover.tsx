@@ -11,6 +11,7 @@ import {
 import type { WorkspaceBox, WorkspaceBoxIcon } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { BoxAppearanceIcon } from './boxIconRegistry';
+import { Input } from '../../ui/primitives/input';
 
 export function BoxAppearanceView({
   box,
@@ -111,7 +112,7 @@ export function BoxAppearanceView({
               }}
             />
           </label>
-          <input
+          <Input
             className="wbn-box-color-code"
             value={colorDraft}
             aria-label={t('box.colorCode')}

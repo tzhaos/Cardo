@@ -4,6 +4,7 @@ import { useUiStore } from '../../../app/stores/uiStore';
 import type { WorkspaceItemType } from '../../../domain/workspace';
 import { useI18n } from '../../../i18n/useI18n';
 import { AddViewShell } from './AddViewShell';
+import { Input } from '../../../ui/primitives/input';
 
 type LocalResourceType = Extract<WorkspaceItemType, 'file' | 'shortcut' | 'folder'>;
 
@@ -33,13 +34,13 @@ export function LocalResourceAddView({
       canSubmit={validPath}
       typePicker={typePicker}
     >
-      <input
+      <Input
         autoFocus
         placeholder={t('field.name')}
         value={draft.title ?? ''}
         onChange={(event) => updateDraft(boxId, { title: event.target.value })}
       />
-      <input
+      <Input
         aria-invalid={showInvalidPath}
         placeholder={t('field.localPath')}
         value={path}

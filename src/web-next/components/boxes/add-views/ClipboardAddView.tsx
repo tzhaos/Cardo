@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useUiStore } from '../../../app/stores/uiStore';
 import { AddViewShell } from './AddViewShell';
 import { useI18n } from '../../../i18n/useI18n';
+import { Textarea } from '../../../ui/primitives/textarea';
 
 export function ClipboardAddView({
   boxId,
@@ -24,7 +25,7 @@ export function ClipboardAddView({
       canSubmit={text.trim().length > 0}
       typePicker={typePicker}
     >
-      <textarea
+      <Textarea
         autoFocus
         className="wbn-clipboard-compose"
         placeholder={t('field.clipText')}

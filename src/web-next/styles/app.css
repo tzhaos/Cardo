@@ -3518,6 +3518,10 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--wbn-blue) 9%, transparent);
 }
 
+.wbn-ui-textarea {
+  resize: vertical;
+}
+
 .wbn-tab-rename-input {
   width: auto;
   height: 20px;

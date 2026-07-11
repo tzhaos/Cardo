@@ -3,6 +3,7 @@ import { useUiStore } from '../../../app/stores/uiStore';
 import { parseFolderPathInput } from '../../../domain/itemMetadata';
 import { useI18n } from '../../../i18n/useI18n';
 import { AddViewShell } from './AddViewShell';
+import { Input } from '../../../ui/primitives/input';
 
 export function FolderAddView({ boxId }: { boxId: string }) {
   const draftState = useUiStore((state) => state.addDrafts[boxId]);
@@ -20,13 +21,13 @@ export function FolderAddView({ boxId }: { boxId: string }) {
       title={t('add.folderTitle')}
       canSubmit={Boolean(normalizedPath)}
     >
-      <input
+      <Input
         autoFocus
         placeholder={t('field.name')}
         value={draft.title ?? ''}
         onChange={(event) => updateDraft(boxId, { title: event.target.value })}
       />
-      <input
+      <Input
         aria-invalid={showInvalidPath}
         placeholder={t('field.folderPath')}
         value={path}

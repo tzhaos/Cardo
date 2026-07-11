@@ -39,6 +39,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../../ui/primitives/select';
+import { Input } from '../../ui/primitives/input';
 
 type SettingsSection = 'general' | 'appearance' | 'data' | 'about';
 
@@ -332,7 +333,7 @@ function GeneralSettings({
       {searchEngine === 'custom' ? (
         <label className="wbn-custom-search-template">
           <span>{t('settings.customSearchTemplate')}</span>
-          <input
+          <Input
             className={
               customSearchTemplate && !isValidCustomSearchTemplate(customSearchTemplate)
                 ? 'wbn-custom-search-template-invalid'

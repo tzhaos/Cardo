@@ -3,6 +3,7 @@ import { isUrlText } from '../../../../core/domains/items/services/isUrlText';
 import { useUiStore } from '../../../app/stores/uiStore';
 import { AddViewShell } from './AddViewShell';
 import { useI18n } from '../../../i18n/useI18n';
+import { Input } from '../../../ui/primitives/input';
 
 export function BookmarkAddView({
   boxId,
@@ -27,13 +28,13 @@ export function BookmarkAddView({
       canSubmit={validUrl}
       typePicker={typePicker}
     >
-      <input
+      <Input
         autoFocus
         placeholder={t('field.title')}
         value={draft.title ?? ''}
         onChange={(event) => updateDraft(boxId, { title: event.target.value })}
       />
-      <input
+      <Input
         aria-invalid={showInvalidUrl}
         placeholder={t('field.pasteUrl')}
         value={url}

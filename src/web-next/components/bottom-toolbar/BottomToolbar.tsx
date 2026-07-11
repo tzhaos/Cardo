@@ -18,6 +18,7 @@ import { IconButton } from '../../ui/khaos/icon-button';
 import { GlobalSearchPanel } from '../global-search/GlobalSearchPanel';
 import { createWebSearchUrl } from '../../domain/webSearch';
 import { openExternalUrl } from '../../platform/hostPlatform';
+import { Input } from '../../ui/primitives/input';
 
 export function BottomToolbar() {
   const createBox = useWorkspaceStore((state) => state.createBox);
@@ -100,7 +101,7 @@ export function BottomToolbar() {
           >
             <Search size={18} />
           </IconButton>
-          <input
+          <Input
             ref={searchInputRef}
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
