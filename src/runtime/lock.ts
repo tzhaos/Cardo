@@ -1,19 +1,29 @@
 /**
  * Exclusive runtime lockfile (design §6.14).
- * Contents: pid, baseUrl, port, startedBy, lifetimeMode, startedAt — NEVER token.
+ * Contents: pid, status, baseUrl/port (when ready), startedBy, lifetimeMode, startedAt — NEVER token.
+ *
+ * Startup protocol: write status=starting (no probeable baseUrl), then open DB + listen,
+ * then update to status=ready with the real baseUrl. Stale recovery must not treat a
+ * young starting lock with a live pid as free (avoids provisional port health-fail steal).
  */
 
 import fs from 'node:fs';
 import { z } from 'zod';
 
+/** Max time a status=starting lock is treated as held while its pid is alive. */
+export const LOCK_STARTUP_GRACE_MS = 30_000;
+
 export const runtimeLockSchema = z
   .object({
     pid: z.number().int().positive(),
-    baseUrl: z.string().min(1),
-    port: z.number().int().positive(),
+    /** Present when status is ready (real listen address). Omitted while starting. */
+    baseUrl: z.string().min(1).optional(),
+    port: z.number().int().positive().optional(),
     startedBy: z.enum(['cli', 'desktop']),
     lifetimeMode: z.enum(['foreground', 'auto']),
     startedAt: z.string().min(1),
+    /** starting: exclusive claim before listen; ready: health probeable. Default ready for older files. */
+    status: z.enum(['starting', 'ready']).default('ready'),
   })
   .strict();
 
@@ -49,7 +59,6 @@ export function readLockFile(lockPath: string): RuntimeLock | null {
 
 export function writeLockFile(lockPath: string, lock: RuntimeLock): void {
   const payload = `${JSON.stringify(runtimeLockSchema.parse(lock), null, 2)}\n`;
-  // Atomic-ish replace on same volume: write temp then rename.
   const tmp = `${lockPath}.${process.pid}.tmp`;
   fs.writeFileSync(tmp, payload, { encoding: 'utf8', flag: 'w' });
   fs.renameSync(tmp, lockPath);
@@ -87,7 +96,7 @@ export async function probeRuntimeHealth(baseUrl: string): Promise<boolean> {
   return false;
 }
 
-function isPidAlive(pid: number): boolean {
+export function isPidAlive(pid: number): boolean {
   try {
     process.kill(pid, 0);
     return true;
@@ -96,10 +105,61 @@ function isPidAlive(pid: number): boolean {
   }
 }
 
+function lockAgeMs(lock: RuntimeLock): number {
+  const started = Date.parse(lock.startedAt);
+  if (Number.isNaN(started)) return Number.POSITIVE_INFINITY;
+  return Date.now() - started;
+}
+
 /**
- * Try to create exclusive lock. If lock exists:
- * - health ok → fail held_by_live_runtime
- * - health fail (stale, including PID reuse) → delete lock + discovery and report stale_cleaned_retry
+ * Decide whether an existing lock still represents a live Runtime claim.
+ * - ready + health ok → held
+ * - starting + pid alive within startup grace → held (never health-fail steal)
+ * - otherwise → stale (caller may clean)
+ */
+export async function isLockHeldByLiveRuntime(
+  lock: RuntimeLock,
+): Promise<{ held: true; message: string } | { held: false }> {
+  if (lock.status === 'starting') {
+    if (isPidAlive(lock.pid) && lockAgeMs(lock) < LOCK_STARTUP_GRACE_MS) {
+      return {
+        held: true,
+        message: `Runtime is starting (pid ${lock.pid}); lock not stealable until ready or startup grace expires.`,
+      };
+    }
+    // Stuck starting (dead pid or grace expired) → stale.
+    return { held: false };
+  }
+
+  // ready: prefer health over pid (Windows PID reuse; design §6.14).
+  if (lock.baseUrl) {
+    const healthy = await probeRuntimeHealth(lock.baseUrl);
+    if (healthy) {
+      return {
+        held: true,
+        message: `Runtime already running at ${lock.baseUrl} (pid ${lock.pid}).`,
+      };
+    }
+  }
+
+  // ready but health fail: if pid is alive and lock is extremely young, wait —
+  // covers the brief window after ready write before accept loop is up.
+  if (isPidAlive(lock.pid) && lockAgeMs(lock) < 2_000 && lock.baseUrl) {
+    const healthyRetry = await probeRuntimeHealth(lock.baseUrl);
+    if (healthyRetry) {
+      return {
+        held: true,
+        message: `Runtime already running at ${lock.baseUrl} (pid ${lock.pid}).`,
+      };
+    }
+  }
+
+  return { held: false };
+}
+
+/**
+ * Try to create exclusive lock with status=starting (no fake baseUrl).
+ * If lock exists: health/starting resolution; stale → delete lock+discovery and retry once.
  */
 export async function tryAcquireExclusiveLock(options: {
   lockPath: string;
@@ -107,16 +167,21 @@ export async function tryAcquireExclusiveLock(options: {
   lock: RuntimeLock;
 }): Promise<AcquireLockResult> {
   const { lockPath, discoveryPath, lock } = options;
+  const startingLock = runtimeLockSchema.parse({
+    ...lock,
+    status: 'starting',
+    baseUrl: undefined,
+    port: undefined,
+  });
 
-  // Exclusive create first.
   try {
     const fd = fs.openSync(lockPath, 'wx');
     try {
-      fs.writeFileSync(fd, `${JSON.stringify(runtimeLockSchema.parse(lock), null, 2)}\n`, 'utf8');
+      fs.writeFileSync(fd, `${JSON.stringify(startingLock, null, 2)}\n`, 'utf8');
     } finally {
       fs.closeSync(fd);
     }
-    return { ok: true, lock };
+    return { ok: true, lock: startingLock };
   } catch (error) {
     const code = (error as NodeJS.ErrnoException).code;
     if (code !== 'EEXIST') {
@@ -130,18 +195,18 @@ export async function tryAcquireExclusiveLock(options: {
 
   const existing = readLockFile(lockPath);
   if (existing) {
-    const healthy = await probeRuntimeHealth(existing.baseUrl);
-    if (healthy) {
+    const live = await isLockHeldByLiveRuntime(existing);
+    if (live.held) {
       return {
         ok: false,
         reason: 'held_by_live_runtime',
         existing,
-        message: `Runtime already running at ${existing.baseUrl} (pid ${existing.pid}).`,
+        message: live.message,
       };
     }
   }
 
-  // Stale: health failed (prefer health over pid; design §6.14).
+  // Stale: clean lock + discovery, then retry exclusive create once.
   removeLockFile(lockPath);
   try {
     fs.unlinkSync(discoveryPath);
@@ -149,25 +214,24 @@ export async function tryAcquireExclusiveLock(options: {
     // ignore
   }
 
-  // Retry exclusive create once after cleanup.
   try {
     const fd = fs.openSync(lockPath, 'wx');
     try {
-      fs.writeFileSync(fd, `${JSON.stringify(runtimeLockSchema.parse(lock), null, 2)}\n`, 'utf8');
+      fs.writeFileSync(fd, `${JSON.stringify(startingLock, null, 2)}\n`, 'utf8');
     } finally {
       fs.closeSync(fd);
     }
-    return { ok: true, lock };
+    return { ok: true, lock: startingLock };
   } catch (error) {
     const existingAfter = readLockFile(lockPath);
     if (existingAfter) {
-      const healthy = await probeRuntimeHealth(existingAfter.baseUrl);
-      if (healthy) {
+      const live = await isLockHeldByLiveRuntime(existingAfter);
+      if (live.held) {
         return {
           ok: false,
           reason: 'held_by_live_runtime',
           existing: existingAfter,
-          message: `Runtime already running at ${existingAfter.baseUrl} (pid ${existingAfter.pid}).`,
+          message: live.message,
         };
       }
     }
@@ -179,12 +243,13 @@ export async function tryAcquireExclusiveLock(options: {
   }
 }
 
-/** Update lock after bind (port/baseUrl known). */
+/** Promote starting lock to ready with real baseUrl/port after listen. */
 export function updateLockFile(lockPath: string, lock: RuntimeLock): void {
-  writeLockFile(lockPath, lock);
+  writeLockFile(lockPath, runtimeLockSchema.parse(lock));
 }
 
 export function describeLockConflict(existing: RuntimeLock): string {
   const pidHint = isPidAlive(existing.pid) ? 'pid alive' : 'pid not responding';
-  return `Runtime held by pid ${existing.pid} at ${existing.baseUrl} (${pidHint}, startedBy=${existing.startedBy}).`;
+  const endpoint = existing.baseUrl ?? '(starting)';
+  return `Runtime held by pid ${existing.pid} at ${endpoint} (${pidHint}, status=${existing.status}, startedBy=${existing.startedBy}).`;
 }

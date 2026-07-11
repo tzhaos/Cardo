@@ -35,6 +35,8 @@ export const nativeHostRuntimeDiscoverOkSchema = z
     lifetimeMode: z.enum(['foreground', 'auto']),
     schemaVersion: z.number().int().positive(),
     startedAt: z.string().min(1),
+    /** From discovery snapshot at Runtime write time (no SQLite on NM path). */
+    revision: z.number().int().nonnegative(),
   })
   .strict();
 

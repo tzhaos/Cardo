@@ -162,6 +162,10 @@ async function handleRequest(
 
     sendJson(res, 404, errorBody('not_found', `No route for ${pathname}`));
   } catch (error) {
+    if (error instanceof JsonBodyError) {
+      sendJson(res, 400, errorBody('invalid_payload', error.message));
+      return;
+    }
     sendJson(
       res,
       500,
@@ -177,6 +181,13 @@ async function handleAuthenticated(
   pathname: string,
 ): Promise<void> {
   const method = req.method ?? 'GET';
+
+  // Touch registered clients on any authenticated request carrying X-Cardo-Client-Id
+  // (idle timeout applies only to non-streaming sessions; design §6.6.1).
+  const headerClientId = clientIdFromHeaders(req);
+  if (headerClientId && ctx.clients.has(headerClientId)) {
+    ctx.clients.touch(headerClientId);
+  }
 
   if (method === 'POST' && pathname === '/v1/auth/bootstrap') {
     const issued = ctx.auth.issueBootstrapCode();
@@ -240,25 +251,16 @@ async function handleAuthenticated(
       sendJson(res, 400, errorBody('invalid_payload', 'Invalid command payload.'));
       return;
     }
-    const sourceClientId = clientIdFromHeaders(req);
+    const sourceClientId = requireRegisteredClientId(ctx, req, res);
+    if (!sourceClientId) return;
     const response = await ctx.queue.enqueue(async () => {
       const execution = await executeDatabaseCommand(ctx.database, parsed.data.command);
-      const scopes = execution.mutated
-        ? deriveInvalidationScopes(execution.changes)
-        : [];
-      if (execution.mutated && scopes.length > 0 && sourceClientId) {
+      const scopes = execution.mutated ? deriveInvalidationScopes(execution.changes) : [];
+      if (execution.mutated && scopes.length > 0) {
         publishMutation(ctx, {
           revision: execution.revision,
           scopes,
           sourceClientId,
-        });
-      } else if (execution.mutated && scopes.length > 0) {
-        // No source client: still broadcast with a synthetic id is not allowed (sourceClientId required).
-        // Use a nil-like stable UUID only when header missing — prefer requiring X-Cardo-Client-Id.
-        publishMutation(ctx, {
-          revision: execution.revision,
-          scopes,
-          sourceClientId: sourceClientId ?? '00000000-0000-4000-8000-000000000000',
         });
       }
       return commandOkSchema.parse({
@@ -273,7 +275,8 @@ async function handleAuthenticated(
   }
 
   if (method === 'POST' && (pathname === '/v1/history/undo' || pathname === '/v1/history/redo')) {
-    const sourceClientId = clientIdFromHeaders(req);
+    const sourceClientId = requireRegisteredClientId(ctx, req, res);
+    if (!sourceClientId) return;
     const isUndo = pathname.endsWith('/undo');
     const response = await ctx.queue.enqueue(async () => {
       const execution = isUndo
@@ -284,7 +287,7 @@ async function handleAuthenticated(
         publishMutation(ctx, {
           revision: execution.revision,
           scopes,
-          sourceClientId: sourceClientId ?? '00000000-0000-4000-8000-000000000000',
+          sourceClientId,
         });
       }
       return historyOkSchema.parse({
@@ -308,7 +311,8 @@ async function handleAuthenticated(
       sendJson(res, 400, errorBody('invalid_payload', 'Invalid ensure-initialized payload.'));
       return;
     }
-    const sourceClientId = clientIdFromHeaders(req);
+    const sourceClientId = requireRegisteredClientId(ctx, req, res);
+    if (!sourceClientId) return;
     const response = await ctx.queue.enqueue(async () => {
       const { created } = await initializeWorkspaceDatabase(ctx.database, {
         locale: parsed.data.locale,
@@ -316,11 +320,16 @@ async function handleAuthenticated(
       });
       const revision = await getRevision(ctx.database);
       if (created) {
-        const scopes = [{ type: 'projection' as const }, { type: 'history' as const }];
+        // Seed writes preferences + workspace tables (design §6.8.1).
+        const scopes = [
+          { type: 'projection' as const },
+          { type: 'preferences' as const },
+          { type: 'history' as const },
+        ];
         publishMutation(ctx, {
           revision,
           scopes,
-          sourceClientId: sourceClientId ?? '00000000-0000-4000-8000-000000000000',
+          sourceClientId,
         });
         return ensureInitializedOkSchema.parse({
           type: 'ensureInitialized.ok',
@@ -575,17 +584,9 @@ async function handleEvents(
   req: IncomingMessage,
   res: ServerResponse,
 ): Promise<void> {
-  const clientId = clientIdFromHeaders(req);
-  if (!clientId) {
-    sendJson(
-      res,
-      400,
-      errorBody('invalid_payload', 'X-Cardo-Client-Id header is required for event streams.'),
-    );
-    return;
-  }
+  const clientId = requireRegisteredClientId(ctx, req, res);
+  if (!clientId) return;
 
-  ctx.clients.touch(clientId);
   ctx.clients.setStreaming(clientId, true);
 
   const revision = await getRevision(ctx.database);
@@ -630,9 +631,33 @@ function headerString(value: string | string[] | undefined): string | undefined 
 function clientIdFromHeaders(req: IncomingMessage): string | null {
   const raw = headerString(req.headers['x-cardo-client-id']);
   if (!raw) return null;
-  // uuid-ish validation loosely
   if (!/^[0-9a-f-]{36}$/i.test(raw)) return null;
   return raw;
+}
+
+/**
+ * Mutating routes and events require a registered client id for self-echo / idle tracking.
+ * Missing or unregistered header → 400 (no synthetic sourceClientId).
+ */
+function requireRegisteredClientId(
+  ctx: RuntimeHttpContext,
+  req: IncomingMessage,
+  res: ServerResponse,
+): string | null {
+  const clientId = clientIdFromHeaders(req);
+  if (!clientId || !ctx.clients.has(clientId)) {
+    sendJson(
+      res,
+      400,
+      errorBody(
+        'invalid_payload',
+        'X-Cardo-Client-Id header must reference a client registered via POST /v1/hello.',
+      ),
+    );
+    return null;
+  }
+  ctx.clients.touch(clientId);
+  return clientId;
 }
 
 function errorBody(code: string, message: string) {
@@ -649,15 +674,34 @@ function sendJson(res: ServerResponse, status: number, body: unknown): void {
   res.end(payload);
 }
 
+class JsonBodyError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'JsonBodyError';
+  }
+}
+
+const MAX_JSON_BODY_BYTES = 2 * 1024 * 1024;
+
 async function readJsonBody(req: IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = [];
+  let total = 0;
   for await (const chunk of req) {
-    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+    const buf = typeof chunk === 'string' ? Buffer.from(chunk) : chunk;
+    total += buf.byteLength;
+    if (total > MAX_JSON_BODY_BYTES) {
+      throw new JsonBodyError('Request body exceeds size limit.');
+    }
+    chunks.push(buf);
   }
   if (!chunks.length) return {};
   const text = Buffer.concat(chunks).toString('utf8').trim();
   if (!text) return {};
-  return JSON.parse(text) as unknown;
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    throw new JsonBodyError('Request body is not valid JSON.');
+  }
 }
 
 function resolveCors(

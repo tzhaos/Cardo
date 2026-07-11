@@ -3,8 +3,8 @@ import test from 'node:test';
 import { normalizeLocalResourcePath, validateLocalResourcePath } from './openLocalResource';
 import { handleNativeHostRequest } from './handleNativeHostRequest';
 
-test('native host rejects unsupported requests', () => {
-  assert.deepEqual(handleNativeHostRequest({ type: 'unknown' }), {
+test('native host rejects unsupported requests', async () => {
+  assert.deepEqual(await handleNativeHostRequest({ type: 'unknown' }), {
     ok: false,
     errorMessage: 'Unsupported native host request.',
   });

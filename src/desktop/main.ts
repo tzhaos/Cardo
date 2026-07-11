@@ -18,6 +18,7 @@ import fsPromises from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { normalizeLocalResourcePath } from '../core/services/localResourcePath';
+import { CARDO_USER_DATA_DIR_NAME } from '../runtime/paths';
 import { executeDesktopDatabase, closeDesktopDatabase } from './database/desktopDatabase';
 import {
   desktopBooleanResponseSchema,
@@ -32,6 +33,10 @@ import {
 } from '../core/contracts/desktopIpc';
 
 declare const __KHAOSBOX_DEBUG_PACKAGE__: boolean;
+
+// Align Electron userData directory with shared path resolver package name (`khaosbox`),
+// not productName display string (`KhaosBox`). Must run before getPath('userData') / single-instance.
+app.setName(CARDO_USER_DATA_DIR_NAME);
 
 const isDebugPackage = __KHAOSBOX_DEBUG_PACKAGE__ || process.env.KHAOSBOX_DEBUG_PACKAGE === '1';
 const desktopAppRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));

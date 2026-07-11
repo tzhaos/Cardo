@@ -37,9 +37,11 @@ export default defineConfig({
         'node:child_process',
         'node:fs',
         'node:fs/promises',
+        'node:os',
         'node:path',
         'node:sqlite',
         'node:url',
+        /^node:/,
       ],
       output: {
         entryFileNames: '[name].js',

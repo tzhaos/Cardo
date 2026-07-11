@@ -4,11 +4,12 @@ import {
   type NativeHostResponse,
 } from '../core/protocols/nativeMessaging';
 import { readDiscoveryFile } from '../runtime/discovery';
+import { probeRuntimeHealth } from '../runtime/lock';
 import { resolveCardoDataPaths } from '../runtime/paths';
 import { writeNativeHostDiagnostic } from './diagnostics';
 import { openLocalResource } from './openLocalResource';
 
-export function handleNativeHostRequest(message: unknown): NativeHostResponse {
+export async function handleNativeHostRequest(message: unknown): Promise<NativeHostResponse> {
   const request = nativeHostRequestSchema.safeParse(message);
   if (!request.success) {
     writeNativeHostDiagnostic('unsupported-request');
@@ -28,9 +29,10 @@ export function handleNativeHostRequest(message: unknown): NativeHostResponse {
 }
 
 /**
- * Read discovery.json only — never open SQLite (design §6.4.1 / PR2 exit).
+ * Read discovery.json and verify Runtime health — never open SQLite (design §6.4.1 / PR2 exit).
+ * Stale discovery after hard kill → runtime_unavailable.
  */
-function discoverRuntime(): NativeHostResponse {
+async function discoverRuntime(): Promise<NativeHostResponse> {
   const { discoveryPath } = resolveCardoDataPaths();
   const discovery = readDiscoveryFile(discoveryPath);
 
@@ -40,6 +42,16 @@ function discoverRuntime(): NativeHostResponse {
       ok: false,
       code: 'runtime_unavailable',
       errorMessage: 'Cardo Runtime is not running (discovery file missing).',
+    });
+  }
+
+  const healthy = await probeRuntimeHealth(discovery.baseUrl);
+  if (!healthy) {
+    writeNativeHostDiagnostic(`runtime-unavailable health-fail ${discovery.baseUrl}`);
+    return nativeHostResponseSchema.parse({
+      ok: false,
+      code: 'runtime_unavailable',
+      errorMessage: 'Cardo Runtime is not reachable (health check failed).',
     });
   }
 
@@ -55,5 +67,6 @@ function discoverRuntime(): NativeHostResponse {
     lifetimeMode: discovery.lifetimeMode,
     schemaVersion: discovery.schemaVersion,
     startedAt: discovery.startedAt,
+    revision: discovery.revision,
   });
 }

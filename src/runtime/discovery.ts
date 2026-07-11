@@ -16,6 +16,8 @@ export const runtimeDiscoverySchema = z
     lifetimeMode: z.enum(['foreground', 'auto']),
     startedAt: z.string().min(1),
     schemaVersion: z.number().int().positive(),
+    /** Snapshot of runtime_meta.revision at discovery write / last update (no SQLite on read). */
+    revision: z.number().int().nonnegative(),
   })
   .strict();
 

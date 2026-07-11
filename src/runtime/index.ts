@@ -24,10 +24,11 @@ import {
   type RuntimeLock,
 } from './lock';
 import { ensureDataDir } from './paths';
+import { getRevision } from '../core/database/revision';
 import { DATABASE_SCHEMA_VERSION } from '../core/database/version';
 
 export type { StartRuntimeOptions, RuntimeHostConfig } from './config';
-export { resolveCardoDataPaths, resolveDefaultDataDir } from './paths';
+export { resolveCardoDataPaths, resolveDefaultDataDir, CARDO_USER_DATA_DIR_NAME } from './paths';
 export { readDiscoveryFile } from './discovery';
 export { readLockFile, probeRuntimeHealth } from './lock';
 
@@ -96,6 +97,9 @@ export function getStartedRuntimeInfo(): StartedRuntime | null {
 /**
  * Start the Cardo Runtime HTTP server with exclusive lock + discovery.
  * Rejects if another live Runtime holds the lock.
+ *
+ * Lock order: exclusive status=starting → open DB → listen → promote lock to ready + write discovery.
+ * Never publishes a probeable-but-wrong baseUrl (avoids health-fail lock steal).
  */
 export async function startRuntime(options: StartRuntimeOptions): Promise<StartedRuntime> {
   if (runtimeState) {
@@ -111,22 +115,19 @@ export async function startRuntime(options: StartRuntimeOptions): Promise<Starte
   const startedAt = new Date().toISOString();
   const startedAtMs = Date.now();
 
-  // Provisional lock before bind (port may be 0 → updated after listen).
-  const provisionalPort = config.port && config.port > 0 ? config.port : 1;
-  const provisionalBaseUrl = `http://127.0.0.1:${provisionalPort}`;
-  const provisionalLock: RuntimeLock = {
+  // Exclusive claim only — no fake port/baseUrl while starting.
+  const startingLock: RuntimeLock = {
     pid: process.pid,
-    baseUrl: provisionalBaseUrl,
-    port: provisionalPort,
     startedBy: config.startedBy,
     lifetimeMode: config.lifetimeMode,
     startedAt,
+    status: 'starting',
   };
 
   const acquire = await tryAcquireExclusiveLock({
     lockPath: config.lockPath,
     discoveryPath: config.discoveryPath,
-    lock: provisionalLock,
+    lock: startingLock,
   });
 
   if (!acquire.ok) {
@@ -208,15 +209,23 @@ export async function startRuntime(options: StartRuntimeOptions): Promise<Starte
   port = address.port;
   baseUrl = `http://127.0.0.1:${port}`;
 
-  const finalLock: RuntimeLock = {
+  let revision = 0;
+  try {
+    revision = await getRevision(db.database);
+  } catch {
+    revision = 0;
+  }
+
+  const readyLock: RuntimeLock = {
     pid: process.pid,
     baseUrl,
     port,
     startedBy: config.startedBy,
     lifetimeMode: config.lifetimeMode,
     startedAt,
+    status: 'ready',
   };
-  updateLockFile(config.lockPath, finalLock);
+  updateLockFile(config.lockPath, readyLock);
   writeDiscoveryFile(config.discoveryPath, {
     baseUrl,
     port,
@@ -226,7 +235,13 @@ export async function startRuntime(options: StartRuntimeOptions): Promise<Starte
     lifetimeMode: config.lifetimeMode,
     startedAt,
     schemaVersion: DATABASE_SCHEMA_VERSION,
+    revision,
   });
+
+  // Detached auto Runtime with zero clients must still grace-stop (design §6.6.1 / PR2 exit).
+  if (config.lifetimeMode === 'auto') {
+    clients.startGraceIfEmpty();
+  }
 
   runtimeState = {
     config,
@@ -270,7 +285,6 @@ export async function stopRuntime(): Promise<void> {
 
   await new Promise<void>((resolve) => {
     state.server.close(() => resolve());
-    // Force-close lingering connections if available (Node 18.2+).
     const serverWithCloseAll = state.server as http.Server & {
       closeAllConnections?: () => void;
     };

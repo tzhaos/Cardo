@@ -1,19 +1,24 @@
-import { app } from 'electron';
 import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
-import path from 'node:path';
 import {
   databaseExecuteRequestSchema,
   databaseExecuteResponseSchema,
   type DatabaseExecuteResponse,
 } from '../../core/contracts/database';
 import { applyMigrations, createSqlExecMigratorAdapter } from '../../core/database/migrator';
+import { resolveCardoDataPaths } from '../../runtime/paths';
 
 let database: DatabaseSync | null = null;
 
 function getDatabase() {
   if (database) return database;
 
-  const nextDatabase = new DatabaseSync(path.join(app.getPath('userData'), 'khaosbox.sqlite'));
+  // Shared SoT with CLI Runtime (design §2.1). Desktop Main must call
+  // app.setName(CARDO_USER_DATA_DIR_NAME) before any getPath('userData') so this
+  // path matches Electron's default userData when CARDO_DATA_DIR is unset.
+  const { dbPath } = resolveCardoDataPaths();
+  console.info(`[KhaosBox] desktop dbPath: ${dbPath}`);
+
+  const nextDatabase = new DatabaseSync(dbPath);
   nextDatabase.exec('PRAGMA foreign_keys = ON');
   nextDatabase.exec('PRAGMA journal_mode = WAL');
 

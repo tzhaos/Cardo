@@ -8,6 +8,8 @@ function writeResponse(response: unknown) {
 }
 
 let pending = Buffer.alloc(0);
+/** Serialize async handlers so responses stay ordered. */
+let handleChain: Promise<void> = Promise.resolve();
 
 writeNativeHostDiagnostic('started');
 
@@ -23,7 +25,21 @@ process.stdin.on('data', (chunk: Buffer) => {
       }
 
       pending = decoded.remaining;
-      writeResponse(handleNativeHostRequest(decoded.message));
+      const message = decoded.message;
+      handleChain = handleChain
+        .then(async () => {
+          const response = await handleNativeHostRequest(message);
+          writeResponse(response);
+        })
+        .catch((error: unknown) => {
+          writeNativeHostDiagnostic(
+            `handler-error ${error instanceof Error ? error.message : 'unknown-error'}`,
+          );
+          writeResponse({
+            ok: false,
+            errorMessage: error instanceof Error ? error.message : 'Native host handler failed.',
+          });
+        });
     } catch (error) {
       writeNativeHostDiagnostic(
         `invalid-message ${error instanceof Error ? error.message : 'unknown-error'}`,
@@ -39,5 +55,7 @@ process.stdin.on('data', (chunk: Buffer) => {
 
 process.stdin.on('end', () => {
   writeNativeHostDiagnostic('stdin-ended');
-  process.exit(0);
+  void handleChain.finally(() => {
+    process.exit(0);
+  });
 });

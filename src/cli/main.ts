@@ -88,8 +88,9 @@ async function cmdServe(args: string[]): Promise<void> {
   } catch (error) {
     const err = error as Error & { code?: string; existing?: { baseUrl: string; pid: number } };
     if (err.code === 'runtime_already_running' && err.existing) {
+      const endpoint = err.existing.baseUrl ?? '(starting)';
       process.stderr.write(
-        `Runtime already running at ${err.existing.baseUrl} (pid ${err.existing.pid}).\n`,
+        `Runtime already running at ${endpoint} (pid ${err.existing.pid}).\n`,
       );
       process.exitCode = 1;
       return;
@@ -105,7 +106,7 @@ async function cmdServe(args: string[]): Promise<void> {
     `Cardo Runtime listening on ${started.baseUrl}\n` +
       `  pid: ${started.pid}\n` +
       `  lifetimeMode: ${started.lifetimeMode}\n` +
-      `  db: ${started.dbPath}\n` +
+      `  dbPath: ${started.dbPath}\n` +
       `  discovery: ${started.discoveryPath}\n`,
   );
 
@@ -267,15 +268,23 @@ async function cmdOpen(): Promise<void> {
   fs.mkdirSync(paths.dataDir, { recursive: true });
   const logFd = fs.openSync(paths.logPath, 'a');
 
-  const child = spawn(process.execPath, [childEntry, 'serve', '--daemon-child'], {
-    detached: true,
-    stdio: ['ignore', logFd, logFd],
-    env: { ...process.env },
-    windowsHide: true,
-  });
-  child.unref();
-
-  process.stdout.write(`Spawned detached Runtime (pid ${child.pid}); waiting for health...\n`);
+  try {
+    const child = spawn(process.execPath, [childEntry, 'serve', '--daemon-child'], {
+      detached: true,
+      stdio: ['ignore', logFd, logFd],
+      env: { ...process.env },
+      windowsHide: true,
+    });
+    child.unref();
+    process.stdout.write(`Spawned detached Runtime (pid ${child.pid}); waiting for health...\n`);
+  } finally {
+    // Child has dup'd the fd; parent must not leak descriptors.
+    try {
+      fs.closeSync(logFd);
+    } catch {
+      // ignore
+    }
+  }
 
   const ready = await waitForRuntime(paths.discoveryPath, 15_000);
   if (!ready) {
