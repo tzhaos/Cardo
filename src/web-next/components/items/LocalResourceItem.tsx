@@ -9,6 +9,7 @@ import { ItemContentEditView } from './ItemContentEditView';
 import { ItemDeleteView } from './ItemDeleteView';
 import { ItemActions } from './ItemActions';
 import { useItemRename } from './useItemRename';
+import { Input } from '../../ui/primitives/input';
 import { useItemContextMenu } from './useItemContextMenu';
 import { recordItemActivity } from '../../app/operationActivity';
 
@@ -95,7 +96,7 @@ export function LocalResourceItem({
             </IconFrame>
             <div className="wbn-item-main">
               {rename.renaming ? (
-                <input
+                <Input
                   ref={rename.inputRef}
                   className="wbn-inline-rename wbn-item-title-input"
                   value={rename.draft}

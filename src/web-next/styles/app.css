@@ -3499,6 +3499,25 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
   -webkit-user-select: text;
 }
 
+.wbn-ui-input {
+  min-width: 0;
+  border: 1px solid var(--wbn-border);
+  border-radius: 9px;
+  background: var(--wbn-panel-content);
+  color: var(--wbn-text);
+  font: inherit;
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.wbn-ui-input:focus-visible {
+  border-color: color-mix(in srgb, var(--wbn-blue) 55%, var(--wbn-border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--wbn-blue) 9%, transparent);
+}
+
 .wbn-tab-rename-input {
   width: auto;
   height: 20px;

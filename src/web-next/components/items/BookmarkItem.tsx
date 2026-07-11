@@ -6,6 +6,7 @@ import { ItemDeleteView } from './ItemDeleteView';
 import { ItemContentEditView } from './ItemContentEditView';
 import { ItemActions } from './ItemActions';
 import { useItemRename } from './useItemRename';
+import { Input } from '../../ui/primitives/input';
 import { useI18n } from '../../i18n/useI18n';
 import { openExternalUrl } from '../../platform/hostPlatform';
 import { IconFrame } from '../../ui/khaos/icon-button';
@@ -107,7 +108,7 @@ export function BookmarkItem({
             </IconFrame>
             <div className="wbn-item-main">
               {rename.renaming ? (
-                <input
+                <Input
                   ref={rename.inputRef}
                   className="wbn-inline-rename wbn-item-title-input"
                   value={rename.draft}

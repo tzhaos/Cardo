@@ -40,6 +40,7 @@ import {
 import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
 import { useI18n } from '../../i18n/useI18n';
 import { BoxAppearanceView } from './BoxAppearancePopover';
+import { Input } from '../../ui/primitives/input';
 
 interface BaseBoxFrameProps {
   box: WorkspaceBox;
@@ -502,7 +503,7 @@ export function BaseBoxFrame({
               {icon}
             </button>
             {titleRename.renaming ? (
-              <input
+              <Input
                 ref={titleRename.inputRef}
                 className="wbn-inline-rename wbn-box-title-input"
                 aria-label={t('box.rename', { title: box.title })}

@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import type { WorkspacePage } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { useInlineRename } from '../../app/useInlineRename';
+import { Input } from '../../ui/primitives/input';
 
 interface TabPillProps {
   page: WorkspacePage;
@@ -72,7 +73,7 @@ export function TabPill({
       </button>
       {rename.renaming ? (
         <div className="wbn-tab-rename-layer" onContextMenu={rename.onContextMenu}>
-          <input
+          <Input
             ref={rename.inputRef}
             className="wbn-inline-rename wbn-tab-rename-input"
             aria-label={t('page.rename', { title: page.title })}
