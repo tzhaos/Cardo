@@ -3,9 +3,7 @@ import type { KhaosDatabase } from './createDatabaseClient';
 import { APP_STATE_ID, PREFERENCES_ID, appState, boxes, pages, preferences } from './schema';
 import { DATABASE_SCHEMA_VERSION } from './version';
 import type { ColorMode, PreferenceLocale } from '../contracts/preferences';
-
-export const COLLECTION_PAGE_ID = 'khaosbox-collection';
-export const RECYCLE_BIN_PAGE_ID = 'khaosbox-recycle-bin';
+import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID } from '../contracts/systemPages';
 
 export interface InitialWorkspacePreferences {
   locale: PreferenceLocale;

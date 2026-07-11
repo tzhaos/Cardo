@@ -1,7 +1,7 @@
 import { and, eq, inArray, notInArray, or, sql } from 'drizzle-orm';
 import type { AnySQLiteColumn } from 'drizzle-orm/sqlite-core';
 import { globalSearchResultSchema, type GlobalSearchResult } from '../contracts/globalSearch';
-import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID } from './initializeWorkspaceDatabase';
+import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID } from '../contracts/systemPages';
 import type { KhaosDatabase } from './createDatabaseClient';
 import { boxes, boxItems, items, pages } from './schema';
 import { projectWorkspaceItem } from './workspaceQueries';

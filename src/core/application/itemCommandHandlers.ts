@@ -2,7 +2,7 @@ import { asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import type { ItemMetadata, WorkspaceItemType } from '../contracts/workspace';
 import type { WorkspaceCommand } from '../contracts/workspaceCommands';
 import { APP_STATE_ID, appState, boxes, boxItems, items, pages } from '../database/schema';
-import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID } from '../database/initializeWorkspaceDatabase';
+import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID } from '../contracts/systemPages';
 import type { DatabaseCommandMutation, DatabaseTransaction } from './commandTypes';
 import { chooseAvailableBoxAccent, DEFAULT_BOX_ICON } from '../domains/boxAppearance';
 

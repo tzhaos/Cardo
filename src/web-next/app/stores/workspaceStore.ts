@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import type { WorkspaceCommand } from '../../../core/contracts/workspaceCommands';
+import { COLLECTION_PAGE_ID } from '../../../core/contracts/systemPages';
 import type { DatabaseCommandResult } from '../../../core/application/commandTypes';
 import type {
   BoxFrame,
@@ -92,8 +93,8 @@ let commandQueue: Promise<unknown> = Promise.resolve();
 
 const emptyProjection: WorkspaceProjection = {
   pages: [],
-  activePageId: 'khaosbox-collection',
-  defaultPageId: 'khaosbox-collection',
+  activePageId: COLLECTION_PAGE_ID,
+  defaultPageId: COLLECTION_PAGE_ID,
   boxes: [],
   collectionBoxIds: [],
   collectionViews: {},

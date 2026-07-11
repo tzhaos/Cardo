@@ -1,6 +1,6 @@
 import { asc, eq, inArray, notInArray, sql } from 'drizzle-orm';
 import type { WorkspaceCommand } from '../contracts/workspaceCommands';
-import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID } from '../database/initializeWorkspaceDatabase';
+import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID } from '../contracts/systemPages';
 import { APP_STATE_ID, appState, boxes, collectionBoxViews, pages } from '../database/schema';
 import type { DatabaseCommandMutation, DatabaseTransaction } from './commandTypes';
 

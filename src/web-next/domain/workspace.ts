@@ -11,6 +11,13 @@ import type {
   WorkspacePage,
   WorkspaceProjection,
 } from '../../core/contracts/workspace';
+export {
+  COLLECTION_PAGE_ID,
+  RECYCLE_BIN_PAGE_ID,
+  isCollectionPageId,
+  isRecycleBinPageId,
+  isSystemPageId,
+} from '../../core/contracts/systemPages';
 
 export type {
   BoxFrame,
@@ -24,21 +31,6 @@ export type {
   WorkspacePage,
   WorkspaceProjection,
 };
-
-export const RECYCLE_BIN_PAGE_ID = 'khaosbox-recycle-bin';
-export const COLLECTION_PAGE_ID = 'khaosbox-collection';
-
-export function isRecycleBinPageId(pageId: string) {
-  return pageId === RECYCLE_BIN_PAGE_ID;
-}
-
-export function isCollectionPageId(pageId: string) {
-  return pageId === COLLECTION_PAGE_ID;
-}
-
-export function isSystemPageId(pageId: string) {
-  return isCollectionPageId(pageId) || isRecycleBinPageId(pageId);
-}
 
 export type BoxItem = WorkspaceItem;
 export type FolderItem = Extract<WorkspaceItem, { type: 'folder' }>;
