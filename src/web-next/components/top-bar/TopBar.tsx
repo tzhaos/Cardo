@@ -12,8 +12,8 @@ import { CollectionTab } from './CollectionTab';
 import { RecycleBinTab } from './RecycleBinTab';
 import { TabDeleteConfirmView } from './TabDeleteConfirmView';
 import { SortablePageTab } from './SortablePageTab';
-import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
 import { MotionButton } from '../../ui/primitives/motion-button';
+import { useContextMenu } from '../../ui/khaos/context-menu';
 
 export function TopBar() {
   const projection = useWorkspaceStore((state) => state.projection);
@@ -29,7 +29,7 @@ export function TopBar() {
   const boxDropRelease = useUiStore((state) => state.boxDropRelease);
   const [deletePageId, setDeletePageId] = useState<string | null>(null);
   const [renamePageId, setRenamePageId] = useState<string | null>(null);
-  const { openMenu } = useFloatingMenu();
+  const contextMenu = useContextMenu();
   const { t } = useI18n();
 
   const persistedPages = useMemo(
@@ -98,11 +98,7 @@ export function TopBar() {
     page?: (typeof workspacePages)[number],
   ) => {
     event.preventDefault();
-    openMenu({
-      id: page ? `page-${page.id}` : 'system-page',
-      x: event.clientX,
-      y: event.clientY,
-      items: [
+    contextMenu.openMenu(event.clientX, event.clientY, [
         {
           id: 'new-page',
           label: t('menu.newPage'),
@@ -134,8 +130,7 @@ export function TopBar() {
               },
             ]
           : []),
-      ],
-    });
+    ]);
   };
 
   return (
@@ -241,6 +236,7 @@ export function TopBar() {
           </motion.div>
         ) : null}
       </AnimatePresence>
+      {contextMenu.menu}
     </header>
   );
 }
