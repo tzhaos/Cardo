@@ -8,7 +8,6 @@
 | Product name | Cardo（拉丁 cardo：门枢 / 枢纽） |
 | CLI / npm | package 优先 `cardo`（冲突则 `@cardo/cli` 等 scope）；bin 恒为 `cardo` |
 | Codebase (current) | `D:\Workspace\KhaosBox`（仓库改名另 PR） |
-| Inspired by | OpenCode local serve + multi client + event stream（模式参考，非业务复制） |
 | Related | `AGENTS.md`, `docs/architecture/zod-drizzle-shadcn-refactor.md`, `docs/architecture/cardo-rename-checklist.md` |
 
 ## 1. Overview
@@ -37,7 +36,7 @@ Cardo：拉丁语「门枢、枢纽、轴线」。
 - 枢纽：零散能力汇聚
 - 短、好拼、适合 CLI（`cardo serve` / `cardo open`）
 
-产品标识统一为 Cardo。OpenCode 仅作本地 HTTP / 多 client / 事件流的模式参考；协议与类型以 Zod 为唯一 SoT，不复制 OpenCode 业务模型。
+产品标识统一为 Cardo。协议与类型以 Zod 为唯一 SoT。
 
 ### 2.1 磁盘路径（Path SoT）
 
@@ -50,8 +49,8 @@ Path SoT 由 `src/runtime/paths.ts` 的 `resolveCardoDataPaths()` 定义：
    - darwin：`~/Library/Application Support/cardo/cardo.sqlite`
    - linux：`${XDG_CONFIG_HOME:-~/.config}/cardo/cardo.sqlite`
 4. CLI 与 Desktop 共用同一 resolver；可用 `CARDO_DATA_DIR` 覆盖数据目录。
-5. 若 SoT 路径尚无库文件，且默认安装位置下存在上一代目录中的数据库，则首次打开时一次性 move 到 SoT 路径；之后只打开 `cardo.sqlite`。
-6. Extension 不持权威库；业务数据只经 Runtime。此前扩展侧本地库中的数据需用户导出 JSON 后经 `workspace.import` 进入 Runtime。
+5. Path SoT 仅 `cardo` / `cardo.sqlite`；不做 previous-install 跨目录 relocate。
+6. Extension 不持权威库；业务数据只经 Runtime。
 
 ## 3. Background & Motivation
 
@@ -162,7 +161,7 @@ flowchart LR
 12. import 只走 command `workspace.import`；无独立 import HTTP 写路径。
 13. v1 共享 `activePageId` 与全局 undo 栈；产品文案说明多窗口互相影响。
 14. Runtime 核心禁止 import electron；可序列化配置用 Zod；host 函数用 TS 接口注入。
-15. OpenCode 仅模式参考；Zod 是 SoT。
+15. Zod 是协议与运行时边界的唯一 SoT。
 16. 进程模型：`cardo serve` 前台阻塞；`cardo` / `cardo open` 在无 Runtime 时 spawn 分离（detached）Runtime 子进程，再打开浏览器；`cardo stop` 调 authenticated force shutdown。
 17. 端口：动态端口 + discovery 文件（不固定端口）。
 18. Desktop attach v1 使用 HTTP/SSE 与 Web 对称；IPC 隧道可选后续，不作为 v1 必需。
@@ -1007,7 +1006,7 @@ graceActive: boolean
 | Extension 主入口形态 | 独立扩展页（工具栏打开）；newtab 非 v1 主入口（§6.4、HD26） |
 | Runtime / Desktop embed 生命周期 | 零 client + grace 才可自动停；非 Desktop 一退就停（§6.6.1、HD27） |
 | npm 包名 | 先占 `cardo`；冲突则 `@cardo/cli` 等；bin 仍为 `cardo`（HD1） |
-| 数据路径 | Path SoT：`cardo` / `cardo.sqlite`；首次打开可一次性 move 上一代库（§2.1、HD10） |
+| 数据路径 | Path SoT：cardo / cardo.sqlite only；无 previous-install relocate（§2.1、HD10） |
 
 此前已关闭：serve/open 进程模型；动态端口；Desktop HTTP 对称；activity 不 +revision；SSE fetch stream；NM 瘦 host；history.ok；core migrator；bootstrap Bearer processToken。
 
@@ -1030,7 +1029,7 @@ graceActive: boolean
 15. 磁盘路径：v1 与 Desktop 同文件；rename 后单独搬迁 PR。
 16. Host config：Zod 字段 + TS hooks。
 17. exportOperationLog 进协议；非 DB ports 留 AppPorts。
-18. OpenCode 仅模式参考；Zod SoT。
+18. Zod 是协议与运行时边界的唯一 SoT。
 19. PR0/1 Agents 过渡注记；PR6 终态平台边界。
 
 ## 16. PR Plan
@@ -1184,4 +1183,3 @@ graceActive: boolean
 - `src/extension/bootstrap/runtimeGuide.ts`
 - `src/native-host/main.ts`
 - `src/core/protocols/nativeMessaging.ts`
-- OpenCode serve：本地 HTTP、多 client、事件流（模式参考，非业务复制）
