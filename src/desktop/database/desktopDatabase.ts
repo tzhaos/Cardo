@@ -17,17 +17,22 @@ function getDatabase() {
   nextDatabase.exec('PRAGMA foreign_keys = ON');
   nextDatabase.exec('PRAGMA journal_mode = WAL');
 
-  applyMigrations(
-    createSqlExecMigratorAdapter({
-      exec: (sql) => nextDatabase.exec(sql),
-      getUserVersion: () => {
-        const versionRow = nextDatabase.prepare('PRAGMA user_version').get() as
-          | { user_version?: number }
-          | undefined;
-        return versionRow?.user_version ?? 0;
-      },
-    }),
-  );
+  try {
+    applyMigrations(
+      createSqlExecMigratorAdapter({
+        exec: (sql) => nextDatabase.exec(sql),
+        getUserVersion: () => {
+          const versionRow = nextDatabase.prepare('PRAGMA user_version').get() as
+            | { user_version?: number }
+            | undefined;
+          return versionRow?.user_version ?? 0;
+        },
+      }),
+    );
+  } catch (error) {
+    nextDatabase.close();
+    throw error;
+  }
 
   database = nextDatabase;
   return nextDatabase;

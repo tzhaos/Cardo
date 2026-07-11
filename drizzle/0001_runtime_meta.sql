@@ -4,3 +4,5 @@ CREATE TABLE `runtime_meta` (
 );
 --> statement-breakpoint
 INSERT INTO `runtime_meta` (`id`, `revision`) VALUES (1, 0);
+--> statement-breakpoint
+UPDATE `app_state` SET `schema_version` = 4 WHERE `id` = 1;

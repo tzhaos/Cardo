@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm';
 import type { KhaosDatabase } from './createDatabaseClient';
+import { bumpRevision } from './revision';
 import { APP_STATE_ID, PREFERENCES_ID, appState, boxes, pages, preferences } from './schema';
 import { DATABASE_SCHEMA_VERSION } from './version';
 import type { ColorMode, PreferenceLocale } from '../contracts/preferences';
@@ -10,16 +11,23 @@ export interface InitialWorkspacePreferences {
   colorMode: ColorMode;
 }
 
+/**
+ * Seed workspace when app_state is missing. Idempotent no-op when already initialized
+ * (no revision bump). First write bumps revision once in the same transaction
+ * (design §6.8.1 ensureInitialized; no history_entries for seed).
+ *
+ * Returns whether this call created the workspace seed.
+ */
 export async function initializeWorkspaceDatabase(
   database: KhaosDatabase,
   initialPreferences: InitialWorkspacePreferences,
-) {
+): Promise<{ created: boolean }> {
   const existingState = await database
     .select({ id: appState.id })
     .from(appState)
     .where(eq(appState.id, APP_STATE_ID))
     .get();
-  if (existingState) return;
+  if (existingState) return { created: false };
 
   const timestamp = new Date().toISOString();
   const defaultPageId = `page-${crypto.randomUUID()}`;
@@ -82,7 +90,12 @@ export async function initializeWorkspaceDatabase(
       searchEngine: 'bing-cn',
       customSearchTemplate: '',
     });
+
+    // First seed is a mutating write: revision++ once; not undoable (no history_entries).
+    await bumpRevision(transaction);
   });
+
+  return { created: true };
 }
 
 function createInitialBox(pageId: string, timestamp: string) {

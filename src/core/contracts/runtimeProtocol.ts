@@ -1,3 +1,11 @@
+/**
+ * Cardo Runtime wire protocol (Zod SoT).
+ *
+ * PR1 covers multi-client mutation/query/history/export/capability/event shells.
+ * Deferred to PR2 (HTTP Runtime host): auth.bootstrap, auth.exchange, shutdown,
+ * diagnostics health/status payloads. Do not invent ad-hoc JSON for those — add
+ * Zod here when implementing the HTTP surface.
+ */
 import { z } from 'zod';
 import { entityIdSchema, workspaceProjectionSchema } from './workspace';
 import { colorModeSchema, preferenceLocaleSchema } from './preferences';
@@ -127,9 +135,19 @@ export const ensureInitializedOkSchema = z
     type: z.literal('ensureInitialized.ok'),
     created: z.boolean(),
     revision: revisionSchema,
+    // Required when created === true (design §6.11.2); optional on idempotent no-op.
     scopes: z.array(invalidationScopeSchema).optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((value, ctx) => {
+    if (value.created && (value.scopes == null || value.scopes.length === 0)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'scopes is required and non-empty when created is true',
+        path: ['scopes'],
+      });
+    }
+  });
 
 // --- activity.record (never +revision) ---
 

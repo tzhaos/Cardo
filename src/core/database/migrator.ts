@@ -110,6 +110,9 @@ export function createSqlExecMigratorAdapter(options: {
   return {
     getUserVersion: options.getUserVersion,
     setUserVersion(version: number) {
+      if (!Number.isInteger(version) || version < 0) {
+        throw new Error(`Invalid user_version ${String(version)}; expected non-negative integer.`);
+      }
       options.exec(`PRAGMA user_version = ${version}`);
     },
     exec: options.exec,

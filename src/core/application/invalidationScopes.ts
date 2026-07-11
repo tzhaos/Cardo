@@ -22,6 +22,9 @@ export function deriveInvalidationScopes(changes: HistoryChangeSet): Invalidatio
     return [{ type: 'workspaceState' }, { type: 'history' }];
   }
 
+  // Rename/reorder-only pages meta → pageTabs. Combined page+state refreshes
+  // (e.g. page.create that also touches app_state) are multi-table and fall
+  // through to projection; this helper never emits pageTabsAndState.
   if (onlyPagesMeta(changes)) {
     return [{ type: 'pageTabs' }, { type: 'history' }];
   }
@@ -80,6 +83,10 @@ function onlySingleBoxItems(changes: HistoryChangeSet): string | null {
   return [...boxIds][0] ?? null;
 }
 
+/**
+ * True single-page boxes-only path. Cross-page moves (before.pageId !== after.pageId),
+ * and insert/delete rows with only one side, must fall through to projection.
+ */
 function onlySinglePageBoxes(changes: HistoryChangeSet): string | null {
   if (!changes.length || changes.some((change) => change.table !== 'boxes')) {
     return null;
@@ -87,16 +94,20 @@ function onlySinglePageBoxes(changes: HistoryChangeSet): string | null {
   const pageIds = new Set<string>();
   for (const change of changes) {
     if (change.table !== 'boxes') return null;
-    const pageId = pageIdFromBoxChange(change);
-    if (!pageId) return null;
-    pageIds.add(pageId);
+    const ids = pageIdsFromBoxChange(change);
+    // Missing pageId on either present side, or a cross-page change, widens out.
+    if (ids.length === 0) return null;
+    if (ids.length > 1) return null;
+    for (const id of ids) pageIds.add(id);
   }
   if (pageIds.size !== 1) return null;
   return [...pageIds][0] ?? null;
 }
 
-function pageIdFromBoxChange(change: HistoryRowChange): string | null {
-  if (change.table !== 'boxes') return null;
-  const row = change.after ?? change.before;
-  return row?.pageId ?? null;
+function pageIdsFromBoxChange(change: HistoryRowChange): string[] {
+  if (change.table !== 'boxes') return [];
+  const ids = new Set<string>();
+  if (change.before?.pageId) ids.add(change.before.pageId);
+  if (change.after?.pageId) ids.add(change.after.pageId);
+  return [...ids];
 }
