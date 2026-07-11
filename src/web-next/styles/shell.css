@@ -153,17 +153,6 @@
   opacity: 0.34;
 }
 
-.wbn-history-shared-hint-detail {
-  display: block;
-  margin-top: 0.35rem;
-  max-width: 16rem;
-  color: var(--wbn-muted, #888);
-  font-size: 0.78rem;
-  font-weight: 400;
-  line-height: 1.35;
-  white-space: normal;
-}
-
 .wbn-runtime-connection-banner {
   position: fixed;
   z-index: 120;

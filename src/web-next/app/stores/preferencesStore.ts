@@ -55,6 +55,22 @@ let state: PreferencesStore = {
   ...actions,
 };
 
+function emitChange() {
+  for (const listener of listeners) listener();
+}
+
+function patchPreferences(
+  patch: Partial<
+    Pick<
+      PreferencesStore,
+      'colorMode' | 'locale' | 'themeId' | 'searchEngine' | 'customSearchTemplate'
+    >
+  >,
+) {
+  state = { ...state, ...patch };
+  emitChange();
+}
+
 async function refreshPreferences() {
   const preferences = await queryPreferences();
   if (!preferences) throw new Error('Cardo preferences are not initialized.');
@@ -66,12 +82,12 @@ async function refreshPreferences() {
     searchEngine: preferences.searchEngine,
     customSearchTemplate: preferences.customSearchTemplate,
   };
-  for (const listener of listeners) listener();
+  emitChange();
 }
 
 /**
  * Apply preferences scope from Runtime invalidation (design §6.9.2).
- * Refresh only when scopes include `preferences` (full catch-up always sends it).
+ * Refresh when scopes include `preferences` (narrow prefs mutation or full catch-up).
  */
 export async function applyPreferencesInvalidationScopes(
   scopes: InvalidationScope[],
@@ -82,11 +98,45 @@ export async function applyPreferencesInvalidationScopes(
   await refreshPreferences();
 }
 
+/**
+ * Optimistic local patch so initiator UI (controlled toggles/inputs) updates
+ * immediately. Runtime command.ok / SSE scopes re-query and reconcile.
+ */
+function applyOptimisticCommand(command: WorkspaceCommand) {
+  switch (command.type) {
+    case 'preferences.setColorMode':
+      patchPreferences({ colorMode: command.colorMode });
+      break;
+    case 'preferences.setLocale':
+      patchPreferences({ locale: command.locale });
+      break;
+    case 'preferences.setTheme':
+      patchPreferences({ themeId: command.themeId });
+      break;
+    case 'preferences.setSearchEngine':
+      patchPreferences({ searchEngine: command.searchEngine });
+      break;
+    case 'preferences.setCustomSearchTemplate':
+      patchPreferences({ customSearchTemplate: command.customSearchTemplate });
+      break;
+    default:
+      break;
+  }
+}
+
 function fireCommand(command: WorkspaceCommand) {
+  applyOptimisticCommand(command);
   void enqueue(async () => {
-    // Scopes (including preferences) applied from command.ok via RuntimeClient.
+    // Scopes (including preferences) applied from command.ok via RuntimeClient
+    // → applyRuntimeScopes → applyPreferencesInvalidationScopes.
     await dispatchDatabaseCommand(command);
-  }).catch((error: unknown) => console.error('Failed to update preferences', error));
+  }).catch((error: unknown) => {
+    console.error('Failed to update preferences', error);
+    // Roll back optimistic patch from authoritative Runtime state.
+    void refreshPreferences().catch((refreshError: unknown) =>
+      console.error('Failed to refresh preferences after command error', refreshError),
+    );
+  });
 }
 
 function enqueue<T>(task: () => Promise<T>): Promise<T> {

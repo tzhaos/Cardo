@@ -1,6 +1,6 @@
 /**
- * Extension guide UI when Runtime / Native Host is unavailable (design §6.4 / PR7).
- * Guide only: start Cardo Runtime and ensure the native host is installed.
+ * Extension onboarding when Cardo is unavailable.
+ * User-facing product copy only — no architecture or build-process language.
  */
 
 export type RuntimeGuideKind =
@@ -20,8 +20,6 @@ type GuideCopy = {
   stepsTitle: string;
   defaultSteps: readonly string[];
   stepsByKind: Partial<Record<RuntimeGuideKind, readonly string[]>>;
-  installTitle: string;
-  installCommands: readonly string[];
   retry: string;
   detail: string;
   codes: Record<RuntimeGuideKind, string>;
@@ -29,102 +27,60 @@ type GuideCopy = {
 
 const COPY: Record<'en' | 'zh', GuideCopy> = {
   en: {
-    title: 'Cardo Runtime required',
-    intro:
-      'This extension is a client of the local Cardo Runtime. It does not keep a separate business database.',
-    stepsTitle: 'To continue:',
+    title: 'Start Cardo to continue',
+    intro: 'Open Cardo on this computer, then try again.',
+    stepsTitle: 'Try this:',
     defaultSteps: [
-      'Start Cardo Desktop, or run `cardo serve` / `cardo open` from the CLI.',
-      'Install and register the native messaging host for this browser.',
-      'Click Retry after Runtime is healthy.',
+      'Open the Cardo desktop app, or run Cardo from the terminal.',
+      'Come back here and click Retry.',
     ],
     stepsByKind: {
       native_host_missing: [
-        'Build and register the host: `npm run native-host:install` (Chrome/Edge).',
-        'Or install Cardo Desktop, which registers the same host.',
-        'Reload this extension page, then click Retry.',
+        'Install or reinstall Cardo on this computer.',
+        'Fully quit and reopen the browser, then Retry.',
       ],
       runtime_unavailable: [
-        'Start Cardo Desktop, or run `cardo serve` (foreground) / `cardo open` (detached + browser).',
-        'Confirm with `cardo status` that Runtime is healthy.',
-        'Keep the native messaging host installed so the extension can discover Runtime.',
-        'Click Retry when Runtime is up.',
+        'Open the Cardo desktop app, or start Cardo from the terminal.',
+        'Wait until Cardo is running, then Retry.',
       ],
       native_messaging_failed: [
-        'Reinstall the native messaging host: `npm run native-host:install`.',
-        'Ensure this browser profile matches the host registration (Chrome/Edge).',
-        'Restart the browser after install, then Retry.',
+        'Reinstall Cardo, then fully quit and reopen the browser.',
+        'Click Retry.',
       ],
-      connect_failed: [
-        'Runtime was discovered, but HTTP connect failed — check that Runtime is still running (`cardo status`).',
-        'If you just stopped Runtime, start it again with Desktop or `cardo open`.',
-        'Click Retry to re-discover and reconnect.',
-      ],
+      connect_failed: ['Make sure Cardo is still open on this computer.', 'Click Retry.'],
     },
-    installTitle: 'Useful commands',
-    installCommands: [
-      'cardo serve     # foreground Runtime',
-      'cardo open      # spawn Runtime if needed, open Web',
-      'cardo status    # health / diagnostics',
-      'npm run native-host:install',
-    ],
     retry: 'Retry',
     detail: 'Details',
     codes: {
-      native_host_missing: 'Native messaging host is missing or not registered for this browser.',
-      runtime_unavailable: 'Cardo Runtime is not running or not reachable.',
-      native_messaging_failed: 'Could not talk to the native messaging host.',
-      connect_failed: 'Discovered Runtime but failed to connect over HTTP.',
-      unknown: 'Something went wrong while connecting to Cardo Runtime.',
+      native_host_missing: 'Cardo is not set up for this browser yet.',
+      runtime_unavailable: 'Cardo is not running on this computer.',
+      native_messaging_failed: 'This browser cannot reach Cardo.',
+      connect_failed: 'Could not connect to Cardo.',
+      unknown: 'Something went wrong. Please try again.',
     },
   },
   zh: {
-    title: '需要 Cardo Runtime',
-    intro: '本扩展是本机 Cardo Runtime 的客户端，不会再单独维护业务数据库。',
-    stepsTitle: '请按以下步骤操作：',
-    defaultSteps: [
-      '启动 Cardo Desktop，或在 CLI 运行 `cardo serve` / `cardo open`。',
-      '为本浏览器安装并注册 Native Messaging Host。',
-      '确认 Runtime 正常后点击「重试」。',
-    ],
+    title: '请先启动 Cardo',
+    intro: '在本机打开 Cardo 后，再回到此页重试。',
+    stepsTitle: '可以这样操作：',
+    defaultSteps: ['打开 Cardo 桌面应用，或在终端启动 Cardo。', '返回此页，点击「重试」。'],
     stepsByKind: {
-      native_host_missing: [
-        '构建并注册 Host：`npm run native-host:install`（Chrome/Edge）。',
-        '或安装 Cardo Desktop（会注册同一 Host）。',
-        '重新加载本扩展页，再点击「重试」。',
-      ],
+      native_host_missing: ['请安装或重新安装 Cardo。', '完全退出并重新打开浏览器，再点「重试」。'],
       runtime_unavailable: [
-        '启动 Cardo Desktop，或运行 `cardo serve`（前台）/ `cardo open`（分离进程并打开 Web）。',
-        '用 `cardo status` 确认 Runtime 健康。',
-        '保持 Native Messaging Host 已安装，以便扩展发现 Runtime。',
-        'Runtime 就绪后点击「重试」。',
+        '请打开 Cardo 桌面应用，或在终端启动 Cardo。',
+        '确认 Cardo 已运行后，点击「重试」。',
       ],
-      native_messaging_failed: [
-        '重新安装 Native Messaging Host：`npm run native-host:install`。',
-        '确认当前浏览器配置文件与 Host 注册一致（Chrome/Edge）。',
-        '安装后重启浏览器，再「重试」。',
-      ],
-      connect_failed: [
-        '已发现 Runtime，但 HTTP 连接失败 — 请用 `cardo status` 确认仍在运行。',
-        '若刚停止 Runtime，请用 Desktop 或 `cardo open` 重新启动。',
-        '点击「重试」以重新发现并连接。',
-      ],
+      native_messaging_failed: ['请重新安装 Cardo，然后完全退出并重新打开浏览器。', '点击「重试」。'],
+      connect_failed: ['请确认本机 Cardo 仍在运行。', '点击「重试」。'],
     },
-    installTitle: '常用命令',
-    installCommands: [
-      'cardo serve     # 前台 Runtime',
-      'cardo open      # 按需启动 Runtime 并打开 Web',
-      'cardo status    # 健康 / 诊断',
-      'npm run native-host:install',
-    ],
     retry: '重试',
     detail: '详细信息',
     codes: {
-      native_host_missing: '未找到或未注册本浏览器的 Native Messaging Host。',
-      runtime_unavailable: 'Cardo Runtime 未运行或不可达。',
-      native_messaging_failed: '无法与 Native Messaging Host 通信。',
-      connect_failed: '已发现 Runtime，但 HTTP 连接失败。',
-      unknown: '连接 Cardo Runtime 时出现问题。',
+      native_host_missing: '当前浏览器尚未完成 Cardo 设置。',
+      runtime_unavailable: '本机未运行 Cardo。',
+      native_messaging_failed: '浏览器无法连接 Cardo。',
+      connect_failed: '无法连接到 Cardo。',
+      unknown: '出现问题，请重试。',
     },
   },
 };
@@ -193,23 +149,13 @@ export function renderRuntimeGuide(error: unknown, onRetry: () => void): void {
   stepsTitle.style.cssText = 'margin:0 0 0.35rem;font-weight:600;';
 
   const list = document.createElement('ol');
-  list.style.cssText = 'margin:0 0 1rem;padding-left:1.25rem;';
+  list.style.cssText = 'margin:0 0 1.25rem;padding-left:1.25rem;';
   for (const step of steps) {
     const item = document.createElement('li');
     item.textContent = step;
     item.style.marginBottom = '0.35rem';
     list.append(item);
   }
-
-  const installTitle = document.createElement('p');
-  installTitle.textContent = copy.installTitle;
-  installTitle.style.cssText = 'margin:0 0 0.35rem;font-weight:600;';
-
-  const installPre = document.createElement('pre');
-  installPre.textContent = copy.installCommands.join('\n');
-  /* Command block is chrome (not details); keep non-selectable. */
-  installPre.style.cssText =
-    'margin:0 0 1.25rem;padding:0.75rem 0.9rem;border-radius:8px;background:#f0f0f0;color:#222;font:0.82rem/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow-x:auto;user-select:none;-webkit-user-select:none;';
 
   const actions = document.createElement('div');
   actions.style.cssText = 'display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;';
@@ -225,16 +171,7 @@ export function renderRuntimeGuide(error: unknown, onRetry: () => void): void {
 
   actions.append(retry);
 
-  const bodyNodes: HTMLElement[] = [
-    title,
-    intro,
-    reason,
-    stepsTitle,
-    list,
-    installTitle,
-    installPre,
-    actions,
-  ];
+  const bodyNodes: HTMLElement[] = [title, intro, reason, stepsTitle, list, actions];
 
   if (detail) {
     const details = document.createElement('details');

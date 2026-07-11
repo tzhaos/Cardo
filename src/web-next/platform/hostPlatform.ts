@@ -40,6 +40,13 @@ let readyLocked = false;
 let databaseTaskQueue: Promise<unknown> = Promise.resolve();
 /** Re-entrancy depth so applyScopes queries can run inside an active command task. */
 let databaseTaskDepth = 0;
+/**
+ * Depth while RuntimeClient is applying invalidation scopes (initiator HTTP ok or
+ * remote SSE). Scope re-queries must not enter databaseTaskQueue: a concurrent
+ * command already on that queue awaits applyQueue, which would deadlock with an
+ * in-flight SSE/initiator apply that itself waits on the same queue.
+ */
+let scopeApplyDepth = 0;
 let ensureReadyPromise: Promise<void> | null = null;
 
 /**
@@ -170,16 +177,24 @@ async function startRuntimeMode(
 /**
  * Apply InvalidationScope list via typed queries into stores (design §6.9.2).
  * Lazy-imports stores to avoid circular dependencies with hostPlatform.
+ * Marks scopeApplyDepth so nested queryPreferences / history queries bypass
+ * databaseTaskQueue (initiator + remote SSE share this path).
  */
 export async function applyRuntimeScopes(scopes: InvalidationScope[]): Promise<void> {
   if (!scopes.length) return;
-  const [{ applyWorkspaceInvalidationScopes }, { applyPreferencesInvalidationScopes }] =
-    await Promise.all([
-      import('../app/stores/workspaceStore'),
-      import('../app/stores/preferencesStore'),
-    ]);
-  await applyWorkspaceInvalidationScopes(scopes);
-  await applyPreferencesInvalidationScopes(scopes);
+  scopeApplyDepth += 1;
+  try {
+    const [{ applyWorkspaceInvalidationScopes }, { applyPreferencesInvalidationScopes }] =
+      await Promise.all([
+        import('../app/stores/workspaceStore'),
+        import('../app/stores/preferencesStore'),
+      ]);
+    // Preferences first so theme/locale/colorMode land even if history query fails.
+    await applyPreferencesInvalidationScopes(scopes);
+    await applyWorkspaceInvalidationScopes(scopes);
+  } finally {
+    scopeApplyDepth -= 1;
+  }
 }
 
 function requireRuntimeClient(): RuntimeClient {
@@ -324,8 +339,9 @@ export function queryGlobalSearch(query: string) {
 }
 
 function runDatabaseTask<T>(task: () => Promise<T>): Promise<T> {
-  // Nested calls (e.g. scope re-query inside command.ok apply) must not wait on the outer task.
-  if (databaseTaskDepth > 0) {
+  // Nested calls (command.ok apply) and scope-apply re-queries must not wait on
+  // the outer databaseTaskQueue — otherwise SSE apply + concurrent command deadlock.
+  if (databaseTaskDepth > 0 || scopeApplyDepth > 0) {
     databaseTaskDepth += 1;
     return task().finally(() => {
       databaseTaskDepth -= 1;

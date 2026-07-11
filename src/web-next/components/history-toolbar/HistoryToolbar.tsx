@@ -9,25 +9,15 @@ export function HistoryToolbar() {
   const canUndo = useWorkspaceStore((state) => state.historyPast.length > 0);
   const canRedo = useWorkspaceStore((state) => state.historyFuture.length > 0);
   const { t } = useI18n();
-  const sharedHint = t('history.sharedStackHint');
 
   return (
-    <aside
-      className="wbn-history-controls"
-      aria-label={t('history.controls')}
-      title={sharedHint}
-    >
+    <aside className="wbn-history-controls" aria-label={t('history.controls')}>
       <IconButton
         disabled={!canUndo}
         onClick={undo}
         aria-label={t('history.undo')}
-        title={`${t('history.undo')}. ${sharedHint}`}
-        tooltip={
-          <>
-            {t('history.undo')}
-            <span className="wbn-history-shared-hint-detail">{sharedHint}</span>
-          </>
-        }
+        title={t('history.undo')}
+        tooltip={t('history.undo')}
       >
         <Undo2 size={17} />
       </IconButton>
@@ -35,13 +25,8 @@ export function HistoryToolbar() {
         disabled={!canRedo}
         onClick={redo}
         aria-label={t('history.redo')}
-        title={`${t('history.redo')}. ${sharedHint}`}
-        tooltip={
-          <>
-            {t('history.redo')}
-            <span className="wbn-history-shared-hint-detail">{sharedHint}</span>
-          </>
-        }
+        title={t('history.redo')}
+        tooltip={t('history.redo')}
       >
         <Redo2 size={17} />
       </IconButton>
