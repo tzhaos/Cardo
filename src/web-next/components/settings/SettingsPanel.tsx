@@ -32,6 +32,13 @@ import {
 import { useUiStore } from '../../app/stores/uiStore';
 import { exportOperationLog } from '../../platform/hostPlatform';
 import { isValidCustomSearchTemplate, type WebSearchEngineId } from '../../domain/webSearch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../ui/primitives/select';
 
 type SettingsSection = 'general' | 'appearance' | 'data' | 'about';
 
@@ -306,17 +313,21 @@ function GeneralSettings({
           </IconFrame>
           <span>{t('settings.searchEngine')}</span>
         </div>
-        <select
-          aria-label={t('settings.searchEngine')}
+        <Select
           value={searchEngine}
-          onChange={(event) => setSearchEngine(event.target.value as WebSearchEngineId)}
+          onValueChange={(value) => setSearchEngine(value as WebSearchEngineId)}
         >
-          <option value="bing-cn">{t('settings.searchEngine.bingCn')}</option>
-          <option value="bing">{t('settings.searchEngine.bing')}</option>
-          <option value="baidu">{t('settings.searchEngine.baidu')}</option>
-          <option value="google">{t('settings.searchEngine.google')}</option>
-          <option value="custom">{t('settings.searchEngine.custom')}</option>
-        </select>
+          <SelectTrigger aria-label={t('settings.searchEngine')}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent align="end">
+            <SelectItem value="bing-cn">{t('settings.searchEngine.bingCn')}</SelectItem>
+            <SelectItem value="bing">{t('settings.searchEngine.bing')}</SelectItem>
+            <SelectItem value="baidu">{t('settings.searchEngine.baidu')}</SelectItem>
+            <SelectItem value="google">{t('settings.searchEngine.google')}</SelectItem>
+            <SelectItem value="custom">{t('settings.searchEngine.custom')}</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       {searchEngine === 'custom' ? (
         <label className="wbn-custom-search-template">
