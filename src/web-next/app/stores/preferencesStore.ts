@@ -1,9 +1,14 @@
 import { useSyncExternalStore } from 'react';
 import type { WorkspaceCommand } from '../../../core/contracts/workspaceCommands';
+import type { InvalidationScope } from '../../../core/contracts/runtimeProtocol';
 import type { WebNextLocale } from '../../i18n/messages';
 import type { WebSearchEngineId } from '../../domain/webSearch';
 import { hasRegisteredWebNextTheme, type WebNextColorMode } from '../../themes/themeRegistry';
-import { dispatchDatabaseCommand, queryPreferences } from '../../platform/hostPlatform';
+import {
+  dispatchDatabaseCommand,
+  getHostPlatformMode,
+  queryPreferences,
+} from '../../platform/hostPlatform';
 
 interface PreferencesStore {
   colorMode: WebNextColorMode;
@@ -68,10 +73,26 @@ async function refreshPreferences() {
   for (const listener of listeners) listener();
 }
 
+/**
+ * Apply preferences scope from Runtime invalidation (design §6.9.2).
+ * Remote clients must refresh preferencesStore; not historyOnly.
+ */
+export async function applyPreferencesInvalidationScopes(
+  scopes: InvalidationScope[],
+): Promise<void> {
+  if (!scopes.some((scope) => scope.type === 'preferences' || scope.type === 'projection')) {
+    return;
+  }
+  await refreshPreferences();
+}
+
 function fireCommand(command: WorkspaceCommand) {
   void enqueue(async () => {
     await dispatchDatabaseCommand(command);
-    await refreshPreferences();
+    // Runtime mode: scopes (including preferences) applied from command.ok.
+    if (getHostPlatformMode() === 'local') {
+      await refreshPreferences();
+    }
   }).catch((error: unknown) => console.error('Failed to update preferences', error));
 }
 

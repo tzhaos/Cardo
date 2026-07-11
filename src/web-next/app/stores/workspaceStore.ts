@@ -12,8 +12,10 @@ import type {
   WorkspaceProjection,
 } from '../../domain/workspace';
 import type { CanvasViewportSize } from '../../domain/canvasGeometry';
+import type { InvalidationScope } from '../../../core/contracts/runtimeProtocol';
 import {
   dispatchDatabaseCommand,
+  getHostPlatformMode,
   queryBoxItems,
   queryDatabaseHistoryState,
   queryPageBoxes,
@@ -226,6 +228,99 @@ async function refreshProjection() {
   emitChange();
 }
 
+/**
+ * Apply server-derived InvalidationScopes (design §6.9.2).
+ * Used by RuntimeClient initiator path and remote SSE (via hostPlatform).
+ */
+export async function applyWorkspaceInvalidationScopes(
+  scopes: InvalidationScope[],
+): Promise<void> {
+  if (!scopes.length) return;
+
+  const hasProjection = scopes.some((scope) => scope.type === 'projection');
+  if (hasProjection) {
+    await refreshProjection();
+    return;
+  }
+
+  let nextProjection = state.projection;
+  let historyTask: Promise<{ canUndo: boolean; canRedo: boolean }> | null = null;
+  const needsHistory = scopes.some((scope) => scope.type === 'history');
+  if (needsHistory) {
+    historyTask = queryDatabaseHistoryState();
+  }
+
+  for (const scope of scopes) {
+    switch (scope.type) {
+      case 'workspaceState': {
+        const workspaceState = await queryWorkspaceState();
+        nextProjection = structurallyShare(nextProjection, {
+          ...nextProjection,
+          ...workspaceState,
+        });
+        break;
+      }
+      case 'pageTabs': {
+        const pages = await queryPageTabs();
+        nextProjection = structurallyShare(nextProjection, { ...nextProjection, pages });
+        break;
+      }
+      case 'pageTabsAndState': {
+        const [pages, workspaceState] = await Promise.all([
+          queryPageTabs(),
+          queryWorkspaceState(),
+        ]);
+        nextProjection = structurallyShare(nextProjection, {
+          ...nextProjection,
+          ...workspaceState,
+          pages,
+        });
+        break;
+      }
+      case 'pageBoxes': {
+        const pageBoxes = await queryPageBoxes(scope.pageId);
+        nextProjection = structurallyShare(nextProjection, {
+          ...nextProjection,
+          boxes: replacePageBoxes(nextProjection.boxes, scope.pageId, pageBoxes),
+        });
+        break;
+      }
+      case 'boxItems': {
+        const items = await queryBoxItems(scope.boxId);
+        nextProjection = structurallyShare(nextProjection, {
+          ...nextProjection,
+          boxes: nextProjection.boxes.map((box) =>
+            box.id === scope.boxId ? { ...box, items } : box,
+          ),
+        });
+        break;
+      }
+      case 'history':
+      case 'preferences':
+        // history applied below; preferences handled by preferencesStore
+        break;
+      default:
+        break;
+    }
+  }
+
+  if (historyTask) {
+    const history = await historyTask;
+    state = {
+      ...state,
+      projection: nextProjection,
+      historyPast: history.canUndo ? [true] : [],
+      historyFuture: history.canRedo ? [true] : [],
+    };
+  } else {
+    state = {
+      ...state,
+      projection: nextProjection,
+    };
+  }
+  emitChange();
+}
+
 function structurallyShare<T>(previous: T, next: T): T {
   return structurallyShareValue(previous, next) as T;
 }
@@ -270,7 +365,11 @@ function runCommand(command: WorkspaceCommand) {
   return enqueue(async () => {
     const projectionBeforeCommand = state.projection;
     const result = await dispatchDatabaseCommand(command);
-    await refreshAfterCommand(command, projectionBeforeCommand);
+    // Runtime mode: scopes applied from command.ok inside RuntimeClient (design §6.11.2).
+    // Local mode: keep client-side getCommandRefreshScope until PR6.
+    if (getHostPlatformMode() === 'local') {
+      await refreshAfterCommand(command, projectionBeforeCommand);
+    }
     return result;
   });
 }
@@ -430,7 +529,10 @@ function fireHistoryChange(direction: 'undo' | 'redo') {
   void enqueue(async () => {
     if (direction === 'undo') await undoDatabaseHistory();
     else await redoDatabaseHistory();
-    await refreshProjection();
+    // Runtime mode: history.ok scopes applied by RuntimeClient; local still full refresh.
+    if (getHostPlatformMode() === 'local') {
+      await refreshProjection();
+    }
   }).catch(reportCommandError);
 }
 

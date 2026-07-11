@@ -18,6 +18,8 @@ export default defineConfig({
         'node:path',
         'node:sqlite',
         'node:url',
+        'node:buffer',
+        'node:stream',
         /^node:/,
       ],
       output: {

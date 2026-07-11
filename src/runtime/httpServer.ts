@@ -155,7 +155,7 @@ async function handleRequest(
       return;
     }
 
-    // Optional static UI (empty in CLI v1).
+    // Static Web UI (PR3): / and /app/* SPA (design §6.5 / §6.11.3).
     if (req.method === 'GET' && ctx.config.serveStaticDir) {
       if (serveStatic(ctx.config.serveStaticDir, pathname, res)) return;
     }
@@ -738,17 +738,54 @@ function applyCors(res: ServerResponse, allowOrigin: string | null): void {
   res.setHeader('Vary', 'Origin');
 }
 
+/**
+ * Serve built web-runtime artifacts.
+ * Vite base is `/app/`, so files live under root as `index.html`, `assets/*`.
+ * Map:
+ *   / → redirect /app/
+ *   /app, /app/ → index.html
+ *   /app/assets/* → artifacts assets
+ *   bare /assets/* also accepted for resilience
+ */
 function serveStatic(rootDir: string, pathname: string, res: ServerResponse): boolean {
-  const safePath = pathname === '/' ? '/index.html' : pathname;
   const resolvedRoot = path.resolve(rootDir);
-  const filePath = path.resolve(resolvedRoot, `.${safePath}`);
+
+  if (pathname === '/') {
+    res.writeHead(302, { Location: '/app/' });
+    res.end();
+    return true;
+  }
+
+  let relativePath = pathname;
+  if (relativePath === '/app' || relativePath === '/app/') {
+    relativePath = '/index.html';
+  } else if (relativePath.startsWith('/app/')) {
+    relativePath = relativePath.slice('/app'.length);
+  }
+
+  // Strip query-like junk (pathname from URL is already without search).
+  if (relativePath.includes('\0')) {
+    sendJson(res, 403, errorBody('forbidden', 'Invalid path.'));
+    return true;
+  }
+
+  let filePath = path.resolve(resolvedRoot, `.${relativePath}`);
   if (!filePath.startsWith(resolvedRoot)) {
     sendJson(res, 403, errorBody('forbidden', 'Invalid path.'));
     return true;
   }
+
+  // SPA fallback: unknown /app/* paths serve index.html (client-side routes).
+  const isAssetLike = path.extname(filePath) !== '';
   if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
-    return false;
+    if (!isAssetLike && (pathname === '/app' || pathname.startsWith('/app/'))) {
+      filePath = path.join(resolvedRoot, 'index.html');
+      if (!fs.existsSync(filePath)) return false;
+    } else {
+      return false;
+    }
   }
+
   const ext = path.extname(filePath).toLowerCase();
   const types: Record<string, string> = {
     '.html': 'text/html; charset=utf-8',
@@ -757,7 +794,11 @@ function serveStatic(rootDir: string, pathname: string, res: ServerResponse): bo
     '.json': 'application/json; charset=utf-8',
     '.svg': 'image/svg+xml',
     '.png': 'image/png',
+    '.woff': 'font/woff',
     '.woff2': 'font/woff2',
+    '.ttf': 'font/ttf',
+    '.ico': 'image/x-icon',
+    '.map': 'application/json; charset=utf-8',
   };
   const body = fs.readFileSync(filePath);
   res.writeHead(200, {

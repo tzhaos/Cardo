@@ -21,6 +21,7 @@
     "vite/desktop-preload.config.ts",
     "vite/native-host.config.ts",
     "vite/cli.config.ts",
+    "vite/web-runtime.config.ts",
     "drizzle.config.ts",
     "scripts/**/*.ts",
     "eslint.config.js"

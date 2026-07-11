@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * cardo CLI — serve / status / stop / open (detached spawn).
- * Design §6.3. Does not implement business Command loops.
+ * cardo CLI — serve / status / stop / open (detached spawn + browser bootstrap).
+ * Design §6.3 / §6.5. Does not implement business Command loops.
  */
 
 import { spawn } from 'node:child_process';
@@ -18,6 +18,7 @@ import {
   waitUntilRuntimeStopped,
 } from '../runtime/index';
 import { defaultOpenLocalResource } from '../runtime/openLocalResourceHook';
+import { issueBootstrapCode } from '../client/runtimeClient';
 
 const HELP = `cardo — Cardo local runtime steward
 
@@ -27,7 +28,7 @@ Usage:
                            Detached child mode (lifetime=auto; used by open)
   cardo status             Show Runtime health / diagnostics
   cardo stop               Force-stop Runtime via authenticated shutdown
-  cardo open               Spawn detached Runtime if needed (PR3: open browser)
+  cardo open               Spawn detached Runtime if needed; open Web with one-time code
   cardo help               Show this help
 `;
 
@@ -63,6 +64,7 @@ async function cmdServe(args: string[]): Promise<void> {
   const daemonChild = args.includes('--daemon-child');
   const lifetimeMode = daemonChild ? 'auto' : 'foreground';
   const paths = resolveCardoDataPaths();
+  const serveStaticDir = resolveServeStaticDir();
 
   if (daemonChild) {
     try {
@@ -81,6 +83,7 @@ async function cmdServe(args: string[]): Promise<void> {
     started = await startRuntime({
       startedBy: 'cli',
       lifetimeMode,
+      serveStaticDir,
       hooks: {
         openLocalResource: defaultOpenLocalResource,
       },
@@ -107,7 +110,8 @@ async function cmdServe(args: string[]): Promise<void> {
       `  pid: ${started.pid}\n` +
       `  lifetimeMode: ${started.lifetimeMode}\n` +
       `  dbPath: ${started.dbPath}\n` +
-      `  discovery: ${started.discoveryPath}\n`,
+      `  discovery: ${started.discoveryPath}\n` +
+      (serveStaticDir ? `  staticUI: ${serveStaticDir}\n` : `  staticUI: (not found; run web-runtime:build)\n`),
   );
 
   let shuttingDown = false;
@@ -247,57 +251,124 @@ async function cmdStop(): Promise<void> {
 }
 
 /**
- * PR2: spawn detached Runtime if needed and print base URL.
- * Full browser open + bootstrap is PR3.
+ * Ensure Runtime is healthy (spawn detached auto child if needed), then
+ * bootstrap one-time code and open system browser to /app/?code=...
+ * URL must NOT contain the long-lived process token (design §6.5).
  */
 async function cmdOpen(): Promise<void> {
   const paths = resolveCardoDataPaths();
-  const discovery = readDiscoveryFile(paths.discoveryPath);
-  if (discovery) {
-    const healthy = await probeRuntimeHealth(discovery.baseUrl);
-    if (healthy) {
+  let discovery = readDiscoveryFile(paths.discoveryPath);
+  let healthy = discovery ? await probeRuntimeHealth(discovery.baseUrl) : false;
+
+  if (!healthy) {
+    const childEntry = resolveCliEntryPath();
+    fs.mkdirSync(paths.dataDir, { recursive: true });
+    const logFd = fs.openSync(paths.logPath, 'a');
+
+    try {
+      const child = spawn(process.execPath, [childEntry, 'serve', '--daemon-child'], {
+        detached: true,
+        stdio: ['ignore', logFd, logFd],
+        env: { ...process.env },
+        windowsHide: true,
+      });
+      child.unref();
       process.stdout.write(
-        `Runtime already running at ${discovery.baseUrl}\n` +
-          `(browser open deferred to PR3)\n`,
+        `Spawned detached Runtime (pid ${child.pid}); waiting for health...\n`,
       );
+    } finally {
+      try {
+        fs.closeSync(logFd);
+      } catch {
+        // ignore
+      }
+    }
+
+    const ready = await waitForRuntime(paths.discoveryPath, 15_000);
+    if (!ready) {
+      process.stderr.write(
+        `Runtime did not become healthy in time. See log: ${paths.logPath}\n`,
+      );
+      process.exitCode = 1;
       return;
     }
+    discovery = readDiscoveryFile(paths.discoveryPath);
+    healthy = true;
   }
 
-  const childEntry = resolveCliEntryPath();
-  fs.mkdirSync(paths.dataDir, { recursive: true });
-  const logFd = fs.openSync(paths.logPath, 'a');
+  if (!discovery?.token || !discovery.baseUrl) {
+    process.stderr.write('Runtime discovery is missing baseUrl or token.\n');
+    process.exitCode = 1;
+    return;
+  }
 
+  let oneTimeCode: string;
   try {
-    const child = spawn(process.execPath, [childEntry, 'serve', '--daemon-child'], {
-      detached: true,
-      stdio: ['ignore', logFd, logFd],
-      env: { ...process.env },
-      windowsHide: true,
-    });
-    child.unref();
-    process.stdout.write(`Spawned detached Runtime (pid ${child.pid}); waiting for health...\n`);
-  } finally {
-    // Child has dup'd the fd; parent must not leak descriptors.
-    try {
-      fs.closeSync(logFd);
-    } catch {
-      // ignore
-    }
-  }
-
-  const ready = await waitForRuntime(paths.discoveryPath, 15_000);
-  if (!ready) {
+    const issued = await issueBootstrapCode(discovery.baseUrl, discovery.token);
+    oneTimeCode = issued.oneTimeCode;
+  } catch (error) {
     process.stderr.write(
-      `Runtime did not become healthy in time. See log: ${paths.logPath}\n`,
+      `auth.bootstrap failed: ${error instanceof Error ? error.message : String(error)}\n`,
     );
     process.exitCode = 1;
     return;
   }
 
-  process.stdout.write(
-    `Runtime ready at ${ready.baseUrl}\n` + `(browser open deferred to PR3)\n`,
-  );
+  const appUrl = `${discovery.baseUrl.replace(/\/$/, '')}/app/?code=${encodeURIComponent(oneTimeCode)}`;
+  process.stdout.write(`Opening ${discovery.baseUrl}/app/ (one-time code bootstrap)\n`);
+  openSystemBrowser(appUrl);
+}
+
+function openSystemBrowser(url: string): void {
+  const platform = process.platform;
+  try {
+    if (platform === 'win32') {
+      // `start` treats first quoted arg as window title; empty title required.
+      spawn('cmd', ['/c', 'start', '', url], {
+        detached: true,
+        stdio: 'ignore',
+        windowsHide: true,
+      }).unref();
+      return;
+    }
+    if (platform === 'darwin') {
+      spawn('open', [url], { detached: true, stdio: 'ignore' }).unref();
+      return;
+    }
+    spawn('xdg-open', [url], { detached: true, stdio: 'ignore' }).unref();
+  } catch (error) {
+    process.stderr.write(
+      `Failed to open browser: ${error instanceof Error ? error.message : String(error)}\n` +
+        `Open manually: ${url}\n`,
+    );
+    process.exitCode = 1;
+  }
+}
+
+/**
+ * Prefer built web-runtime artifacts; fall back to desktop renderer if present.
+ * serveStaticDir is optional — API still works without UI files.
+ */
+function resolveServeStaticDir(): string | undefined {
+  const candidates = [
+    path.resolve(process.cwd(), 'artifacts/web-runtime'),
+    // When running from artifacts/cli/cardo.js, also resolve relative to entry.
+    (() => {
+      try {
+        return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../web-runtime');
+      } catch {
+        return null;
+      }
+    })(),
+    path.resolve(process.cwd(), 'artifacts/desktop/renderer'),
+  ].filter((value): value is string => Boolean(value));
+
+  for (const dir of candidates) {
+    if (fs.existsSync(path.join(dir, 'index.html'))) {
+      return dir;
+    }
+  }
+  return undefined;
 }
 
 function resolveCliEntryPath(): string {
