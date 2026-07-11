@@ -41,6 +41,7 @@ import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
 import { useI18n } from '../../i18n/useI18n';
 import { BoxAppearanceView } from './BoxAppearancePopover';
 import { Input } from '../../ui/primitives/input';
+import { Button } from '../../ui/primitives/button';
 
 interface BaseBoxFrameProps {
   box: WorkspaceBox;
@@ -613,16 +614,16 @@ export function BaseBoxFrame({
               )}
             </p>
             <div className="wbn-box-delete-actions">
-              <button type="button" onClick={() => setConfirmDelete(false)}>
+              <Button variant="ghost" onClick={() => setConfirmDelete(false)}>
                 {t('common.cancel')}
-              </button>
-              <button
+              </Button>
+              <Button
                 className="wbn-box-delete-confirm-button"
-                type="button"
+                variant="danger"
                 onClick={startDeleteMotion}
               >
                 {t(isInRecycleBin ? 'common.deletePermanently' : 'common.moveToRecycleBin')}
-              </button>
+              </Button>
             </div>
           </motion.div>
         ) : (

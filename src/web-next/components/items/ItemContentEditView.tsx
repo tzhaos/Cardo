@@ -8,6 +8,7 @@ import type { BoxItem } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { Input } from '../../ui/primitives/input';
 import { Textarea } from '../../ui/primitives/textarea';
+import { Button } from '../../ui/primitives/button';
 
 export function ItemContentEditView({
   boxId,
@@ -69,12 +70,16 @@ export function ItemContentEditView({
         </small>
       ) : null}
       <span className="wbn-item-edit-actions">
-        <button type="button" onClick={onCancel}>
+        <Button variant="ghost" onClick={onCancel}>
           {t('common.cancel')}
-        </button>
-        <button className="wbn-item-edit-save" type="submit" disabled={normalizedContent === null}>
+        </Button>
+        <Button
+          className="wbn-item-edit-save"
+          type="submit"
+          disabled={normalizedContent === null}
+        >
           {t('common.save')}
-        </button>
+        </Button>
       </span>
     </motion.form>
   );

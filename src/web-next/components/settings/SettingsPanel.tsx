@@ -40,6 +40,7 @@ import {
   SelectValue,
 } from '../../ui/primitives/select';
 import { Input } from '../../ui/primitives/input';
+import { Button } from '../../ui/primitives/button';
 
 type SettingsSection = 'general' | 'appearance' | 'data' | 'about';
 
@@ -241,12 +242,12 @@ function DataSettings() {
               <small>{pendingImport.fileName}</small>
             </span>
             <div>
-              <button type="button" onClick={() => setPendingImport(null)}>
+              <Button variant="ghost" onClick={() => setPendingImport(null)}>
                 {t('common.cancel')}
-              </button>
-              <button
+              </Button>
+              <Button
                 className="wbn-data-import-confirm-button"
-                type="button"
+                variant="default"
                 onClick={() => {
                   replaceSnapshot(pendingImport.snapshot);
                   selectBox(null);
@@ -254,7 +255,7 @@ function DataSettings() {
                 }}
               >
                 {t('settings.importReplace')}
-              </button>
+              </Button>
             </div>
           </motion.div>
         ) : null}

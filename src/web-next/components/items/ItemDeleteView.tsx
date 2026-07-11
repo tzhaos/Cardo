@@ -2,6 +2,7 @@ import { Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useI18n } from '../../i18n/useI18n';
 import { IconFrame } from '../../ui/khaos/icon-button';
+import { Button } from '../../ui/primitives/button';
 
 export function ItemDeleteView({
   onCancel,
@@ -34,12 +35,12 @@ export function ItemDeleteView({
         <span>{t('item.deleteQuestion')}</span>
       </span>
       <span className="wbn-item-delete-actions">
-        <button autoFocus type="button" onClick={onCancel}>
+        <Button autoFocus variant="ghost" onClick={onCancel}>
           {t('common.cancel')}
-        </button>
-        <button className="wbn-item-delete-confirm" type="button" onClick={onConfirm}>
+        </Button>
+        <Button className="wbn-item-delete-confirm" variant="danger" onClick={onConfirm}>
           {t('common.delete')}
-        </button>
+        </Button>
       </span>
     </motion.div>
   );

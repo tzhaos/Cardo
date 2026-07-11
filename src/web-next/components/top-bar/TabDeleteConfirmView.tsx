@@ -1,3 +1,6 @@
+import { useI18n } from '../../i18n/useI18n';
+import { Button } from '../../ui/primitives/button';
+
 interface TabDeleteConfirmViewProps {
   title: string;
   boxCount: number;
@@ -20,14 +23,13 @@ export function TabDeleteConfirmView({
         {t('page.deleteWithRecycleBinQuestion', { title, count: boxCount, boxes: boxLabel })}
       </span>
       <div>
-        <button type="button" onClick={onCancel}>
+        <Button variant="ghost" onClick={onCancel}>
           {t('common.cancel')}
-        </button>
-        <button className="wbn-danger-button" type="button" onClick={onConfirm}>
+        </Button>
+        <Button className="wbn-danger-button" variant="danger" onClick={onConfirm}>
           {t('common.delete')}
-        </button>
+        </Button>
       </div>
     </div>
   );
 }
-import { useI18n } from '../../i18n/useI18n';
