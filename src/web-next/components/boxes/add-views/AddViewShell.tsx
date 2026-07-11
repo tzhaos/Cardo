@@ -37,8 +37,9 @@ export function AddViewShell({
         if (!canSubmit) {
           return;
         }
-        const item = createItem(boxId, type, draftState?.draft ?? {});
-        markCreated(boxId, item.id);
+        void createItem(boxId, type, draftState?.draft ?? {})
+          .then((item) => markCreated(boxId, item.id))
+          .catch((error: unknown) => console.error('Failed to create Item', error));
       }}
     >
       {typePicker}

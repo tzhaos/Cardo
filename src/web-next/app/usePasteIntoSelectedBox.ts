@@ -45,16 +45,20 @@ export function usePasteIntoSelectedBox() {
       const bounds = createCanvasWorldBounds(canvas.viewportSize);
       const center = getCanvasViewportCenter(camera, canvas.viewportSize);
       const temporaryFrame = targetBox?.frame ?? findNewBoxFrame(snapshot, pageId, center, bounds);
-      const result = workspaceStore.pasteItem(
-        pageId,
-        targetBox?.id ?? null,
-        temporaryFrame,
-        pasteItem.type,
-        pasteItem.draft,
-      );
-      if (!result.boxId) return;
-      useUiStore.getState().selectBox(result.boxId);
-      useUiStore.getState().markCreated(result.boxId, result.item.id);
+      void workspaceStore
+        .pasteItem(
+          pageId,
+          targetBox?.id ?? null,
+          temporaryFrame,
+          pasteItem.type,
+          pasteItem.draft,
+        )
+        .then((result) => {
+          if (!result.boxId) return;
+          useUiStore.getState().selectBox(result.boxId);
+          useUiStore.getState().markCreated(result.boxId, result.item.id);
+        })
+        .catch((error: unknown) => console.error('Failed to paste Item', error));
     };
 
     window.addEventListener('paste', onPaste);

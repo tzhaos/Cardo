@@ -28,9 +28,9 @@ export function startWebNextApp() {
         locale: navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en',
         colorMode: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
       });
+      await useWorkspaceStore.initialize();
       await Promise.all([
         usePreferencesStore.persist.rehydrate(),
-        useWorkspaceStore.persist.rehydrate(),
         useOperationJournalStore.persist.rehydrate(),
         useIndependentMenuStore.persist.rehydrate(),
       ]);
