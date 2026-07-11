@@ -17,7 +17,7 @@ import {
 import { createBoxFrameCenteredAt } from '../../domain/placement';
 import { isCollectionPageId, isRecycleBinPageId } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
-import { useContextMenu, type ContextMenuItem } from '../../ui/khaos/context-menu';
+import { useContextMenu, type ContextMenuItem } from '../../ui/cardo/context-menu';
 import { WorkspaceBoxRenderer } from './WorkspaceBoxRenderer';
 import { useCanvasTools } from './useCanvasTools';
 import { CollectionPage } from '../collection/CollectionPage';

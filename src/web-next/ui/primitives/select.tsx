@@ -1,7 +1,7 @@
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { Check, ChevronDown } from 'lucide-react';
 import type { ComponentProps } from 'react';
-import { IconFrame } from '../khaos/icon-button';
+import { IconFrame } from '../cardo/icon-button';
 import { cn } from '../lib/cn';
 
 export const Select = SelectPrimitive.Root;

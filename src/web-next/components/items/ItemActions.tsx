@@ -1,6 +1,6 @@
 import { Edit2, Pin, PinOff, Trash2 } from 'lucide-react';
 import { useI18n } from '../../i18n/useI18n';
-import { IconButton } from '../../ui/khaos/icon-button';
+import { IconButton } from '../../ui/cardo/icon-button';
 
 export function ItemActions({
   pinned = false,

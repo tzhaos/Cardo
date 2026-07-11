@@ -125,7 +125,7 @@ UI / IPC
 
 ```text
 ui/primitives  shadcn/Radix 源码二次开发
-ui/khaos       Cardo 产品级组件（目录名 ui/khaos 为产品 UI kit 路径，可后续视觉 PR 再改）
+ui/cardo       Cardo 产品级组件（shadcn/Radix 二次封装）
 components     Page、Box、Item、Canvas 等业务组件
 ```
 

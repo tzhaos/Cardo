@@ -7,7 +7,7 @@ import { useStagedOrder } from '../../app/motion/useStagedOrder';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import type { BoxItem, WorkspaceBoxViewMode } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
-import { IconButton } from '../../ui/khaos/icon-button';
+import { IconButton } from '../../ui/cardo/icon-button';
 
 export function SortableItemList<TItem extends BoxItem>({
   boxId,

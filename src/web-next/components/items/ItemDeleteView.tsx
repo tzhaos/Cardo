@@ -1,7 +1,7 @@
 import { Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useI18n } from '../../i18n/useI18n';
-import { IconFrame } from '../../ui/khaos/icon-button';
+import { IconFrame } from '../../ui/cardo/icon-button';
 import { Button } from '../../ui/primitives/button';
 
 export function ItemDeleteView({

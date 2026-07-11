@@ -14,7 +14,7 @@ import { useUiStore } from '../../app/stores/uiStore';
 import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { useI18n } from '../../i18n/useI18n';
-import { IconButton } from '../../ui/khaos/icon-button';
+import { IconButton } from '../../ui/cardo/icon-button';
 import { GlobalSearchPanel } from '../global-search/GlobalSearchPanel';
 import { createWebSearchUrl } from '../../domain/webSearch';
 import { openExternalUrl } from '../../platform/hostPlatform';

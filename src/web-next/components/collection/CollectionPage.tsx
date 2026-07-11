@@ -42,7 +42,7 @@ import {
   writeClipboardText,
 } from '../../platform/hostPlatform';
 import { BoxAppearanceIcon } from '../boxes/boxIconRegistry';
-import { useContextMenu } from '../../ui/khaos/context-menu';
+import { useContextMenu } from '../../ui/cardo/context-menu';
 import { Button } from '../../ui/primitives/button';
 
 export function CollectionPage() {

@@ -25,7 +25,7 @@ import { getRegisteredWebNextThemes, getThemePack } from '../../themes/themeRegi
 import type { WebNextColorMode } from '../../themes/themeRegistry';
 import { parseThemePackImportFile } from '../../themes/themeIO';
 import { ColorModeStateIcon, LanguageStateIcon } from './StateIcons';
-import { IconButton, IconFrame } from '../../ui/khaos/icon-button';
+import { IconButton, IconFrame } from '../../ui/cardo/icon-button';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import type { WorkspaceProjection } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';

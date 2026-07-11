@@ -3,7 +3,7 @@ import { LocateFixed, Lock, Unlock } from 'lucide-react';
 import { useCanvasStore } from '../../app/stores/canvasStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { useI18n } from '../../i18n/useI18n';
-import type { ContextMenuItem } from '../../ui/khaos/context-menu';
+import type { ContextMenuItem } from '../../ui/cardo/context-menu';
 
 export function useCanvasTools() {
   const activePageId = useWorkspaceStore((state) => state.projection.activePageId);

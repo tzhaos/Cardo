@@ -1,7 +1,7 @@
 import type { MouseEvent, ReactNode } from 'react';
 import { Edit2, Pin, PinOff, SquarePen, Trash2 } from 'lucide-react';
 import { useI18n } from '../../i18n/useI18n';
-import { useContextMenu } from '../../ui/khaos/context-menu';
+import { useContextMenu } from '../../ui/cardo/context-menu';
 import { useFeatureEnabled } from '../../shell/FeatureGate';
 
 export function useItemContextMenu({

@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import type { FileItem, FolderItem, ShortcutItem } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { openLocalResource } from '../../platform/hostPlatform';
-import { IconFrame } from '../../ui/khaos/icon-button';
+import { IconFrame } from '../../ui/cardo/icon-button';
 import { ItemContentEditView } from './ItemContentEditView';
 import { ItemDeleteView } from './ItemDeleteView';
 import { ItemActions } from './ItemActions';

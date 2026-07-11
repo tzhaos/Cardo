@@ -37,7 +37,7 @@ import {
   startWindowPointerSession,
   type WindowPointerSession,
 } from '../../app/windowPointerSession';
-import { useContextMenu } from '../../ui/khaos/context-menu';
+import { useContextMenu } from '../../ui/cardo/context-menu';
 import { useI18n } from '../../i18n/useI18n';
 import { useFeatureEnabled } from '../../shell/FeatureGate';
 import { BoxAppearanceView } from './BoxAppearancePopover';

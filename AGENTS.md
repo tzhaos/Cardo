@@ -41,7 +41,7 @@ Cardo Runtime 是本机唯一权威 SQLite 持有者与业务写路径。CLI、W
 ## UI 架构
 
 1. 通用 UI 基于进入仓库的 shadcn/ui 源码二次开发，不直接采用默认视觉。
-2. `ui/primitives` 保存 shadcn/Radix 基础源码，`ui/khaos` 保存产品级二次封装，业务组件只组合这些组件。
+2. `ui/primitives` 保存 shadcn/Radix 基础源码，`ui/cardo` 保存产品级二次封装，业务组件只组合这些组件。
 3. Canvas、Box Frame、Item Layout、Page Tab、Drag Overlay 和 Resize 保持产品专用结构。
 4. Radix 管焦点、键盘、Portal 和可访问性；Motion 管连续空间动画；CSS 管颜色、边框和简单 hover；Drag Controller 独占拖拽根节点 transform。
 5. 同一个 CSS 属性在同一状态下只能有一个动效所有者。

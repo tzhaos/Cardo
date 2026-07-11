@@ -1,7 +1,7 @@
 import { Redo2, Undo2 } from 'lucide-react';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { useI18n } from '../../i18n/useI18n';
-import { IconButton } from '../../ui/khaos/icon-button';
+import { IconButton } from '../../ui/cardo/icon-button';
 
 export function HistoryToolbar() {
   const undo = useWorkspaceStore((state) => state.undo);

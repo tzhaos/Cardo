@@ -13,7 +13,7 @@ import { RecycleBinTab } from './RecycleBinTab';
 import { TabDeleteConfirmView } from './TabDeleteConfirmView';
 import { SortablePageTab } from './SortablePageTab';
 import { MotionButton } from '../../ui/primitives/motion-button';
-import { useContextMenu } from '../../ui/khaos/context-menu';
+import { useContextMenu } from '../../ui/cardo/context-menu';
 import { useFeatureEnabled } from '../../shell/FeatureGate';
 
 export function TopBar() {

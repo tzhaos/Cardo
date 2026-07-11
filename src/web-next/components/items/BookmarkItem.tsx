@@ -9,7 +9,7 @@ import { useItemRename } from './useItemRename';
 import { Input } from '../../ui/primitives/input';
 import { useI18n } from '../../i18n/useI18n';
 import { openExternalUrl } from '../../platform/hostPlatform';
-import { IconFrame } from '../../ui/khaos/icon-button';
+import { IconFrame } from '../../ui/cardo/icon-button';
 import { useItemContextMenu } from './useItemContextMenu';
 import { recordItemActivity } from '../../app/operationActivity';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
