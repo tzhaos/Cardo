@@ -1,5 +1,4 @@
 import sqlite3InitModule, { type BindableValue, type Database } from '@sqlite.org/sqlite-wasm';
-import initialMigration from '../../../drizzle/0000_crazy_obadiah_stane.sql?raw';
 import {
   databaseExecuteResponseSchema,
   databaseWorkerRequestSchema,
@@ -7,7 +6,7 @@ import {
   type DatabaseExecuteResponse,
   type DatabaseWorkerResponse,
 } from '../../core/contracts/database';
-import { DATABASE_SCHEMA_VERSION } from '../../core/database/version';
+import { applyMigrations, createSqlExecMigratorAdapter } from '../../core/database/migrator';
 
 const DATABASE_FILENAME = 'khaosbox.sqlite';
 const OPFS_SAH_VFS_NAME = 'khaosbox-opfs-sahpool';
@@ -73,29 +72,26 @@ async function openDatabase() {
   const sqlite3 = (await sqlite3InitModule()) as Sqlite3Module;
 
   const database = await openPersistentDatabase(sqlite3);
-  const versionRows = database.exec({
-    sql: 'PRAGMA user_version',
-    rowMode: 'array',
-    returnValue: 'resultRows',
-  });
-  const version = Number(versionRows[0]?.[0] ?? 0);
 
-  if (version === 0) {
-    database.exec('BEGIN IMMEDIATE');
-    try {
-      database.exec(initialMigration);
-      database.exec(`PRAGMA user_version = ${DATABASE_SCHEMA_VERSION}`);
-      database.exec('COMMIT');
-    } catch (error) {
-      database.exec('ROLLBACK');
-      database.close();
-      throw error;
-    }
-  } else if (version !== DATABASE_SCHEMA_VERSION) {
-    database.close();
-    throw new Error(
-      `Unsupported KhaosBox database schema ${version}; expected ${DATABASE_SCHEMA_VERSION}.`,
+  try {
+    applyMigrations(
+      createSqlExecMigratorAdapter({
+        exec: (sql) => {
+          database.exec(sql);
+        },
+        getUserVersion: () => {
+          const versionRows = database.exec({
+            sql: 'PRAGMA user_version',
+            rowMode: 'array',
+            returnValue: 'resultRows',
+          });
+          return Number(versionRows[0]?.[0] ?? 0);
+        },
+      }),
     );
+  } catch (error) {
+    database.close();
+    throw error;
   }
 
   database.exec('PRAGMA foreign_keys = ON');

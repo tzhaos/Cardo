@@ -22,6 +22,7 @@ import { colorModes, preferenceLocales, webSearchEngineIds } from '../contracts/
 export { DATABASE_SCHEMA_VERSION } from './version';
 export const APP_STATE_ID = 1;
 export const PREFERENCES_ID = 1;
+export const RUNTIME_META_ID = 1;
 
 export const appState = sqliteTable('app_state', {
   id: integer('id').primaryKey(),
@@ -165,6 +166,15 @@ export const historyEntries = sqliteTable(
   ],
 );
 
+/**
+ * Multi-client revision counter. Single row id = RUNTIME_META_ID.
+ * Never appears in history change sets; undo/redo do not roll this back.
+ */
+export const runtimeMeta = sqliteTable('runtime_meta', {
+  id: integer('id').primaryKey(),
+  revision: integer('revision').notNull().default(0),
+});
+
 export const pagesRelations = relations(pages, ({ many }) => ({ boxes: many(boxes) }));
 
 export const boxesRelations = relations(boxes, ({ one, many }) => ({
@@ -197,6 +207,8 @@ export const preferencesInsertSchema = createInsertSchema(preferences);
 export const appStateSelectSchema = createSelectSchema(appState);
 export const boxSelectSchemaStrict = createSelectSchema(boxes);
 export const collectionBoxViewSelectSchema = createSelectSchema(collectionBoxViews);
+export const runtimeMetaSelectSchema = createSelectSchema(runtimeMeta);
+export const runtimeMetaInsertSchema = createInsertSchema(runtimeMeta);
 
 export const databaseSchema = {
   appState,
@@ -208,6 +220,7 @@ export const databaseSchema = {
   preferences,
   operationLog,
   historyEntries,
+  runtimeMeta,
   pagesRelations,
   boxesRelations,
   itemsRelations,

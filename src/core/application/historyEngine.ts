@@ -5,6 +5,7 @@ import {
   type HistoryRowChange,
 } from '../contracts/history';
 import type { KhaosDatabase } from '../database/createDatabaseClient';
+import { bumpRevision } from '../database/revision';
 import {
   appState,
   appStateSelectSchema,
@@ -52,6 +53,8 @@ export async function undoDatabaseCommand(database: KhaosDatabase) {
       undoable: false,
       createdAt: timestamp,
     });
+    // Successful undo is a mutation: revision++ (never restore an older revision value).
+    await bumpRevision(transaction);
     return true;
   });
 }
@@ -83,6 +86,8 @@ export async function redoDatabaseCommand(database: KhaosDatabase) {
       undoable: false,
       createdAt: timestamp,
     });
+    // Successful redo is a mutation: revision++.
+    await bumpRevision(transaction);
     return true;
   });
 }

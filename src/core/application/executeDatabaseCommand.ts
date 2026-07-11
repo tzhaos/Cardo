@@ -5,6 +5,7 @@ import {
 } from '../contracts/workspaceCommands';
 import { historyChangeSetSchema } from '../contracts/history';
 import type { KhaosDatabase } from '../database/createDatabaseClient';
+import { bumpRevision } from '../database/revision';
 import { eq } from 'drizzle-orm';
 import { historyEntries, operationLog } from '../database/schema';
 import type { DatabaseCommandResult } from './commandTypes';
@@ -46,6 +47,9 @@ export async function executeDatabaseCommand(
         updatedAt: timestamp,
       });
     }
+
+    // Successful mutating txn with changes: revision++ (never in history change set).
+    await bumpRevision(transaction);
 
     return mutation.result ?? {};
   });
