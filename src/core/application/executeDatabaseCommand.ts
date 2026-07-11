@@ -8,53 +8,20 @@ import type { KhaosDatabase } from '../database/createDatabaseClient';
 import { eq } from 'drizzle-orm';
 import { historyEntries, operationLog } from '../database/schema';
 import type { DatabaseCommandResult } from './commandTypes';
-import { executePageCommand, type PageCommand } from './pageCommandHandlers';
-import { executeBoxCommand, type BoxCommand } from './boxCommandHandlers';
-import { executeItemCommand, type ItemCommand } from './itemCommandHandlers';
-import { executeWorkspaceImport } from './workspaceCommandHandlers';
-import {
-  executePreferencesCommand,
-  type PreferencesCommand,
-} from './preferencesCommandHandlers';
+import { getDatabaseCommandHandler } from './databaseCommandRegistry';
 
 export async function executeDatabaseCommand(
   database: KhaosDatabase,
   input: WorkspaceCommand,
 ): Promise<DatabaseCommandResult> {
   const command = parseWorkspaceCommand(input);
-  const isPageCommand = command.type.startsWith('page.');
-  const isBoxCommand =
-    command.type.startsWith('box.') ||
-    command.type.startsWith('collection.') ||
-    command.type.startsWith('canvas.') ||
-    command.type === 'system.constrainFrames';
-  const isItemCommand = command.type.startsWith('item.') || command.type === 'bookmark.setFavicon';
-  const isWorkspaceImport = command.type === 'workspace.import';
-  const isPreferencesCommand = command.type.startsWith('preferences.');
-  if (
-    !isPageCommand &&
-    !isBoxCommand &&
-    !isItemCommand &&
-    !isWorkspaceImport &&
-    !isPreferencesCommand
-  ) {
-    throw new Error(`Database handler for ${command.type} is not implemented.`);
-  }
-
   const definition = getWorkspaceCommandDefinition(command.type);
+  const handler = getDatabaseCommandHandler(command.type);
   const transactionId = crypto.randomUUID();
   const timestamp = new Date().toISOString();
 
   return await database.transaction(async (transaction) => {
-    const mutation = isPreferencesCommand
-      ? await executePreferencesCommand(transaction, command as PreferencesCommand)
-      : isWorkspaceImport
-      ? await executeWorkspaceImport(transaction, command)
-      : isPageCommand
-        ? await executePageCommand(transaction, command as PageCommand)
-        : isBoxCommand
-          ? await executeBoxCommand(transaction, command as BoxCommand)
-          : await executeItemCommand(transaction, command as ItemCommand);
+    const mutation = await handler(transaction, command);
     if (!mutation.changes.length) return mutation.result ?? {};
 
     await transaction.insert(operationLog).values({
