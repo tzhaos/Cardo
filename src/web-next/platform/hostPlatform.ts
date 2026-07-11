@@ -8,6 +8,7 @@ import {
   redoDatabaseCommand,
   undoDatabaseCommand,
 } from '../../core/application/historyEngine';
+import { getWorkspaceSnapshot } from '../../core/database/workspaceQueries';
 
 let database: KhaosDatabase | null = null;
 
@@ -30,6 +31,10 @@ export function redoDatabaseHistory() {
 
 export function queryDatabaseHistoryState() {
   return getDatabaseHistoryState(getKhaosDatabase());
+}
+
+export function queryWorkspaceSnapshot() {
+  return getWorkspaceSnapshot(getKhaosDatabase());
 }
 
 /**
