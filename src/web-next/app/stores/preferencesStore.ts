@@ -75,12 +75,12 @@ async function refreshPreferences() {
 
 /**
  * Apply preferences scope from Runtime invalidation (design §6.9.2).
- * Remote clients must refresh preferencesStore; not historyOnly.
+ * Refresh only when scopes include `preferences` (full catch-up always sends it).
  */
 export async function applyPreferencesInvalidationScopes(
   scopes: InvalidationScope[],
 ): Promise<void> {
-  if (!scopes.some((scope) => scope.type === 'preferences' || scope.type === 'projection')) {
+  if (!scopes.some((scope) => scope.type === 'preferences')) {
     return;
   }
   await refreshPreferences();

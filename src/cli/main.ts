@@ -346,7 +346,8 @@ function openSystemBrowser(url: string): void {
 }
 
 /**
- * Prefer built web-runtime artifacts; fall back to desktop renderer if present.
+ * Only accept web-runtime artifacts built with Vite base `/app/`.
+ * Do not fall back to desktop renderer (`base: './'`) — those asset URLs break under /app/.
  * serveStaticDir is optional — API still works without UI files.
  */
 function resolveServeStaticDir(): string | undefined {
@@ -360,7 +361,6 @@ function resolveServeStaticDir(): string | undefined {
         return null;
       }
     })(),
-    path.resolve(process.cwd(), 'artifacts/desktop/renderer'),
   ].filter((value): value is string => Boolean(value));
 
   for (const dir of candidates) {

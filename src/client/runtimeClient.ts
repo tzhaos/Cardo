@@ -9,6 +9,7 @@ import type { ActivityLogInput } from '../core/application/operationLogService';
 import type { InitialWorkspacePreferences } from '../core/database/initializeWorkspaceDatabase';
 import {
   activityRecordOkSchema,
+  authBootstrapOkSchema,
   authExchangeOkSchema,
   commandOkSchema,
   ensureInitializedOkSchema,
@@ -21,6 +22,7 @@ import {
   sessionByeOkSchema,
   workspaceExportOkSchema,
   workspaceExportOperationLogOkSchema,
+  type AuthBootstrapOk,
   type AuthExchangeOk,
   type CommandOk,
   type EnsureInitializedOk,
@@ -67,11 +69,30 @@ export class RuntimeClient {
   private readonly onConnectionChange?: RuntimeClientOptions['onConnectionChange'];
 
   private selfClientId: string | null = null;
+  /**
+   * Monotonic watermark of the highest revision this client has observed
+   * (from hello, command.ok, history.ok, ensureInitialized.ok, ready, or SSE —
+   * including self-echo). Never moves backward.
+   */
   private localRevision = 0;
+  /**
+   * Highest revision for which store scopes have been applied.
+   * Self-echo advances localRevision without advancing this until command.ok
+   * applies (or a later catch-up covers it).
+   */
+  private lastAppliedRevision = 0;
   private eventsAbort: AbortController | null = null;
   private subscribeLoopActive = false;
   private closed = false;
+  /** Serializes mutating HTTP requests only (not queries, not SSE). */
   private requestQueue: Promise<unknown> = Promise.resolve();
+  /**
+   * Single mutex for revision watermark updates + onApplyScopes (HTTP ok and SSE).
+   * Queries used inside apply stay off requestQueue to avoid deadlocks.
+   */
+  private applyQueue: Promise<unknown> = Promise.resolve();
+  private firstReadyWaiters: Array<() => void> = [];
+  private firstReadySeen = false;
 
   constructor(options: RuntimeClientOptions) {
     this.baseUrl = options.baseUrl.replace(/\/$/, '');
@@ -101,7 +122,8 @@ export class RuntimeClient {
 
   /**
    * Register this client with Runtime. Assigns selfClientId from hello.ok.
-   * Starts the event subscription loop (reconnect + full catch-up).
+   * Starts the event subscription loop and waits for the first ready event
+   * so bootstrap I/O cannot race the initial stream handshake.
    */
   async connect(): Promise<HelloOk> {
     if (this.closed) {
@@ -109,8 +131,11 @@ export class RuntimeClient {
     }
     const hello = await this.hello();
     this.selfClientId = hello.clientId;
-    this.localRevision = hello.revision;
+    // hello.revision is authoritative starting watermark; stores hydrate after connect.
+    this.advanceRevision(hello.revision);
+    this.firstReadySeen = false;
     void this.runSubscribeLoop();
+    await this.waitForFirstReady(10_000);
     return hello;
   }
 
@@ -286,14 +311,10 @@ export class RuntimeClient {
 
   /**
    * Full catch-up from DB SoT (design §6.9.2 / §6.10).
-   * Does not change localRevision by itself — caller sets revision after ready/query.
+   * Serialized on the apply mutex; does not change revision watermarks by itself.
    */
   async fullCatchUp(): Promise<void> {
-    await this.onApplyScopes([
-      { type: 'projection' },
-      { type: 'preferences' },
-      { type: 'history' },
-    ]);
+    await this.enqueueApply(() => this.fullCatchUpUnlocked());
   }
 
   async bye(): Promise<void> {
@@ -315,29 +336,84 @@ export class RuntimeClient {
     this.eventsAbort?.abort();
     this.eventsAbort = null;
     this.subscribeLoopActive = false;
+    this.resolveFirstReadyWaiters();
     await this.bye();
     this.selfClientId = null;
     this.onConnectionChange?.('disconnected');
   }
 
-  // --- internal: mutation apply (design §6.11.2) ---
+  // --- revision + apply mutex (design §6.10 / §6.11.2) ---
 
+  /** Never move localRevision backward. */
+  private advanceRevision(revision: number): void {
+    if (revision > this.localRevision) {
+      this.localRevision = revision;
+    }
+  }
+
+  private markApplied(revision: number): void {
+    if (revision > this.lastAppliedRevision) {
+      this.lastAppliedRevision = revision;
+    }
+  }
+
+  private enqueueApply<T>(task: () => Promise<T>): Promise<T> {
+    const result = this.applyQueue.then(task, task);
+    this.applyQueue = result.then(
+      () => undefined,
+      () => undefined,
+    );
+    return result;
+  }
+
+  private async fullCatchUpUnlocked(): Promise<void> {
+    await this.onApplyScopes([
+      { type: 'projection' },
+      { type: 'preferences' },
+      { type: 'history' },
+    ]);
+  }
+
+  /**
+   * Initiator path: apply scopes from mutating HTTP only when revision is still
+   * ahead of lastAppliedRevision. Stale/late responses never re-apply or clamp down.
+   */
   private async onMutatingHttpOk(
     response: CommandOk | HistoryOk | EnsureInitializedOk,
   ): Promise<void> {
-    if ('applied' in response && response.applied === false) {
-      this.localRevision = response.revision;
-      return;
-    }
-    if ('created' in response && response.created === false) {
-      this.localRevision = response.revision;
-      return;
-    }
-    const scopes = response.scopes ?? [];
-    if (scopes.length > 0) {
-      await this.onApplyScopes(scopes);
-    }
-    this.localRevision = response.revision;
+    await this.enqueueApply(async () => {
+      const revision = response.revision;
+
+      if ('applied' in response && response.applied === false) {
+        this.advanceRevision(revision);
+        return;
+      }
+      if ('created' in response && response.created === false) {
+        this.advanceRevision(revision);
+        return;
+      }
+
+      // Already applied a newer or equal revision (e.g. SSE catch-up won the race).
+      if (revision <= this.lastAppliedRevision) {
+        this.advanceRevision(revision);
+        return;
+      }
+
+      const scopes = response.scopes ?? [];
+      if (scopes.length > 0) {
+        // Gap vs last applied → full catch-up rather than applying intermediate scopes.
+        if (
+          this.lastAppliedRevision > 0 &&
+          revision > this.lastAppliedRevision + 1
+        ) {
+          await this.fullCatchUpUnlocked();
+        } else {
+          await this.onApplyScopes(scopes);
+        }
+        this.markApplied(revision);
+      }
+      this.advanceRevision(revision);
+    });
   }
 
   private async onRuntimeEvent(event: RuntimeEvent): Promise<void> {
@@ -351,28 +427,94 @@ export class RuntimeClient {
   }
 
   private async onReadyEvent(event: ReadyEvent): Promise<void> {
-    if (event.revision !== this.localRevision) {
-      await this.fullCatchUp();
-    }
-    this.localRevision = event.revision;
+    await this.enqueueApply(async () => {
+      try {
+        // Stale ready (bootstrap raced ahead) — never clamp localRevision down.
+        if (event.revision < this.localRevision) {
+          return;
+        }
+        if (event.revision > this.localRevision) {
+          // Server is ahead (reconnect or mutations between hello and ready).
+          await this.fullCatchUpUnlocked();
+          this.markApplied(event.revision);
+          this.advanceRevision(event.revision);
+          return;
+        }
+        // Equal watermark after reconnect with lagging apply — heal without clamping.
+        // Fresh connect (lastAppliedRevision === 0) leaves hydration to ensureInitialized
+        // + store.initialize so we do not query empty preferences before seed.
+        if (
+          this.lastAppliedRevision > 0 &&
+          this.lastAppliedRevision < event.revision
+        ) {
+          await this.fullCatchUpUnlocked();
+          this.markApplied(event.revision);
+        }
+      } finally {
+        this.resolveFirstReadyWaiters();
+      }
+    });
   }
 
   private async onMutationEvent(event: MutationEvent): Promise<void> {
-    // Self-echo: initiator already applied from command.ok / history.ok / ensureInitialized.ok
-    if (this.selfClientId && event.sourceClientId === this.selfClientId) {
-      return;
-    }
-    if (event.revision <= this.localRevision) {
-      return;
-    }
-    if (event.revision === this.localRevision + 1) {
-      await this.onApplyScopes(event.scopes);
-      this.localRevision = event.revision;
-      return;
-    }
-    // Gap → full catch-up (design §6.10)
-    await this.fullCatchUp();
-    this.localRevision = event.revision;
+    await this.enqueueApply(async () => {
+      // Self-echo: initiator applies from HTTP ok; still advance watermark so gap math
+      // stays correct if command.ok is delayed (design §6.10 + review Issue 1).
+      if (this.selfClientId && event.sourceClientId === this.selfClientId) {
+        this.advanceRevision(event.revision);
+        return;
+      }
+
+      if (event.revision <= this.lastAppliedRevision) {
+        this.advanceRevision(event.revision);
+        return;
+      }
+
+      if (event.revision <= this.localRevision) {
+        // Seen (e.g. self-echo watermark) but not applied — should not happen for remote;
+        // if it does, catch up to stay consistent.
+        if (event.revision > this.lastAppliedRevision) {
+          await this.fullCatchUpUnlocked();
+          this.markApplied(event.revision);
+        }
+        this.advanceRevision(event.revision);
+        return;
+      }
+
+      if (event.revision === this.localRevision + 1) {
+        await this.onApplyScopes(event.scopes);
+        this.markApplied(event.revision);
+        this.advanceRevision(event.revision);
+        return;
+      }
+
+      // Gap → full catch-up (design §6.10)
+      await this.fullCatchUpUnlocked();
+      this.markApplied(event.revision);
+      this.advanceRevision(event.revision);
+    });
+  }
+
+  private waitForFirstReady(timeoutMs: number): Promise<void> {
+    if (this.firstReadySeen) return Promise.resolve();
+    return new Promise((resolve) => {
+      const timer = setTimeout(() => {
+        this.firstReadyWaiters = this.firstReadyWaiters.filter((w) => w !== onReady);
+        resolve();
+      }, timeoutMs);
+      const onReady = () => {
+        clearTimeout(timer);
+        resolve();
+      };
+      this.firstReadyWaiters.push(onReady);
+    });
+  }
+
+  private resolveFirstReadyWaiters(): void {
+    this.firstReadySeen = true;
+    const waiters = this.firstReadyWaiters;
+    this.firstReadyWaiters = [];
+    for (const resolve of waiters) resolve();
   }
 
   // --- event stream (fetch + ReadableStream, not EventSource) ---
@@ -381,17 +523,22 @@ export class RuntimeClient {
     if (this.subscribeLoopActive || this.closed) return;
     this.subscribeLoopActive = true;
     let backoffMs = 250;
+    let everConnected = false;
 
     while (!this.closed && this.selfClientId) {
       try {
-        this.onConnectionChange?.(
-          this.eventsAbort ? 'reconnecting' : 'connected',
-        );
+        // Do not claim "connected" before the stream is accepted (Issue 6).
+        if (everConnected) {
+          this.onConnectionChange?.('reconnecting');
+        }
         await this.subscribeEventsOnce();
         backoffMs = 250;
+        everConnected = true;
       } catch {
         if (this.closed) break;
         this.onConnectionChange?.('reconnecting');
+        // Ensure connect() is not stuck forever if stream fails before first ready.
+        this.resolveFirstReadyWaiters();
         await sleep(backoffMs);
         backoffMs = Math.min(backoffMs * 2, 8_000);
       }
@@ -577,7 +724,7 @@ export async function exchangeOneTimeCode(
 export async function issueBootstrapCode(
   baseUrl: string,
   processToken: string,
-): Promise<{ oneTimeCode: string; expiresInMs: number }> {
+): Promise<AuthBootstrapOk> {
   const response = await fetch(`${baseUrl.replace(/\/$/, '')}/v1/auth/bootstrap`, {
     method: 'POST',
     headers: {
@@ -593,12 +740,7 @@ export async function issueBootstrapCode(
       response.status,
     );
   }
-  const json = (await response.json()) as {
-    type: string;
-    oneTimeCode: string;
-    expiresInMs: number;
-  };
-  return { oneTimeCode: json.oneTimeCode, expiresInMs: json.expiresInMs };
+  return authBootstrapOkSchema.parse(await response.json());
 }
 
 function parseSseBlock(block: string): RuntimeEvent | null {
