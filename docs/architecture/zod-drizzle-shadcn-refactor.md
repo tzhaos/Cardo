@@ -203,42 +203,42 @@ components     Page、Box、Item、Canvas 等业务组件
 ### 7. IPC、导入导出
 
 - [ ] 桌面 IPC 全部经过 Zod Contract。
-- [ ] 插件消息全部经过 Zod Contract。
-- [ ] 导入导出使用严格独立格式。
+- [x] 插件消息全部经过 Zod Contract。
+- [x] 导入导出使用严格独立格式。
 
 ### 8. KhaosBox Design System
 
-- [ ] 建立 token、cn、Portal 和 z-index 契约。
-- [ ] 二次开发 Button、IconButton、Tooltip。
-- [ ] 二次开发 ContextMenu、DropdownMenu。
+- [x] 建立 token、cn、Portal 和 z-index 契约。
+- [x] 二次开发 Button、IconButton、Tooltip。
+- [x] 二次开发 ContextMenu、DropdownMenu。
 - [ ] 二次开发 Popover、Select、Toggle、Switch。
-- [ ] 二次开发 Input、Textarea、InlineRename。
+- [x] 二次开发 Input、Textarea、InlineRename。
 - [ ] 二次开发 Dialog、AlertDialog、FloatingWindow。
-- [ ] 建立统一 motion token 和动效所有权。
+- [x] 建立统一 motion token 和动效所有权。
 
 ### 9. UI 迁移
 
-- [ ] 迁移普通按钮、图标按钮和 Tooltip。
-- [ ] 迁移 Canvas、Box、Item、Page 右键菜单。
-- [ ] 迁移所有 Popover 和二级菜单。
-- [ ] 迁移 Page、Box、Item Rename。
-- [ ] 迁移设置、删除确认和导入导出界面。
+- [x] 迁移普通按钮、图标按钮和 Tooltip。
+- [x] 迁移 Canvas、Box、Item、Page 右键菜单。
+- [x] 迁移所有 Popover 和二级菜单。
+- [x] 迁移 Page、Box、Item Rename。
+- [x] 迁移设置、删除确认和导入导出界面。
 - [ ] 迁移搜索与命令面板。
-- [ ] 迁移工具栏和 Item Actions。
-- [ ] 保持 Canvas、Box Frame、拖拽与 Resize 专用结构。
+- [x] 迁移工具栏和 Item Actions。
+- [x] 保持 Canvas、Box Frame、拖拽与 Resize 专用结构。
 
 ### 10. 清理与收口
 
-- [ ] 删除 Zustand Workspace persist。
-- [ ] 删除完整 Workspace Snapshot history。
-- [ ] 删除手写 codec、normalize 和兼容分支。
-- [ ] 删除重复 reducer、model 和 selector。
-- [ ] 删除被替代的旧 UI primitive 和 CSS。
-- [ ] 拆分单文件 app.css。
-- [ ] 完成插件和桌面端构建。
-- [ ] 审计每个业务写入口都经过 Command Registry。
-- [ ] 审计每个运行时边界都经过 Zod。
-- [ ] 审计 UI 不直接访问 Drizzle。
+- [x] 删除 Zustand Workspace persist。
+- [x] 删除完整 Workspace Snapshot history。
+- [x] 删除手写 codec、normalize 和兼容分支。
+- [x] 删除重复 reducer、model 和 selector。
+- [x] 删除被替代的旧 UI primitive 和 CSS。
+- [x] 拆分单文件 app.css。
+- [x] 完成插件和桌面端构建。
+- [x] 审计每个业务写入口都经过 Command Registry。
+- [x] 审计每个运行时边界都经过 Zod。
+- [x] 审计 UI 不直接访问 Drizzle。
 
 ## 提交规则
 

@@ -18,7 +18,6 @@ function createProjection(): WorkspaceProjection {
       {
         id: 'moving',
         pageId: 'source',
-        preset: 'folder',
         kind: 'normal',
         title: 'Moving',
         frame: { x: 20, y: 20, width: 280, height: 200 },
@@ -26,6 +25,8 @@ function createProjection(): WorkspaceProjection {
         viewMode: 'list',
         detailMode: 'detailed',
         isLocked: false,
+        icon: 'box',
+        accent: '#3b82f6',
         createdAt: '',
         updatedAt: '',
       },
@@ -35,7 +36,7 @@ function createProjection(): WorkspaceProjection {
 
 test('findPageLandingFrame centers a box on an empty page', () => {
   const frame = findPageLandingFrame(
-    createSnapshot(),
+    createProjection(),
     'moving',
     'target',
     { x: 600, y: 400 },
@@ -50,7 +51,6 @@ test('findPageLandingFrame chooses a nearby free position when center is occupie
   projection.boxes.push({
     id: 'occupied',
     pageId: 'target',
-    preset: 'bookmark',
     kind: 'normal',
     title: 'Occupied',
     frame: { x: 440, y: 280, width: 320, height: 240 },
@@ -58,6 +58,8 @@ test('findPageLandingFrame chooses a nearby free position when center is occupie
     viewMode: 'list',
     detailMode: 'detailed',
     isLocked: false,
+    icon: 'box',
+    accent: '#f97316',
     createdAt: '',
     updatedAt: '',
   });
