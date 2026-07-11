@@ -55,7 +55,6 @@ export const databaseCommandRegistry = Object.freeze({
   'box.setDetailMode': boxHandler,
   'box.setLocked': boxHandler,
   'box.setAppearance': boxHandler,
-  'box.setPreset': boxHandler,
   'box.setViewMode': boxHandler,
   'box.moveToPage': boxHandler,
   'box.collect': boxHandler,

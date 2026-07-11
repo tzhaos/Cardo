@@ -14,11 +14,7 @@ import {
   getCanvasPanLimits,
 } from '../../domain/canvasGeometry';
 import { createBoxFrameCenteredAt } from '../../domain/placement';
-import {
-  isCollectionPageId,
-  isRecycleBinPageId,
-  type WorkspaceBoxPreset,
-} from '../../domain/workspace';
+import { isCollectionPageId, isRecycleBinPageId } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { useContextMenu } from '../../ui/khaos/context-menu';
 import { WorkspaceBoxRenderer } from './WorkspaceBoxRenderer';
@@ -110,14 +106,11 @@ export function WorkspaceCanvas() {
                   id: 'new-box',
                   label: t('menu.newBox'),
                   icon: <Plus size={16} />,
-                  onSelect: () => {
-                    const preset: WorkspaceBoxPreset = 'general';
+                  onSelect: () =>
                     createBox(
-                      preset,
                       constrainBoxFrameToCanvas(createBoxFrameCenteredAt(point), canvasBounds),
-                      getBoxPresetLabel(preset, t),
-                    );
-                  },
+                      t('box.general'),
+                    ),
                 },
               ]
             : []),
@@ -261,13 +254,3 @@ const pageSceneVariants: Variants = {
     transition: { type: 'tween', duration: 0.16, ease: [0.4, 0, 1, 1] },
   }),
 };
-
-function getBoxPresetLabel(preset: WorkspaceBoxPreset, t: ReturnType<typeof useI18n>['t']) {
-  return preset === 'general'
-    ? t('box.general')
-    : preset === 'folder'
-      ? t('box.folder')
-      : preset === 'bookmark'
-        ? t('box.bookmark')
-        : t('box.clipboard');
-}

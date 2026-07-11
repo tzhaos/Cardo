@@ -9,8 +9,8 @@ import {
   preferences,
 } from './schema';
 import { DATABASE_SCHEMA_VERSION } from './version';
-import { getDefaultBoxAccent, getDefaultBoxIcon } from '../domains/boxAppearance';
 import type { ColorMode, PreferenceLocale } from '../contracts/preferences';
+import type { WorkspaceBoxIcon } from '../contracts/workspace';
 
 export const COLLECTION_PAGE_ID = 'khaosbox-collection';
 export const RECYCLE_BIN_PAGE_ID = 'khaosbox-recycle-bin';
@@ -76,9 +76,9 @@ export async function initializeWorkspaceDatabase(
     ]);
 
     await transaction.insert(boxes).values([
-      createInitialBox(defaultPageId, 'folder', 120, 130, 1, timestamp),
-      createInitialBox(defaultPageId, 'bookmark', 500, 165, 2, timestamp),
-      createInitialBox(defaultPageId, 'clipboard', 170, 380, 3, timestamp),
+      createInitialBox(defaultPageId, 'Folder Box', 'folder', '#3b82f6', 120, 130, 1, timestamp),
+      createInitialBox(defaultPageId, 'Bookmark Box', 'bookmark', '#f97316', 500, 165, 2, timestamp),
+      createInitialBox(defaultPageId, 'Clipboard Box', 'clipboard', '#10b981', 170, 380, 3, timestamp),
     ]);
 
     await transaction.insert(appState).values({
@@ -101,7 +101,9 @@ export async function initializeWorkspaceDatabase(
 
 function createInitialBox(
   pageId: string,
-  preset: 'folder' | 'bookmark' | 'clipboard',
+  title: string,
+  icon: WorkspaceBoxIcon,
+  accent: string,
   x: number,
   y: number,
   zIndex: number,
@@ -110,14 +112,8 @@ function createInitialBox(
   return {
     id: `box-${crypto.randomUUID()}`,
     pageId,
-    preset,
     kind: 'normal' as const,
-    title:
-      preset === 'folder'
-        ? 'Folder Box'
-        : preset === 'bookmark'
-          ? 'Bookmark Box'
-          : 'Clipboard Box',
+    title,
     x,
     y,
     width: 320,
@@ -125,8 +121,8 @@ function createInitialBox(
     viewMode: 'list' as const,
     detailMode: 'detailed' as const,
     isLocked: false,
-    icon: getDefaultBoxIcon(preset),
-    accent: getDefaultBoxAccent(preset),
+    icon,
+    accent,
     zIndex,
     createdAt: timestamp,
     updatedAt: timestamp,

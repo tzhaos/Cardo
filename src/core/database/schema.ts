@@ -13,7 +13,6 @@ import {
   workspaceBoxDetailModes,
   workspaceBoxIcons,
   workspaceBoxKinds,
-  workspaceBoxPresets,
   workspaceBoxViewModes,
   workspaceItemTypes,
 } from '../contracts/workspace';
@@ -50,7 +49,6 @@ export const boxes = sqliteTable(
     pageId: text('page_id')
       .notNull()
       .references(() => pages.id, { onDelete: 'cascade' }),
-    preset: text('preset', { enum: workspaceBoxPresets }).notNull(),
     kind: text('kind', { enum: workspaceBoxKinds }).notNull(),
     title: text('title').notNull(),
     x: integer('x').notNull(),

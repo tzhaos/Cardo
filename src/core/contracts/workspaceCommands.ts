@@ -5,7 +5,6 @@ import {
   entityIdSchema,
   workspaceBoxDetailModeSchema,
   workspaceBoxIconSchema,
-  workspaceBoxPresetSchema,
   workspaceBoxViewModeSchema,
   workspaceItemTypeSchema,
   workspaceProjectionSchema,
@@ -47,7 +46,6 @@ const commandSchemas = [
     .object({
       type: z.literal('box.create'),
       pageId: entityIdSchema,
-      preset: workspaceBoxPresetSchema,
       frame: boxFrameSchema,
       title: titleSchema.optional(),
     })
@@ -112,13 +110,6 @@ const commandSchemas = [
       boxId: entityIdSchema,
       icon: workspaceBoxIconSchema.optional(),
       accent: colorHexSchema.optional(),
-    })
-    .strict(),
-  z
-    .object({
-      type: z.literal('box.setPreset'),
-      boxId: entityIdSchema,
-      preset: workspaceBoxPresetSchema,
     })
     .strict(),
   z

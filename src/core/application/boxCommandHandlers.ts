@@ -18,7 +18,7 @@ import type {
   DatabaseCommandMutation,
   DatabaseTransaction,
 } from './commandTypes';
-import { chooseAvailableBoxAccent, getDefaultBoxIcon } from '../domains/boxAppearance';
+import { chooseAvailableBoxAccent, DEFAULT_BOX_ICON } from '../domains/boxAppearance';
 
 type BoxCommandType =
   | 'box.create'
@@ -28,7 +28,6 @@ type BoxCommandType =
   | 'box.setDetailMode'
   | 'box.setLocked'
   | 'box.setAppearance'
-  | 'box.setPreset'
   | 'box.setViewMode'
   | 'box.moveToPage'
   | 'box.collect'
@@ -64,8 +63,6 @@ export async function executeBoxCommand(
         ...(command.icon ? { icon: command.icon } : {}),
         ...(command.accent ? { accent: command.accent.toLowerCase() } : {}),
       });
-    case 'box.setPreset':
-      return updateBox(transaction, command.boxId, { preset: command.preset });
     case 'box.setViewMode':
       return updateBox(transaction, command.boxId, { viewMode: command.viewMode });
     case 'box.moveToPage':
@@ -110,14 +107,13 @@ async function createBox(
   const box = {
     id: boxId,
     pageId: command.pageId,
-    preset: command.preset,
     kind: 'normal' as const,
-    title: command.title?.trim() || getDefaultTitle(command.preset),
+    title: command.title?.trim() || 'New Box',
     ...frameColumns(command.frame),
     viewMode: 'list' as const,
     detailMode: 'detailed' as const,
     isLocked: false,
-    icon: getDefaultBoxIcon(command.preset),
+    icon: DEFAULT_BOX_ICON,
     accent,
     zIndex: (pageBoxes[0]?.zIndex ?? 0) + 1,
     createdAt: timestamp,
@@ -483,13 +479,6 @@ function rowsEqual(
   ignored: string[] = [],
 ) {
   return Object.keys(after).every((key) => ignored.includes(key) || before[key] === after[key]);
-}
-
-function getDefaultTitle(preset: 'general' | 'folder' | 'bookmark' | 'clipboard') {
-  if (preset === 'folder') return 'Folder Box';
-  if (preset === 'bookmark') return 'Bookmark Box';
-  if (preset === 'clipboard') return 'Clipboard Box';
-  return 'New Box';
 }
 
 function clamp(value: number, minimum: number, maximum: number) {

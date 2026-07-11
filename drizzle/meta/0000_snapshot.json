@@ -148,13 +148,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "preset": {
-          "name": "preset",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "kind": {
           "name": "kind",
           "type": "text",

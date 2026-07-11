@@ -610,7 +610,7 @@ export function BaseBoxFrame({
             <p>
               {t(
                 isInRecycleBin ? 'box.deletePermanentlyQuestion' : 'box.moveToRecycleBinQuestion',
-                { type: getBoxTypeLabel(box.preset, t) },
+                { type: t('box.general') },
               )}
             </p>
             <div className="wbn-box-delete-actions">
@@ -661,14 +661,4 @@ export function BaseBoxFrame({
       {contextMenu.menu}
     </motion.article>
   );
-}
-
-function getBoxTypeLabel(preset: WorkspaceBox['preset'], t: ReturnType<typeof useI18n>['t']) {
-  return preset === 'folder'
-    ? t('box.folder')
-    : preset === 'bookmark'
-      ? t('box.bookmark')
-      : preset === 'clipboard'
-        ? t('box.clipboard')
-        : t('box.general');
 }

@@ -7,7 +7,6 @@ export const workspaceItemTypes = [
   'bookmark',
   'clipboard',
 ] as const;
-export const workspaceBoxPresets = ['general', 'folder', 'bookmark', 'clipboard'] as const;
 export const workspaceBoxViewModes = ['list', 'grid'] as const;
 export const workspaceBoxDetailModes = ['detailed', 'compact'] as const;
 export const workspaceBoxKinds = ['normal', 'temporary'] as const;
@@ -27,7 +26,6 @@ export const workspaceBoxIcons = [
 ] as const;
 
 export const workspaceItemTypeSchema = z.enum(workspaceItemTypes);
-export const workspaceBoxPresetSchema = z.enum(workspaceBoxPresets);
 export const workspaceBoxViewModeSchema = z.enum(workspaceBoxViewModes);
 export const workspaceBoxDetailModeSchema = z.enum(workspaceBoxDetailModes);
 export const workspaceBoxKindSchema = z.enum(workspaceBoxKinds);
@@ -120,7 +118,6 @@ export const workspaceBoxSchema = z
   .object({
     id: entityIdSchema,
     pageId: entityIdSchema,
-    preset: workspaceBoxPresetSchema,
     kind: workspaceBoxKindSchema,
     title: z.string().max(512),
     frame: boxFrameSchema,
@@ -158,7 +155,6 @@ export const workspaceProjectionSchema = z
 
 export type WorkspaceItem = z.infer<typeof workspaceItemSchema>;
 export type WorkspaceItemType = z.infer<typeof workspaceItemTypeSchema>;
-export type WorkspaceBoxPreset = z.infer<typeof workspaceBoxPresetSchema>;
 export type WorkspaceBoxViewMode = z.infer<typeof workspaceBoxViewModeSchema>;
 export type WorkspaceBoxDetailMode = z.infer<typeof workspaceBoxDetailModeSchema>;
 export type WorkspaceBoxKind = z.infer<typeof workspaceBoxKindSchema>;

@@ -1,4 +1,4 @@
-import type { WorkspaceBox, WorkspaceItemType } from '../../domain/workspace';
+import type { WorkspaceBox } from '../../domain/workspace';
 import { getBoxAccent, getBoxIcon } from '../../domain/boxAppearance';
 import { useUiStore } from '../../app/stores/uiStore';
 import { BookmarkItem } from '../items/BookmarkItem';
@@ -22,7 +22,7 @@ export function UniversalBox({
   const { t } = useI18n();
   const accent = getBoxAccent(box);
   const icon = getBoxIcon(box);
-  const preferredItemType = getPreferredItemType(box.preset);
+  const defaultItemType = 'clipboard' as const;
 
   return (
     <BaseBoxFrame
@@ -30,11 +30,11 @@ export function UniversalBox({
       icon={<BoxAppearanceIcon icon={icon} size={16} />}
       iconId={icon}
       accent={accent}
-      onAddItem={() => openAddView(box.id, preferredItemType)}
+      onAddItem={() => openAddView(box.id, defaultItemType)}
       skipEntryAnimation={skipEntryAnimation}
     >
       {draftState?.mode ? (
-        <UniversalAddView boxId={box.id} defaultType={preferredItemType} />
+        <UniversalAddView boxId={box.id} defaultType={defaultItemType} />
       ) : box.items.length ? (
         <SortableItemList
           boxId={box.id}
@@ -60,8 +60,4 @@ function renderItem(boxId: string, item: WorkspaceBox['items'][number], highligh
     case 'clipboard':
       return <ClipboardItem boxId={boxId} item={item} highlight={highlight} />;
   }
-}
-
-function getPreferredItemType(preset: WorkspaceBox['preset']): WorkspaceItemType {
-  return preset === 'general' ? 'clipboard' : preset;
 }

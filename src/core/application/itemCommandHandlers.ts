@@ -17,7 +17,7 @@ import type {
   DatabaseCommandMutation,
   DatabaseTransaction,
 } from './commandTypes';
-import { chooseAvailableBoxAccent, getDefaultBoxIcon } from '../domains/boxAppearance';
+import { chooseAvailableBoxAccent, DEFAULT_BOX_ICON } from '../domains/boxAppearance';
 
 type ItemCommandType =
   | 'item.paste'
@@ -95,7 +95,6 @@ async function pasteItem(
     targetBox = {
       id: `box-${crypto.randomUUID()}`,
       pageId: command.pageId,
-      preset: 'general',
       kind: 'temporary',
       title: '',
       x: command.temporaryFrame.x,
@@ -105,7 +104,7 @@ async function pasteItem(
       viewMode: 'list',
       detailMode: 'detailed',
       isLocked: false,
-      icon: getDefaultBoxIcon('general'),
+      icon: DEFAULT_BOX_ICON,
       accent: chooseAvailableBoxAccent(pageBoxes.map((box) => box.accent)),
       zIndex: (pageBoxes[0]?.zIndex ?? 0) + 1,
       createdAt: timestamp,

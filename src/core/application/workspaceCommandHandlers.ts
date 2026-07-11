@@ -75,7 +75,6 @@ function projectWorkspaceRows(workspace: WorkspaceProjection) {
     return {
       id: box.id,
       pageId: box.pageId,
-      preset: box.preset,
       kind: box.kind,
       title: box.title,
       x: box.frame.x,

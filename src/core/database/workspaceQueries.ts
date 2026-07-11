@@ -85,7 +85,6 @@ export async function getWorkspaceProjection(database: KhaosDatabase) {
     boxes: boxRows.map((box) => ({
       id: box.id,
       pageId: box.pageId,
-      preset: box.preset,
       kind: box.kind,
       title: box.title,
       frame: { x: box.x, y: box.y, width: box.width, height: box.height },

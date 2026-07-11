@@ -20,7 +20,6 @@ CREATE UNIQUE INDEX `box_items_order_unique` ON `box_items` (`box_id`,`sort_orde
 CREATE TABLE `boxes` (
 	`id` text PRIMARY KEY NOT NULL,
 	`page_id` text NOT NULL,
-	`preset` text NOT NULL,
 	`kind` text NOT NULL,
 	`title` text NOT NULL,
 	`x` integer NOT NULL,

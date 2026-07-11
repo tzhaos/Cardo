@@ -6,7 +6,6 @@ import type {
   BoxItem,
   WorkspaceBoxDetailMode,
   WorkspaceBoxIcon,
-  WorkspaceBoxPreset,
   WorkspaceBoxViewMode,
   WorkspaceItemType,
   WorkspaceProjection,
@@ -33,7 +32,7 @@ interface WorkspaceStore {
   reorderPages: (orderedPageIds: string[]) => void;
   setActivePage: (pageId: string, origin?: string) => void;
   setDefaultPage: (pageId: string) => void;
-  createBox: (preset: WorkspaceBoxPreset, frame: BoxFrame, title?: string) => void;
+  createBox: (frame: BoxFrame, title?: string) => void;
   pasteItem: (
     pageId: string,
     targetBoxId: string | null,
@@ -60,7 +59,6 @@ interface WorkspaceStore {
     boxId: string,
     appearance: { icon?: WorkspaceBoxIcon; accent?: string },
   ) => void;
-  setBoxPreset: (boxId: string, preset: WorkspaceBoxPreset) => void;
   setBoxViewMode: (boxId: string, viewMode: WorkspaceBoxViewMode) => void;
   moveBoxToPage: (boxId: string, pageId: string, frame?: BoxFrame) => void;
   addBoxToCollection: (boxId: string) => void;
@@ -111,11 +109,10 @@ const actions = {
   setActivePage: (pageId: string, _origin = 'navigation') =>
     fireCommand({ type: 'page.open', pageId }),
   setDefaultPage: (pageId: string) => fireCommand({ type: 'page.setDefault', pageId }),
-  createBox: (preset: WorkspaceBoxPreset, frame: BoxFrame, title?: string) =>
+  createBox: (frame: BoxFrame, title?: string) =>
     fireCommand({
       type: 'box.create',
       pageId: state.projection.activePageId,
-      preset,
       frame,
       title,
     }),
@@ -163,8 +160,6 @@ const actions = {
     boxId: string,
     appearance: { icon?: WorkspaceBoxIcon; accent?: string },
   ) => fireCommand({ type: 'box.setAppearance', boxId, ...appearance }),
-  setBoxPreset: (boxId: string, preset: WorkspaceBoxPreset) =>
-    fireCommand({ type: 'box.setPreset', boxId, preset }),
   setBoxViewMode: (boxId: string, viewMode: WorkspaceBoxViewMode) =>
     fireCommand({ type: 'box.setViewMode', boxId, viewMode }),
   moveBoxToPage: (boxId: string, pageId: string, frame?: BoxFrame) =>
