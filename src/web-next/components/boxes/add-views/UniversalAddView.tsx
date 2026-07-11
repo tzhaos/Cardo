@@ -26,11 +26,11 @@ export function UniversalAddView({
   const selectAddItemType = useUiStore((state) => state.selectAddItemType);
   const { t } = useI18n();
   const typePicker = (
-    <div className="wbn-item-type-picker" aria-label={t('add.itemType')}>
+    <div className="cardo-item-type-picker" aria-label={t('add.itemType')}>
       {ITEM_TYPES.map(({ type, icon: Icon, label }) => (
         <Button
           variant="ghost"
-          className={selectedType === type ? 'wbn-item-type-active' : undefined}
+          className={selectedType === type ? 'cardo-item-type-active' : undefined}
           key={type}
           type="button"
           title={t(label)}

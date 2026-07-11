@@ -1,4 +1,4 @@
-.wbn-app {
+.cardo-app {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
@@ -25,15 +25,15 @@
  * Opt-in: product content labels only (circle-select / I-beam).
  * Clipboard body keeps cursor:copy from items.css — select only, no text cursor.
  */
-.wbn-app :where(
-  .wbn-text-label,
-  .wbn-box-title,
-  .wbn-tab-label,
-  .wbn-item-main strong,
-  .wbn-item-title-placeholder,
-  .wbn-item-secondary,
-  .wbn-item-subtitle-link,
-  .wbn-system-page-empty-label
+.cardo-app :where(
+  .cardo-text-label,
+  .cardo-box-title,
+  .cardo-tab-label,
+  .cardo-item-main strong,
+  .cardo-item-title-placeholder,
+  .cardo-item-secondary,
+  .cardo-item-subtitle-link,
+  .cardo-system-page-empty-label
 ) {
   cursor: text;
   caret-color: auto;
@@ -41,14 +41,14 @@
   -webkit-user-select: text;
 }
 
-.wbn-app :where(.wbn-clipboard-body) {
+.cardo-app :where(.cardo-clipboard-body) {
   caret-color: auto;
   user-select: text;
   -webkit-user-select: text;
 }
 
 /* Editing fields (rename, search, settings values). */
-.wbn-app :where(input, textarea, [contenteditable='true']) {
+.cardo-app :where(input, textarea, [contenteditable='true']) {
   cursor: text;
   caret-color: auto;
   user-select: text;
@@ -57,62 +57,62 @@
 
 /*
  * Explicit chrome force-none: controls and chrome never take I-beam / selection,
- * even when nested near opt-in labels (e.g. tab button wrapping .wbn-tab-label).
+ * even when nested near opt-in labels (e.g. tab button wrapping .cardo-tab-label).
  */
-.wbn-app :where(
+.cardo-app :where(
   button,
   [role='button'],
-  a.wbn-toolbar-button,
-  .wbn-top-bar,
-  .wbn-bottom-shell,
-  .wbn-bottom-toolbar,
-  .wbn-history-controls,
-  .wbn-canvas-tools,
-  .wbn-floating-menu,
-  .wbn-menu-row,
-  .wbn-create-menu-button,
-  .wbn-settings-header,
-  .wbn-settings-nav,
-  .wbn-settings-card-static,
-  .wbn-desktop-titlebar,
-  .wbn-desktop-window-controls,
-  .wbn-item-actions,
-  .wbn-item-drag-handle,
-  .wbn-item-glyph,
-  .wbn-box-delete,
-  .wbn-box-footer,
-  .wbn-ui-menu-content,
-  .wbn-ui-select-content,
-  .wbn-ui-select-item,
-  .wbn-ui-tooltip-content,
-  .wbn-global-search-result
+  a.cardo-toolbar-button,
+  .cardo-top-bar,
+  .cardo-bottom-shell,
+  .cardo-bottom-toolbar,
+  .cardo-history-controls,
+  .cardo-canvas-tools,
+  .cardo-floating-menu,
+  .cardo-menu-row,
+  .cardo-create-menu-button,
+  .cardo-settings-header,
+  .cardo-settings-nav,
+  .cardo-settings-card-static,
+  .cardo-desktop-titlebar,
+  .cardo-desktop-window-controls,
+  .cardo-item-actions,
+  .cardo-item-drag-handle,
+  .cardo-item-glyph,
+  .cardo-box-delete,
+  .cardo-box-footer,
+  .cardo-ui-menu-content,
+  .cardo-ui-select-content,
+  .cardo-ui-select-item,
+  .cardo-ui-tooltip-content,
+  .cardo-global-search-result
 ) {
   caret-color: transparent;
   user-select: none;
   -webkit-user-select: none;
 }
 
-.wbn-app :where(button, [role='button'], a.wbn-toolbar-button, .wbn-menu-row, .wbn-create-menu-button) {
+.cardo-app :where(button, [role='button'], a.cardo-toolbar-button, .cardo-menu-row, .cardo-create-menu-button) {
   cursor: pointer;
 }
 
 /*
- * Portal surfaces mount under document.body (outside .wbn-app). Keep the same
+ * Portal surfaces mount under document.body (outside .cardo-app). Keep the same
  * chrome policy without depending on the app root ancestor.
  */
 :where(
-  .wbn-floating-menu,
-  .wbn-ui-menu-content,
-  .wbn-ui-select-content,
-  .wbn-ui-select-item,
-  .wbn-ui-tooltip-content
+  .cardo-floating-menu,
+  .cardo-ui-menu-content,
+  .cardo-ui-select-content,
+  .cardo-ui-select-item,
+  .cardo-ui-tooltip-content
 ) {
   caret-color: transparent;
   user-select: none;
   -webkit-user-select: none;
 }
 
-.wbn-history-controls {
+.cardo-history-controls {
   position: fixed;
   z-index: 88;
   top: var(--cardo-space-6);
@@ -128,11 +128,11 @@
   backdrop-filter: blur(var(--cardo-chrome-blur));
 }
 
-.wbn-app-desktop .wbn-history-controls {
+.cardo-app-desktop .cardo-history-controls {
   top: 64px;
 }
 
-.wbn-history-controls button {
+.cardo-history-controls button {
   display: inline-flex;
   width: 36px;
   height: 36px;
@@ -144,16 +144,16 @@
   color: var(--cardo-secondary-text);
 }
 
-.wbn-history-controls button:hover:not(:disabled) {
+.cardo-history-controls button:hover:not(:disabled) {
   background: var(--cardo-hover);
   color: var(--cardo-text);
 }
 
-.wbn-history-controls button:disabled {
+.cardo-history-controls button:disabled {
   opacity: 0.34;
 }
 
-.wbn-history-shared-hint-detail {
+.cardo-history-shared-hint-detail {
   display: block;
   margin-top: 0.35rem;
   max-width: 16rem;
@@ -164,7 +164,7 @@
   white-space: normal;
 }
 
-.wbn-runtime-connection-banner {
+.cardo-runtime-connection-banner {
   position: fixed;
   z-index: 120;
   top: 24px;
@@ -186,11 +186,11 @@
   pointer-events: none;
 }
 
-.wbn-app-desktop .wbn-runtime-connection-banner {
+.cardo-app-desktop .cardo-runtime-connection-banner {
   top: 64px;
 }
 
-.wbn-runtime-connection-banner-dot {
+.cardo-runtime-connection-banner-dot {
   width: 0.5rem;
   height: 0.5rem;
   flex: 0 0 auto;
@@ -198,16 +198,16 @@
   background: var(--cardo-muted, #888);
 }
 
-.wbn-runtime-connection-banner--reconnecting .wbn-runtime-connection-banner-dot {
+.cardo-runtime-connection-banner--reconnecting .cardo-runtime-connection-banner-dot {
   background: #d97706;
-  animation: wbn-runtime-pulse 1.1s ease-in-out infinite;
+  animation: cardo-runtime-pulse 1.1s ease-in-out infinite;
 }
 
-.wbn-runtime-connection-banner--disconnected .wbn-runtime-connection-banner-dot {
+.cardo-runtime-connection-banner--disconnected .cardo-runtime-connection-banner-dot {
   background: #dc2626;
 }
 
-@keyframes wbn-runtime-pulse {
+@keyframes cardo-runtime-pulse {
   0%,
   100% {
     opacity: 0.35;
@@ -217,7 +217,7 @@
   }
 }
 
-.wbn-desktop-titlebar {
+.cardo-desktop-titlebar {
   position: fixed;
   z-index: 220;
   top: 0;
@@ -235,7 +235,7 @@
   backdrop-filter: blur(14px);
 }
 
-.wbn-desktop-titlebar-brand {
+.cardo-desktop-titlebar-brand {
   display: inline-flex;
   min-width: 0;
   align-items: center;
@@ -247,17 +247,17 @@
   letter-spacing: 0.01em;
 }
 
-.wbn-desktop-titlebar-brand svg {
+.cardo-desktop-titlebar-brand svg {
   color: var(--cardo-blue);
 }
 
-.wbn-desktop-window-controls {
+.cardo-desktop-window-controls {
   display: flex;
   align-self: stretch;
   -webkit-app-region: no-drag;
 }
 
-.wbn-desktop-window-control {
+.cardo-desktop-window-control {
   display: inline-flex;
   width: 46px;
   align-items: center;
@@ -270,17 +270,17 @@
     background 140ms ease;
 }
 
-.wbn-desktop-window-control:hover {
+.cardo-desktop-window-control:hover {
   background: var(--cardo-hover);
   color: var(--cardo-text);
 }
 
-.wbn-desktop-window-control-close:hover {
+.cardo-desktop-window-control-close:hover {
   background: var(--cardo-red);
   color: #fff;
 }
 
-.wbn-independent-menu {
+.cardo-independent-menu {
   position: fixed;
   z-index: 180;
   width: min(640px, calc(100vw - 32px));
@@ -293,27 +293,27 @@
   backdrop-filter: blur(18px);
 }
 
-body.wbn-independent-menu-dragging .wbn-independent-menu {
+body.cardo-independent-menu-dragging .cardo-independent-menu {
   backdrop-filter: none;
   will-change: transform;
 }
 
 @media (max-width: 760px) {
-  .wbn-top-bar {
+  .cardo-top-bar {
     top: 14px;
     max-width: calc(100vw - 20px);
   }
 
-  .wbn-history-controls,
-  .wbn-canvas-tools {
+  .cardo-history-controls,
+  .cardo-canvas-tools {
     top: 14px;
   }
 
-  .wbn-bottom-shell {
+  .cardo-bottom-shell {
     bottom: 14px;
   }
 
-  .wbn-independent-menu {
+  .cardo-independent-menu {
     width: calc(100vw - 20px);
     height: min(440px, calc(100vh - 20px));
   }

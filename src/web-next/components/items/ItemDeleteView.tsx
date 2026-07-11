@@ -15,7 +15,7 @@ export function ItemDeleteView({
 
   return (
     <motion.div
-      className="wbn-item-delete-view"
+      className="cardo-item-delete-view"
       role="alertdialog"
       aria-label={t('item.deleteConfirmation')}
       initial={{ opacity: 0, x: 8, scale: 0.985 }}
@@ -28,17 +28,17 @@ export function ItemDeleteView({
         }
       }}
     >
-      <span className="wbn-item-delete-copy">
+      <span className="cardo-item-delete-copy">
         <IconFrame>
           <Trash2 size={15} />
         </IconFrame>
         <span>{t('item.deleteQuestion')}</span>
       </span>
-      <span className="wbn-item-delete-actions">
+      <span className="cardo-item-delete-actions">
         <Button autoFocus variant="ghost" onClick={onCancel}>
           {t('common.cancel')}
         </Button>
-        <Button className="wbn-item-delete-confirm" variant="danger" onClick={onConfirm}>
+        <Button className="cardo-item-delete-confirm" variant="danger" onClick={onConfirm}>
           {t('common.delete')}
         </Button>
       </span>

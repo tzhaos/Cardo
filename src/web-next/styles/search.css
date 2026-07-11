@@ -1,4 +1,4 @@
-.wbn-global-search-panel-wrap {
+.cardo-global-search-panel-wrap {
   position: absolute;
   bottom: 64px;
   left: 50%;
@@ -6,7 +6,7 @@
   transform: translateX(-50%);
 }
 
-.wbn-global-search-panel {
+.cardo-global-search-panel {
   width: 100%;
   max-height: min(560px, calc(100vh - 150px));
   overflow: hidden;
@@ -18,7 +18,7 @@
   backdrop-filter: blur(20px);
 }
 
-.wbn-global-search-results {
+.cardo-global-search-results {
   max-height: min(560px, calc(100vh - 150px));
   overflow-y: auto;
   padding: 7px;
@@ -26,7 +26,7 @@
   scrollbar-color: var(--cardo-scrollbar) transparent;
 }
 
-.wbn-global-search-result {
+.cardo-global-search-result {
   display: grid;
   width: 100%;
   min-height: 64px;
@@ -43,53 +43,53 @@
   -webkit-user-select: none;
 }
 
-.wbn-global-search-result > svg {
+.cardo-global-search-result > svg {
   justify-self: center;
   color: var(--cardo-muted);
 }
 
-.wbn-global-search-result:hover,
-.wbn-global-search-result-active {
+.cardo-global-search-result:hover,
+.cardo-global-search-result-active {
   background: var(--cardo-hover);
   color: var(--cardo-text);
 }
 
-.wbn-global-search-result-active > svg {
+.cardo-global-search-result-active > svg {
   color: var(--cardo-blue);
 }
 
-.wbn-global-search-copy {
+.cardo-global-search-copy {
   display: flex;
   min-width: 0;
   flex-direction: column;
   gap: 2px;
 }
 
-.wbn-global-search-title,
-.wbn-global-search-path,
-.wbn-global-search-detail {
+.cardo-global-search-title,
+.cardo-global-search-path,
+.cardo-global-search-detail {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.wbn-global-search-title {
+.cardo-global-search-title {
   color: var(--cardo-soft-text);
   font-size: 13px;
   font-weight: 600;
 }
 
-.wbn-global-search-path {
+.cardo-global-search-path {
   color: var(--cardo-muted);
   font-size: 11px;
 }
 
-.wbn-global-search-detail {
+.cardo-global-search-detail {
   color: var(--cardo-secondary-text);
   font-size: 11px;
 }
 
-.wbn-global-search-kind {
+.cardo-global-search-kind {
   border: 1px solid var(--cardo-border-subtle);
   border-radius: var(--cardo-radius-pill);
   padding: 3px 7px;
@@ -97,7 +97,7 @@
   font-size: 10px;
 }
 
-.wbn-global-search-empty {
+.cardo-global-search-empty {
   display: flex;
   min-height: 128px;
   flex-direction: column;

@@ -51,7 +51,7 @@ export function IconFrame({
   ...props
 }: HTMLAttributes<HTMLSpanElement> & { children: ReactNode }) {
   return (
-    <span {...props} className={cn('wbn-icon-frame', className)}>
+    <span {...props} className={cn('cardo-icon-frame', className)}>
       {children}
     </span>
   );

@@ -47,7 +47,7 @@ export function LocalResourceAddView({
         onChange={(event) => updateDraft(boxId, { path: event.target.value })}
       />
       {showInvalidPath ? (
-        <small className="wbn-field-error">{t('field.localPathError')}</small>
+        <small className="cardo-field-error">{t('field.localPathError')}</small>
       ) : null}
     </AddViewShell>
   );

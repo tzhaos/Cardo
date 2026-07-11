@@ -11,7 +11,7 @@ export function HistoryToolbar() {
   const { t } = useI18n();
 
   return (
-    <aside className="wbn-history-controls" aria-label={t('history.controls')}>
+    <aside className="cardo-history-controls" aria-label={t('history.controls')}>
       <IconButton
         disabled={!canUndo}
         onClick={undo}

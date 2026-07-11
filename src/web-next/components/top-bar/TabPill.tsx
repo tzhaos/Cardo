@@ -54,7 +54,7 @@ export function TabPill({
           ? { type: 'tween', duration: 0 }
           : { type: 'spring', stiffness: 500, damping: 40, mass: 0.68 },
       }}
-      className={`wbn-tab-pill${active ? ' wbn-tab-pill-active' : ''}${rename.renaming ? ' wbn-tab-pill-renaming' : ''}${systemPage ? ' wbn-tab-pill-system' : ''}`}
+      className={`cardo-tab-pill${active ? ' cardo-tab-pill-active' : ''}${rename.renaming ? ' cardo-tab-pill-renaming' : ''}${systemPage ? ' cardo-tab-pill-system' : ''}`}
     >
       <Button
         variant="ghost"
@@ -71,7 +71,7 @@ export function TabPill({
         <AnimatePresence initial={false}>
           {active ? (
             <motion.span
-              className="wbn-active-tab-indicator"
+              className="cardo-active-tab-indicator"
               layoutId="active-tab-indicator"
               initial={false}
               animate={{ opacity: 1, scale: 1 }}
@@ -84,13 +84,13 @@ export function TabPill({
             />
           ) : null}
         </AnimatePresence>
-        <span className="wbn-tab-label">{icon ?? page.title}</span>
+        <span className="cardo-tab-label">{icon ?? page.title}</span>
       </Button>
       {rename.renaming ? (
-        <div className="wbn-tab-rename-layer" onContextMenu={rename.onContextMenu}>
+        <div className="cardo-tab-rename-layer" onContextMenu={rename.onContextMenu}>
           <Input
             ref={rename.inputRef}
-            className="wbn-inline-rename wbn-tab-rename-input"
+            className="cardo-inline-rename cardo-tab-rename-input"
             aria-label={t('page.rename', { title: page.title })}
             value={rename.draft}
             onChange={(event) => rename.setDraft(event.target.value)}

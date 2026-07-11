@@ -1,4 +1,4 @@
-.wbn-add-view {
+.cardo-add-view {
   display: flex;
   width: 100%;
   min-height: 100%;
@@ -11,14 +11,14 @@
   scrollbar-width: thin;
 }
 
-.wbn-item-type-picker {
+.cardo-item-type-picker {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 5px;
   padding-bottom: 2px;
 }
 
-.wbn-item-type-picker button {
+.cardo-item-type-picker button {
   display: inline-flex;
   min-width: 0;
   height: 32px;
@@ -30,18 +30,18 @@
   color: var(--cardo-muted);
 }
 
-.wbn-item-type-picker button:hover {
+.cardo-item-type-picker button:hover {
   background: var(--cardo-hover);
   color: var(--cardo-soft-text);
 }
 
-.wbn-item-type-picker .wbn-item-type-active {
+.cardo-item-type-picker .cardo-item-type-active {
   border-color: color-mix(in srgb, var(--box-accent) 28%, var(--cardo-border-subtle));
   background: color-mix(in srgb, var(--box-accent) 10%, var(--cardo-panel-content));
   color: var(--box-accent);
 }
 
-.wbn-add-view header {
+.cardo-add-view header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -49,14 +49,14 @@
   color: var(--cardo-soft-text);
 }
 
-.wbn-add-view h3 {
+.cardo-add-view h3 {
   margin: 0;
   font-size: 13px;
   font-weight: 500;
 }
 
-.wbn-add-view header button,
-.wbn-add-primary {
+.cardo-add-view header button,
+.cardo-add-primary {
   border: 0;
   border-radius: var(--cardo-radius-md);
   padding: 6px 8px;
@@ -65,9 +65,9 @@
   font-size: 12px;
 }
 
-.wbn-add-view input,
-.wbn-add-view textarea,
-.wbn-add-view select {
+.cardo-add-view input,
+.cardo-add-view textarea,
+.cardo-add-view select {
   width: 100%;
   border: 1px solid var(--cardo-border-subtle);
   border-radius: var(--cardo-radius-md);
@@ -79,31 +79,31 @@
   outline: none;
 }
 
-.wbn-add-view input:focus,
-.wbn-add-view textarea:focus {
+.cardo-add-view input:focus,
+.cardo-add-view textarea:focus {
   border-color: var(--cardo-blue);
   box-shadow: 0 0 0 1px var(--cardo-blue);
 }
 
-.wbn-add-view textarea {
+.cardo-add-view textarea {
   min-height: 58px;
   resize: vertical;
 }
 
-.wbn-add-view .wbn-clipboard-compose {
+.cardo-add-view .cardo-clipboard-compose {
   min-height: 112px;
   flex: 1 1 auto;
   line-height: 20px;
 }
 
-.wbn-add-actions {
+.cardo-add-actions {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 10px;
   margin-top: 0;
 }
 
-.wbn-add-actions button {
+.cardo-add-actions button {
   display: inline-flex;
   min-height: 40px;
   align-items: center;
@@ -114,22 +114,22 @@
   font-weight: 600;
 }
 
-.wbn-add-cancel {
+.cardo-add-cancel {
   background: var(--cardo-neutral-button);
   color: var(--cardo-soft-text);
 }
 
-.wbn-add-primary {
+.cardo-add-primary {
   background: #60a5fa;
   color: #ffffff;
 }
 
-.wbn-add-primary:disabled {
+.cardo-add-primary:disabled {
   cursor: not-allowed;
   opacity: 0.46;
 }
 
-.wbn-field-error {
+.cardo-field-error {
   margin: -2px 2px 0;
   color: var(--cardo-red);
   font-size: 12px;

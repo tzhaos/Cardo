@@ -27,7 +27,7 @@ export function ClipboardAddView({
     >
       <Textarea
         autoFocus
-        className="wbn-clipboard-compose"
+        className="cardo-clipboard-compose"
         placeholder={t('field.clipText')}
         value={text}
         onChange={(event) => updateDraft(boxId, { text: event.target.value })}

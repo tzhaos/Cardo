@@ -26,7 +26,7 @@ export function ItemContentEditView({
 
   return (
     <motion.form
-      className="wbn-item-edit-view"
+      className="cardo-item-edit-view"
       aria-label={t('item.editContent')}
       initial={{ opacity: 0, x: 8, scale: 0.985 }}
       animate={{ opacity: 1, x: 0, scale: 1 }}
@@ -64,15 +64,15 @@ export function ItemContentEditView({
         />
       )}
       {showInvalid ? (
-        <small className="wbn-field-error">
+        <small className="cardo-field-error">
           {t(item.type === 'bookmark' ? 'field.urlError' : 'field.localPathError')}
         </small>
       ) : null}
-      <span className="wbn-item-edit-actions">
+      <span className="cardo-item-edit-actions">
         <Button variant="ghost" onClick={onCancel}>
           {t('common.cancel')}
         </Button>
-        <Button className="wbn-item-edit-save" type="submit" disabled={normalizedContent === null}>
+        <Button className="cardo-item-edit-save" type="submit" disabled={normalizedContent === null}>
           {t('common.save')}
         </Button>
       </span>

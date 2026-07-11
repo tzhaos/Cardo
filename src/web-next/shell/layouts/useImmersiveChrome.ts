@@ -42,7 +42,7 @@ export function useImmersiveChrome(layoutProfileId: LayoutProfileId) {
       const nearLeft = event.clientX <= EDGE_PX;
       const overChrome = Boolean(
         (event.target as Element | null)?.closest?.(
-          '.wbn-top-bar, .wbn-history-controls, .wbn-bottom-shell, .wbn-canvas-tools, .wbn-settings-window, .wbn-independent-menu',
+          '.cardo-top-bar, .cardo-history-controls, .cardo-bottom-shell, .cardo-canvas-tools, .cardo-settings-window, .cardo-independent-menu',
         ),
       );
       if (nearTop || nearBottom || nearLeft || overChrome) {

@@ -31,7 +31,7 @@ export function AddViewShell({
 
   return (
     <form
-      className="wbn-add-view"
+      className="cardo-add-view"
       aria-label={title}
       onSubmit={(event) => {
         event.preventDefault();
@@ -45,11 +45,11 @@ export function AddViewShell({
     >
       {typePicker}
       {children}
-      <div className="wbn-add-actions">
-        <Button className="wbn-add-cancel" variant="ghost" onClick={() => closeAddView(boxId)}>
+      <div className="cardo-add-actions">
+        <Button className="cardo-add-cancel" variant="ghost" onClick={() => closeAddView(boxId)}>
           {t('common.cancel')}
         </Button>
-        <Button className="wbn-add-primary" type="submit" disabled={!canSubmit}>
+        <Button className="cardo-add-primary" type="submit" disabled={!canSubmit}>
           {primaryLabel ?? t('common.save')}
         </Button>
       </div>

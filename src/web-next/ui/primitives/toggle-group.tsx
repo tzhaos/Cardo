@@ -12,7 +12,7 @@ export function ToggleGroup({
   return (
     <ToggleGroupPrimitive.Root
       data-slot="toggle-group"
-      className={cn(variant === 'segmented' && 'wbn-segmented-control', className)}
+      className={cn(variant === 'segmented' && 'cardo-segmented-control', className)}
       {...props}
     />
   );
@@ -25,7 +25,7 @@ export function ToggleGroupItem({
   return (
     <ToggleGroupPrimitive.Item
       data-slot="toggle-group-item"
-      className={cn('wbn-ui-toggle-group-item', className)}
+      className={cn('cardo-ui-toggle-group-item', className)}
       {...props}
     />
   );

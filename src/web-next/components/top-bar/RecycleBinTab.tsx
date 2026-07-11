@@ -33,9 +33,9 @@ export function RecycleBinTab({
     <motion.div
       ref={registerDropElement}
       className={[
-        'wbn-recycle-bin-tab',
-        highlighted ? 'wbn-box-drop-target' : '',
-        released ? 'wbn-box-drop-released' : '',
+        'cardo-recycle-bin-tab',
+        highlighted ? 'cardo-box-drop-target' : '',
+        released ? 'cardo-box-drop-released' : '',
       ]
         .filter(Boolean)
         .join(' ')}

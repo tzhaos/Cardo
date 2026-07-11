@@ -17,84 +17,84 @@
   --cardo-topbar-offset: 8px;
 }
 
-[data-layout-profile='compact'] .wbn-top-bar {
+[data-layout-profile='compact'] .cardo-top-bar {
   min-height: 44px;
 }
 
-[data-layout-profile='compact'] .wbn-bottom-toolbar,
-[data-layout-profile='compact'] .wbn-history-controls {
+[data-layout-profile='compact'] .cardo-bottom-toolbar,
+[data-layout-profile='compact'] .cardo-history-controls {
   transform: scale(0.94);
   transform-origin: bottom center;
 }
 
-[data-layout-profile='compact'] .wbn-history-controls {
+[data-layout-profile='compact'] .cardo-history-controls {
   transform-origin: top left;
 }
 
 /* Immersive: chrome fades; reveal when pointer nears edges or focuses inside. */
-[data-layout-profile='immersive'] .wbn-top-bar,
-[data-layout-profile='immersive'] .wbn-history-controls,
-[data-layout-profile='immersive'] .wbn-bottom-shell,
-[data-layout-profile='immersive'] .wbn-canvas-tools {
+[data-layout-profile='immersive'] .cardo-top-bar,
+[data-layout-profile='immersive'] .cardo-history-controls,
+[data-layout-profile='immersive'] .cardo-bottom-shell,
+[data-layout-profile='immersive'] .cardo-canvas-tools {
   transition:
     opacity var(--cardo-duration-normal) var(--cardo-easing),
     transform var(--cardo-duration-normal) var(--cardo-easing);
 }
 
-[data-layout-profile='immersive']:not([data-chrome-reveal='true']) .wbn-top-bar {
+[data-layout-profile='immersive']:not([data-chrome-reveal='true']) .cardo-top-bar {
   opacity: 0;
   pointer-events: none;
   transform: translateY(-8px);
 }
 
-[data-layout-profile='immersive']:not([data-chrome-reveal='true']) .wbn-history-controls {
+[data-layout-profile='immersive']:not([data-chrome-reveal='true']) .cardo-history-controls {
   opacity: 0;
   pointer-events: none;
   transform: translateY(-6px);
 }
 
-[data-layout-profile='immersive']:not([data-chrome-reveal='true']) .wbn-bottom-shell {
+[data-layout-profile='immersive']:not([data-chrome-reveal='true']) .cardo-bottom-shell {
   opacity: 0;
   pointer-events: none;
   transform: translateY(10px);
 }
 
-[data-layout-profile='immersive']:not([data-chrome-reveal='true']) .wbn-canvas-tools {
+[data-layout-profile='immersive']:not([data-chrome-reveal='true']) .cardo-canvas-tools {
   opacity: 0;
   pointer-events: none;
 }
 
-[data-layout-profile='immersive'][data-chrome-reveal='true'] .wbn-top-bar,
-[data-layout-profile='immersive'][data-chrome-reveal='true'] .wbn-history-controls,
-[data-layout-profile='immersive'][data-chrome-reveal='true'] .wbn-bottom-shell,
-[data-layout-profile='immersive'][data-chrome-reveal='true'] .wbn-canvas-tools {
+[data-layout-profile='immersive'][data-chrome-reveal='true'] .cardo-top-bar,
+[data-layout-profile='immersive'][data-chrome-reveal='true'] .cardo-history-controls,
+[data-layout-profile='immersive'][data-chrome-reveal='true'] .cardo-bottom-shell,
+[data-layout-profile='immersive'][data-chrome-reveal='true'] .cardo-canvas-tools {
   opacity: 1;
   pointer-events: auto;
   transform: none;
 }
 
 /* Edge hit bands to reveal chrome without permanently covering the canvas. */
-.wbn-immersive-edge {
+.cardo-immersive-edge {
   position: fixed;
   z-index: 70;
   pointer-events: auto;
 }
 
-.wbn-immersive-edge-top {
+.cardo-immersive-edge-top {
   top: 0;
   right: 0;
   left: 0;
   height: 14px;
 }
 
-.wbn-immersive-edge-bottom {
+.cardo-immersive-edge-bottom {
   right: 0;
   bottom: 0;
   left: 0;
   height: 16px;
 }
 
-.wbn-immersive-edge-left {
+.cardo-immersive-edge-left {
   top: 0;
   bottom: 0;
   left: 0;

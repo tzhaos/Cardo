@@ -63,7 +63,7 @@ export function ClipboardItem({
 
   return (
     <div
-      className={`wbn-item-row wbn-clipboard-item${item.isPinned ? ' wbn-item-pinned' : ''}${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}${editView ? ' wbn-item-edit-state' : ''}`}
+      className={`cardo-item-row cardo-clipboard-item${item.isPinned ? ' cardo-item-pinned' : ''}${highlight ? ' cardo-item-new' : ''}${deleteView ? ' cardo-item-delete-state' : ''}${editView ? ' cardo-item-edit-state' : ''}`}
       title={!deleteView && !editView ? t('item.copy') : undefined}
       onContextMenu={contextMenu.onContextMenu}
       onClick={(event) => {
@@ -71,7 +71,7 @@ export function ClipboardItem({
           deleteView ||
           editView ||
           (event.target instanceof Element &&
-            event.target.closest('button,input,textarea,form,.wbn-item-drag-handle'))
+            event.target.closest('button,input,textarea,form,.cardo-item-drag-handle'))
         ) {
           return;
         }
@@ -94,18 +94,18 @@ export function ClipboardItem({
           />
         ) : (
           <motion.div
-            className="wbn-item-view-content wbn-clipboard-card-content"
+            className="cardo-item-view-content cardo-clipboard-card-content"
             key="content"
             initial={{ opacity: 0, x: -6 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -6 }}
             transition={{ duration: 0.15 }}
           >
-            <p className="wbn-clipboard-body">{item.text}</p>
+            <p className="cardo-clipboard-body">{item.text}</p>
             <AnimatePresence>
               {copied ? (
                 <motion.span
-                  className="wbn-clipboard-copied"
+                  className="cardo-clipboard-copied"
                   initial={{ opacity: 0, scale: 0.94 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.96 }}

@@ -158,9 +158,9 @@ function MenuItems({ items, closeMenu }: { items: ContextMenuItem[]; closeMenu: 
 function MenuItem({ item, closeMenu }: { item: ContextMenuItem; closeMenu: () => void }) {
   const content = (
     <>
-      <IconFrame className="wbn-menu-icon">{item.icon}</IconFrame>
+      <IconFrame className="cardo-menu-icon">{item.icon}</IconFrame>
       <span>{item.label}</span>
-      <IconFrame className="wbn-menu-trailing">
+      <IconFrame className="cardo-menu-trailing">
         {item.children ? (
           <ChevronRight size={14} />
         ) : item.shortcut ? (
@@ -177,7 +177,7 @@ function MenuItem({ item, closeMenu }: { item: ContextMenuItem; closeMenu: () =>
         <DropdownMenuSub>
           <DropdownMenuSubTrigger
             disabled={item.disabled}
-            className={item.danger ? 'wbn-menu-row-danger' : undefined}
+            className={item.danger ? 'cardo-menu-row-danger' : undefined}
           >
             {content}
           </DropdownMenuSubTrigger>
@@ -188,7 +188,7 @@ function MenuItem({ item, closeMenu }: { item: ContextMenuItem; closeMenu: () =>
       ) : (
         <DropdownMenuItem
           disabled={item.disabled}
-          className={item.danger ? 'wbn-menu-row-danger' : undefined}
+          className={item.danger ? 'cardo-menu-row-danger' : undefined}
           onSelect={() => {
             item.onSelect?.();
             closeMenu();

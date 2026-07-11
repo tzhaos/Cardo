@@ -7,9 +7,9 @@ export function LanguageStateIcon({ locale }: { locale: WebNextLocale }) {
   const englishPrimary = locale === 'en';
 
   return (
-    <span className="wbn-language-state-icon" aria-hidden="true">
+    <span className="cardo-language-state-icon" aria-hidden="true">
       <motion.span
-        className="wbn-language-en"
+        className="cardo-language-en"
         animate={{
           x: englishPrimary ? 0 : 12,
           y: englishPrimary ? 0 : 9,
@@ -21,7 +21,7 @@ export function LanguageStateIcon({ locale }: { locale: WebNextLocale }) {
         EN
       </motion.span>
       <motion.span
-        className="wbn-language-zh"
+        className="cardo-language-zh"
         animate={{
           x: englishPrimary ? 13 : 0,
           y: englishPrimary ? 9 : 0,
@@ -40,9 +40,9 @@ export function ColorModeStateIcon({ colorMode }: { colorMode: WebNextColorMode 
   const lightPrimary = colorMode === 'light';
 
   return (
-    <span className="wbn-theme-state-icon" aria-hidden="true">
+    <span className="cardo-theme-state-icon" aria-hidden="true">
       <motion.span
-        className="wbn-theme-sun"
+        className="cardo-theme-sun"
         animate={{
           x: lightPrimary ? 0 : 13,
           y: lightPrimary ? 0 : 9,
@@ -55,7 +55,7 @@ export function ColorModeStateIcon({ colorMode }: { colorMode: WebNextColorMode 
         <Sun size={15} />
       </motion.span>
       <motion.span
-        className="wbn-theme-moon"
+        className="cardo-theme-moon"
         animate={{
           x: lightPrimary ? 13 : 0,
           y: lightPrimary ? 9 : 0,

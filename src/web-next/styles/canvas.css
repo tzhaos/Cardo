@@ -1,4 +1,4 @@
-.wbn-canvas {
+.cardo-canvas {
   position: relative;
   width: 100vw;
   height: 100vh;
@@ -9,29 +9,29 @@
 
 /*
  * Dragging / delete-flight boxes live inside camera transforms (stacking context).
- * Their own z-index cannot compete with fixed chrome (.wbn-top-bar is 50).
+ * Their own z-index cannot compete with fixed chrome (.cardo-top-bar is 50).
  * Elevate the canvas root while any box is in the floating drag visual so the
  * box paints above the page bar for cross-page drop / recycle flight.
  */
-.wbn-app:has(.wbn-box-dragging) .wbn-canvas {
+.cardo-app:has(.cardo-box-dragging) .cardo-canvas {
   z-index: 100;
 }
 
-.wbn-canvas-locked {
+.cardo-canvas-locked {
   cursor: default;
 }
 
-.wbn-canvas-collection {
+.cardo-canvas-collection {
   cursor: default;
 }
 
-.wbn-collection-page {
+.cardo-collection-page {
   position: absolute;
   inset: 0;
   overflow: hidden;
 }
 
-.wbn-collection-box {
+.cardo-collection-box {
   position: absolute;
   display: flex;
   min-width: 0;
@@ -47,7 +47,7 @@
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
 }
 
-.wbn-collection-box-header {
+.cardo-collection-box-header {
   position: relative;
   display: flex;
   min-height: 48px;
@@ -59,7 +59,7 @@
   background: color-mix(in srgb, var(--cardo-panel-chrome) 94%, var(--box-accent));
 }
 
-.wbn-collection-box-grip {
+.cardo-collection-box-grip {
   position: absolute;
   top: 5px;
   left: 50%;
@@ -70,8 +70,8 @@
   transform: translateX(-50%);
 }
 
-.wbn-collection-box-icon,
-.wbn-collection-item-icon {
+.cardo-collection-box-icon,
+.cardo-collection-item-icon {
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
@@ -79,14 +79,14 @@
   color: var(--box-accent);
 }
 
-.wbn-collection-box-icon {
+.cardo-collection-box-icon {
   width: 28px;
   height: 28px;
   border-radius: var(--cardo-radius-md);
   background: color-mix(in srgb, var(--box-accent) 10%, transparent);
 }
 
-.wbn-collection-box-heading {
+.cardo-collection-box-heading {
   display: flex;
   min-width: 0;
   flex: 1;
@@ -94,27 +94,27 @@
   gap: 2px;
 }
 
-.wbn-collection-box-heading strong,
-.wbn-collection-box-heading small,
-.wbn-collection-box-items strong,
-.wbn-collection-box-items small {
+.cardo-collection-box-heading strong,
+.cardo-collection-box-heading small,
+.cardo-collection-box-items strong,
+.cardo-collection-box-items small {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.wbn-collection-box-heading strong {
+.cardo-collection-box-heading strong {
   color: var(--cardo-soft-text);
   font-size: 13px;
   font-weight: 600;
 }
 
-.wbn-collection-box-heading small {
+.cardo-collection-box-heading small {
   color: var(--cardo-muted);
   font-size: 10px;
 }
 
-.wbn-collection-readonly {
+.cardo-collection-readonly {
   flex: 0 0 auto;
   border-radius: var(--cardo-radius-pill);
   padding: 3px 6px;
@@ -124,7 +124,7 @@
   font-weight: 600;
 }
 
-.wbn-collection-box-header > button {
+.cardo-collection-box-header > button {
   display: inline-flex;
   width: 26px;
   height: 26px;
@@ -142,25 +142,25 @@
     color 140ms ease;
 }
 
-.wbn-collection-box:hover .wbn-collection-box-header > button,
-.wbn-collection-box-header > button:focus-visible {
+.cardo-collection-box:hover .cardo-collection-box-header > button,
+.cardo-collection-box-header > button:focus-visible {
   opacity: 1;
 }
 
-.wbn-collection-box-header > button:hover {
+.cardo-collection-box-header > button:hover {
   background: var(--cardo-hover);
   color: var(--cardo-soft-text);
 }
 
-.wbn-collection-box-header > .wbn-collection-box-icon {
+.cardo-collection-box-header > .cardo-collection-box-icon {
   opacity: 1;
 }
 
-.wbn-collection-box-header > .wbn-collection-remove:hover {
+.cardo-collection-box-header > .cardo-collection-remove:hover {
   color: var(--cardo-red);
 }
 
-.wbn-collection-box-items {
+.cardo-collection-box-items {
   display: flex;
   min-height: 0;
   flex: 1;
@@ -172,7 +172,7 @@
   scrollbar-width: thin;
 }
 
-.wbn-collection-box-items > button {
+.cardo-collection-box-items > button {
   display: flex;
   width: 100%;
   min-width: 0;
@@ -190,12 +190,12 @@
     transform var(--cardo-duration-fast) var(--cardo-easing);
 }
 
-.wbn-collection-box-items > button:hover {
+.cardo-collection-box-items > button:hover {
   background: color-mix(in srgb, var(--box-accent) 8%, var(--cardo-hover));
   transform: translateY(-1px);
 }
 
-.wbn-collection-box-items > button > span:nth-child(2) {
+.cardo-collection-box-items > button > span:nth-child(2) {
   display: flex;
   min-width: 0;
   flex: 1;
@@ -203,50 +203,50 @@
   gap: 2px;
 }
 
-.wbn-collection-box-items strong {
+.cardo-collection-box-items strong {
   color: var(--cardo-soft-text);
   font-size: 12px;
   font-weight: 500;
 }
 
-.wbn-collection-box-items small {
+.cardo-collection-box-items small {
   color: var(--cardo-muted);
   font-size: 10px;
 }
 
-.wbn-collection-box-items > button > svg {
+.cardo-collection-box-items > button > svg {
   flex: 0 0 auto;
   color: var(--cardo-muted);
 }
 
-.wbn-collection-box-grid .wbn-collection-box-items {
+.cardo-collection-box-grid .cardo-collection-box-items {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   align-content: start;
 }
 
-.wbn-collection-box-grid .wbn-collection-box-items > button {
+.cardo-collection-box-grid .cardo-collection-box-items > button {
   min-height: 86px;
   flex-direction: column;
   justify-content: center;
   text-align: center;
 }
 
-.wbn-collection-box-grid .wbn-collection-box-items > button > svg,
-.wbn-collection-box-grid .wbn-collection-box-items small {
+.cardo-collection-box-grid .cardo-collection-box-items > button > svg,
+.cardo-collection-box-grid .cardo-collection-box-items small {
   display: none;
 }
 
-.wbn-collection-box-compact .wbn-collection-box-items > button {
+.cardo-collection-box-compact .cardo-collection-box-items > button {
   min-height: 34px;
   padding-block: 5px;
 }
 
-.wbn-collection-box-compact .wbn-collection-box-items small {
+.cardo-collection-box-compact .cardo-collection-box-items small {
   display: none;
 }
 
-.wbn-collection-box-empty {
+.cardo-collection-box-empty {
   display: flex;
   min-height: 120px;
   flex: 1;
@@ -257,7 +257,7 @@
   text-align: center;
 }
 
-.wbn-collection-resize {
+.cardo-collection-resize {
   position: absolute;
   right: 2px;
   bottom: 2px;
@@ -268,7 +268,7 @@
   cursor: nwse-resize;
 }
 
-.wbn-collection-resize span {
+.cardo-collection-resize span {
   position: absolute;
   right: 4px;
   bottom: 4px;
@@ -278,29 +278,29 @@
   border-bottom: 1.5px solid var(--cardo-muted);
 }
 
-.wbn-canvas-panning,
-.wbn-canvas-panning * {
+.cardo-canvas-panning,
+.cardo-canvas-panning * {
   cursor: grabbing !important;
   user-select: none !important;
 }
 
-.wbn-page-scene {
+.cardo-page-scene {
   position: absolute;
   inset: 0;
   overflow: hidden;
 }
 
-.wbn-canvas-world {
+.cardo-canvas-world {
   position: absolute;
   inset: 0;
   will-change: transform;
 }
 
-.wbn-canvas-world-animating {
+.cardo-canvas-world-animating {
   transition: transform 340ms cubic-bezier(0.22, 0.82, 0.2, 1);
 }
 
-.wbn-canvas-tools {
+.cardo-canvas-tools {
   position: fixed;
   z-index: 88;
   top: 24px;
@@ -316,11 +316,11 @@
   backdrop-filter: blur(12px);
 }
 
-.wbn-app-desktop .wbn-canvas-tools {
+.cardo-app-desktop .cardo-canvas-tools {
   top: 64px;
 }
 
-.wbn-canvas-tools button {
+.cardo-canvas-tools button {
   display: inline-flex;
   width: 36px;
   height: 36px;
@@ -337,22 +337,22 @@
     opacity var(--cardo-duration-normal) var(--cardo-easing);
 }
 
-.wbn-canvas-tools button:hover:not(:disabled) {
+.cardo-canvas-tools button:hover:not(:disabled) {
   background: var(--cardo-hover);
   color: var(--cardo-text);
 }
 
-.wbn-canvas-tools button:disabled {
+.cardo-canvas-tools button:disabled {
   cursor: default;
   opacity: 0.34;
 }
 
-.wbn-canvas-tools-button-active {
+.cardo-canvas-tools-button-active {
   background: var(--cardo-active) !important;
   color: var(--cardo-text) !important;
 }
 
-.wbn-canvas-boundary {
+.cardo-canvas-boundary {
   position: absolute;
   z-index: 0;
   border: 1px solid color-mix(in srgb, var(--cardo-border) 72%, transparent);
@@ -366,7 +366,7 @@
   pointer-events: none;
 }
 
-.wbn-canvas-edge-feedback {
+.cardo-canvas-edge-feedback {
   position: absolute;
   z-index: 45;
   inset: 0;
@@ -374,7 +374,7 @@
   pointer-events: none;
 }
 
-.wbn-canvas-edge {
+.cardo-canvas-edge {
   position: absolute;
   opacity: 0;
   transition:
@@ -383,21 +383,21 @@
   will-change: opacity, transform;
 }
 
-.wbn-canvas-edge-left,
-.wbn-canvas-edge-right {
+.cardo-canvas-edge-left,
+.cardo-canvas-edge-right {
   top: 0;
   bottom: 0;
   width: 52px;
 }
 
-.wbn-canvas-edge-top,
-.wbn-canvas-edge-bottom {
+.cardo-canvas-edge-top,
+.cardo-canvas-edge-bottom {
   right: 0;
   left: 0;
   height: 52px;
 }
 
-.wbn-canvas-edge-left {
+.cardo-canvas-edge-left {
   left: 0;
   border-left: 3px solid color-mix(in srgb, var(--cardo-blue) 78%, transparent);
   background: linear-gradient(
@@ -408,7 +408,7 @@
   transform: translateX(-14px);
 }
 
-.wbn-canvas-edge-right {
+.cardo-canvas-edge-right {
   right: 0;
   border-right: 3px solid color-mix(in srgb, var(--cardo-blue) 78%, transparent);
   background: linear-gradient(
@@ -419,7 +419,7 @@
   transform: translateX(14px);
 }
 
-.wbn-canvas-edge-top {
+.cardo-canvas-edge-top {
   top: 0;
   border-top: 3px solid color-mix(in srgb, var(--cardo-blue) 78%, transparent);
   background: linear-gradient(
@@ -430,7 +430,7 @@
   transform: translateY(-14px);
 }
 
-.wbn-canvas-edge-bottom {
+.cardo-canvas-edge-bottom {
   bottom: 0;
   border-bottom: 3px solid color-mix(in srgb, var(--cardo-blue) 78%, transparent);
   background: linear-gradient(
@@ -441,13 +441,13 @@
   transform: translateY(14px);
 }
 
-.wbn-canvas-edge.is-active {
+.cardo-canvas-edge.is-active {
   opacity: 1;
   transform: translate3d(0, 0, 0);
 }
 
 /* Icon center is locked to viewport center; label hangs below so copy length never shifts icon. */
-.wbn-system-page-empty {
+.cardo-system-page-empty {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -461,7 +461,7 @@
   margin-top: -11px;
 }
 
-.wbn-system-page-empty-icon {
+.cardo-system-page-empty-icon {
   display: flex;
   width: 22px;
   height: 22px;
@@ -471,13 +471,13 @@
   color: var(--cardo-secondary-text);
 }
 
-.wbn-system-page-empty-icon svg {
+.cardo-system-page-empty-icon svg {
   display: block;
   width: 22px;
   height: 22px;
 }
 
-.wbn-system-page-empty-label {
+.cardo-system-page-empty-label {
   display: block;
   width: 100%;
   margin-top: 10px;

@@ -1,4 +1,4 @@
-.wbn-box {
+.cardo-box {
   position: absolute;
   z-index: 10;
   display: flex;
@@ -12,20 +12,20 @@
   transition: box-shadow 180ms ease;
 }
 
-.wbn-box:hover {
+.cardo-box:hover {
   z-index: 20;
   box-shadow: var(--cardo-shadow-hover);
 }
 
-.wbn-box.wbn-box-locked {
+.cardo-box.cardo-box-locked {
   z-index: 30;
 }
 
-.wbn-box.wbn-box-locked:hover {
+.cardo-box.cardo-box-locked:hover {
   z-index: 40;
 }
 
-.wbn-box.wbn-box-temporary {
+.cardo-box.cardo-box-temporary {
   border-style: dashed;
   border-color: color-mix(in srgb, var(--box-accent) 34%, var(--cardo-border));
   background-image: linear-gradient(
@@ -36,11 +36,11 @@
   box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
 }
 
-.wbn-box.wbn-box-temporary:hover {
+.cardo-box.cardo-box-temporary:hover {
   border-color: color-mix(in srgb, var(--box-accent) 52%, var(--cardo-border));
 }
 
-.wbn-temporary-box-header {
+.cardo-temporary-box-header {
   position: relative;
   display: flex;
   min-height: 32px;
@@ -53,18 +53,18 @@
   touch-action: none;
 }
 
-.wbn-temporary-box-header:active {
+.cardo-temporary-box-header:active {
   cursor: grabbing;
 }
 
-.wbn-temporary-box-grip {
+.cardo-temporary-box-grip {
   width: 34px;
   height: 4px;
   border-radius: var(--cardo-radius-pill);
   background: color-mix(in srgb, var(--cardo-muted) 38%, transparent);
 }
 
-.wbn-temporary-box-header > button {
+.cardo-temporary-box-header > button {
   position: absolute;
   top: 4px;
   right: 6px;
@@ -85,27 +85,27 @@
     background 140ms ease;
 }
 
-.wbn-box-temporary:hover .wbn-temporary-box-header > button,
-.wbn-temporary-box-header > button:focus-visible {
+.cardo-box-temporary:hover .cardo-temporary-box-header > button,
+.cardo-temporary-box-header > button:focus-visible {
   background: color-mix(in srgb, var(--box-accent) 10%, transparent);
   opacity: 1;
   outline: none;
 }
 
-.wbn-box-locked .wbn-box-header {
+.cardo-box-locked .cardo-box-header {
   cursor: default;
 }
 
-.wbn-box-locked .wbn-box-lock-toggle {
+.cardo-box-locked .cardo-box-lock-toggle {
   color: var(--box-accent);
 }
 
-.wbn-box-locked .wbn-resize-handle {
+.cardo-box-locked .cardo-resize-handle {
   display: none;
 }
 
-.wbn-box.wbn-box-dragging {
-  /* Within canvas world only; root elevation is .wbn-app:has(.wbn-box-dragging) .wbn-canvas */
+.cardo-box.cardo-box-dragging {
+  /* Within canvas world only; root elevation is .cardo-app:has(.cardo-box-dragging) .cardo-canvas */
   z-index: 100 !important;
   box-shadow:
     0 24px 48px rgba(15, 23, 42, 0.16),
@@ -114,45 +114,45 @@
   cursor: grabbing;
 }
 
-.wbn-box-dragging .wbn-item-reorder-entry {
+.cardo-box-dragging .cardo-item-reorder-entry {
   transition: none !important;
 }
 
-.wbn-box-dragging .wbn-item-drag-handle {
+.cardo-box-dragging .cardo-item-drag-handle {
   pointer-events: none;
 }
 
-.wbn-box.wbn-box-dragging-bar {
+.cardo-box.cardo-box-dragging-bar {
   box-shadow:
     0 20px 42px rgba(15, 23, 42, 0.2),
     0 0 0 2px color-mix(in srgb, var(--box-accent) 28%, transparent);
 }
 
-.wbn-box.wbn-box-dragging-tab {
+.cardo-box.cardo-box-dragging-tab {
   box-shadow:
     0 16px 34px rgba(15, 23, 42, 0.2),
     0 0 0 4px color-mix(in srgb, var(--cardo-blue) 15%, transparent);
 }
 
-.wbn-box-dragging-bar .wbn-box-content,
-.wbn-box-dragging-bar .wbn-box-footer,
-.wbn-box-dragging-bar .wbn-resize-handle,
-.wbn-box-dragging-bar .wbn-box-delete,
-.wbn-box-dragging-bar .wbn-box-view-toggle {
+.cardo-box-dragging-bar .cardo-box-content,
+.cardo-box-dragging-bar .cardo-box-footer,
+.cardo-box-dragging-bar .cardo-resize-handle,
+.cardo-box-dragging-bar .cardo-box-delete,
+.cardo-box-dragging-bar .cardo-box-view-toggle {
   opacity: 0;
 }
 
-.wbn-box-dragging-bar .wbn-box-header {
+.cardo-box-dragging-bar .cardo-box-header {
   border-bottom-color: transparent;
   background: color-mix(in srgb, var(--cardo-panel-chrome) 92%, var(--box-accent));
 }
 
-.wbn-box-dragging-bar .wbn-temporary-box-header {
+.cardo-box-dragging-bar .cardo-temporary-box-header {
   border-bottom-color: transparent;
   background: color-mix(in srgb, var(--cardo-panel-chrome) 92%, var(--box-accent));
 }
 
-.wbn-box-header {
+.cardo-box-header {
   display: flex;
   flex: 0 0 auto;
   align-items: center;
@@ -165,11 +165,11 @@
   touch-action: none;
 }
 
-.wbn-box-header:active {
+.cardo-box-header:active {
   cursor: grabbing;
 }
 
-.wbn-box-title-group {
+.cardo-box-title-group {
   display: flex;
   min-width: 0;
   flex: 1;
@@ -177,7 +177,7 @@
   gap: 8px;
 }
 
-.wbn-box-icon {
+.cardo-box-icon {
   display: inline-flex;
   width: 16px;
   height: 16px;
@@ -189,7 +189,7 @@
   line-height: 1;
 }
 
-button.wbn-box-icon {
+button.cardo-box-icon {
   border: 0;
   border-radius: var(--cardo-radius-sm);
   padding: 0;
@@ -200,17 +200,17 @@ button.wbn-box-icon {
     transform var(--cardo-duration-fast) var(--cardo-easing);
 }
 
-button.wbn-box-icon:hover {
+button.cardo-box-icon:hover {
   background: color-mix(in srgb, var(--box-accent) 10%, transparent);
   transform: scale(1.08);
 }
 
-button.wbn-box-icon:focus-visible {
+button.cardo-box-icon:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--box-accent) 28%, transparent);
   outline-offset: 2px;
 }
 
-.wbn-box-appearance-view {
+.cardo-box-appearance-view {
   width: 100%;
   min-height: 100%;
   overflow-y: auto;
@@ -220,13 +220,13 @@ button.wbn-box-icon:focus-visible {
   scrollbar-width: thin;
 }
 
-.wbn-box-appearance-view section + section {
+.cardo-box-appearance-view section + section {
   margin-top: 14px;
   border-top: 1px solid var(--cardo-divider);
   padding-top: 12px;
 }
 
-.wbn-box-appearance-label {
+.cardo-box-appearance-label {
   display: block;
   margin-bottom: 8px;
   color: var(--cardo-muted);
@@ -236,13 +236,13 @@ button.wbn-box-icon:focus-visible {
   text-transform: uppercase;
 }
 
-.wbn-box-icon-grid {
+.cardo-box-icon-grid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 5px;
 }
 
-.wbn-box-icon-grid button {
+.cardo-box-icon-grid button {
   position: relative;
   display: inline-flex;
   width: 100%;
@@ -260,33 +260,33 @@ button.wbn-box-icon:focus-visible {
     transform var(--cardo-duration-fast) var(--cardo-easing);
 }
 
-.wbn-box-icon-grid button:hover,
-.wbn-box-icon-grid button:focus-visible {
+.cardo-box-icon-grid button:hover,
+.cardo-box-icon-grid button:focus-visible {
   border-color: color-mix(in srgb, var(--box-accent) 26%, var(--cardo-border));
   color: var(--box-accent);
   outline: none;
   transform: translateY(-1px);
 }
 
-.wbn-box-icon-grid .wbn-box-icon-choice-active {
+.cardo-box-icon-grid .cardo-box-icon-choice-active {
   border-color: color-mix(in srgb, var(--box-accent) 42%, var(--cardo-border));
   background: color-mix(in srgb, var(--box-accent) 12%, var(--cardo-surface-strong));
   color: var(--box-accent);
 }
 
-.wbn-box-choice-check {
+.cardo-box-choice-check {
   position: absolute;
   right: 2px;
   bottom: 2px;
 }
 
-.wbn-box-color-grid {
+.cardo-box-color-grid {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 6px;
 }
 
-.wbn-box-color-grid button {
+.cardo-box-color-grid button {
   display: inline-flex;
   width: 100%;
   aspect-ratio: 1;
@@ -302,9 +302,9 @@ button.wbn-box-icon:focus-visible {
     transform var(--cardo-duration-fast) var(--cardo-easing);
 }
 
-.wbn-box-color-grid button:hover,
-.wbn-box-color-grid button:focus-visible,
-.wbn-box-color-grid .wbn-box-color-active {
+.cardo-box-color-grid button:hover,
+.cardo-box-color-grid button:focus-visible,
+.cardo-box-color-grid .cardo-box-color-active {
   box-shadow:
     0 0 0 2px var(--cardo-surface-strong),
     0 0 0 4px color-mix(in srgb, var(--choice-color) 62%, transparent);
@@ -312,14 +312,14 @@ button.wbn-box-icon:focus-visible {
   transform: scale(1.06);
 }
 
-.wbn-box-custom-color-row {
+.cardo-box-custom-color-row {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-top: 10px;
 }
 
-.wbn-box-native-color {
+.cardo-box-native-color {
   position: relative;
   display: inline-flex;
   width: 34px;
@@ -335,7 +335,7 @@ button.wbn-box-icon:focus-visible {
   cursor: pointer;
 }
 
-.wbn-box-native-color input {
+.cardo-box-native-color input {
   position: absolute;
   inset: -10px;
   width: 54px;
@@ -344,7 +344,7 @@ button.wbn-box-icon:focus-visible {
   opacity: 0;
 }
 
-.wbn-box-color-code {
+.cardo-box-color-code {
   width: 100%;
   min-width: 0;
   height: 34px;
@@ -359,16 +359,16 @@ button.wbn-box-icon:focus-visible {
   text-transform: uppercase;
 }
 
-.wbn-box-color-code:focus {
+.cardo-box-color-code:focus {
   border-color: color-mix(in srgb, var(--box-accent) 52%, var(--cardo-border));
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--box-accent) 10%, transparent);
 }
 
-.wbn-box-color-code[aria-invalid='true'] {
+.cardo-box-color-code[aria-invalid='true'] {
   border-color: var(--cardo-red);
 }
 
-.wbn-box-title {
+.cardo-box-title {
   overflow: hidden;
   color: var(--cardo-soft-text);
   font-size: 14px;
@@ -378,7 +378,7 @@ button.wbn-box-icon:focus-visible {
   /* Selectable via shell.css content-label opt-in. */
 }
 
-.wbn-box-delete {
+.cardo-box-delete {
   width: 24px;
   height: 24px;
   flex: 0 0 auto;
@@ -393,20 +393,20 @@ button.wbn-box-icon:focus-visible {
     background var(--cardo-duration-normal) var(--cardo-easing);
 }
 
-.wbn-box:hover .wbn-box-delete {
+.cardo-box:hover .cardo-box-delete {
   opacity: 1;
 }
 
-.wbn-box-local-view .wbn-box-delete {
+.cardo-box-local-view .cardo-box-delete {
   opacity: 1;
 }
 
-.wbn-box-delete:hover {
+.cardo-box-delete:hover {
   background: var(--cardo-hover);
   color: var(--cardo-red);
 }
 
-.wbn-box-controls {
+.cardo-box-controls {
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
@@ -416,13 +416,13 @@ button.wbn-box-icon:focus-visible {
   transition: opacity var(--cardo-duration-normal) var(--cardo-easing);
 }
 
-.wbn-box-header:hover .wbn-box-controls,
-.wbn-box-controls:focus-within {
+.cardo-box-header:hover .cardo-box-controls,
+.cardo-box-controls:focus-within {
   opacity: 1;
   pointer-events: auto;
 }
 
-.wbn-box-view-toggle {
+.cardo-box-view-toggle {
   width: 24px;
   height: 24px;
   border: 0;
@@ -437,37 +437,37 @@ button.wbn-box-icon:focus-visible {
     background var(--cardo-duration-normal) var(--cardo-easing);
 }
 
-.wbn-box:hover .wbn-box-view-toggle,
-.wbn-box-local-view .wbn-box-view-toggle {
+.cardo-box:hover .cardo-box-view-toggle,
+.cardo-box-local-view .cardo-box-view-toggle {
   opacity: 1;
 }
 
-.wbn-box-view-toggle:hover {
+.cardo-box-view-toggle:hover {
   background: var(--cardo-hover);
   color: var(--cardo-soft-text);
 }
 
-.wbn-box-compact .wbn-box-header {
+.cardo-box-compact .cardo-box-header {
   padding: 8px 12px;
 }
 
-.wbn-box-compact .wbn-box-content-folder,
-.wbn-box-compact .wbn-box-content-bookmark,
-.wbn-box-compact .wbn-box-content-clipboard,
-.wbn-box-compact .wbn-box-content-mixed {
+.cardo-box-compact .cardo-box-content-folder,
+.cardo-box-compact .cardo-box-content-bookmark,
+.cardo-box-compact .cardo-box-content-clipboard,
+.cardo-box-compact .cardo-box-content-mixed {
   gap: 2px;
   padding: 5px;
 }
 
-.wbn-box-compact .wbn-box-footer {
+.cardo-box-compact .cardo-box-footer {
   padding: 3px 6px;
 }
 
-.wbn-box-compact .wbn-box-footer button {
+.cardo-box-compact .cardo-box-footer button {
   padding: 4px 6px;
 }
 
-.wbn-box-content {
+.cardo-box-content {
   display: flex;
   flex: 1 1 auto;
   min-height: 0;
@@ -480,16 +480,16 @@ button.wbn-box-icon:focus-visible {
     filter var(--cardo-duration-normal) var(--cardo-easing);
 }
 
-.wbn-box-content-folder,
-.wbn-box-content-bookmark,
-.wbn-box-content-clipboard,
-.wbn-box-content-mixed {
+.cardo-box-content-folder,
+.cardo-box-content-bookmark,
+.cardo-box-content-clipboard,
+.cardo-box-content-mixed {
   flex-direction: column;
   gap: 4px;
   padding: 8px;
 }
 
-.wbn-box-delete-view {
+.cardo-box-delete-view {
   display: flex !important;
   align-items: center;
   justify-content: center;
@@ -497,7 +497,7 @@ button.wbn-box-icon:focus-visible {
   padding: 0 !important;
 }
 
-.wbn-box-delete-confirm {
+.cardo-box-delete-confirm {
   display: flex;
   width: 100%;
   height: 100%;
@@ -509,21 +509,21 @@ button.wbn-box-icon:focus-visible {
   text-align: center;
 }
 
-.wbn-box-delete-confirm p {
+.cardo-box-delete-confirm p {
   margin: 0;
   color: var(--cardo-soft-text);
   font-size: 16px;
   font-weight: 500;
 }
 
-.wbn-box-delete-actions {
+.cardo-box-delete-actions {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
 }
 
-.wbn-box-delete-actions button {
+.cardo-box-delete-actions button {
   min-width: 104px;
   min-height: 40px;
   border: 0;
@@ -534,19 +534,19 @@ button.wbn-box-icon:focus-visible {
   font-weight: 500;
 }
 
-.wbn-box-delete-actions .wbn-box-delete-confirm-button {
+.cardo-box-delete-actions .cardo-box-delete-confirm-button {
   background: #ff3045;
   color: #ffffff;
 }
 
-.wbn-box-footer {
+.cardo-box-footer {
   flex: 0 0 auto;
   border-top: 1px solid var(--cardo-border-subtle);
   padding: 6px 8px;
   background: var(--cardo-panel-chrome);
 }
 
-.wbn-box-footer button {
+.cardo-box-footer button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -566,12 +566,12 @@ button.wbn-box-icon:focus-visible {
     background var(--cardo-duration-normal) var(--cardo-easing);
 }
 
-.wbn-box-footer button:hover {
+.cardo-box-footer button:hover {
   background: var(--cardo-hover);
   color: var(--cardo-soft-text);
 }
 
-.wbn-resize-handle {
+.cardo-resize-handle {
   position: absolute;
   right: 4px;
   bottom: 4px;
@@ -588,27 +588,27 @@ button.wbn-box-icon:focus-visible {
   transition: opacity var(--cardo-duration-normal) var(--cardo-easing);
 }
 
-.wbn-resize-handle svg {
+.cardo-resize-handle svg {
   width: 18px;
   height: 18px;
 }
 
-.wbn-box:hover .wbn-resize-handle {
+.cardo-box:hover .cardo-resize-handle {
   opacity: 1;
 }
 
-.wbn-box-selected {
+.cardo-box-selected {
   z-index: 70 !important;
   box-shadow:
     var(--cardo-shadow-hover),
     0 0 0 2px var(--cardo-selection-ring);
 }
 
-.wbn-box-highlighted {
-  animation: wbn-box-search-highlight 1.8s ease-out;
+.cardo-box-highlighted {
+  animation: cardo-box-search-highlight 1.8s ease-out;
 }
 
-@keyframes wbn-box-search-highlight {
+@keyframes cardo-box-search-highlight {
   0%,
   35% {
     box-shadow:

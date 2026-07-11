@@ -124,8 +124,8 @@ svg {
   flex: 0 0 auto;
 }
 
-.wbn-icon-button,
-.wbn-icon-frame {
+.cardo-icon-button,
+.cardo-icon-frame {
   display: inline-flex;
   min-width: 0;
   min-height: 0;
@@ -136,11 +136,11 @@ svg {
   vertical-align: middle;
 }
 
-.wbn-icon-button {
+.cardo-icon-button {
   padding: 0;
 }
 
-.wbn-icon-button > svg,
-.wbn-icon-frame > svg {
+.cardo-icon-button > svg,
+.cardo-icon-frame > svg {
   display: block;
 }

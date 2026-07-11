@@ -1,8 +1,8 @@
-.wbn-app-desktop .wbn-top-bar {
+.cardo-app-desktop .cardo-top-bar {
   top: 64px;
 }
 
-.wbn-top-bar {
+.cardo-top-bar {
   position: fixed;
   z-index: 50;
   top: 24px;
@@ -17,33 +17,33 @@
   caret-color: transparent;
   user-select: none;
   -webkit-user-select: none;
-  /* Selection: shell.css force-none on .wbn-top-bar; .wbn-tab-label opts in. */
+  /* Selection: shell.css force-none on .cardo-top-bar; .cardo-tab-label opts in. */
   backdrop-filter: blur(12px);
   scrollbar-width: none;
   transform: translateX(-50%);
 }
 
-.wbn-top-bar-confirming {
+.cardo-top-bar-confirming {
   overflow: hidden;
 }
 
-.wbn-top-bar-confirming .wbn-top-inner {
+.cardo-top-bar-confirming .cardo-top-inner {
   pointer-events: none;
 }
 
-.wbn-top-inner {
+.cardo-top-inner {
   display: flex;
   align-items: center;
   gap: 2px;
 }
 
-.wbn-tabs {
+.cardo-tabs {
   display: flex;
   align-items: center;
   gap: 0;
 }
 
-.wbn-tab-pill {
+.cardo-tab-pill {
   position: relative;
   display: flex;
   align-items: center;
@@ -51,8 +51,8 @@
   transition: background 180ms ease;
 }
 
-.wbn-tab-pill button,
-.wbn-tab-pill input {
+.cardo-tab-pill button,
+.cardo-tab-pill input {
   position: relative;
   z-index: 1;
   min-height: 36px;
@@ -62,7 +62,7 @@
   outline: none;
 }
 
-.wbn-tab-pill button {
+.cardo-tab-pill button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -78,11 +78,11 @@
     transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.wbn-tab-pill:not(.wbn-tab-pill-active) button:hover {
+.cardo-tab-pill:not(.cardo-tab-pill-active) button:hover {
   color: var(--cardo-soft-text);
 }
 
-.wbn-active-tab-indicator {
+.cardo-active-tab-indicator {
   position: absolute;
   inset: 0;
   border-radius: var(--cardo-radius-pill);
@@ -90,15 +90,15 @@
   box-shadow: var(--cardo-inset-shadow);
 }
 
-.wbn-tab-pill-active button {
+.cardo-tab-pill-active button {
   color: var(--cardo-text);
 }
 
-.wbn-tab-label {
+.cardo-tab-label {
   position: relative;
 }
 
-.wbn-tab-pill input {
+.cardo-tab-pill input {
   max-width: 150px;
   padding: 0 12px;
   color: var(--cardo-text);
@@ -107,7 +107,7 @@
   box-shadow: inset 0 -1px 0 var(--cardo-blue);
 }
 
-.wbn-top-actions {
+.cardo-top-actions {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -116,8 +116,8 @@
   padding-left: 8px;
 }
 
-.wbn-top-actions button,
-.wbn-bottom-toolbar button {
+.cardo-top-actions button,
+.cardo-bottom-toolbar button {
   display: inline-flex;
   width: 36px;
   height: 36px;
@@ -136,13 +136,13 @@
     transform var(--cardo-duration-fast) var(--cardo-easing);
 }
 
-.wbn-top-actions button:hover,
-.wbn-bottom-toolbar button:hover {
+.cardo-top-actions button:hover,
+.cardo-bottom-toolbar button:hover {
   background: var(--cardo-hover);
   color: var(--cardo-text);
 }
 
-.wbn-tab-confirm {
+.cardo-tab-confirm {
   display: flex;
   width: 100%;
   min-width: 0;
@@ -155,7 +155,7 @@
   font-weight: 500;
 }
 
-.wbn-tab-confirm-layer {
+.cardo-tab-confirm-layer {
   position: absolute;
   z-index: 4;
   inset: 6px;
@@ -165,21 +165,21 @@
   border-radius: var(--cardo-radius-pill);
 }
 
-.wbn-tab-confirm > span {
+.cardo-tab-confirm > span {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.wbn-tab-confirm div {
+.cardo-tab-confirm div {
   display: flex;
   flex: 0 0 auto;
   gap: 8px;
 }
 
-.wbn-tab-confirm button,
-.wbn-danger-button {
+.cardo-tab-confirm button,
+.cardo-danger-button {
   height: 36px;
   border: 0;
   border-radius: var(--cardo-radius-pill);
@@ -188,12 +188,12 @@
   color: var(--cardo-soft-text);
 }
 
-.wbn-danger-button {
+.cardo-danger-button {
   background: rgba(239, 68, 68, 0.1) !important;
   color: var(--cardo-red) !important;
 }
 
-.wbn-top-bar-drop-mode {
+.cardo-top-bar-drop-mode {
   border-color: color-mix(in srgb, var(--cardo-blue) 12%, var(--cardo-border));
   box-shadow: var(--cardo-shadow);
   transition:
@@ -202,7 +202,7 @@
     background 180ms ease;
 }
 
-.wbn-top-bar-drag-over {
+.cardo-top-bar-drag-over {
   border-color: color-mix(in srgb, var(--cardo-blue) 32%, var(--cardo-border));
   background: color-mix(in srgb, var(--cardo-surface) 94%, var(--cardo-blue));
   box-shadow:
@@ -211,23 +211,23 @@
   backdrop-filter: none;
 }
 
-.wbn-box-drop-target .wbn-tab-pill {
+.cardo-box-drop-target .cardo-tab-pill {
   background: transparent;
   box-shadow: none;
 }
 
-.wbn-box-drop-target .wbn-tab-pill > button {
+.cardo-box-drop-target .cardo-tab-pill > button {
   background: transparent;
   box-shadow: none;
   /* Avoid scale fight with active-tab indicator geometry during cross-page drag. */
   transform: none;
 }
 
-.wbn-tab-pill {
+.cardo-tab-pill {
   min-height: 36px;
 }
 
-.wbn-tab-pill button {
+.cardo-tab-pill button {
   display: inline-flex;
   min-height: 36px;
   align-items: center;
@@ -236,14 +236,14 @@
   line-height: 20px;
 }
 
-.wbn-tab-pill button > span:not(.wbn-active-tab-indicator) {
+.cardo-tab-pill button > span:not(.cardo-active-tab-indicator) {
   position: relative;
   z-index: 1;
   display: inline-flex;
   align-items: center;
 }
 
-.wbn-tab-rename-layer {
+.cardo-tab-rename-layer {
   position: absolute;
   inset: 0;
   z-index: 20;
@@ -254,7 +254,7 @@
   background: transparent;
 }
 
-.wbn-tab-rename-layer input {
+.cardo-tab-rename-layer input {
   width: auto;
   min-width: 64px;
   max-width: 160px;
@@ -268,12 +268,12 @@
   outline: none;
 }
 
-.wbn-tab-pill-renaming > button {
+.cardo-tab-pill-renaming > button {
   opacity: 0;
   pointer-events: none;
 }
 
-.wbn-tab-rename-input {
+.cardo-tab-rename-input {
   width: auto;
   height: 20px;
   min-height: 20px !important;
@@ -282,6 +282,6 @@
   line-height: 20px;
 }
 
-.wbn-tab-pill-active .wbn-tab-rename-input {
+.cardo-tab-pill-active .cardo-tab-rename-input {
   color: var(--cardo-text);
 }

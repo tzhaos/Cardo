@@ -106,20 +106,20 @@ export function GlobalSearchPanel({ query }: { query: string }) {
   });
 
   return (
-    <div className="wbn-global-search-panel-wrap">
+    <div className="cardo-global-search-panel-wrap">
       <motion.div
-        className="wbn-global-search-panel"
+        className="cardo-global-search-panel"
         initial={{ opacity: 0, y: 12, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 8, scale: 0.985 }}
         transition={{ duration: 0.16 }}
       >
         {results.length ? (
-          <div className="wbn-global-search-results" role="listbox">
+          <div className="cardo-global-search-results" role="listbox">
             {results.map((result, index) => (
               <Button
                 variant="ghost"
-                className={`wbn-global-search-result${index === selectedIndex ? ' wbn-global-search-result-active' : ''}`}
+                className={`cardo-global-search-result${index === selectedIndex ? ' cardo-global-search-result-active' : ''}`}
                 type="button"
                 role="option"
                 aria-selected={index === selectedIndex}
@@ -128,25 +128,25 @@ export function GlobalSearchPanel({ query }: { query: string }) {
                 onClick={() => void activateResult(result)}
               >
                 <ResultIcon result={result} />
-                <span className="wbn-global-search-copy">
-                  <span className="wbn-global-search-title">
+                <span className="cardo-global-search-copy">
+                  <span className="cardo-global-search-title">
                     {copiedResultId === result.id ? t('item.copied') : result.title}
                   </span>
-                  <span className="wbn-global-search-path">{result.path}</span>
+                  <span className="cardo-global-search-path">{result.path}</span>
                   {result.detail ? (
-                    <span className="wbn-global-search-detail">
+                    <span className="cardo-global-search-detail">
                       {result.kind === 'box'
                         ? t('search.itemCount', { count: result.box.itemCount })
                         : result.detail}
                     </span>
                   ) : null}
                 </span>
-                <span className="wbn-global-search-kind">{t(`search.kind.${result.kind}`)}</span>
+                <span className="cardo-global-search-kind">{t(`search.kind.${result.kind}`)}</span>
               </Button>
             ))}
           </div>
         ) : (
-          <div className="wbn-global-search-empty">
+          <div className="cardo-global-search-empty">
             <Search size={20} />
             <span>{t('search.noGlobalResults')}</span>
           </div>
@@ -172,7 +172,7 @@ function ItemTypeIcon({ item }: { item: BoxItem }) {
       return <AppWindow size={17} />;
     case 'bookmark':
       return item.favicon ? (
-        <img className="wbn-website-icon" src={item.favicon} alt="" />
+        <img className="cardo-website-icon" src={item.favicon} alt="" />
       ) : (
         <Globe size={17} />
       );

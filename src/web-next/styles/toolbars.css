@@ -1,4 +1,4 @@
-.wbn-bottom-shell {
+.cardo-bottom-shell {
   position: fixed;
   z-index: 50;
   bottom: 32px;
@@ -9,14 +9,14 @@
   transform: translateX(-50%);
 }
 
-.wbn-toolbar-divider {
+.cardo-toolbar-divider {
   width: 1px;
   height: 24px;
   margin: 0 4px;
   background: var(--cardo-divider);
 }
 
-.wbn-search-pill {
+.cardo-search-pill {
   position: relative;
   display: flex;
   height: 40px;
@@ -26,13 +26,13 @@
   background: var(--cardo-hover);
 }
 
-.wbn-search-pill .wbn-search-local-trigger {
+.cardo-search-pill .cardo-search-local-trigger {
   position: absolute;
   inset: 0 auto 0 0;
   z-index: 1;
 }
 
-.wbn-search-pill .wbn-search-web-trigger {
+.cardo-search-pill .cardo-search-web-trigger {
   position: absolute;
   z-index: 1;
   inset: 0 0 0 auto;
@@ -44,19 +44,19 @@
     opacity var(--cardo-duration-normal) var(--cardo-easing);
 }
 
-.wbn-search-pill-active .wbn-search-web-trigger {
+.cardo-search-pill-active .cardo-search-web-trigger {
   visibility: visible;
   opacity: 1;
   pointer-events: auto;
   transition-delay: 0s;
 }
 
-.wbn-search-pill-active .wbn-search-web-trigger:disabled {
+.cardo-search-pill-active .cardo-search-web-trigger:disabled {
   cursor: default;
   opacity: 0.32;
 }
 
-.wbn-search-pill input {
+.cardo-search-pill input {
   width: 100%;
   height: 100%;
   border: 0;
@@ -68,13 +68,13 @@
   transition: opacity var(--cardo-duration-normal) var(--cardo-easing);
 }
 
-.wbn-search-pill input,
-.wbn-search-pill input::placeholder {
+.cardo-search-pill input,
+.cardo-search-pill input::placeholder {
   font-family: var(--cardo-font-sans);
   font-weight: 400;
   letter-spacing: 0;
 }
-.wbn-bottom-toolbar {
+.cardo-bottom-toolbar {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -87,24 +87,24 @@
   backdrop-filter: blur(12px);
 }
 
-.wbn-bottom-toolbar button {
+.cardo-bottom-toolbar button {
   width: 40px;
   height: 40px;
   flex: 0 0 auto;
   font-size: 13px;
 }
 
-.wbn-bottom-toolbar .wbn-toolbar-button-active {
+.cardo-bottom-toolbar .cardo-toolbar-button-active {
   background: var(--cardo-active);
   color: var(--cardo-text);
 }
 
-.wbn-tab-pill-system button {
+.cardo-tab-pill-system button {
   width: 36px;
   padding: 0;
 }
 
-.wbn-toolbar-create {
+.cardo-toolbar-create {
   order: 5;
   background: var(--cardo-create-background) !important;
   color: var(--cardo-create-text) !important;
@@ -112,11 +112,11 @@
   will-change: transform;
 }
 
-.wbn-toolbar-create:hover {
+.cardo-toolbar-create:hover {
   box-shadow: 0 7px 16px color-mix(in srgb, var(--cardo-create-background) 30%, transparent);
   transform: translateY(-1px) scale(1.04);
 }
 
-.wbn-toolbar-create:active {
+.cardo-toolbar-create:active {
   transform: scale(0.95);
 }

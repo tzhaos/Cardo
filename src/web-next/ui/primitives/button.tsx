@@ -3,19 +3,19 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import type { ButtonHTMLAttributes } from 'react';
 import { cn } from '../lib/cn';
 
-export const buttonVariants = cva('wbn-ui-button', {
+export const buttonVariants = cva('cardo-ui-button', {
   variants: {
     variant: {
-      default: 'wbn-ui-button-default',
-      ghost: 'wbn-ui-button-ghost',
-      danger: 'wbn-ui-button-danger',
-      card: 'wbn-ui-button-card',
-      icon: 'wbn-icon-button',
+      default: 'cardo-ui-button-default',
+      ghost: 'cardo-ui-button-ghost',
+      danger: 'cardo-ui-button-danger',
+      card: 'cardo-ui-button-card',
+      icon: 'cardo-icon-button',
     },
     size: {
-      default: 'wbn-ui-button-size-default',
-      compact: 'wbn-ui-button-size-compact',
-      icon: 'wbn-ui-button-size-icon',
+      default: 'cardo-ui-button-size-default',
+      compact: 'cardo-ui-button-size-compact',
+      icon: 'cardo-ui-button-size-icon',
     },
   },
   defaultVariants: {

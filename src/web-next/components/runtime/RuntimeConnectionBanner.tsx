@@ -16,11 +16,11 @@ export function RuntimeConnectionBanner() {
 
   return (
     <div
-      className={`wbn-runtime-connection-banner wbn-runtime-connection-banner--${status}`}
+      className={`cardo-runtime-connection-banner cardo-runtime-connection-banner--${status}`}
       role="status"
       aria-live="polite"
     >
-      <span className="wbn-runtime-connection-banner-dot" aria-hidden />
+      <span className="cardo-runtime-connection-banner-dot" aria-hidden />
       <span>{message}</span>
     </div>
   );

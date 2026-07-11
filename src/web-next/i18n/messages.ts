@@ -85,7 +85,7 @@ export const WEB_NEXT_MESSAGES = {
       'Optional advanced CSS. Disabled by default. Scopes under [data-cardo-root]; blocks @import and remote url().',
     'settings.cssSnippetEnabled': 'Apply snippet',
     'settings.cssSnippetPlaceholder':
-      '/* optional Cardo CSS */\n.wbn-box { /* … */ }',
+      '/* optional Cardo CSS */\n.cardo-box { /* … */ }',
     'settings.cssSnippetInvalid': 'Snippet failed validation and was not applied.',
     'settings.cssSnippetHint':
       'Max size limited. Prefer targeting classes under the Cardo root.',
@@ -383,7 +383,7 @@ export const WEB_NEXT_MESSAGES = {
       '可选高级 CSS。默认关闭。作用在 [data-cardo-root] 下；禁止 @import 与远程 url()。',
     'settings.cssSnippetEnabled': '启用片段',
     'settings.cssSnippetPlaceholder':
-      '/* 可选 Cardo CSS */\n.wbn-box { /* … */ }',
+      '/* 可选 Cardo CSS */\n.cardo-box { /* … */ }',
     'settings.cssSnippetInvalid': '片段校验失败，未应用。',
     'settings.cssSnippetHint': '有体积上限。请优先写 Cardo 根节点下的选择器。',
     'settings.features': '功能目录',

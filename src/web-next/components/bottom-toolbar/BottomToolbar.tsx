@@ -71,16 +71,16 @@ export function BottomToolbar() {
   }, [globalSearchEnabled, isSearchActive]);
 
   return (
-    <div className="wbn-bottom-shell">
+    <div className="cardo-bottom-shell">
       <AnimatePresence>
         {globalSearchEnabled && isSearchActive && searchQuery.trim() ? (
           <GlobalSearchPanel query={searchQuery} />
         ) : null}
       </AnimatePresence>
-      <div className="wbn-bottom-toolbar" aria-label={t('toolbar.workspaceTools')}>
+      <div className="cardo-bottom-toolbar" aria-label={t('toolbar.workspaceTools')}>
         <IconButton
-          className={`wbn-toolbar-button${settingsOpen ? ' wbn-toolbar-button-active' : ''}`}
-          aria-controls="wbn-settings-window"
+          className={`cardo-toolbar-button${settingsOpen ? ' cardo-toolbar-button-active' : ''}`}
+          aria-controls="cardo-settings-window"
           aria-expanded={settingsOpen}
           onClick={() => {
             toggleIndependentMenu('settings');
@@ -89,21 +89,21 @@ export function BottomToolbar() {
           aria-label={t('toolbar.settings')}
         >
           <motion.span
-            className="wbn-settings-trigger-icon wbn-icon-frame"
+            className="cardo-settings-trigger-icon cardo-icon-frame"
             animate={{ rotate: settingsOpen ? 120 : 0, scale: settingsOpen ? 1.08 : 1 }}
             transition={{ type: 'spring', stiffness: 330, damping: 22 }}
           >
             <Settings size={18} />
           </motion.span>
         </IconButton>
-        {globalSearchEnabled ? <div className="wbn-toolbar-divider" /> : null}
+        {globalSearchEnabled ? <div className="cardo-toolbar-divider" /> : null}
         {globalSearchEnabled ? (
         <motion.div
-          className={`wbn-search-pill${isSearchActive ? ' wbn-search-pill-active' : ''}`}
+          className={`cardo-search-pill${isSearchActive ? ' cardo-search-pill-active' : ''}`}
           animate={{ width: isSearchActive ? 360 : 40 }}
         >
           <IconButton
-            className="wbn-search-local-trigger"
+            className="cardo-search-local-trigger"
             onClick={() => {
               if (isSearchActive) closeSearch();
               else setIsSearchActive(true);
@@ -128,7 +128,7 @@ export function BottomToolbar() {
             }}
           />
           <IconButton
-            className="wbn-search-web-trigger"
+            className="cardo-search-web-trigger"
             disabled={!webSearchUrl}
             onClick={runWebSearch}
             aria-label={t('search.web')}
@@ -140,14 +140,14 @@ export function BottomToolbar() {
         ) : null}
         {!isSystemPageId(activePageId) ? (
           <>
-            <div className="wbn-toolbar-divider" />
+            <div className="cardo-toolbar-divider" />
             <IconButton
-              className="wbn-toolbar-create"
+              className="cardo-toolbar-create"
               onClick={handleAdd}
               aria-label={t('toolbar.newBox')}
               title={t('toolbar.newBox')}
             >
-              <motion.span className="wbn-icon-frame" whileTap={{ scale: 0.82, rotate: 90 }}>
+              <motion.span className="cardo-icon-frame" whileTap={{ scale: 0.82, rotate: 90 }}>
                 <Plus size={20} />
               </motion.span>
             </IconButton>

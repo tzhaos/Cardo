@@ -43,7 +43,7 @@ export function UniversalBox({
           renderItem={(item) => renderItem(box.id, item, draftState?.highlightItemId === item.id)}
         />
       ) : (
-        <div className="wbn-empty-state">{t('box.empty')}</div>
+        <div className="cardo-empty-state">{t('box.empty')}</div>
       )}
     </BaseBoxFrame>
   );

@@ -59,7 +59,7 @@ export function BookmarkItem({
 
   return (
     <div
-      className={`wbn-item-row wbn-bookmark-item${item.isPinned ? ' wbn-item-pinned' : ''}${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}${editView ? ' wbn-item-edit-state' : ''}`}
+      className={`cardo-item-row cardo-bookmark-item${item.isPinned ? ' cardo-item-pinned' : ''}${highlight ? ' cardo-item-new' : ''}${deleteView ? ' cardo-item-delete-state' : ''}${editView ? ' cardo-item-edit-state' : ''}`}
       onContextMenu={rename.renaming ? rename.onContextMenu : contextMenu.onContextMenu}
     >
       <AnimatePresence initial={false} mode="wait">
@@ -78,7 +78,7 @@ export function BookmarkItem({
           />
         ) : (
           <motion.div
-            className="wbn-item-view-content wbn-item-view-content-row"
+            className="cardo-item-view-content cardo-item-view-content-row"
             key="content"
             initial={{ opacity: 0, x: -6 }}
             animate={{ opacity: 1, x: 0 }}
@@ -86,7 +86,7 @@ export function BookmarkItem({
             transition={{ duration: 0.15 }}
           >
             <IconFrame
-              className="wbn-item-glyph"
+              className="cardo-item-glyph"
               role="button"
               tabIndex={0}
               onClick={() => {
@@ -100,16 +100,16 @@ export function BookmarkItem({
               }}
             >
               {item.favicon ? (
-                <img className="wbn-website-icon" src={item.favicon} alt="" />
+                <img className="cardo-website-icon" src={item.favicon} alt="" />
               ) : (
                 <Globe size={16} />
               )}
             </IconFrame>
-            <div className="wbn-item-main">
+            <div className="cardo-item-main">
               {rename.renaming ? (
                 <Input
                   ref={rename.inputRef}
-                  className="wbn-inline-rename wbn-item-title-input"
+                  className="cardo-inline-rename cardo-item-title-input"
                   value={rename.draft}
                   onChange={(event) => rename.setDraft(event.target.value)}
                   onBlur={rename.commit}
@@ -120,14 +120,14 @@ export function BookmarkItem({
                 <strong onDoubleClick={() => rename.startRenaming()}>{item.title}</strong>
               ) : (
                 <strong
-                  className="wbn-item-title-placeholder"
+                  className="cardo-item-title-placeholder"
                   onDoubleClick={() => rename.startRenaming()}
                 >
                   {t('item.untitled')}
                 </strong>
               )}
               <a
-                className="wbn-item-secondary wbn-item-subtitle-link"
+                className="cardo-item-secondary cardo-item-subtitle-link"
                 href={item.url}
                 target="_blank"
                 rel="noreferrer"

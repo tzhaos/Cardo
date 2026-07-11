@@ -5,7 +5,7 @@ export function Textarea({ className, ...props }: ComponentProps<'textarea'>) {
   return (
     <textarea
       data-slot="textarea"
-      className={cn('wbn-ui-input wbn-ui-textarea', className)}
+      className={cn('cardo-ui-input cardo-ui-textarea', className)}
       {...props}
     />
   );

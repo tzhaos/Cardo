@@ -187,7 +187,7 @@ export function BaseBoxFrame({
       // Dispose listeners only — do not end the drag. Cross-page hover remounts this box.
       pointerSessionRef.current?.dispose();
       pointerSessionRef.current = null;
-      deleteTargetRef.current?.classList.remove('wbn-box-drop-target');
+      deleteTargetRef.current?.classList.remove('cardo-box-drop-target');
     },
     [],
   );
@@ -292,18 +292,18 @@ export function BaseBoxFrame({
       ? 1.028
       : 1;
   const visualClassName = [
-    'wbn-box',
-    dragging || deleteMotion ? 'wbn-box-dragging' : '',
-    draggingOverTopBar || (deleteMotion && !deleteMotion.permanent) ? 'wbn-box-dragging-bar' : '',
-    draggingOverTab || (deleteMotion && !deleteMotion.permanent) ? 'wbn-box-dragging-tab' : '',
-    deleteMotion ? 'wbn-box-delete-exiting' : '',
-    selectedBoxId === box.id ? 'wbn-box-selected' : '',
-    highlightedBoxId === box.id ? 'wbn-box-highlighted' : '',
-    detailMode === 'compact' ? 'wbn-box-compact' : '',
-    box.isLocked ? 'wbn-box-locked' : '',
-    isTemporary ? 'wbn-box-temporary' : '',
+    'cardo-box',
+    dragging || deleteMotion ? 'cardo-box-dragging' : '',
+    draggingOverTopBar || (deleteMotion && !deleteMotion.permanent) ? 'cardo-box-dragging-bar' : '',
+    draggingOverTab || (deleteMotion && !deleteMotion.permanent) ? 'cardo-box-dragging-tab' : '',
+    deleteMotion ? 'cardo-box-delete-exiting' : '',
+    selectedBoxId === box.id ? 'cardo-box-selected' : '',
+    highlightedBoxId === box.id ? 'cardo-box-highlighted' : '',
+    detailMode === 'compact' ? 'cardo-box-compact' : '',
+    box.isLocked ? 'cardo-box-locked' : '',
+    isTemporary ? 'cardo-box-temporary' : '',
     addViewState?.mode || (appearanceEnabled && appearanceView) || confirmDelete
-      ? 'wbn-box-local-view'
+      ? 'cardo-box-local-view'
       : '',
   ]
     .filter(Boolean)
@@ -403,7 +403,7 @@ export function BaseBoxFrame({
     const targetRect = target?.getBoundingClientRect();
     if (target) {
       deleteTargetRef.current = target;
-      target.classList.add('wbn-box-drop-target');
+      target.classList.add('cardo-box-drop-target');
     }
     setDeleteMotion({
       x: targetRect
@@ -426,9 +426,9 @@ export function BaseBoxFrame({
     const target = deleteTargetRef.current;
     deleteTargetRef.current = null;
     if (target) {
-      target.classList.remove('wbn-box-drop-target');
-      target.classList.add('wbn-box-drop-released');
-      window.setTimeout(() => target.classList.remove('wbn-box-drop-released'), 560);
+      target.classList.remove('cardo-box-drop-target');
+      target.classList.add('cardo-box-drop-released');
+      window.setTimeout(() => target.classList.remove('cardo-box-drop-released'), 560);
     }
     deleteBox(box.id);
   };
@@ -539,8 +539,8 @@ export function BaseBoxFrame({
       }
     >
       {isTemporary ? (
-        <header className="wbn-temporary-box-header" onPointerDown={beginDrag}>
-          <span className="wbn-temporary-box-grip" aria-hidden="true" />
+        <header className="cardo-temporary-box-header" onPointerDown={beginDrag}>
+          <span className="cardo-temporary-box-grip" aria-hidden="true" />
           <Button
             type="button"
             data-no-drag
@@ -557,10 +557,10 @@ export function BaseBoxFrame({
           </Button>
         </header>
       ) : (
-        <header className="wbn-box-header" onPointerDown={beginDrag}>
-          <div className="wbn-box-title-group">
+        <header className="cardo-box-header" onPointerDown={beginDrag}>
+          <div className="cardo-box-title-group">
             <Button
-              className="wbn-box-icon wbn-icon-frame"
+              className="cardo-box-icon cardo-icon-frame"
               type="button"
               data-no-drag
               title={appearanceEnabled ? t('box.changePreset') : box.title}
@@ -580,7 +580,7 @@ export function BaseBoxFrame({
             {titleRename.renaming ? (
               <Input
                 ref={titleRename.inputRef}
-                className="wbn-inline-rename wbn-box-title-input"
+                className="cardo-inline-rename cardo-box-title-input"
                 aria-label={t('box.rename', { title: box.title })}
                 value={titleRename.draft}
                 onChange={(event) => titleRename.setDraft(event.target.value)}
@@ -590,7 +590,7 @@ export function BaseBoxFrame({
               />
             ) : (
               <span
-                className="wbn-box-title"
+                className="cardo-box-title"
                 data-no-drag
                 onDoubleClick={() => titleRename.start()}
               >
@@ -598,10 +598,10 @@ export function BaseBoxFrame({
               </span>
             )}
           </div>
-          <div className="wbn-box-controls">
+          <div className="cardo-box-controls">
             <MotionButton
               variant="icon"
-              className="wbn-box-view-toggle wbn-box-lock-toggle wbn-icon-button"
+              className="cardo-box-view-toggle cardo-box-lock-toggle cardo-icon-button"
               type="button"
               data-no-drag
               onClick={() => setBoxLocked(box.id, !box.isLocked)}
@@ -613,7 +613,7 @@ export function BaseBoxFrame({
             </MotionButton>
             <MotionButton
               variant="icon"
-              className="wbn-box-view-toggle wbn-icon-button"
+              className="cardo-box-view-toggle cardo-icon-button"
               type="button"
               data-no-drag
               onClick={() =>
@@ -633,7 +633,7 @@ export function BaseBoxFrame({
             </MotionButton>
             <MotionButton
               variant="icon"
-              className="wbn-box-view-toggle wbn-icon-button"
+              className="cardo-box-view-toggle cardo-icon-button"
               type="button"
               data-no-drag
               onClick={() => setBoxViewMode(box.id, viewMode === 'list' ? 'grid' : 'list')}
@@ -645,7 +645,7 @@ export function BaseBoxFrame({
             </MotionButton>
             <MotionButton
               variant="icon"
-              className="wbn-box-delete wbn-icon-button"
+              className="cardo-box-delete cardo-icon-button"
               type="button"
               onClick={() => {
                 if (appearanceView) {
@@ -670,7 +670,7 @@ export function BaseBoxFrame({
         </header>
       )}
       <div
-        className={`wbn-box-content wbn-box-content-mixed${confirmDelete ? ' wbn-box-delete-view' : ''}`}
+        className={`cardo-box-content cardo-box-content-mixed${confirmDelete ? ' cardo-box-delete-view' : ''}`}
       >
         {appearanceEnabled && appearanceView ? (
           <BoxAppearanceView
@@ -681,7 +681,7 @@ export function BaseBoxFrame({
           />
         ) : confirmDelete ? (
           <motion.div
-            className="wbn-box-delete-confirm"
+            className="cardo-box-delete-confirm"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
           >
@@ -691,12 +691,12 @@ export function BaseBoxFrame({
                 { type: t('box.general') },
               )}
             </p>
-            <div className="wbn-box-delete-actions">
+            <div className="cardo-box-delete-actions">
               <Button variant="ghost" onClick={() => setConfirmDelete(false)}>
                 {t('common.cancel')}
               </Button>
               <Button
-                className="wbn-box-delete-confirm-button"
+                className="cardo-box-delete-confirm-button"
                 variant="danger"
                 onClick={startDeleteMotion}
               >
@@ -709,7 +709,7 @@ export function BaseBoxFrame({
         )}
       </div>
       {!isTemporary && !addViewState?.mode && !appearanceView && !confirmDelete ? (
-        <footer className="wbn-box-footer">
+        <footer className="cardo-box-footer">
           <Button variant="ghost" onClick={onAddItem}>
             <Plus size={14} />
             <span>{t('box.addItem')}</span>
@@ -718,7 +718,7 @@ export function BaseBoxFrame({
       ) : null}
       {!isTemporary ? (
         <Button
-          className="wbn-resize-handle"
+          className="cardo-resize-handle"
           type="button"
           disabled={box.isLocked}
           aria-label={t('box.resize', { title: box.title })}

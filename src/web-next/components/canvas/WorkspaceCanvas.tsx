@@ -83,11 +83,11 @@ export function WorkspaceCanvas() {
   const pageTransitionDirection = activePageIndex < previousPageIndex ? -1 : 1;
   const isPageSwitch = previousActivePageIdRef.current !== activePageId;
   const canvasClassName = [
-    'wbn-canvas',
-    isCollection ? 'wbn-canvas-collection' : '',
-    isLocked ? 'wbn-canvas-locked' : '',
-    isPanModifierActive && !isLocked ? 'wbn-canvas-pan-ready' : '',
-    isPanning ? 'wbn-canvas-panning' : '',
+    'cardo-canvas',
+    isCollection ? 'cardo-canvas-collection' : '',
+    isLocked ? 'cardo-canvas-locked' : '',
+    isPanModifierActive && !isLocked ? 'cardo-canvas-pan-ready' : '',
+    isPanning ? 'cardo-canvas-panning' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -162,7 +162,7 @@ export function WorkspaceCanvas() {
     >
       <AnimatePresence initial={false} mode="sync" custom={pageTransitionDirection}>
         <motion.section
-          className="wbn-page-scene"
+          className="cardo-page-scene"
           custom={pageTransitionDirection}
           key={activePageId}
           variants={draggedBoxId ? undefined : pageSceneVariants}
@@ -173,12 +173,12 @@ export function WorkspaceCanvas() {
         >
           {isCollection ? (
             <CanvasWorld pageId={activePageId}>
-              <div className="wbn-canvas-boundary" style={boundaryStyle} />
+              <div className="cardo-canvas-boundary" style={boundaryStyle} />
               <CollectionPage />
             </CanvasWorld>
           ) : (
             <CanvasWorld pageId={activePageId}>
-              <div className="wbn-canvas-boundary" style={boundaryStyle} />
+              <div className="cardo-canvas-boundary" style={boundaryStyle} />
               <PageBoxes
                 pageId={activePageId}
                 skipEntryAnimation={isPageSwitch || Boolean(draggedBoxId)}
@@ -188,16 +188,16 @@ export function WorkspaceCanvas() {
           <AnimatePresence>
             {systemPageEmpty ? (
               <motion.div
-                className="wbn-system-page-empty"
+                className="cardo-system-page-empty"
                 key={systemPageEmpty.key}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 8 }}
               >
-                <span className="wbn-system-page-empty-icon" aria-hidden="true">
+                <span className="cardo-system-page-empty-icon" aria-hidden="true">
                   {systemPageEmpty.icon}
                 </span>
-                <span className="wbn-system-page-empty-label">{systemPageEmpty.label}</span>
+                <span className="cardo-system-page-empty-label">{systemPageEmpty.label}</span>
               </motion.div>
             ) : null}
           </AnimatePresence>
@@ -236,11 +236,11 @@ function CanvasBoundaryFeedback({ pageId }: { pageId: string }) {
   const atBottom = canShow && Math.abs(panY - limits.minY) < 0.5;
 
   return (
-    <div className="wbn-canvas-edge-feedback" aria-hidden="true">
-      <span className={`wbn-canvas-edge wbn-canvas-edge-left${atLeft ? ' is-active' : ''}`} />
-      <span className={`wbn-canvas-edge wbn-canvas-edge-right${atRight ? ' is-active' : ''}`} />
-      <span className={`wbn-canvas-edge wbn-canvas-edge-top${atTop ? ' is-active' : ''}`} />
-      <span className={`wbn-canvas-edge wbn-canvas-edge-bottom${atBottom ? ' is-active' : ''}`} />
+    <div className="cardo-canvas-edge-feedback" aria-hidden="true">
+      <span className={`cardo-canvas-edge cardo-canvas-edge-left${atLeft ? ' is-active' : ''}`} />
+      <span className={`cardo-canvas-edge cardo-canvas-edge-right${atRight ? ' is-active' : ''}`} />
+      <span className={`cardo-canvas-edge cardo-canvas-edge-top${atTop ? ' is-active' : ''}`} />
+      <span className={`cardo-canvas-edge cardo-canvas-edge-bottom${atBottom ? ' is-active' : ''}`} />
     </div>
   );
 }
@@ -259,7 +259,7 @@ function CanvasWorld({ pageId, children }: { pageId: string; children: ReactNode
     const applyCamera = () => {
       const page = getPageCanvasState(useCanvasStore.getState(), pageId);
       world.style.transform = cameraTransform(page.camera);
-      world.classList.toggle('wbn-canvas-world-animating', Boolean(page.isCameraAnimating));
+      world.classList.toggle('cardo-canvas-world-animating', Boolean(page.isCameraAnimating));
     };
     applyCamera();
     return useCanvasStore.subscribe(applyCamera);
@@ -267,7 +267,7 @@ function CanvasWorld({ pageId, children }: { pageId: string; children: ReactNode
 
   return (
     <div
-      className={`wbn-canvas-world${initialPageState.isCameraAnimating ? ' wbn-canvas-world-animating' : ''}`}
+      className={`cardo-canvas-world${initialPageState.isCameraAnimating ? ' cardo-canvas-world-animating' : ''}`}
       ref={worldRef}
       style={style}
     >

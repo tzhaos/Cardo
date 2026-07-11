@@ -124,8 +124,8 @@ export function SettingsPanel({
   ];
 
   return (
-    <div className="wbn-settings-panel" role="dialog" aria-label={t('settings.title')}>
-      <header className="wbn-settings-header" onPointerDown={onHeaderPointerDown}>
+    <div className="cardo-settings-panel" role="dialog" aria-label={t('settings.title')}>
+      <header className="cardo-settings-header" onPointerDown={onHeaderPointerDown}>
         <div>
           <IconFrame>
             <Settings size={17} />
@@ -137,16 +137,16 @@ export function SettingsPanel({
         </IconButton>
       </header>
       <Tabs
-        className="wbn-settings-layout"
+        className="cardo-settings-layout"
         value={section}
         onValueChange={(value) => setSection(value as SettingsSection)}
       >
-        <TabsList className="wbn-settings-nav" aria-label={t('settings.sections')}>
+        <TabsList className="cardo-settings-nav" aria-label={t('settings.sections')}>
           {sections.map(({ id, icon: Icon, label }) => (
             <TabsTrigger key={id} value={id}>
               {section === id ? (
                 <motion.span
-                  className="wbn-settings-nav-indicator"
+                  className="cardo-settings-nav-indicator"
                   layoutId="settings-nav-indicator"
                   transition={{ type: 'spring', bounce: 0.12, duration: 0.42 }}
                 />
@@ -158,7 +158,7 @@ export function SettingsPanel({
             </TabsTrigger>
           ))}
         </TabsList>
-        <TabsContent className="wbn-settings-content wbn-custom-scrollbar" value={section}>
+        <TabsContent className="cardo-settings-content cardo-custom-scrollbar" value={section}>
           <AnimatePresence mode="wait" initial={false}>
             <motion.section
               key={section}
@@ -239,12 +239,12 @@ function InterfaceSettings() {
         title={t('settings.interface')}
         description={t('settings.interfaceDescription')}
       />
-      <div className="wbn-settings-subheading">
+      <div className="cardo-settings-subheading">
         <span>{t('settings.layout')}</span>
         <small>{t('settings.layoutDescription')}</small>
       </div>
       <ToggleGroup
-        className="wbn-theme-grid"
+        className="cardo-theme-grid"
         type="single"
         variant="plain"
         value={layoutProfileId}
@@ -257,21 +257,21 @@ function InterfaceSettings() {
             <ToggleGroupItem asChild key={profile.id} value={profile.id}>
               <MotionButton
                 variant="card"
-                className={selected ? 'wbn-theme-card wbn-theme-card-selected' : 'wbn-theme-card'}
+                className={selected ? 'cardo-theme-card cardo-theme-card-selected' : 'cardo-theme-card'}
                 type="button"
                 whileTap={{ scale: 0.985 }}
               >
-                <span className="wbn-theme-card-copy">
+                <span className="cardo-theme-card-copy">
                   <span>
                     {t(profile.labelKey as WebNextMessageKey)}
                     {profile.isOfficialDefault ? (
-                      <em className="wbn-theme-official-badge">{t('settings.themeOfficial')}</em>
+                      <em className="cardo-theme-official-badge">{t('settings.themeOfficial')}</em>
                     ) : null}
                   </span>
                   <small>{t(profile.descriptionKey as WebNextMessageKey)}</small>
                 </span>
                 {selected ? (
-                  <IconFrame className="wbn-theme-check">
+                  <IconFrame className="cardo-theme-check">
                     <Check size={12} />
                   </IconFrame>
                 ) : null}
@@ -281,19 +281,19 @@ function InterfaceSettings() {
         })}
       </ToggleGroup>
 
-      <details className="wbn-settings-advanced">
+      <details className="cardo-settings-advanced">
         <summary>
           <span>{t('settings.advancedInterface')}</span>
           <small>{t('settings.advancedInterfaceDescription')}</small>
         </summary>
-        <div className="wbn-settings-advanced-body">
+        <div className="cardo-settings-advanced-body">
           {FEATURE_CATALOG.map((feature) => (
             <FeatureFlagRow key={feature.id} feature={feature} onToggle={setFeatureEnabled} />
           ))}
           {hasOverrides ? (
             <Button
               variant="ghost"
-              className="wbn-theme-reset-button"
+              className="cardo-theme-reset-button"
               onClick={() => resetFeatureFlags()}
             >
               <RotateCcw size={14} />
@@ -303,14 +303,14 @@ function InterfaceSettings() {
         </div>
       </details>
 
-      <details className="wbn-settings-advanced">
+      <details className="cardo-settings-advanced">
         <summary>
           <span>{t('settings.expertCss')}</span>
           <small>{t('settings.expertCssDescription')}</small>
         </summary>
-        <div className="wbn-settings-advanced-body">
-          <div className="wbn-settings-card">
-            <div className="wbn-settings-card-copy">
+        <div className="cardo-settings-advanced-body">
+          <div className="cardo-settings-card">
+            <div className="cardo-settings-card-copy">
               <span>
                 {t('settings.cssSnippetEnabled')}
                 <small>{t('settings.cssSnippetHint')}</small>
@@ -333,10 +333,10 @@ function InterfaceSettings() {
               </SegmentButton>
             </ToggleGroup>
           </div>
-          <label className="wbn-custom-search-template">
+          <label className="cardo-custom-search-template">
             <span>{t('settings.cssSnippet')}</span>
             <Textarea
-              className={snippetError ? 'wbn-custom-search-template-invalid' : undefined}
+              className={snippetError ? 'cardo-custom-search-template-invalid' : undefined}
               value={snippetDraft}
               onChange={(event) => {
                 setSnippetDraft(event.target.value);
@@ -367,8 +367,8 @@ function FeatureFlagRow({
   const description = t(feature.descriptionKey as WebNextMessageKey);
 
   return (
-    <div className="wbn-settings-card">
-      <div className="wbn-settings-card-copy">
+    <div className="cardo-settings-card">
+      <div className="cardo-settings-card-copy">
         <span>
           {label}
           <small>{description}</small>
@@ -419,7 +419,7 @@ function DataSettings() {
   return (
     <>
       <SettingsHeading title={t('settings.data')} description={t('settings.dataDescription')} />
-      <div className="wbn-data-actions">
+      <div className="cardo-data-actions">
         <Button variant="card" onClick={() => void exportWorkspaceData()}>
           <IconFrame>
             <Download size={18} />
@@ -449,7 +449,7 @@ function DataSettings() {
         </Button>
       </div>
       <Input
-        className="wbn-data-file-input"
+        className="cardo-data-file-input"
         ref={inputRef}
         type="file"
         accept="application/json,.json"
@@ -459,11 +459,11 @@ function DataSettings() {
           event.currentTarget.value = '';
         }}
       />
-      {importError ? <p className="wbn-data-error">{t('settings.importInvalid')}</p> : null}
+      {importError ? <p className="cardo-data-error">{t('settings.importInvalid')}</p> : null}
       <AnimatePresence>
         {pendingImport ? (
           <motion.div
-            className="wbn-data-import-confirm"
+            className="cardo-data-import-confirm"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 6 }}
@@ -477,7 +477,7 @@ function DataSettings() {
                 {t('common.cancel')}
               </Button>
               <Button
-                className="wbn-data-import-confirm-button"
+                className="cardo-data-import-confirm-button"
                 variant="default"
                 onClick={() => {
                   importWorkspace(pendingImport.workspace);
@@ -518,8 +518,8 @@ function GeneralSettings({
         title={t('settings.general')}
         description={t('settings.generalDescription')}
       />
-      <div className="wbn-settings-card">
-        <div className="wbn-settings-card-copy">
+      <div className="cardo-settings-card">
+        <div className="cardo-settings-card-copy">
           <LanguageStateIcon locale={locale} />
           <span>
             {t('settings.language')}
@@ -540,12 +540,12 @@ function GeneralSettings({
           </SegmentButton>
         </ToggleGroup>
       </div>
-      <div className="wbn-settings-subheading">
+      <div className="cardo-settings-subheading">
         <span>{t('settings.searchEngine')}</span>
         <small>{t('settings.searchEngineDescription')}</small>
       </div>
-      <div className="wbn-settings-card wbn-search-engine-settings">
-        <div className="wbn-settings-card-copy">
+      <div className="cardo-settings-card cardo-search-engine-settings">
+        <div className="cardo-settings-card-copy">
           <IconFrame>
             <Globe2 size={18} />
           </IconFrame>
@@ -568,12 +568,12 @@ function GeneralSettings({
         </Select>
       </div>
       {searchEngine === 'custom' ? (
-        <label className="wbn-custom-search-template">
+        <label className="cardo-custom-search-template">
           <span>{t('settings.customSearchTemplate')}</span>
           <Input
             className={
               customSearchTemplate && !isValidCustomSearchTemplate(customSearchTemplate)
-                ? 'wbn-custom-search-template-invalid'
+                ? 'cardo-custom-search-template-invalid'
                 : undefined
             }
             value={customSearchTemplate}
@@ -647,12 +647,12 @@ function AppearanceSettings({
         title={t('settings.appearance')}
         description={t('settings.appearanceDescription')}
       />
-      <div className="wbn-settings-subheading">
+      <div className="cardo-settings-subheading">
         <span>{t('settings.theme')}</span>
         <small>{t('settings.themeDescription')}</small>
       </div>
       <ToggleGroup
-        className="wbn-theme-grid"
+        className="cardo-theme-grid"
         type="single"
         variant="plain"
         value={themeId}
@@ -665,26 +665,26 @@ function AppearanceSettings({
             <ToggleGroupItem asChild key={theme.id} value={theme.id}>
               <MotionButton
                 variant="card"
-                className={selected ? 'wbn-theme-card wbn-theme-card-selected' : 'wbn-theme-card'}
+                className={selected ? 'cardo-theme-card cardo-theme-card-selected' : 'cardo-theme-card'}
                 type="button"
                 whileTap={{ scale: 0.985 }}
               >
-                <span className="wbn-theme-preview">
+                <span className="cardo-theme-preview">
                   <span style={{ background: theme.palettes.light.canvas }} />
                   <span style={{ background: theme.palettes.dark.canvas }} />
                   <i style={{ background: theme.palettes[colorMode].panel }} />
                 </span>
-                <span className="wbn-theme-card-copy">
+                <span className="cardo-theme-card-copy">
                   <span>
                     {theme.name[locale]}
                     {theme.official ? (
-                      <em className="wbn-theme-official-badge">{t('settings.themeOfficial')}</em>
+                      <em className="cardo-theme-official-badge">{t('settings.themeOfficial')}</em>
                     ) : null}
                   </span>
                   <small>{theme.description[locale]}</small>
                 </span>
                 {selected ? (
-                  <IconFrame className="wbn-theme-check">
+                  <IconFrame className="cardo-theme-check">
                     <Check size={12} />
                   </IconFrame>
                 ) : null}
@@ -695,7 +695,7 @@ function AppearanceSettings({
       </ToggleGroup>
       <Button
         variant="card"
-        className="wbn-theme-restore-official"
+        className="cardo-theme-restore-official"
         onClick={() => restoreOfficialLook()}
       >
         <IconFrame>
@@ -707,8 +707,8 @@ function AppearanceSettings({
         </span>
       </Button>
 
-      <div className="wbn-settings-card">
-        <div className="wbn-settings-card-copy">
+      <div className="cardo-settings-card">
+        <div className="cardo-settings-card-copy">
           <ColorModeStateIcon colorMode={colorMode} />
           <span>
             {t('settings.mode')}
@@ -732,12 +732,12 @@ function AppearanceSettings({
         </ToggleGroup>
       </div>
 
-      <div className="wbn-settings-subheading">
+      <div className="cardo-settings-subheading">
         <span>{t('settings.typography')}</span>
         <small>{t('settings.typographyDescription')}</small>
       </div>
-      <div className="wbn-settings-card">
-        <div className="wbn-settings-card-copy">
+      <div className="cardo-settings-card">
+        <div className="cardo-settings-card-copy">
           <IconFrame>
             <Languages size={16} />
           </IconFrame>
@@ -750,7 +750,7 @@ function AppearanceSettings({
           value={fontFamily}
           onValueChange={(value) => setFontFamily(fontFamilyIdSchema.parse(value))}
         >
-          <SelectTrigger aria-label={t('settings.fontFamily')} className="wbn-settings-select">
+          <SelectTrigger aria-label={t('settings.fontFamily')} className="cardo-settings-select">
             <SelectValue />
           </SelectTrigger>
           <SelectContent align="end">
@@ -760,8 +760,8 @@ function AppearanceSettings({
           </SelectContent>
         </Select>
       </div>
-      <div className="wbn-settings-card">
-        <div className="wbn-settings-card-copy">
+      <div className="cardo-settings-card">
+        <div className="cardo-settings-card-copy">
           <span>
             {t('settings.fontScale')}
             <small>{t('settings.fontScaleDescription')}</small>
@@ -784,8 +784,8 @@ function AppearanceSettings({
           </SegmentButton>
         </ToggleGroup>
       </div>
-      <div className="wbn-settings-card">
-        <div className="wbn-settings-card-copy">
+      <div className="cardo-settings-card">
+        <div className="cardo-settings-card-copy">
           <span>
             {t('settings.density')}
             <small>{t('settings.densityDescription')}</small>
@@ -809,13 +809,13 @@ function AppearanceSettings({
         </ToggleGroup>
       </div>
 
-      <details className="wbn-settings-advanced">
+      <details className="cardo-settings-advanced">
         <summary>
           <span>{t('settings.advancedTheme')}</span>
           <small>{t('settings.advancedThemeDescription')}</small>
         </summary>
-        <div className="wbn-settings-advanced-body">
-          <div className="wbn-data-actions wbn-theme-pack-actions">
+        <div className="cardo-settings-advanced-body">
+          <div className="cardo-data-actions cardo-theme-pack-actions">
             <Button variant="card" onClick={() => exportThemePackFile(themeId)}>
               <IconFrame>
                 <Download size={18} />
@@ -858,12 +858,12 @@ function AppearanceSettings({
             }}
           />
           {themeImportError ? (
-            <p className="wbn-import-error">{t('settings.importThemeInvalid')}</p>
+            <p className="cardo-import-error">{t('settings.importThemeInvalid')}</p>
           ) : null}
 
           {(activePack.options?.length ?? 0) > 0 ? (
             <>
-              <div className="wbn-settings-subheading">
+              <div className="cardo-settings-subheading">
                 <span>{t('settings.themeOptions')}</span>
                 <small>{t('settings.themeOptionsDescription')}</small>
               </div>
@@ -874,8 +874,8 @@ function AppearanceSettings({
                       ? (themeOptionValues[option.id] as boolean)
                       : option.default;
                   return (
-                    <div className="wbn-settings-card" key={option.id}>
-                      <div className="wbn-settings-card-copy">
+                    <div className="cardo-settings-card" key={option.id}>
+                      <div className="cardo-settings-card-copy">
                         <span>
                           {option.label[locale]}
                           {option.description ? (
@@ -907,8 +907,8 @@ function AppearanceSettings({
                     ? (themeOptionValues[option.id] as string)
                     : option.default;
                 return (
-                  <div className="wbn-settings-card" key={option.id}>
-                    <div className="wbn-settings-card-copy">
+                  <div className="cardo-settings-card" key={option.id}>
+                    <div className="cardo-settings-card-copy">
                       <span>
                         {option.label[locale]}
                         {option.description ? <small>{option.description[locale]}</small> : null}
@@ -920,7 +920,7 @@ function AppearanceSettings({
                     >
                       <SelectTrigger
                         aria-label={option.label[locale]}
-                        className="wbn-settings-select"
+                        className="cardo-settings-select"
                       >
                         <SelectValue />
                       </SelectTrigger>
@@ -938,7 +938,7 @@ function AppearanceSettings({
               {hasOptionOverrides ? (
                 <Button
                   variant="ghost"
-                  className="wbn-theme-reset-button"
+                  className="cardo-theme-reset-button"
                   onClick={() => resetThemeOptionValues()}
                 >
                   <RotateCcw size={14} />
@@ -948,11 +948,11 @@ function AppearanceSettings({
             </>
           ) : null}
 
-          <div className="wbn-settings-subheading">
+          <div className="cardo-settings-subheading">
             <span>{t('settings.colorOverrides')}</span>
             <small>{t('settings.colorOverridesDescription')}</small>
           </div>
-          <div className="wbn-theme-color-grid">
+          <div className="cardo-theme-color-grid">
             {overridableColorKeys.map((key) => {
               const base =
                 activePack.tokens.colors[colorMode]?.[key] ??
@@ -960,9 +960,9 @@ function AppearanceSettings({
                 '#3b82f6';
               const pickerValue = toHexColor(modeOverrides[key] ?? base) ?? '#3b82f6';
               return (
-                <label className="wbn-theme-color-field" key={key}>
+                <label className="cardo-theme-color-field" key={key}>
                   <span>{t(COLOR_OVERRIDE_LABEL_KEYS[key])}</span>
-                  <span className="wbn-theme-color-controls">
+                  <span className="cardo-theme-color-controls">
                     <input
                       type="color"
                       value={pickerValue}
@@ -991,7 +991,7 @@ function AppearanceSettings({
           {hasColorOverrides ? (
             <Button
               variant="ghost"
-              className="wbn-theme-reset-button"
+              className="cardo-theme-reset-button"
               onClick={() => resetThemeColorOverrides(themeId)}
             >
               <RotateCcw size={14} />
@@ -1020,8 +1020,8 @@ function AboutSettings() {
   return (
     <>
       <SettingsHeading title={t('settings.about')} description={t('settings.aboutDescription')} />
-      <div className="wbn-about-card">
-        <IconFrame className="wbn-about-icon">
+      <div className="cardo-about-card">
+        <IconFrame className="cardo-about-icon">
           <Languages size={22} />
         </IconFrame>
         <span>
@@ -1029,7 +1029,7 @@ function AboutSettings() {
           <small>{t('settings.webNextEdition')}</small>
         </span>
       </div>
-      <dl className="wbn-about-details">
+      <dl className="cardo-about-details">
         <div>
           <dt>{t('settings.interface')}</dt>
           <dd>web-next</dd>
@@ -1045,7 +1045,7 @@ function AboutSettings() {
 
 function SettingsHeading({ title, description }: { title: string; description: string }) {
   return (
-    <div className="wbn-settings-heading">
+    <div className="cardo-settings-heading">
       <h2>{title}</h2>
       <p>{description}</p>
     </div>
@@ -1064,7 +1064,7 @@ function SegmentButton({
   return (
     <ToggleGroupItem value={value}>
       <motion.span
-        className="wbn-segment-indicator"
+        className="cardo-segment-indicator"
         initial={false}
         animate={{ opacity: active ? 1 : 0, scale: active ? 1 : 0.94 }}
         transition={{ type: 'spring', stiffness: 420, damping: 32, mass: 0.55 }}

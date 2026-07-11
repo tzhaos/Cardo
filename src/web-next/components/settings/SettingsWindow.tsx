@@ -24,7 +24,7 @@ export function SettingsWindow() {
   useEffect(() => {
     return () => {
       dragSessionRef.current?.end();
-      document.body.classList.remove('wbn-independent-menu-dragging');
+      document.body.classList.remove('cardo-independent-menu-dragging');
     };
   }, []);
 
@@ -87,7 +87,7 @@ export function SettingsWindow() {
 
     dragSessionRef.current?.end();
     draggingRef.current = true;
-    document.body.classList.add('wbn-independent-menu-dragging');
+    document.body.classList.add('cardo-independent-menu-dragging');
     const session = startWindowPointerSession({
       onMove: (moveEvent) => {
         latestPosition = clampIndependentMenuPosition(
@@ -103,7 +103,7 @@ export function SettingsWindow() {
       },
       onEnd: () => {
         draggingRef.current = false;
-        document.body.classList.remove('wbn-independent-menu-dragging');
+        document.body.classList.remove('cardo-independent-menu-dragging');
         if (dragSessionRef.current === session) {
           dragSessionRef.current = null;
         }
@@ -117,9 +117,9 @@ export function SettingsWindow() {
     <AnimatePresence>
       {menu.open ? (
         <motion.aside
-          className="wbn-independent-menu wbn-settings-window"
+          className="cardo-independent-menu cardo-settings-window"
           data-independent-menu="settings"
-          id="wbn-settings-window"
+          id="cardo-settings-window"
           ref={windowRef}
           initial={{ opacity: 0, scale: 0.94 }}
           animate={{ opacity: 1, scale: 1 }}

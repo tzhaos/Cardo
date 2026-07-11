@@ -33,14 +33,14 @@ export function SortableItemList<TItem extends BoxItem>({
     <Reorder.Group
       as="div"
       axis="y"
-      className={`wbn-item-list${viewMode === 'grid' ? ' wbn-item-list-grid' : ''}`}
+      className={`cardo-item-list${viewMode === 'grid' ? ' cardo-item-list-grid' : ''}`}
       values={orderedIds}
       onReorder={updateOrder}
       onCopy={(event) => {
         const target = event.target;
         if (
           target instanceof Element &&
-          target.closest('.wbn-item-view-content') &&
+          target.closest('.cardo-item-view-content') &&
           !target.closest('input,textarea,[contenteditable="true"]')
         ) {
           event.preventDefault();
@@ -109,7 +109,7 @@ function SortableItemEntry({
       x: point.x - rect.left,
       y: point.y - rect.top,
     };
-    preview.classList.add('wbn-item-drag-preview');
+    preview.classList.add('cardo-item-drag-preview');
     preview.removeAttribute('data-item-id');
     preview.setAttribute('aria-hidden', 'true');
     preview.inert = true;
@@ -135,7 +135,7 @@ function SortableItemEntry({
     <Reorder.Item
       ref={entryRef}
       as="div"
-      className={`wbn-item-reorder-entry${dragging ? ' wbn-item-reorder-entry-dragging' : ''}`}
+      className={`cardo-item-reorder-entry${dragging ? ' cardo-item-reorder-entry-dragging' : ''}`}
       data-item-id={itemId}
       value={itemId}
       dragControls={controls}
@@ -172,7 +172,7 @@ function SortableItemEntry({
       }}
     >
       <IconButton
-        className="wbn-item-drag-handle"
+        className="cardo-item-drag-handle"
         aria-label={t('item.reorder')}
         onPointerDown={(event) => {
           event.preventDefault();
@@ -193,7 +193,7 @@ function resolveCrossBoxDrop(sourceBoxId: string, point: { x: number; y: number 
   if (!targetBox || !targetBoxId || targetBoxId === sourceBoxId) return null;
 
   const entries = Array.from(
-    targetBox.querySelectorAll<HTMLElement>('.wbn-item-reorder-entry[data-item-id]'),
+    targetBox.querySelectorAll<HTMLElement>('.cardo-item-reorder-entry[data-item-id]'),
   );
   let targetIndex = entries.length;
   for (let index = 0; index < entries.length; index += 1) {

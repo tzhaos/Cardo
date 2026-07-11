@@ -40,7 +40,7 @@ export function BookmarkAddView({
         value={url}
         onChange={(event) => updateDraft(boxId, { url: event.target.value })}
       />
-      {showInvalidUrl ? <small className="wbn-field-error">{t('field.urlError')}</small> : null}
+      {showInvalidUrl ? <small className="cardo-field-error">{t('field.urlError')}</small> : null}
     </AddViewShell>
   );
 }

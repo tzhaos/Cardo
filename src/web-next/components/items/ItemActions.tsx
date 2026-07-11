@@ -16,9 +16,9 @@ export function ItemActions({
   const { t } = useI18n();
 
   return (
-    <div className="wbn-item-actions">
+    <div className="cardo-item-actions">
       <IconButton
-        className="wbn-item-pin"
+        className="cardo-item-pin"
         aria-label={t(pinned ? 'item.unpin' : 'item.pin')}
         aria-pressed={pinned}
         onClick={onPin}
@@ -30,7 +30,7 @@ export function ItemActions({
           <Edit2 size={14} />
         </IconButton>
       ) : null}
-      <IconButton className="wbn-item-delete" aria-label={t('item.delete')} onClick={onDelete}>
+      <IconButton className="cardo-item-delete" aria-label={t('item.delete')} onClick={onDelete}>
         <Trash2 size={14} />
       </IconButton>
     </div>

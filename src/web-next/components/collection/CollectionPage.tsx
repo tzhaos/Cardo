@@ -118,7 +118,7 @@ export function CollectionPage() {
   };
 
   return (
-    <section className="wbn-collection-page" onContextMenu={(event) => event.preventDefault()}>
+    <section className="cardo-collection-page" onContextMenu={(event) => event.preventDefault()}>
       <AnimatePresence>
         {entries.map(({ box, view }) => (
           <CollectionBox
@@ -273,7 +273,7 @@ function CollectionBox({
   return (
     <motion.article
       data-canvas-box
-      className={`wbn-collection-box${view.viewMode === 'grid' ? ' wbn-collection-box-grid' : ''}${view.detailMode === 'compact' ? ' wbn-collection-box-compact' : ''}`}
+      className={`cardo-collection-box${view.viewMode === 'grid' ? ' cardo-collection-box-grid' : ''}${view.detailMode === 'compact' ? ' cardo-collection-box-compact' : ''}`}
       style={
         {
           '--box-accent': accent,
@@ -290,13 +290,13 @@ function CollectionBox({
       onContextMenu={onOpenMenu}
     >
       <header
-        className="wbn-collection-box-header"
+        className="cardo-collection-box-header"
         onPointerDown={(event) => beginFrameChange(event, 'move')}
       >
-        <span className="wbn-collection-box-grip" aria-hidden="true" />
+        <span className="cardo-collection-box-grip" aria-hidden="true" />
         <Button
           variant="ghost"
-          className="wbn-collection-box-icon"
+          className="cardo-collection-box-icon"
           type="button"
           data-no-collection-drag
           onClick={onLocate}
@@ -304,7 +304,7 @@ function CollectionBox({
         >
           <BoxAppearanceIcon icon={getBoxIcon(box)} size={16} />
         </Button>
-        <span className="wbn-collection-box-heading">
+        <span className="cardo-collection-box-heading">
           <strong>{box.title}</strong>
           <small>{pageTitle}</small>
         </span>
@@ -334,7 +334,7 @@ function CollectionBox({
         </Button>
         <Button
           variant="ghost"
-          className="wbn-collection-remove"
+          className="cardo-collection-remove"
           type="button"
           data-no-collection-drag
           onClick={onRemove}
@@ -344,11 +344,11 @@ function CollectionBox({
           <X size={14} />
         </Button>
       </header>
-      <div className="wbn-collection-box-items">
+      <div className="cardo-collection-box-items">
         {box.items.length ? (
           box.items.map((item) => (
             <Button variant="ghost" key={item.id} onClick={() => onActivateItem(item)}>
-              <span className="wbn-collection-item-icon">
+              <span className="cardo-collection-item-icon">
                 <CollectionItemIcon item={item} />
               </span>
               <span>
@@ -363,12 +363,12 @@ function CollectionBox({
             </Button>
           ))
         ) : (
-          <div className="wbn-collection-box-empty">{t('box.empty')}</div>
+          <div className="cardo-collection-box-empty">{t('box.empty')}</div>
         )}
       </div>
       <Button
         variant="ghost"
-        className="wbn-collection-resize"
+        className="cardo-collection-resize"
         type="button"
         aria-label={t('box.resize', { title: box.title })}
         onPointerDown={(event) => beginFrameChange(event, 'resize')}
@@ -402,7 +402,7 @@ function CollectionItemIcon({ item }: { item: BoxItem }) {
       return <AppWindow size={16} />;
     case 'bookmark':
       return item.favicon ? (
-        <img className="wbn-website-icon" src={item.favicon} alt="" />
+        <img className="cardo-website-icon" src={item.favicon} alt="" />
       ) : (
         <Globe size={16} />
       );

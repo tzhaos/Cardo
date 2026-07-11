@@ -1,4 +1,4 @@
-.wbn-settings-panel {
+.cardo-settings-panel {
   display: flex;
   width: 100%;
   height: 100%;
@@ -6,7 +6,7 @@
   flex-direction: column;
 }
 
-.wbn-settings-header {
+.cardo-settings-header {
   display: flex;
   min-height: 54px;
   flex: 0 0 auto;
@@ -19,12 +19,12 @@
   user-select: none;
 }
 
-.wbn-settings-header:active,
-.wbn-independent-menu-dragging {
+.cardo-settings-header:active,
+.cardo-independent-menu-dragging {
   cursor: grabbing;
 }
 
-.wbn-settings-header > div {
+.cardo-settings-header > div {
   display: flex;
   align-items: center;
   gap: 9px;
@@ -33,7 +33,7 @@
   font-weight: 600;
 }
 
-.wbn-settings-header button {
+.cardo-settings-header button {
   display: inline-flex;
   width: 32px;
   height: 32px;
@@ -50,19 +50,19 @@
   touch-action: auto;
 }
 
-.wbn-settings-header button:hover {
+.cardo-settings-header button:hover {
   background: var(--cardo-hover);
   color: var(--cardo-text);
 }
 
-.wbn-settings-layout {
+.cardo-settings-layout {
   display: grid;
   min-height: 0;
   flex: 1;
   grid-template-columns: 164px minmax(0, 1fr);
 }
 
-.wbn-settings-nav {
+.cardo-settings-nav {
   display: flex;
   min-height: 0;
   flex-direction: column;
@@ -72,7 +72,7 @@
   background: var(--cardo-panel-chrome);
 }
 
-.wbn-settings-nav button {
+.cardo-settings-nav button {
   position: relative;
   display: flex;
   min-height: 40px;
@@ -89,17 +89,17 @@
   transition: color var(--cardo-duration-normal) var(--cardo-easing);
 }
 
-.wbn-settings-nav button > *:not(.wbn-settings-nav-indicator) {
+.cardo-settings-nav button > *:not(.cardo-settings-nav-indicator) {
   position: relative;
   z-index: 1;
 }
 
-.wbn-settings-nav button:hover,
-.wbn-settings-nav [data-state='active'] {
+.cardo-settings-nav button:hover,
+.cardo-settings-nav [data-state='active'] {
   color: var(--cardo-text) !important;
 }
 
-.wbn-settings-nav-indicator {
+.cardo-settings-nav-indicator {
   position: absolute;
   inset: 0;
   border-radius: var(--cardo-radius-md);
@@ -107,7 +107,7 @@
   box-shadow: var(--cardo-inset-shadow);
 }
 
-.wbn-settings-content {
+.cardo-settings-content {
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
@@ -115,11 +115,11 @@
   scrollbar-gutter: stable;
 }
 
-.wbn-settings-heading {
+.cardo-settings-heading {
   margin-bottom: var(--cardo-space-5);
 }
 
-.wbn-settings-heading h2 {
+.cardo-settings-heading h2 {
   margin: 0;
   color: var(--cardo-text);
   font-size: 21px;
@@ -127,14 +127,14 @@
   letter-spacing: -0.02em;
 }
 
-.wbn-settings-heading p {
+.cardo-settings-heading p {
   margin: 6px 0 0;
   color: var(--cardo-muted);
   font-size: 12px;
   line-height: 1.55;
 }
 
-.wbn-settings-card {
+.cardo-settings-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -145,14 +145,14 @@
   background: var(--cardo-panel-content);
 }
 
-.wbn-settings-card-copy {
+.cardo-settings-card-copy {
   display: flex;
   min-width: 0;
   align-items: center;
   gap: var(--cardo-space-3);
 }
 
-.wbn-settings-card-copy > span:last-child {
+.cardo-settings-card-copy > span:last-child {
   display: flex;
   min-width: 0;
   flex-direction: column;
@@ -162,17 +162,17 @@
   font-weight: 600;
 }
 
-.wbn-settings-card-copy small,
-.wbn-settings-subheading small,
-.wbn-theme-card-copy small,
-.wbn-about-card small {
+.cardo-settings-card-copy small,
+.cardo-settings-subheading small,
+.cardo-theme-card-copy small,
+.cardo-about-card small {
   color: var(--cardo-muted);
   font-size: 11px;
   font-weight: 400;
   line-height: 1.4;
 }
 
-.wbn-segmented-control {
+.cardo-segmented-control {
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
@@ -183,7 +183,7 @@
   background: var(--cardo-hover);
 }
 
-.wbn-segmented-control button {
+.cardo-segmented-control button {
   position: relative;
   display: inline-flex;
   min-width: 52px;
@@ -199,7 +199,7 @@
   font-weight: 500;
 }
 
-.wbn-segmented-control button > span:last-child {
+.cardo-segmented-control button > span:last-child {
   position: relative;
   z-index: 1;
   display: inline-flex;
@@ -208,11 +208,11 @@
   gap: 6px;
 }
 
-.wbn-segmented-control [data-state='on'] {
+.cardo-segmented-control [data-state='on'] {
   color: var(--cardo-text);
 }
 
-.wbn-segment-indicator {
+.cardo-segment-indicator {
   position: absolute;
   inset: 0;
   border: 1px solid var(--cardo-border);
@@ -223,7 +223,7 @@
   transform-origin: center;
 }
 
-.wbn-settings-subheading {
+.cardo-settings-subheading {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -233,7 +233,7 @@
   font-weight: 600;
 }
 
-.wbn-custom-search-template {
+.cardo-custom-search-template {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -242,7 +242,7 @@
   font-size: 12px;
 }
 
-.wbn-custom-search-template input {
+.cardo-custom-search-template input {
   width: 100%;
   height: 36px;
   border: 1px solid var(--cardo-border);
@@ -254,32 +254,32 @@
   outline: none;
 }
 
-.wbn-custom-search-template input:focus {
+.cardo-custom-search-template input:focus {
   border-color: color-mix(in srgb, var(--cardo-blue) 55%, var(--cardo-border));
 }
 
-.wbn-custom-search-template .wbn-custom-search-template-invalid {
+.cardo-custom-search-template .cardo-custom-search-template-invalid {
   border-color: color-mix(in srgb, var(--cardo-red) 62%, var(--cardo-border));
 }
 
-.wbn-custom-search-template small {
+.cardo-custom-search-template small {
   color: var(--cardo-muted);
   font-size: 11px;
 }
 
-.wbn-theme-grid {
+.cardo-theme-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
-.wbn-data-actions {
+.cardo-data-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
-.wbn-data-actions > button {
+.cardo-data-actions > button {
   display: flex;
   min-height: 94px;
   align-items: flex-start;
@@ -292,12 +292,12 @@
   text-align: left;
 }
 
-.wbn-data-actions > button:hover {
+.cardo-data-actions > button:hover {
   border-color: color-mix(in srgb, var(--cardo-blue) 25%, var(--cardo-border));
   background: var(--cardo-hover);
 }
 
-.wbn-data-actions > button > span:last-child {
+.cardo-data-actions > button > span:last-child {
   display: flex;
   min-width: 0;
   flex-direction: column;
@@ -307,18 +307,18 @@
   font-weight: 600;
 }
 
-.wbn-data-actions small {
+.cardo-data-actions small {
   color: var(--cardo-muted);
   font-size: 11px;
   font-weight: 400;
   line-height: 16px;
 }
 
-.wbn-data-file-input {
+.cardo-data-file-input {
   display: none;
 }
 
-.wbn-data-error {
+.cardo-data-error {
   margin: 12px 0 0;
   border: 1px solid color-mix(in srgb, var(--cardo-red) 24%, var(--cardo-border));
   border-radius: var(--cardo-radius-md);
@@ -328,7 +328,7 @@
   font-size: 12px;
 }
 
-.wbn-data-import-confirm {
+.cardo-data-import-confirm {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -340,7 +340,7 @@
   background: color-mix(in srgb, var(--cardo-blue) 5%, var(--cardo-panel-content));
 }
 
-.wbn-data-import-confirm > span {
+.cardo-data-import-confirm > span {
   display: flex;
   min-width: 0;
   flex-direction: column;
@@ -349,7 +349,7 @@
   font-size: 12px;
 }
 
-.wbn-data-import-confirm small {
+.cardo-data-import-confirm small {
   overflow: hidden;
   color: var(--cardo-muted);
   font-size: 10px;
@@ -357,13 +357,13 @@
   white-space: nowrap;
 }
 
-.wbn-data-import-confirm > div {
+.cardo-data-import-confirm > div {
   display: flex;
   flex: 0 0 auto;
   gap: 6px;
 }
 
-.wbn-data-import-confirm button {
+.cardo-data-import-confirm button {
   min-height: 30px;
   border: 0;
   border-radius: var(--cardo-radius-md);
@@ -373,12 +373,12 @@
   font-size: 11px;
 }
 
-.wbn-data-import-confirm .wbn-data-import-confirm-button {
+.cardo-data-import-confirm .cardo-data-import-confirm-button {
   background: var(--cardo-blue);
   color: #fff;
 }
 
-.wbn-theme-card {
+.cardo-theme-card {
   position: relative;
   display: grid;
   min-width: 0;
@@ -397,16 +397,16 @@
     box-shadow var(--cardo-duration-normal) var(--cardo-easing);
 }
 
-.wbn-theme-card:hover {
+.cardo-theme-card:hover {
   background: var(--cardo-hover);
 }
 
-.wbn-theme-card-selected {
+.cardo-theme-card-selected {
   border-color: rgba(59, 130, 246, 0.36);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
 }
 
-.wbn-theme-preview {
+.cardo-theme-preview {
   position: relative;
   display: grid;
   width: 58px;
@@ -417,11 +417,11 @@
   border-radius: var(--cardo-radius-md);
 }
 
-.wbn-theme-preview > span {
+.cardo-theme-preview > span {
   display: block;
 }
 
-.wbn-theme-preview i {
+.cardo-theme-preview i {
   position: absolute;
   right: 13px;
   bottom: 10px;
@@ -432,7 +432,7 @@
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
 }
 
-.wbn-theme-card-copy {
+.cardo-theme-card-copy {
   display: flex;
   min-width: 0;
   flex-direction: column;
@@ -441,14 +441,14 @@
   font-weight: 600;
 }
 
-.wbn-theme-card-copy small {
+.cardo-theme-card-copy small {
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
 
-.wbn-theme-check {
+.cardo-theme-check {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -462,7 +462,7 @@
   color: #ffffff;
 }
 
-.wbn-theme-official-badge {
+.cardo-theme-official-badge {
   margin-left: 6px;
   border-radius: var(--cardo-radius-pill);
   padding: 1px 6px;
@@ -475,17 +475,17 @@
   vertical-align: middle;
 }
 
-.wbn-theme-pack-actions {
+.cardo-theme-pack-actions {
   margin-top: var(--cardo-space-3);
 }
 
-.wbn-theme-color-grid {
+.cardo-theme-color-grid {
   display: grid;
   gap: var(--cardo-space-3);
   margin-bottom: var(--cardo-space-3);
 }
 
-.wbn-theme-color-field {
+.cardo-theme-color-field {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -498,13 +498,13 @@
   font-weight: 600;
 }
 
-.wbn-theme-color-controls {
+.cardo-theme-color-controls {
   display: flex;
   align-items: center;
   gap: var(--cardo-space-2);
 }
 
-.wbn-theme-color-controls input[type='color'] {
+.cardo-theme-color-controls input[type='color'] {
   width: 36px;
   height: 32px;
   flex: 0 0 auto;
@@ -515,32 +515,32 @@
   cursor: pointer;
 }
 
-.wbn-theme-color-controls .wbn-ui-input {
+.cardo-theme-color-controls .cardo-ui-input {
   min-width: 0;
   flex: 1;
 }
 
-.wbn-theme-reset-button {
+.cardo-theme-reset-button {
   margin-bottom: var(--cardo-space-3);
   gap: 6px;
   color: var(--cardo-secondary-text);
 }
 
-.wbn-theme-restore-official {
+.cardo-theme-restore-official {
   width: 100%;
   margin: var(--cardo-space-3) 0 var(--cardo-space-4);
   justify-content: flex-start;
   text-align: left;
 }
 
-.wbn-settings-advanced {
+.cardo-settings-advanced {
   margin: var(--cardo-space-4) 0;
   border: 1px solid var(--cardo-border);
   border-radius: var(--cardo-radius-xl);
   background: var(--cardo-panel-content);
 }
 
-.wbn-settings-advanced > summary {
+.cardo-settings-advanced > summary {
   cursor: pointer;
   list-style: none;
   padding: var(--cardo-space-3) var(--cardo-space-4);
@@ -550,11 +550,11 @@
   user-select: none;
 }
 
-.wbn-settings-advanced > summary::-webkit-details-marker {
+.cardo-settings-advanced > summary::-webkit-details-marker {
   display: none;
 }
 
-.wbn-settings-advanced > summary::before {
+.cardo-settings-advanced > summary::before {
   content: '▸';
   display: inline-block;
   margin-right: 8px;
@@ -562,11 +562,11 @@
   transition: transform var(--cardo-duration-fast) var(--cardo-easing);
 }
 
-.wbn-settings-advanced[open] > summary::before {
+.cardo-settings-advanced[open] > summary::before {
   transform: rotate(90deg);
 }
 
-.wbn-settings-advanced > summary small {
+.cardo-settings-advanced > summary small {
   display: block;
   margin-top: 4px;
   margin-left: 1.1em;
@@ -576,7 +576,7 @@
   line-height: 1.4;
 }
 
-.wbn-settings-advanced-body {
+.cardo-settings-advanced-body {
   display: flex;
   flex-direction: column;
   gap: var(--cardo-space-3);
@@ -584,7 +584,7 @@
   padding: var(--cardo-space-3) var(--cardo-space-4) var(--cardo-space-4);
 }
 
-.wbn-about-card {
+.cardo-about-card {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -594,7 +594,7 @@
   background: var(--cardo-panel-content);
 }
 
-.wbn-about-icon {
+.cardo-about-icon {
   display: inline-flex;
   width: 48px;
   height: 48px;
@@ -605,7 +605,7 @@
   color: var(--cardo-blue);
 }
 
-.wbn-about-card > span:last-child {
+.cardo-about-card > span:last-child {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -614,7 +614,7 @@
   font-weight: 600;
 }
 
-.wbn-about-details {
+.cardo-about-details {
   display: grid;
   gap: 0;
   margin: 16px 0 0;
@@ -623,7 +623,7 @@
   background: var(--cardo-panel-content);
 }
 
-.wbn-about-details div {
+.cardo-about-details div {
   display: flex;
   min-height: 44px;
   align-items: center;
@@ -632,31 +632,31 @@
   padding: 0 14px;
 }
 
-.wbn-about-details div + div {
+.cardo-about-details div + div {
   border-top: 1px solid var(--cardo-border);
 }
 
-.wbn-about-details dt {
+.cardo-about-details dt {
   color: var(--cardo-secondary-text);
   font-size: 12px;
 }
 
-.wbn-about-details dd {
+.cardo-about-details dd {
   margin: 0;
   color: var(--cardo-soft-text);
   font-size: 12px;
   font-weight: 500;
 }
 
-.wbn-settings-trigger-icon {
+.cardo-settings-trigger-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   transform-origin: center;
 }
 
-.wbn-language-state-icon,
-.wbn-theme-state-icon {
+.cardo-language-state-icon,
+.cardo-theme-state-icon {
   position: relative;
   display: block;
   width: 32px;
@@ -665,10 +665,10 @@
   color: currentColor;
 }
 
-.wbn-language-en,
-.wbn-language-zh,
-.wbn-theme-sun,
-.wbn-theme-moon {
+.cardo-language-en,
+.cardo-language-zh,
+.cardo-theme-sun,
+.cardo-theme-moon {
   position: absolute;
   top: 0;
   left: 0;
@@ -679,58 +679,58 @@
   transform-origin: center;
 }
 
-.wbn-language-en {
+.cardo-language-en {
   width: 18px;
   font-size: 10px;
   font-weight: 700;
 }
 
-.wbn-language-zh {
+.cardo-language-zh {
   width: 16px;
   font-size: 11px;
   font-weight: 600;
 }
 
-.wbn-theme-sun {
+.cardo-theme-sun {
   width: 16px;
 }
 
-.wbn-theme-moon {
+.cardo-theme-moon {
   width: 16px;
 }
 
 @media (max-width: 600px) {
-  .wbn-settings-layout {
+  .cardo-settings-layout {
     grid-template-columns: 116px minmax(0, 1fr);
   }
 
-  .wbn-settings-nav {
+  .cardo-settings-nav {
     padding: 10px 7px;
   }
 
-  .wbn-settings-nav button {
+  .cardo-settings-nav button {
     gap: 7px;
     padding: 0 9px;
   }
 
-  .wbn-settings-content {
+  .cardo-settings-content {
     padding: 20px 16px 24px;
   }
 
-  .wbn-settings-card {
+  .cardo-settings-card {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .wbn-segmented-control {
+  .cardo-segmented-control {
     width: 100%;
   }
 
-  .wbn-segmented-control button {
+  .cardo-segmented-control button {
     flex: 1;
   }
 
-  .wbn-theme-grid {
+  .cardo-theme-grid {
     grid-template-columns: 1fr;
   }
 }

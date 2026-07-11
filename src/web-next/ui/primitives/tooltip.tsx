@@ -35,12 +35,12 @@ export function TooltipContent({
     <TooltipPrimitive.Portal>
       <TooltipPrimitive.Content
         data-slot="tooltip-content"
-        className={cn('wbn-ui-tooltip-content', className)}
+        className={cn('cardo-ui-tooltip-content', className)}
         sideOffset={sideOffset}
         {...props}
       >
         {children}
-        <TooltipPrimitive.Arrow className="wbn-ui-tooltip-arrow" />
+        <TooltipPrimitive.Arrow className="cardo-ui-tooltip-arrow" />
       </TooltipPrimitive.Content>
     </TooltipPrimitive.Portal>
   );

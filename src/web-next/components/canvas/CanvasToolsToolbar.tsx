@@ -7,12 +7,12 @@ export function CanvasToolsToolbar() {
   const { t } = useI18n();
 
   return (
-    <aside className="wbn-canvas-tools" aria-label={t('canvas.layoutTools')}>
+    <aside className="cardo-canvas-tools" aria-label={t('canvas.layoutTools')}>
       {items.map((item) => (
         <IconButton
           className={
             item.id === 'toggle-canvas-lock' && isLocked
-              ? 'wbn-canvas-tools-button-active'
+              ? 'cardo-canvas-tools-button-active'
               : undefined
           }
           disabled={item.disabled}

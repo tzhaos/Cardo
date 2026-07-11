@@ -52,7 +52,7 @@ export function LocalResourceItem({
 
   return (
     <div
-      className={`wbn-item-row wbn-local-item wbn-local-item-${item.type}${item.isPinned ? ' wbn-item-pinned' : ''}${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}${editView ? ' wbn-item-edit-state' : ''}`}
+      className={`cardo-item-row cardo-local-item cardo-local-item-${item.type}${item.isPinned ? ' cardo-item-pinned' : ''}${highlight ? ' cardo-item-new' : ''}${deleteView ? ' cardo-item-delete-state' : ''}${editView ? ' cardo-item-edit-state' : ''}`}
       onContextMenu={rename.renaming ? rename.onContextMenu : contextMenu.onContextMenu}
     >
       <AnimatePresence initial={false} mode="wait">
@@ -71,7 +71,7 @@ export function LocalResourceItem({
           />
         ) : (
           <motion.div
-            className="wbn-item-view-content wbn-item-view-content-row"
+            className="cardo-item-view-content cardo-item-view-content-row"
             key="content"
             initial={{ opacity: 0, x: -6 }}
             animate={{ opacity: 1, x: 0 }}
@@ -79,7 +79,7 @@ export function LocalResourceItem({
             transition={{ duration: 0.15 }}
           >
             <IconFrame
-              className="wbn-item-glyph"
+              className="cardo-item-glyph"
               role="button"
               tabIndex={0}
               onClick={() => void openItem()}
@@ -91,13 +91,13 @@ export function LocalResourceItem({
               }}
             >
               <Icon size={16} />
-              {item.type === 'shortcut' ? <span className="wbn-shortcut-badge">↗</span> : null}
+              {item.type === 'shortcut' ? <span className="cardo-shortcut-badge">↗</span> : null}
             </IconFrame>
-            <div className="wbn-item-main">
+            <div className="cardo-item-main">
               {rename.renaming ? (
                 <Input
                   ref={rename.inputRef}
-                  className="wbn-inline-rename wbn-item-title-input"
+                  className="cardo-inline-rename cardo-item-title-input"
                   value={rename.draft}
                   onChange={(event) => rename.setDraft(event.target.value)}
                   onBlur={rename.commit}
@@ -106,13 +106,13 @@ export function LocalResourceItem({
                 />
               ) : (
                 <strong
-                  className={item.title ? undefined : 'wbn-item-title-placeholder'}
+                  className={item.title ? undefined : 'cardo-item-title-placeholder'}
                   onDoubleClick={() => rename.startRenaming()}
                 >
                   {item.title || t('item.untitled')}
                 </strong>
               )}
-              <small className="wbn-item-secondary">{item.path}</small>
+              <small className="cardo-item-secondary">{item.path}</small>
             </div>
             <ItemActions
               pinned={Boolean(item.isPinned)}

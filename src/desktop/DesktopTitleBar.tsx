@@ -35,20 +35,20 @@ export default function DesktopTitleBar() {
 
   return (
     <header
-      className="wbn-desktop-titlebar"
+      className="cardo-desktop-titlebar"
       onDoubleClick={() => void bridge.toggleMaximizeWindow()}
     >
-      <div className="wbn-desktop-titlebar-brand">
+      <div className="cardo-desktop-titlebar-brand">
         <Box size={15} />
         <span>Cardo</span>
       </div>
       <div
-        className="wbn-desktop-window-controls"
+        className="cardo-desktop-window-controls"
         onDoubleClick={(event) => event.stopPropagation()}
       >
         <Button
           variant="ghost"
-          className="wbn-desktop-window-control"
+          className="cardo-desktop-window-control"
           title={t('desktop.minimize')}
           aria-label={t('desktop.minimize')}
           onClick={() => void bridge.minimizeWindow()}
@@ -57,7 +57,7 @@ export default function DesktopTitleBar() {
         </Button>
         <Button
           variant="ghost"
-          className="wbn-desktop-window-control"
+          className="cardo-desktop-window-control"
           title={t(isMaximized ? 'desktop.restore' : 'desktop.maximize')}
           aria-label={t(isMaximized ? 'desktop.restore' : 'desktop.maximize')}
           onClick={async () => setMaximized(await bridge.toggleMaximizeWindow())}
@@ -66,7 +66,7 @@ export default function DesktopTitleBar() {
         </Button>
         <Button
           variant="ghost"
-          className="wbn-desktop-window-control wbn-desktop-window-control-close"
+          className="cardo-desktop-window-control cardo-desktop-window-control-close"
           title={t('desktop.close')}
           aria-label={t('desktop.close')}
           onClick={() => void bridge.closeWindow()}

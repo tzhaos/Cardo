@@ -92,10 +92,10 @@ export function TopBar() {
   }, [deletePageId]);
 
   const topBarClassName = [
-    'wbn-top-bar',
-    pageToDelete ? 'wbn-top-bar-confirming' : '',
-    draggedBoxId ? 'wbn-top-bar-drop-mode' : '',
-    boxDragOverTopBar ? 'wbn-top-bar-drag-over' : '',
+    'cardo-top-bar',
+    pageToDelete ? 'cardo-top-bar-confirming' : '',
+    draggedBoxId ? 'cardo-top-bar-drop-mode' : '',
+    boxDragOverTopBar ? 'cardo-top-bar-drag-over' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -157,7 +157,7 @@ export function TopBar() {
   return (
     <header className={topBarClassName} data-top-bar ref={registerTopBarElement}>
       <motion.div
-        className="wbn-top-inner"
+        className="cardo-top-inner"
         layout="position"
         initial={false}
         animate={{ opacity: pageToDelete ? 0 : 1, x: pageToDelete ? -6 : 0 }}
@@ -173,7 +173,7 @@ export function TopBar() {
         <Reorder.Group
           as="nav"
           axis="x"
-          className="wbn-tabs"
+          className="cardo-tabs"
           values={pageIds}
           onReorder={updateOrder}
           aria-label={t('page.workspacePages')}
@@ -196,8 +196,8 @@ export function TopBar() {
               <SortablePageTab
                 active={page.id === activePageId}
                 className={[
-                  boxDropPageId === page.id ? 'wbn-box-drop-target' : '',
-                  boxDropRelease?.pageId === page.id ? 'wbn-box-drop-released' : '',
+                  boxDropPageId === page.id ? 'cardo-box-drop-target' : '',
+                  boxDropRelease?.pageId === page.id ? 'cardo-box-drop-released' : '',
                 ]
                   .filter(Boolean)
                   .join(' ')}
@@ -226,10 +226,10 @@ export function TopBar() {
           ) : null}
         </Reorder.Group>
         {multiPage ? (
-          <motion.div className="wbn-top-actions" layout="position">
+          <motion.div className="cardo-top-actions" layout="position">
             <MotionButton
               variant="icon"
-              className="wbn-icon-button"
+              className="cardo-icon-button"
               type="button"
               onClick={openNewPage}
               aria-label={t('page.add')}
@@ -243,7 +243,7 @@ export function TopBar() {
       <AnimatePresence>
         {pageToDelete ? (
           <motion.div
-            className="wbn-tab-confirm-layer"
+            className="cardo-tab-confirm-layer"
             key={pageToDelete.id}
             initial={{ opacity: 0, x: 8 }}
             animate={{ opacity: 1, x: 0 }}
