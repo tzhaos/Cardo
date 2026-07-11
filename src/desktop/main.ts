@@ -539,8 +539,22 @@ if (!singleInstanceLock) {
         showMainWindow();
       });
     })
-    .catch((error: unknown) => {
+    .catch(async (error: unknown) => {
       console.error(error);
+      const detail = error instanceof Error ? error.stack ?? error.message : String(error);
+      const message =
+        error instanceof Error ? error.message : 'Desktop failed before the UI could load.';
+      dialog.showErrorBox(
+        'Cardo failed to start',
+        `${message}\n\n` +
+          'Typical fixes:\n' +
+          '1. Stop any stale Runtime: node artifacts/cli/cardo.js stop\n' +
+          '2. Rebuild from this checkout: npm run desktop:build\n' +
+          '3. Confirm %APPDATA%\\cardo\\discovery.json schemaVersion is 9\n' +
+          '4. Check %APPDATA%\\cardo\\runtime.log\n\n' +
+          detail,
+      );
+      app.quit();
     });
 
   app.on('before-quit', () => {
