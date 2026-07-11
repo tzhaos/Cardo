@@ -1,5 +1,51 @@
+/**
+ * Extension service worker (MV3).
+ * - Toolbar action opens the independent Cardo extension page (PR5 primary shell).
+ * - WebDAV message bridge (unchanged).
+ * Native Messaging for runtime.discover is invoked from the extension page
+ * (not the SW), so the page can inject baseUrl+token into memory.
+ */
+
+const APP_PAGE_PATH = 'extension/pages/app.html';
+
+function getAppPageUrl() {
+  return chrome.runtime.getURL(APP_PAGE_PATH);
+}
+
+async function openOrFocusAppPage() {
+  const appUrl = getAppPageUrl();
+
+  try {
+    // Prefer prefix match after a full query — chrome-extension URL match patterns are brittle.
+    const tabs = await chrome.tabs.query({});
+    const tab = tabs.find(
+      (entry) =>
+        typeof entry.id === 'number' &&
+        typeof entry.url === 'string' &&
+        (entry.url === appUrl || entry.url.startsWith(`${appUrl}?`) || entry.url.startsWith(`${appUrl}#`)),
+    );
+    if (tab?.id != null) {
+      await chrome.tabs.update(tab.id, { active: true });
+      if (typeof tab.windowId === 'number') {
+        await chrome.windows.update(tab.windowId, { focused: true });
+      }
+      return;
+    }
+  } catch {
+    // Fall through to create when query is restricted.
+  }
+
+  await chrome.tabs.create({ url: appUrl });
+}
+
+chrome.action.onClicked.addListener(() => {
+  void openOrFocusAppPage();
+});
+
 function normalizeEndpoint(endpoint) {
-  return String(endpoint ?? '').trim().replace(/\/+$/, '');
+  return String(endpoint ?? '')
+    .trim()
+    .replace(/\/+$/, '');
 }
 
 function normalizeDirectoryEndpoint(endpoint) {

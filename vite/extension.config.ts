@@ -13,16 +13,29 @@ const PACKAGE_JSON = JSON.parse(
   license?: string;
 };
 
-function relocateBuiltNewtab(outDir: string) {
-  const builtNewtabSource = path.join(outDir, 'assets/extension-shell/pages/newtab.html');
-  const builtNewtabTarget = path.join(outDir, 'extension/pages/newtab.html');
+const EXTENSION_PAGE_ENTRIES = [
+  {
+    sourceRelative: 'assets/extension-shell/pages/app.html',
+    targetRelative: 'extension/pages/app.html',
+  },
+  {
+    sourceRelative: 'assets/extension-shell/pages/newtab.html',
+    targetRelative: 'extension/pages/newtab.html',
+  },
+] as const;
 
-  if (!fs.existsSync(builtNewtabSource)) {
-    return;
+function relocateBuiltExtensionPages(outDir: string) {
+  for (const page of EXTENSION_PAGE_ENTRIES) {
+    const builtSource = path.join(outDir, page.sourceRelative);
+    const builtTarget = path.join(outDir, page.targetRelative);
+
+    if (!fs.existsSync(builtSource)) {
+      continue;
+    }
+
+    fs.mkdirSync(path.dirname(builtTarget), { recursive: true });
+    fs.renameSync(builtSource, builtTarget);
   }
-
-  fs.mkdirSync(path.dirname(builtNewtabTarget), { recursive: true });
-  fs.renameSync(builtNewtabSource, builtNewtabTarget);
 
   const shellAssetRoot = path.join(outDir, 'assets/extension-shell');
 
@@ -63,7 +76,7 @@ function copyExtensionAssets() {
       }
     },
     closeBundle() {
-      relocateBuiltNewtab(EXTENSION_OUT_DIR);
+      relocateBuiltExtensionPages(EXTENSION_OUT_DIR);
     },
   };
 }
@@ -82,6 +95,7 @@ export default defineConfig(() => {
       outDir: EXTENSION_OUT_DIR,
       rollupOptions: {
         input: {
+          app: path.resolve(__dirname, '../assets/extension-shell/pages/app.html'),
           newtab: path.resolve(__dirname, '../assets/extension-shell/pages/newtab.html'),
         },
       },

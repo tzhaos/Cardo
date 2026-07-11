@@ -1,11 +1,14 @@
 /**
  * Dual-mode hostPlatform facade (design §6.16).
  *
- * - mode=local: createDatabaseClient(AppPorts.database) — Extension default until PR5
- * - mode=runtime: RuntimeClient HTTP + fetch stream — Runtime-hosted Web (PR3) and Desktop (PR4)
- *   via window.__CARDO_RUNTIME__ injection (preload / NM / open code exchange)
+ * - mode=runtime: RuntimeClient HTTP + fetch stream
+ *   - Web: cardo open code exchange / same-origin (PR3)
+ *   - Desktop: preload injects window.__CARDO_RUNTIME__ (PR4, fail-closed)
+ *   - Extension: NM runtime.discover inject + __CARDO_USE_RUNTIME__='1' (PR5)
+ * - mode=local: createDatabaseClient(AppPorts.database) — residual until PR6 only
+ *   (never for Desktop PR4+ or Extension PR5 forceRuntime / discover path)
  *
- * Local DatabasePort path is intentionally preserved until PR6 (Extension solo).
+ * Extension sets forceRuntime so local OPFS is never a silent second writer (PR5).
  */
 
 import { getAppPorts } from '../../core/runtime/appPorts';
@@ -90,14 +93,41 @@ export function getRuntimeClient(): RuntimeClient | null {
 }
 
 /**
+ * Clear Runtime client state so Extension guide Retry can re-discover and re-hello
+ * after a post-connect init failure (PR5 review Issue 1). Best-effort bye first.
+ */
+export async function resetHostPlatformForRetry(): Promise<void> {
+  const previous = runtimeClient;
+  runtimeClient = null;
+  ensureReadyPromise = null;
+  modeLocked = false;
+  mode = 'local';
+  database = null;
+  if (previous) {
+    try {
+      await previous.close();
+    } catch {
+      // best-effort unregister
+    }
+  }
+}
+
+/**
  * Resolve dual-mode bootstrap once:
- * - injected window.__CARDO_RUNTIME__ (baseUrl+token)
+ * - injected window.__CARDO_RUNTIME__ (baseUrl+token) — Desktop preload / Extension NM
  * - ?code= one-time exchange (same-origin Runtime-hosted Web)
  * - CARDO_USE_RUNTIME / __CARDO_USE_RUNTIME__ gate
- * - default local for Desktop/Extension shells that never inject
+ * - Desktop fail-closed without injection (PR4)
+ * - Extension forceRuntime never falls back to local OPFS (PR5)
  */
 export function ensureHostPlatformReady(): Promise<void> {
-  ensureReadyPromise ??= resolveHostPlatformMode();
+  ensureReadyPromise ??= resolveHostPlatformMode().catch((error) => {
+    // Allow Extension/Web retry after failed discover/connect (PR5 guide UI).
+    ensureReadyPromise = null;
+    modeLocked = false;
+    runtimeClient = null;
+    throw error;
+  });
   return ensureReadyPromise;
 }
 
@@ -151,15 +181,18 @@ async function resolveHostPlatformMode(): Promise<void> {
     return;
   }
 
+  // PR4 Desktop + PR5 Extension forceRuntime: never silently fall back to local SQLite/OPFS.
   if (forceRuntime || isDesktopShell) {
     throw new Error(
       isDesktopShell
         ? 'Desktop requires RuntimeClient config (preload __CARDO_RUNTIME__).'
-        : 'Runtime mode requested but no token. Open via `cardo open` (one-time code bootstrap).',
+        : isLikelyRuntimeHostedPage()
+          ? 'Runtime mode requested but no token. Open via `cardo open` (one-time code bootstrap).'
+          : 'Runtime mode requested but Cardo Runtime is not connected. Start Cardo CLI/Desktop and ensure the native messaging host is installed.',
     );
   }
 
-  // Extension (until PR5) or shells without injection — local DatabasePort path.
+  // Residual local DatabasePort path (removed in PR6). Not used by Desktop/Extension defaults.
   mode = 'local';
   modeLocked = true;
 }
@@ -182,9 +215,15 @@ async function startRuntimeMode(
   modeLocked = true;
 
   if (typeof window !== 'undefined') {
-    window.addEventListener('pagehide', () => {
-      void clientInstance.close();
-    });
+    // once: avoid stacking listeners if startRuntimeMode is re-entered after retry reset.
+    // Stream onStreamClose remains primary unregister if bye fetch is torn down mid-close.
+    window.addEventListener(
+      'pagehide',
+      () => {
+        void clientInstance.close();
+      },
+      { once: true },
+    );
   }
 }
 

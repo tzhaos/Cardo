@@ -12,14 +12,26 @@
     "48": "extension/icons/icon-48.png",
     "128": "extension/icons/icon-128.png"
   },
-  "permissions": ["nativeMessaging", "_favicon"],
-  "optional_permissions": ["bookmarks"],
-  "host_permissions": ["https://*/*", "http://*/*"],
-  "content_security_policy": {
-    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; object-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data: https:"
+  "action": {
+    "default_title": "__MSG_extensionActionTitle__",
+    "default_icon": {
+      "16": "extension/icons/icon-16.png",
+      "32": "extension/icons/icon-32.png",
+      "48": "extension/icons/icon-48.png",
+      "128": "extension/icons/icon-128.png"
+    }
   },
-  "cross_origin_embedder_policy": { "value": "require-corp" },
-  "cross_origin_opener_policy": { "value": "same-origin" },
+  "permissions": ["nativeMessaging", "_favicon", "tabs"],
+  "optional_permissions": ["bookmarks"],
+  "host_permissions": [
+    "https://*/*",
+    "http://*/*",
+    "http://127.0.0.1/*",
+    "http://localhost/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; object-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data: https:; connect-src 'self' http://127.0.0.1:* http://localhost:* http://*/* https://*/*"
+  },
   "background": {
     "service_worker": "background.js"
   },

@@ -12,3 +12,11 @@ test('createExtensionPorts returns a full port bundle', () => {
   assert.ok(ports.localResource?.requestOpen);
   assert.ok(ports.websiteIcons?.resolve);
 });
+
+test('createExtensionPorts hard-disables OPFS database execute (PR5)', async () => {
+  const ports = createExtensionPorts();
+  await assert.rejects(
+    () => ports.database.execute({ method: 'all', sql: 'select 1', params: [] }),
+    /hard-disabled|RuntimeClient/i,
+  );
+});

@@ -5,18 +5,21 @@ export const EXTENSION_LOCALE_CODES = {
 
 export const EXTENSION_LOCALE_MESSAGES = {
   en: {
-    extensionName: { message: 'KhaosBox' },
-    extensionShortName: { message: 'KhaosBox' },
+    extensionName: { message: 'Cardo' },
+    extensionShortName: { message: 'Cardo' },
     extensionDescription: {
-      message: 'A new tab workspace for organizing links, notes, files, and folders.',
+      message:
+        'Browser client for the local Cardo Runtime workspace. Open from the toolbar; requires Cardo Desktop or CLI.',
     },
+    extensionActionTitle: { message: 'Open Cardo' },
   },
   zh: {
-    extensionName: { message: 'KhaosBox' },
-    extensionShortName: { message: 'KhaosBox' },
+    extensionName: { message: 'Cardo' },
+    extensionShortName: { message: 'Cardo' },
     extensionDescription: {
-      message: '一个用于整理链接、笔记、文件和文件夹的新标签页工作区。',
+      message: '本机 Cardo Runtime 的浏览器客户端。通过工具栏打开；需要 Cardo Desktop 或 CLI。',
     },
+    extensionActionTitle: { message: '打开 Cardo' },
   },
 } as const satisfies Record<
   keyof typeof EXTENSION_LOCALE_CODES,

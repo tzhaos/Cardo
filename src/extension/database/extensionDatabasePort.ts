@@ -5,6 +5,14 @@ import {
 } from '../../core/contracts/database';
 import type { DatabasePort } from '../../core/ports/DatabasePort';
 
+/**
+ * PR5: OPFS business write path is hard-disabled (design §6.14).
+ * createExtensionPorts no longer wires this port. The implementation remains
+ * only so accidental imports throw before spawning the worker.
+ * PR6 deletes the worker and this port entirely.
+ */
+const OPFS_BUSINESS_EXECUTE_HARD_OFF = true;
+
 interface PendingRequest {
   resolve(response: DatabaseWorkerResponse): void;
   reject(error: Error): void;
@@ -57,6 +65,12 @@ function getDatabaseWorker() {
 
 export const extensionDatabasePort: DatabasePort = {
   async execute(request) {
+    if (OPFS_BUSINESS_EXECUTE_HARD_OFF) {
+      throw new Error(
+        'Extension OPFS database execute is hard-disabled in Runtime mode (PR5). Business I/O must use RuntimeClient.',
+      );
+    }
+
     const databaseWorker = getDatabaseWorker();
     const message: DatabaseWorkerRequest = {
       id: crypto.randomUUID(),

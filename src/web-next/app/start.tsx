@@ -6,43 +6,80 @@
  * Dual-mode: ensureHostPlatformReady resolves RuntimeClient vs local DatabasePort
  * before any workspace I/O (design §6.16).
  */
-export function startWebNextApp() {
+
+export type StartWebNextAppOptions = {
+  /** Extension surface uses its own guide UI on failure (PR5). */
+  surface?: 'web' | 'extension' | 'desktop';
+  onBootstrapError?: (error: unknown) => void;
+};
+
+export function startWebNextApp(options: StartWebNextAppOptions = {}) {
   void Promise.all([
     import('./WebNextApp'),
     import('./bootstrap'),
     import('./stores/preferencesStore'),
     import('./stores/workspaceStore'),
     import('../platform/hostPlatform'),
-  ]).then(
-    async ([
-      { default: WebNextApp },
-      { renderWebNextRoot },
-      { usePreferencesStore },
-      { useWorkspaceStore },
-      { ensureHostPlatformReady, initializeWorkspace },
-    ]) => {
-      try {
-        await ensureHostPlatformReady();
-      } catch (error) {
-        console.error('hostPlatform bootstrap failed', error);
-        renderBootstrapError(
-          error instanceof Error ? error.message : 'Failed to connect to Cardo Runtime.',
-        );
+  ])
+    .then(
+      async ([
+        { default: WebNextApp },
+        { renderWebNextRoot },
+        { usePreferencesStore },
+        { useWorkspaceStore },
+        { ensureHostPlatformReady, initializeWorkspace },
+      ]) => {
+        try {
+          await ensureHostPlatformReady();
+        } catch (error) {
+          console.error('hostPlatform bootstrap failed', error);
+          if (options.onBootstrapError) {
+            options.onBootstrapError(error);
+            return;
+          }
+          renderBootstrapError(
+            error instanceof Error ? error.message : 'Failed to connect to Cardo Runtime.',
+            options.surface,
+          );
+          return;
+        }
+
+        try {
+          await initializeWorkspace({
+            locale: navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en',
+            colorMode: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+          });
+          await useWorkspaceStore.initialize();
+          await usePreferencesStore.initialize();
+          renderWebNextRoot(<WebNextApp />);
+        } catch (error) {
+          console.error('workspace bootstrap failed', error);
+          if (options.onBootstrapError) {
+            options.onBootstrapError(error);
+            return;
+          }
+          renderBootstrapError(
+            error instanceof Error ? error.message : 'Failed to initialize workspace.',
+            options.surface,
+          );
+        }
+      },
+    )
+    .catch((error: unknown) => {
+      // Dynamic-import failure must still reach extension guide / error UI (review Issue 5).
+      console.error('startWebNextApp import failed', error);
+      if (options.onBootstrapError) {
+        options.onBootstrapError(error);
         return;
       }
-
-      await initializeWorkspace({
-        locale: navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en',
-        colorMode: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
-      });
-      await useWorkspaceStore.initialize();
-      await usePreferencesStore.initialize();
-      renderWebNextRoot(<WebNextApp />);
-    },
-  );
+      renderBootstrapError(
+        error instanceof Error ? error.message : 'Failed to load Cardo UI modules.',
+        options.surface,
+      );
+    });
 }
 
-function renderBootstrapError(message: string) {
+function renderBootstrapError(message: string, surface?: StartWebNextAppOptions['surface']) {
   const root = document.getElementById('root');
   if (!root) return;
   root.innerHTML = '';
@@ -57,11 +94,18 @@ function renderBootstrapError(message: string) {
   body.style.margin = '0 0 0.75rem';
   const hint = document.createElement('p');
   const isDesktop =
-    typeof window !== 'undefined' &&
-    (Boolean(window.khaosboxDesktop) || window.__CARDO_RUNTIME_MISSING__ === true);
-  hint.textContent = isDesktop
-    ? 'Desktop needs a healthy Cardo Runtime with /app UI. Restart Desktop or run `cardo serve` after `npm run desktop:build`.'
-    : 'Run `cardo open` again to obtain a fresh one-time code.';
+    surface === 'desktop' ||
+    (typeof window !== 'undefined' &&
+      (Boolean(window.khaosboxDesktop) || window.__CARDO_RUNTIME_MISSING__ === true));
+  if (surface === 'extension') {
+    hint.textContent =
+      'Start Cardo Desktop or `cardo serve` / `cardo open`, ensure the native host is installed, then reload this page.';
+  } else if (isDesktop) {
+    hint.textContent =
+      'Desktop needs a healthy Cardo Runtime with /app UI. Restart Desktop or run `cardo serve` after `npm run desktop:build`.';
+  } else {
+    hint.textContent = 'Run `cardo open` again to obtain a fresh one-time code.';
+  }
   hint.style.cssText = 'margin:0;color:#555;font-size:0.9rem;';
   panel.append(title, body, hint);
   root.append(panel);

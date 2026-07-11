@@ -736,6 +736,8 @@ function applyCors(res: ServerResponse, allowOrigin: string | null): void {
     'GET, POST, OPTIONS',
   );
   res.setHeader('Vary', 'Origin');
+  // Allow extension pages (and optional COEP clients) to read Runtime responses (design §6.4.2).
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
 }
 
 /**
