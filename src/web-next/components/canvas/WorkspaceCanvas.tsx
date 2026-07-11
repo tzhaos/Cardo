@@ -26,7 +26,7 @@ import { useCanvasTools } from './useCanvasTools';
 import { CollectionPage } from '../collection/CollectionPage';
 
 export function WorkspaceCanvas() {
-  const snapshot = useWorkspaceStore((state) => state.snapshot);
+  const projection = useWorkspaceStore((state) => state.projection);
   const createBox = useWorkspaceStore((state) => state.createBox);
   const createPage = useWorkspaceStore((state) => state.createPage);
   const setDefaultPage = useWorkspaceStore((state) => state.setDefaultPage);
@@ -35,32 +35,32 @@ export function WorkspaceCanvas() {
   const { items: canvasTools } = useCanvasTools();
   const { t } = useI18n();
   const boxes = useMemo(
-    () => snapshot.boxes.filter((box) => box.pageId === snapshot.activePageId),
-    [snapshot.activePageId, snapshot.boxes],
+    () => projection.boxes.filter((box) => box.pageId === projection.activePageId),
+    [projection.activePageId, projection.boxes],
   );
-  const isRecycleBin = isRecycleBinPageId(snapshot.activePageId);
-  const isCollection = isCollectionPageId(snapshot.activePageId);
-  const previousActivePageIdRef = useRef(snapshot.activePageId);
+  const isRecycleBin = isRecycleBinPageId(projection.activePageId);
+  const isCollection = isCollectionPageId(projection.activePageId);
+  const previousActivePageIdRef = useRef(projection.activePageId);
   const canvasRef = useRef<HTMLElement>(null);
   const setCanvasElement = useCallback((element: HTMLElement | null) => {
     canvasRef.current = element;
     registerCanvasElement(element);
   }, []);
   const { handlePointerDownCapture, isLocked, isPanModifierActive, isPanning } = useCanvasPan(
-    snapshot.activePageId,
+    projection.activePageId,
   );
   useCanvasViewport(canvasRef);
   const canvasBounds = useMemo(() => createCanvasWorldBounds(viewportSize), [viewportSize]);
   const pageOrder = useMemo(
-    () => [...snapshot.pages].sort((first, second) => first.order - second.order),
-    [snapshot.pages],
+    () => [...projection.pages].sort((first, second) => first.order - second.order),
+    [projection.pages],
   );
   const previousPageIndex = pageOrder.findIndex(
     (page) => page.id === previousActivePageIdRef.current,
   );
-  const activePageIndex = pageOrder.findIndex((page) => page.id === snapshot.activePageId);
+  const activePageIndex = pageOrder.findIndex((page) => page.id === projection.activePageId);
   const pageTransitionDirection = activePageIndex < previousPageIndex ? -1 : 1;
-  const isPageSwitch = previousActivePageIdRef.current !== snapshot.activePageId;
+  const isPageSwitch = previousActivePageIdRef.current !== projection.activePageId;
   const canvasClassName = [
     'wbn-canvas',
     isCollection ? 'wbn-canvas-collection' : '',
@@ -78,8 +78,8 @@ export function WorkspaceCanvas() {
   } satisfies CSSProperties;
 
   useEffect(() => {
-    previousActivePageIdRef.current = snapshot.activePageId;
-  }, [snapshot.activePageId]);
+    previousActivePageIdRef.current = projection.activePageId;
+  }, [projection.activePageId]);
 
   return (
     <main
@@ -94,7 +94,7 @@ export function WorkspaceCanvas() {
 
         event.preventDefault();
         const rect = event.currentTarget.getBoundingClientRect();
-        const camera = getPageCanvasState(useCanvasStore.getState(), snapshot.activePageId).camera;
+        const camera = getPageCanvasState(useCanvasStore.getState(), projection.activePageId).camera;
         const point = clientPointToCanvasWorld(event, rect, camera);
         openCanvasMenu(event.clientX, event.clientY, {
           ...(isRecycleBin || isCollection
@@ -114,13 +114,13 @@ export function WorkspaceCanvas() {
                   {
                     id: 'set-default-page',
                     label: t(
-                      snapshot.activePageId === snapshot.defaultPageId
+                      projection.activePageId === projection.defaultPageId
                         ? 'page.default'
                         : 'page.setDefault',
                     ),
                     icon: <House size={16} />,
-                    disabled: snapshot.activePageId === snapshot.defaultPageId,
-                    onSelect: () => setDefaultPage(snapshot.activePageId),
+                    disabled: projection.activePageId === projection.defaultPageId,
+                    onSelect: () => setDefaultPage(projection.activePageId),
                   },
                 ]
               : []),
@@ -133,19 +133,19 @@ export function WorkspaceCanvas() {
         <motion.section
           className="wbn-page-scene"
           custom={pageTransitionDirection}
-          key={snapshot.activePageId}
+          key={projection.activePageId}
           variants={pageSceneVariants}
           initial="enter"
           animate="center"
           exit="exit"
         >
           {isCollection ? (
-            <CanvasWorld pageId={snapshot.activePageId}>
+            <CanvasWorld pageId={projection.activePageId}>
               <div className="wbn-canvas-boundary" style={boundaryStyle} />
               <CollectionPage />
             </CanvasWorld>
           ) : (
-            <CanvasWorld pageId={snapshot.activePageId}>
+            <CanvasWorld pageId={projection.activePageId}>
               <div className="wbn-canvas-boundary" style={boundaryStyle} />
               {boxes.map((box) => (
                 <WorkspaceBoxRenderer box={box} key={box.id} skipEntryAnimation={isPageSwitch} />
@@ -167,7 +167,7 @@ export function WorkspaceCanvas() {
           </AnimatePresence>
         </motion.section>
       </AnimatePresence>
-      <CanvasBoundaryFeedback pageId={snapshot.activePageId} />
+      <CanvasBoundaryFeedback pageId={projection.activePageId} />
     </main>
   );
 }

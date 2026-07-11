@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createCanvasWorldBounds } from './canvasGeometry';
 import { findPageLandingFrame } from './placement';
-import type { WorkspaceSnapshot } from './workspace';
+import type { WorkspaceProjection } from './workspace';
 
-function createSnapshot(): WorkspaceSnapshot {
+function createProjection(): WorkspaceProjection {
   return {
     activePageId: 'source',
     defaultPageId: 'source',
@@ -46,8 +46,8 @@ test('findPageLandingFrame centers a box on an empty page', () => {
 });
 
 test('findPageLandingFrame chooses a nearby free position when center is occupied', () => {
-  const snapshot = createSnapshot();
-  snapshot.boxes.push({
+  const projection = createProjection();
+  projection.boxes.push({
     id: 'occupied',
     pageId: 'target',
     preset: 'bookmark',
@@ -63,7 +63,7 @@ test('findPageLandingFrame chooses a nearby free position when center is occupie
   });
 
   const frame = findPageLandingFrame(
-    snapshot,
+    projection,
     'moving',
     'target',
     { x: 600, y: 400 },

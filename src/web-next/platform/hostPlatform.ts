@@ -7,7 +7,7 @@ import {
   redoDatabaseCommand,
   undoDatabaseCommand,
 } from '../../core/application/historyEngine';
-import { getPreferences, getWorkspaceSnapshot } from '../../core/database/workspaceQueries';
+import { getPreferences, getWorkspaceProjection } from '../../core/database/workspaceQueries';
 import { searchWorkspaceDatabase } from '../../core/database/globalSearchQuery';
 import {
   getOperationLogEntries,
@@ -53,8 +53,8 @@ export function queryDatabaseHistoryState() {
   return runDatabaseTask(() => getDatabaseHistoryState(getKhaosDatabase()));
 }
 
-export function queryWorkspaceSnapshot() {
-  return runDatabaseTask(() => getWorkspaceSnapshot(getKhaosDatabase()));
+export function queryWorkspaceProjection() {
+  return runDatabaseTask(() => getWorkspaceProjection(getKhaosDatabase()));
 }
 
 export function recordActivity(input: ActivityLogInput) {
@@ -89,13 +89,13 @@ export async function exportOperationLog() {
 
 export async function exportWorkspaceData() {
   await runDatabaseTask(async () => {
-    const snapshot = await getWorkspaceSnapshot(getKhaosDatabase());
+    const workspace = await getWorkspaceProjection(getKhaosDatabase());
     const exportedAt = new Date().toISOString();
     const document = workspaceTransferDocumentSchema.parse({
       format: 'khaosbox-workspace',
       version: WORKSPACE_TRANSFER_VERSION,
       exportedAt,
-      snapshot,
+      workspace,
     });
     getAppPorts().fileExport.downloadJson(
       `khaosbox-${exportedAt.slice(0, 10)}.json`,
@@ -104,9 +104,9 @@ export async function exportWorkspaceData() {
     await recordDatabaseActivity(getKhaosDatabase(), {
       action: 'workspace.export',
       details: {
-        pageCount: snapshot.pages.length,
-        boxCount: snapshot.boxes.length,
-        itemCount: new Set(snapshot.boxes.flatMap((box) => box.items.map((item) => item.id))).size,
+        pageCount: workspace.pages.length,
+        boxCount: workspace.boxes.length,
+        itemCount: new Set(workspace.boxes.flatMap((box) => box.items.map((item) => item.id))).size,
       },
     });
   });
@@ -116,7 +116,7 @@ export async function parseWorkspaceImportFile(file: File) {
   const document = workspaceTransferDocumentSchema.parse(JSON.parse(await file.text()));
   return {
     fileName: file.name,
-    snapshot: document.snapshot,
+    workspace: document.workspace,
   };
 }
 

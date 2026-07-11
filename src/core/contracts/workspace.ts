@@ -145,7 +145,7 @@ export const collectionBoxViewSchema = z
   })
   .strict();
 
-export const workspaceSnapshotSchema = z
+export const workspaceProjectionSchema = z
   .object({
     pages: z.array(workspacePageSchema),
     activePageId: entityIdSchema,
@@ -169,4 +169,4 @@ export type HistoryChangeSet = z.infer<typeof historyChangeSetSchema>;
 export type WorkspacePage = z.infer<typeof workspacePageSchema>;
 export type WorkspaceBox = z.infer<typeof workspaceBoxSchema>;
 export type CollectionBoxView = z.infer<typeof collectionBoxViewSchema>;
-export type WorkspaceSnapshot = z.infer<typeof workspaceSnapshotSchema>;
+export type WorkspaceProjection = z.infer<typeof workspaceProjectionSchema>;

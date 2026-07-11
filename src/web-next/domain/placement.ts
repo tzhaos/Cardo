@@ -3,7 +3,7 @@ import {
   type CanvasPoint,
   type CanvasWorldBounds,
 } from './canvasGeometry';
-import type { BoxFrame, WorkspaceSnapshot } from './workspace';
+import type { BoxFrame, WorkspaceProjection } from './workspace';
 
 const BOX_GAP = 24;
 const SEARCH_STEP = 24;
@@ -20,7 +20,7 @@ export function createBoxFrameCenteredAt(point: CanvasPoint): BoxFrame {
 }
 
 export function findNewBoxFrame(
-  snapshot: WorkspaceSnapshot,
+  projection: WorkspaceProjection,
   pageId: string,
   preferredCenter: CanvasPoint,
   bounds: CanvasWorldBounds,
@@ -29,20 +29,20 @@ export function findNewBoxFrame(
     createBoxFrameCenteredAt(preferredCenter),
     bounds,
   );
-  const occupiedFrames = snapshot.boxes
+  const occupiedFrames = projection.boxes
     .filter((box) => box.pageId === pageId)
     .map((box) => box.frame);
   return findAvailableFrame(preferredFrame, occupiedFrames, bounds) ?? preferredFrame;
 }
 
 export function findPageLandingFrame(
-  snapshot: WorkspaceSnapshot,
+  projection: WorkspaceProjection,
   boxId: string,
   pageId: string,
   preferredCenter: CanvasPoint,
   bounds: CanvasWorldBounds,
 ): BoxFrame | null {
-  const movingBox = snapshot.boxes.find((box) => box.id === boxId);
+  const movingBox = projection.boxes.find((box) => box.id === boxId);
   if (!movingBox) {
     return null;
   }
@@ -57,7 +57,7 @@ export function findPageLandingFrame(
     },
     bounds,
   );
-  const occupiedFrames = snapshot.boxes
+  const occupiedFrames = projection.boxes
     .filter((box) => box.pageId === pageId && box.id !== boxId)
     .map((box) => box.frame);
 

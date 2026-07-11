@@ -16,7 +16,7 @@ import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
 import { MotionButton } from '../../ui/primitives/motion-button';
 
 export function TopBar() {
-  const snapshot = useWorkspaceStore((state) => state.snapshot);
+  const projection = useWorkspaceStore((state) => state.projection);
   const createPage = useWorkspaceStore((state) => state.createPage);
   const renamePage = useWorkspaceStore((state) => state.renamePage);
   const deletePage = useWorkspaceStore((state) => state.deletePage);
@@ -33,8 +33,8 @@ export function TopBar() {
   const { t } = useI18n();
 
   const persistedPages = useMemo(
-    () => [...snapshot.pages].sort((first, second) => first.order - second.order),
-    [snapshot.pages],
+    () => [...projection.pages].sort((first, second) => first.order - second.order),
+    [projection.pages],
   );
   const workspacePages = useMemo(
     () => persistedPages.filter((page) => !isSystemPageId(page.id)),
@@ -56,7 +56,7 @@ export function TopBar() {
     .map((pageId) => pagesById.get(pageId))
     .filter((page): page is (typeof persistedPages)[number] => Boolean(page));
   const pageToDelete = workspacePages.find((page) => page.id === deletePageId);
-  const deleteBoxCount = snapshot.boxes.filter((box) => box.pageId === deletePageId).length;
+  const deleteBoxCount = projection.boxes.filter((box) => box.pageId === deletePageId).length;
 
   useEffect(() => {
     if (!deletePageId) {
@@ -119,9 +119,9 @@ export function TopBar() {
               },
               {
                 id: 'set-default-page',
-                label: t(page.id === snapshot.defaultPageId ? 'page.default' : 'page.setDefault'),
+                label: t(page.id === projection.defaultPageId ? 'page.default' : 'page.setDefault'),
                 icon: <House size={16} />,
-                disabled: page.id === snapshot.defaultPageId,
+                disabled: page.id === projection.defaultPageId,
                 onSelect: () => setDefaultPage(page.id),
               },
               {
@@ -162,7 +162,7 @@ export function TopBar() {
         >
           {collectionPage ? (
             <CollectionTab
-              active={collectionPage.id === snapshot.activePageId}
+              active={collectionPage.id === projection.activePageId}
               highlighted={boxDropPageId === collectionPage.id}
               page={collectionPage}
               released={boxDropRelease?.pageId === collectionPage.id}
@@ -176,7 +176,7 @@ export function TopBar() {
           <AnimatePresence mode="popLayout">
             {pages.map((page) => (
               <SortablePageTab
-                active={page.id === snapshot.activePageId}
+                active={page.id === projection.activePageId}
                 className={[
                   boxDropPageId === page.id ? 'wbn-box-drop-target' : '',
                   boxDropRelease?.pageId === page.id ? 'wbn-box-drop-released' : '',
@@ -197,7 +197,7 @@ export function TopBar() {
           </AnimatePresence>
           {recycleBinPage ? (
             <RecycleBinTab
-              active={recycleBinPage.id === snapshot.activePageId}
+              active={recycleBinPage.id === projection.activePageId}
               highlighted={boxDropPageId === recycleBinPage.id}
               page={recycleBinPage}
               released={boxDropRelease?.pageId === recycleBinPage.id}

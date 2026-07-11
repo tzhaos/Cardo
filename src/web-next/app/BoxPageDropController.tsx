@@ -78,10 +78,10 @@ export function BoxPageDropController() {
 }
 
 function finishDrop(draggedBoxId: string, event: PointerEvent) {
-  const currentSnapshot = useWorkspaceStore.getState().snapshot;
+  const currentProjection = useWorkspaceStore.getState().projection;
   const targetPageId =
     findPageDropAtPoint(event.clientX, event.clientY) ?? useUiStore.getState().boxDropPageId;
-  const movingBox = currentSnapshot.boxes.find((box) => box.id === draggedBoxId);
+  const movingBox = currentProjection.boxes.find((box) => box.id === draggedBoxId);
   if (!targetPageId || !movingBox || movingBox.pageId === targetPageId) return;
 
   const ui = useUiStore.getState();
@@ -108,7 +108,7 @@ function finishDrop(draggedBoxId: string, event: PointerEvent) {
     canvasState.viewportSize,
   );
   const landingFrame = findPageLandingFrame(
-    currentSnapshot,
+    currentProjection,
     draggedBoxId,
     targetPageId,
     getCanvasViewportCenter(targetPageCanvas.camera, canvasState.viewportSize),

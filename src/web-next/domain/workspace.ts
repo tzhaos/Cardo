@@ -10,7 +10,7 @@ import type {
   WorkspaceItem,
   WorkspaceItemType,
   WorkspacePage,
-  WorkspaceSnapshot,
+  WorkspaceProjection,
 } from '../../core/contracts/workspace';
 
 export type {
@@ -24,7 +24,7 @@ export type {
   WorkspaceBoxViewMode,
   WorkspaceItemType,
   WorkspacePage,
-  WorkspaceSnapshot,
+  WorkspaceProjection,
 };
 
 export const RECYCLE_BIN_PAGE_ID = 'khaosbox-recycle-bin';

@@ -50,7 +50,7 @@ import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
 import { Button } from '../../ui/primitives/button';
 
 export function CollectionPage() {
-  const snapshot = useWorkspaceStore((state) => state.snapshot);
+  const projection = useWorkspaceStore((state) => state.projection);
   const removeBoxFromCollection = useWorkspaceStore((state) => state.removeBoxFromCollection);
   const updateCollectionBoxFrame = useWorkspaceStore((state) => state.updateCollectionBoxFrame);
   const updateCollectionBoxView = useWorkspaceStore((state) => state.updateCollectionBoxView);
@@ -64,20 +64,20 @@ export function CollectionPage() {
   const { openMenu } = useFloatingMenu();
   const { t } = useI18n();
   const pagesById = useMemo(
-    () => new Map(snapshot.pages.map((page) => [page.id, page])),
-    [snapshot.pages],
+    () => new Map(projection.pages.map((page) => [page.id, page])),
+    [projection.pages],
   );
   const boxesById = useMemo(
-    () => new Map(snapshot.boxes.map((box) => [box.id, box])),
-    [snapshot.boxes],
+    () => new Map(projection.boxes.map((box) => [box.id, box])),
+    [projection.boxes],
   );
-  const entries = snapshot.collectionBoxIds
+  const entries = projection.collectionBoxIds
     .map((boxId) => {
       const box = boxesById.get(boxId);
       if (!box || isRecycleBinPageId(box.pageId)) return null;
       return {
         box,
-        view: snapshot.collectionViews[boxId]!,
+        view: projection.collectionViews[boxId]!,
       };
     })
     .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))

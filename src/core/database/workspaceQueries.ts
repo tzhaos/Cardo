@@ -1,5 +1,5 @@
 import { asc, eq } from 'drizzle-orm';
-import { workspaceSnapshotSchema, type WorkspaceItem } from '../contracts/workspace';
+import { workspaceProjectionSchema, type WorkspaceItem } from '../contracts/workspace';
 import type { KhaosDatabase } from './createDatabaseClient';
 import {
   appState,
@@ -36,7 +36,7 @@ export async function getPreferences(database: KhaosDatabase) {
   return row ? preferencesSelectSchema.parse(row) : null;
 }
 
-export async function getWorkspaceSnapshot(database: KhaosDatabase) {
+export async function getWorkspaceProjection(database: KhaosDatabase) {
   const [state, pageRows, boxRows, itemRows, placementRows, collectionRows] = await Promise.all([
     getWorkspaceState(database),
     database.select().from(pages).orderBy(asc(pages.sortOrder)).all(),
@@ -72,7 +72,7 @@ export async function getWorkspaceSnapshot(database: KhaosDatabase) {
     ]),
   );
 
-  return workspaceSnapshotSchema.parse({
+  return workspaceProjectionSchema.parse({
     pages: pageRows.map((page) => ({
       id: page.id,
       title: page.title,

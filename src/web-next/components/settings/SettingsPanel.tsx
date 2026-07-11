@@ -24,7 +24,7 @@ import type { WebNextColorMode } from '../../themes/themeRegistry';
 import { ColorModeStateIcon, LanguageStateIcon } from './StateIcons';
 import { IconButton, IconFrame } from '../../ui/khaos/icon-button';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
-import type { WorkspaceSnapshot } from '../../domain/workspace';
+import type { WorkspaceProjection } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
 import {
   exportOperationLog,
@@ -159,7 +159,7 @@ function DataSettings() {
   const selectBox = useUiStore((state) => state.selectBox);
   const inputRef = useRef<HTMLInputElement>(null);
   const [pendingImport, setPendingImport] = useState<{
-    snapshot: WorkspaceSnapshot;
+    workspace: WorkspaceProjection;
     fileName: string;
   } | null>(null);
   const [importError, setImportError] = useState(false);
@@ -240,7 +240,7 @@ function DataSettings() {
                 className="wbn-data-import-confirm-button"
                 variant="default"
                 onClick={() => {
-                  importWorkspace(pendingImport.snapshot);
+                  importWorkspace(pendingImport.workspace);
                   selectBox(null);
                   setPendingImport(null);
                 }}

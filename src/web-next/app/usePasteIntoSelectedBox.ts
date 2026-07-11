@@ -21,21 +21,21 @@ export function usePasteIntoSelectedBox() {
       event.preventDefault();
       const selectedBoxId = useUiStore.getState().selectedBoxId;
       const workspaceStore = useWorkspaceStore.getState();
-      const snapshot = workspaceStore.snapshot;
-      const pageId = isSystemPageId(snapshot.activePageId)
-        ? [...snapshot.pages]
+      const projection = workspaceStore.projection;
+      const pageId = isSystemPageId(projection.activePageId)
+        ? [...projection.pages]
             .filter((page) => !isSystemPageId(page.id))
             .sort((first, second) => first.order - second.order)[0]?.id
-        : snapshot.activePageId;
+        : projection.activePageId;
       if (!pageId) return;
       let targetBox =
-        selectedBoxId && !isSystemPageId(snapshot.activePageId)
-          ? snapshot.boxes.find((candidate) => candidate.id === selectedBoxId)
+        selectedBoxId && !isSystemPageId(projection.activePageId)
+          ? projection.boxes.find((candidate) => candidate.id === selectedBoxId)
           : undefined;
       if (targetBox?.pageId !== pageId) targetBox = undefined;
 
       if (!targetBox) {
-        targetBox = snapshot.boxes.find(
+        targetBox = projection.boxes.find(
           (candidate) => candidate.pageId === pageId && candidate.kind === 'temporary',
         );
       }
@@ -44,7 +44,7 @@ export function usePasteIntoSelectedBox() {
       const camera = canvas.pages[pageId]?.camera ?? { panX: 0, panY: 0, zoom: 1 };
       const bounds = createCanvasWorldBounds(canvas.viewportSize);
       const center = getCanvasViewportCenter(camera, canvas.viewportSize);
-      const temporaryFrame = targetBox?.frame ?? findNewBoxFrame(snapshot, pageId, center, bounds);
+      const temporaryFrame = targetBox?.frame ?? findNewBoxFrame(projection, pageId, center, bounds);
       void workspaceStore
         .pasteItem(
           pageId,

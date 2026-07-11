@@ -22,7 +22,7 @@ import { Input } from '../../ui/primitives/input';
 
 export function BottomToolbar() {
   const createBox = useWorkspaceStore((state) => state.createBox);
-  const activePageId = useWorkspaceStore((state) => state.snapshot.activePageId);
+  const activePageId = useWorkspaceStore((state) => state.projection.activePageId);
   const panX = useCanvasStore((state) => state.pages[activePageId]?.camera.panX ?? 0);
   const panY = useCanvasStore((state) => state.pages[activePageId]?.camera.panY ?? 0);
   const viewportSize = useCanvasStore((state) => state.viewportSize);

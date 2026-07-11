@@ -242,7 +242,7 @@ export function BaseBoxFrame({
   const compactScale = Math.max(0.22, Math.min(0.46, 136 / box.frame.width, 86 / box.frame.height));
   const isInRecycleBin = isRecycleBinPageId(box.pageId);
   const isCollected = useWorkspaceStore((state) =>
-    state.snapshot.collectionBoxIds.includes(box.id),
+    state.projection.collectionBoxIds.includes(box.id),
   );
   const isTemporary = box.kind === 'temporary';
   const viewMode = isTemporary ? 'list' : box.viewMode;

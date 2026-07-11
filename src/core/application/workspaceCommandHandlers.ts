@@ -1,4 +1,4 @@
-import type { WorkspaceItem, WorkspaceSnapshot } from '../contracts/workspace';
+import type { WorkspaceItem, WorkspaceProjection } from '../contracts/workspace';
 import type { WorkspaceCommand } from '../contracts/workspaceCommands';
 import {
   APP_STATE_ID,
@@ -22,7 +22,7 @@ export async function executeWorkspaceImport(
   command: WorkspaceImportCommand,
 ): Promise<DatabaseCommandMutation> {
   const before = await readWorkspaceRows(transaction);
-  const after = projectSnapshotRows(command.snapshot);
+  const after = projectWorkspaceRows(command.workspace);
   const changes = buildImportChanges(before, after);
 
   await transaction.delete(collectionBoxViews);
@@ -64,10 +64,10 @@ async function readWorkspaceRows(transaction: DatabaseTransaction) {
   };
 }
 
-function projectSnapshotRows(snapshot: WorkspaceSnapshot) {
+function projectWorkspaceRows(workspace: WorkspaceProjection) {
   const projectedItems: Array<typeof items.$inferInsert> = [];
   const placements: Array<typeof boxItems.$inferInsert> = [];
-  const boxRows = snapshot.boxes.map((box, boxIndex) => {
+  const boxRows = workspace.boxes.map((box, boxIndex) => {
     for (const [sortOrder, item] of box.items.entries()) {
       projectedItems.push(projectItem(item));
       placements.push({ boxId: box.id, itemId: item.id, sortOrder, isPinned: item.isPinned });
@@ -92,8 +92,8 @@ function projectSnapshotRows(snapshot: WorkspaceSnapshot) {
       updatedAt: box.updatedAt,
     };
   });
-  const collectionRows = snapshot.collectionBoxIds.map((boxId, index) => {
-    const view = snapshot.collectionViews[boxId];
+  const collectionRows = workspace.collectionBoxIds.map((boxId, index) => {
+    const view = workspace.collectionViews[boxId];
     if (!view) throw new Error(`Collection view for Box ${boxId} is missing.`);
     return {
       boxId,
@@ -107,7 +107,7 @@ function projectSnapshotRows(snapshot: WorkspaceSnapshot) {
     };
   });
   return {
-    pages: snapshot.pages.map((page) => ({
+    pages: workspace.pages.map((page) => ({
       id: page.id,
       title: page.title,
       sortOrder: page.order,
@@ -121,8 +121,8 @@ function projectSnapshotRows(snapshot: WorkspaceSnapshot) {
     appState: {
       id: APP_STATE_ID,
       schemaVersion: DATABASE_SCHEMA_VERSION,
-      activePageId: snapshot.activePageId,
-      defaultPageId: snapshot.defaultPageId,
+      activePageId: workspace.activePageId,
+      defaultPageId: workspace.defaultPageId,
     },
   };
 }
@@ -160,7 +160,7 @@ function projectItem(item: WorkspaceItem): typeof items.$inferInsert {
 
 function buildImportChanges(
   before: Awaited<ReturnType<typeof readWorkspaceRows>>,
-  after: ReturnType<typeof projectSnapshotRows>,
+  after: ReturnType<typeof projectWorkspaceRows>,
 ) {
   return [
     ...diffRows('collection_box_views', before.collectionViews, after.collectionViews, (row) => ({

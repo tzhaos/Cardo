@@ -8,17 +8,17 @@ import {
   workspaceBoxPresetSchema,
   workspaceBoxViewModeSchema,
   workspaceItemTypeSchema,
-  workspaceSnapshotSchema,
+  workspaceProjectionSchema,
 } from './workspace';
 
 const titleSchema = z.string().max(512);
 const itemDraftSchema = z.record(z.string(), z.string());
 const idListSchema = z.array(entityIdSchema);
 
-export const workspaceSnapshotContractSchema = workspaceSnapshotSchema;
+export const workspaceProjectionContractSchema = workspaceProjectionSchema;
 
 const commandSchemas = [
-  z.object({ type: z.literal('workspace.import'), snapshot: workspaceSnapshotContractSchema }).strict(),
+  z.object({ type: z.literal('workspace.import'), workspace: workspaceProjectionContractSchema }).strict(),
   z.object({ type: z.literal('page.create'), title: titleSchema }).strict(),
   z.object({ type: z.literal('page.rename'), pageId: entityIdSchema, title: titleSchema }).strict(),
   z.object({ type: z.literal('page.delete'), pageId: entityIdSchema }).strict(),

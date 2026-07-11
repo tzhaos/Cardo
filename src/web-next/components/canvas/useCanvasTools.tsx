@@ -6,7 +6,7 @@ import { useI18n } from '../../i18n/useI18n';
 import type { FloatingMenuItem } from '../floating-menu/menuTypes';
 
 export function useCanvasTools() {
-  const activePageId = useWorkspaceStore((state) => state.snapshot.activePageId);
+  const activePageId = useWorkspaceStore((state) => state.projection.activePageId);
   const panX = useCanvasStore((state) => state.pages[activePageId]?.camera.panX ?? 0);
   const panY = useCanvasStore((state) => state.pages[activePageId]?.camera.panY ?? 0);
   const isLocked = useCanvasStore((state) => state.pages[activePageId]?.isLocked ?? false);

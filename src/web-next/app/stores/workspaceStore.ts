@@ -9,24 +9,24 @@ import type {
   WorkspaceBoxPreset,
   WorkspaceBoxViewMode,
   WorkspaceItemType,
-  WorkspaceSnapshot,
+  WorkspaceProjection,
 } from '../../domain/workspace';
 import type { CanvasViewportSize } from '../../domain/canvasGeometry';
 import {
   dispatchDatabaseCommand,
   queryDatabaseHistoryState,
-  queryWorkspaceSnapshot,
+  queryWorkspaceProjection,
   redoDatabaseHistory,
   undoDatabaseHistory,
 } from '../../platform/hostPlatform';
 
 interface WorkspaceStore {
-  snapshot: WorkspaceSnapshot;
+  projection: WorkspaceProjection;
   historyPast: readonly true[];
   historyFuture: readonly true[];
   initialize: () => Promise<void>;
   dispatchCommand: (command: WorkspaceCommand) => Promise<DatabaseCommandResult>;
-  importWorkspace: (snapshot: WorkspaceSnapshot) => void;
+  importWorkspace: (workspace: WorkspaceProjection) => void;
   createPage: (title?: string) => void;
   renamePage: (pageId: string, title: string) => void;
   deletePage: (pageId: string) => void;
@@ -88,7 +88,7 @@ interface WorkspaceStore {
 const listeners = new Set<() => void>();
 let commandQueue: Promise<unknown> = Promise.resolve();
 
-const emptySnapshot: WorkspaceSnapshot = {
+const emptyProjection: WorkspaceProjection = {
   pages: [],
   activePageId: 'khaosbox-collection',
   defaultPageId: 'khaosbox-collection',
@@ -100,8 +100,8 @@ const emptySnapshot: WorkspaceSnapshot = {
 const actions = {
   initialize: refreshProjection,
   dispatchCommand: runCommand,
-  importWorkspace: (snapshot: WorkspaceSnapshot) =>
-    fireCommand({ type: 'workspace.import', snapshot }),
+  importWorkspace: (workspace: WorkspaceProjection) =>
+    fireCommand({ type: 'workspace.import', workspace }),
   createPage: (title = 'Untitled') => fireCommand({ type: 'page.create', title }),
   renamePage: (pageId: string, title: string) =>
     fireCommand({ type: 'page.rename', pageId, title }),
@@ -114,7 +114,7 @@ const actions = {
   createBox: (preset: WorkspaceBoxPreset, frame: BoxFrame, title?: string) =>
     fireCommand({
       type: 'box.create',
-      pageId: state.snapshot.activePageId,
+      pageId: state.projection.activePageId,
       preset,
       frame,
       title,
@@ -206,23 +206,23 @@ const actions = {
     fireCommand({ type: 'item.reorder', boxId, orderedItemIds }),
   deleteItem: (boxId: string, itemId: string) =>
     fireCommand({ type: 'item.delete', boxId, itemId }),
-} satisfies Omit<WorkspaceStore, 'snapshot' | 'historyPast' | 'historyFuture'>;
+} satisfies Omit<WorkspaceStore, 'projection' | 'historyPast' | 'historyFuture'>;
 
 let state: WorkspaceStore = {
-  snapshot: emptySnapshot,
+  projection: emptyProjection,
   historyPast: [],
   historyFuture: [],
   ...actions,
 };
 
 async function refreshProjection() {
-  const [snapshot, history] = await Promise.all([
-    queryWorkspaceSnapshot(),
+  const [projection, history] = await Promise.all([
+    queryWorkspaceProjection(),
     queryDatabaseHistoryState(),
   ]);
   state = {
     ...state,
-    snapshot,
+    projection,
     historyPast: history.canUndo ? [true] : [],
     historyFuture: history.canRedo ? [true] : [],
   };
@@ -261,10 +261,10 @@ function enqueue<T>(task: () => Promise<T>): Promise<T> {
 function requireCreatedItem(result: DatabaseCommandResult, commandType: string) {
   const itemId = result.createdItemId;
   const item = itemId
-    ? state.snapshot.boxes.flatMap((box) => box.items).find((candidate) => candidate.id === itemId)
+    ? state.projection.boxes.flatMap((box) => box.items).find((candidate) => candidate.id === itemId)
     : undefined;
   if (!item) throw new Error(`${commandType} completed without an Item projection.`);
-  const box = state.snapshot.boxes.find((candidate) =>
+  const box = state.projection.boxes.find((candidate) =>
     candidate.items.some((candidateItem) => candidateItem.id === item.id),
   );
   return { boxId: result.createdBoxId ?? box?.id ?? '', item };
