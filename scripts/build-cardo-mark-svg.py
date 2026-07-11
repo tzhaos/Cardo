@@ -10,22 +10,22 @@ BRAND = ROOT / "assets" / "brand"
 
 VIEW = 128
 CX, CY = 64.0, 64.0
-# Stroke ring — thick C with clear right opening
+# Stroke ring — thick C
 R = 36.0
 STROKE = 26.0
 
-# Symmetrical about horizontal axis through center.
-# Upper: left → right via north (math angles decrease, SVG sweep 1)
-# Lower: mirror of upper via south (SVG sweep 0)
-# Opening on the right: ±OPEN from east.
-OPEN = 38.0  # degrees from +x to each terminal
-# Left side closed enough to read as C (not a thin crescent)
-LEFT = 180.0 - 12.0  # 168° upper-left / 192° lower-left
+# Fully symmetrical about the horizontal axis.
+# Same angular gap on LEFT and RIGHT so round caps never touch.
+# OPEN = half-gap from the ±x axis to each terminal (degrees).
+# Left gap: [180-OPEN, 180+OPEN], right gap: [360-OPEN … OPEN] via east.
+OPEN = 36.0
 
-DARK_A0 = LEFT  # upper left
-DARK_A1 = OPEN  # upper right
-MID_A0 = 360.0 - LEFT  # lower left = 192°
-MID_A1 = 360.0 - OPEN  # lower right = 322°
+# Upper: left terminal → right terminal via north (SVG sweep 1 = CW)
+DARK_A0 = 180.0 - OPEN  # 144°
+DARK_A1 = OPEN  # 36°
+# Lower: exact horizontal mirror via south (SVG sweep 0 = CCW)
+MID_A0 = 180.0 + OPEN  # 216°
+MID_A1 = 360.0 - OPEN  # 324°
 
 C_DARK = "#1C1C1E"
 C_MID = "#6E6E73"
