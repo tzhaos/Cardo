@@ -282,41 +282,159 @@
   box-shadow: var(--cardo-shadow);
 }
 
-/* ── Apple HIG: vibrancy surface, fine separator, continuous corners ────────── */
-/* System font stack comes from the pack tokens; do not redeclare here. */
+/* ── Apple: liquid glass / vibrancy (must read as frosted, not flat recolor) ─── */
+/*
+ * Glass only works when:
+ * 1) fill is translucent, 2) backdrop-filter is strong + saturated,
+ * 3) canvas behind has visible color structure, 4) contain does not block sampling.
+ * Pack tokens set chrome.blur; recipes compose the material layers.
+ */
+
+/* Ambient field so Gaussian blur has something to pick up (not a flat slab).
+   data-cardo-theme lives on <html>; .cardo-app is the shell child. */
+[data-cardo-theme='apple'] .cardo-app {
+  background-color: var(--cardo-canvas);
+  background-image:
+    radial-gradient(
+      ellipse 70% 55% at 12% 18%,
+      color-mix(in srgb, var(--cardo-blue) 42%, transparent),
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse 60% 50% at 88% 12%,
+      color-mix(in srgb, var(--cardo-purple) 36%, transparent),
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 55% 48% at 72% 78%,
+      color-mix(in srgb, var(--cardo-orange) 28%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 50% 40% at 20% 85%,
+      color-mix(in srgb, var(--cardo-emerald) 22%, transparent),
+      transparent 55%
+    ),
+    linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--cardo-canvas) 88%, var(--cardo-blue)) 0%,
+      var(--cardo-canvas) 48%,
+      color-mix(in srgb, var(--cardo-canvas) 90%, var(--cardo-purple)) 100%
+    );
+  background-attachment: fixed;
+}
 
 [data-cardo-theme='apple'] .cardo-box,
 [data-cardo-theme='apple'] .cardo-collection-box {
+  /* Allow backdrop-filter to sample the canvas (style containment can mute glass). */
+  contain: layout;
+  isolation: isolate;
   border: 0.5px solid var(--cardo-border);
   border-radius: var(--cardo-radius-xl);
-  background-image: none;
-  background-color: var(--cardo-surface);
+  background-color: var(--cardo-panel);
+  background-image: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--cardo-surface-strong) 55%, transparent) 0%,
+    color-mix(in srgb, var(--cardo-panel) 40%, transparent) 42%,
+    color-mix(in srgb, var(--cardo-panel-bottom) 50%, transparent) 100%
+  );
   box-shadow: var(--cardo-shadow);
-  backdrop-filter: blur(var(--cardo-chrome-blur));
-  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur));
+  backdrop-filter: blur(var(--cardo-chrome-blur)) saturate(185%);
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur)) saturate(185%);
+}
+
+[data-cardo-theme='apple'] .cardo-box::before,
+[data-cardo-theme='apple'] .cardo-collection-box::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  /* Specular rim — liquid glass edge light */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -0.5px 0 rgba(255, 255, 255, 0.12),
+    inset 1px 0 0 rgba(255, 255, 255, 0.12),
+    inset -1px 0 0 rgba(255, 255, 255, 0.06);
+}
+
+[data-cardo-theme='apple'][data-color-mode='dark'] .cardo-box::before,
+[data-cardo-theme='apple'][data-color-mode='dark'] .cardo-collection-box::before,
+[data-cardo-theme='apple'].dark .cardo-box::before,
+[data-cardo-theme='apple'].dark .cardo-collection-box::before {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -0.5px 0 rgba(255, 255, 255, 0.04),
+    inset 1px 0 0 rgba(255, 255, 255, 0.06),
+    inset -1px 0 0 rgba(255, 255, 255, 0.03);
+}
+
+[data-cardo-theme='apple'] .cardo-box > *,
+[data-cardo-theme='apple'] .cardo-collection-box > * {
+  position: relative;
+  z-index: 1;
 }
 
 [data-cardo-theme='apple'] .cardo-box-header,
-[data-cardo-theme='apple'] .cardo-collection-box-header {
+[data-cardo-theme='apple'] .cardo-collection-box-header,
+[data-cardo-theme='apple'] .cardo-temporary-box-header {
   border-bottom: 0.5px solid var(--cardo-divider);
-  background: transparent;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--cardo-surface-strong) 42%, transparent) 0%,
+    transparent 100%
+  );
   padding: 12px 14px;
+  backdrop-filter: blur(calc(var(--cardo-chrome-blur) * 0.35)) saturate(160%);
+  -webkit-backdrop-filter: blur(calc(var(--cardo-chrome-blur) * 0.35)) saturate(160%);
+}
+
+[data-cardo-theme='apple'] .cardo-box-content,
+[data-cardo-theme='apple'] .cardo-collection-box-content {
+  background: transparent;
 }
 
 [data-cardo-theme='apple'] .cardo-box-footer {
   border-top: 0.5px solid var(--cardo-divider);
-  background: transparent;
+  background: color-mix(in srgb, var(--cardo-panel-chrome) 55%, transparent);
 }
 
 [data-cardo-theme='apple'] .cardo-box-title,
 [data-cardo-theme='apple'] .cardo-collection-box-title {
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
 }
 
 [data-cardo-theme='apple'] .cardo-box-temporary {
-  border: 0.5px dashed color-mix(in srgb, var(--box-accent) 40%, var(--cardo-border));
+  border: 0.5px dashed color-mix(in srgb, var(--box-accent) 45%, var(--cardo-border));
+  background-color: color-mix(in srgb, var(--cardo-panel) 70%, var(--box-accent));
   background-image: none;
-  background-color: color-mix(in srgb, var(--cardo-surface) 88%, var(--box-accent));
   box-shadow: var(--cardo-shadow);
+  backdrop-filter: blur(var(--cardo-chrome-blur)) saturate(185%);
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur)) saturate(185%);
+}
+
+/* Shell chrome: stronger glass than generic product chrome */
+[data-cardo-theme='apple'] .cardo-top-bar,
+[data-cardo-theme='apple'] .cardo-history-controls,
+[data-cardo-theme='apple'] .cardo-canvas-tools,
+[data-cardo-theme='apple'] .cardo-bottom-toolbar {
+  background: var(--cardo-surface) !important;
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--cardo-surface-strong) 50%, transparent),
+    color-mix(in srgb, var(--cardo-surface) 70%, transparent)
+  ) !important;
+  border-color: var(--cardo-border) !important;
+  box-shadow: var(--cardo-shadow) !important;
+  backdrop-filter: blur(var(--cardo-chrome-blur)) saturate(185%) !important;
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur)) saturate(185%) !important;
+}
+
+[data-cardo-theme='apple'] .cardo-tab-pill-active {
+  background: color-mix(in srgb, var(--cardo-surface-strong) 75%, transparent);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  box-shadow: var(--cardo-inset-shadow);
 }
