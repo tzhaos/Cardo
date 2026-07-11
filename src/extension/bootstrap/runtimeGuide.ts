@@ -174,7 +174,7 @@ export function renderRuntimeGuide(error: unknown, onRetry: () => void): void {
   const panel = document.createElement('div');
   panel.setAttribute('data-cardo-runtime-guide', kind);
   panel.style.cssText =
-    'font-family:system-ui,sans-serif;max-width:36rem;margin:4rem auto;padding:1.75rem;line-height:1.55;color:#111;background:#fafafa;border:1px solid #e5e5e5;border-radius:12px;';
+    'font-family:system-ui,sans-serif;max-width:36rem;margin:4rem auto;padding:1.75rem;line-height:1.55;color:#111;background:#fafafa;border:1px solid #e5e5e5;border-radius:12px;cursor:default;user-select:none;-webkit-user-select:none;caret-color:transparent;';
 
   const title = document.createElement('h1');
   title.textContent = copy.title;
@@ -207,8 +207,9 @@ export function renderRuntimeGuide(error: unknown, onRetry: () => void): void {
 
   const installPre = document.createElement('pre');
   installPre.textContent = copy.installCommands.join('\n');
+  /* Command block is chrome (not details); keep non-selectable. */
   installPre.style.cssText =
-    'margin:0 0 1.25rem;padding:0.75rem 0.9rem;border-radius:8px;background:#f0f0f0;color:#222;font:0.82rem/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow-x:auto;';
+    'margin:0 0 1.25rem;padding:0.75rem 0.9rem;border-radius:8px;background:#f0f0f0;color:#222;font:0.82rem/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow-x:auto;user-select:none;-webkit-user-select:none;';
 
   const actions = document.createElement('div');
   actions.style.cssText = 'display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;';
@@ -243,8 +244,9 @@ export function renderRuntimeGuide(error: unknown, onRetry: () => void): void {
     summary.style.cursor = 'pointer';
     const pre = document.createElement('pre');
     pre.textContent = detail;
+    /* Detail diagnostic pre is the only selectable text in the guide. */
     pre.style.cssText =
-      'white-space:pre-wrap;word-break:break-word;margin:0.5rem 0 0;font:inherit;';
+      'white-space:pre-wrap;word-break:break-word;margin:0.5rem 0 0;font:inherit;cursor:text;user-select:text;-webkit-user-select:text;caret-color:auto;';
     details.append(summary, pre);
     bodyNodes.push(details);
   }

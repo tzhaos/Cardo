@@ -14,9 +14,7 @@
   padding: 6px;
   background: var(--wbn-surface);
   box-shadow: var(--wbn-shadow);
-  caret-color: transparent;
-  user-select: none;
-  -webkit-user-select: none;
+  /* Selection: shell.css force-none on .wbn-top-bar; .wbn-tab-label opts in. */
   backdrop-filter: blur(12px);
   scrollbar-width: none;
   transform: translateX(-50%);
