@@ -458,8 +458,10 @@ export class RuntimeClient {
 
   private async onMutationEvent(event: MutationEvent): Promise<void> {
     await this.enqueueApply(async () => {
-      // Self-echo: initiator applies from HTTP ok; still advance watermark so gap math
-      // stays correct if command.ok is delayed (design §6.10 + review Issue 1).
+      // Self-echo: initiator applies from HTTP ok; still advance observed watermark.
+      // Gap/consecutive decisions use lastAppliedRevision only (Issue 7): after self-echo
+      // advances localRevision without apply, a later remote rev must not apply narrow
+      // scopes and skip the initiator's intermediate revision.
       if (this.selfClientId && event.sourceClientId === this.selfClientId) {
         this.advanceRevision(event.revision);
         return;
@@ -470,25 +472,16 @@ export class RuntimeClient {
         return;
       }
 
-      if (event.revision <= this.localRevision) {
-        // Seen (e.g. self-echo watermark) but not applied — should not happen for remote;
-        // if it does, catch up to stay consistent.
-        if (event.revision > this.lastAppliedRevision) {
-          await this.fullCatchUpUnlocked();
-          this.markApplied(event.revision);
-        }
-        this.advanceRevision(event.revision);
-        return;
-      }
-
-      if (event.revision === this.localRevision + 1) {
+      // Consecutive vs last applied store state — not vs observed localRevision.
+      if (event.revision === this.lastAppliedRevision + 1) {
         await this.onApplyScopes(event.scopes);
         this.markApplied(event.revision);
         this.advanceRevision(event.revision);
         return;
       }
 
-      // Gap → full catch-up (design §6.10)
+      // Gap vs lastApplied (includes: self-echo left lastApplied behind, remote jumped ahead)
+      // → full catch-up so intermediate initiator revisions are included.
       await this.fullCatchUpUnlocked();
       this.markApplied(event.revision);
       this.advanceRevision(event.revision);
