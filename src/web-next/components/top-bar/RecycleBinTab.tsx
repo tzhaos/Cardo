@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { useCallback } from 'react';
 import type { MouseEventHandler } from 'react';
 import { registerPageDropElement } from '../../app/interactionElementRegistry';
+import { useUiStore } from '../../app/stores/uiStore';
 import type { WorkspacePage } from '../../domain/workspace';
 import { TabPill } from './TabPill';
 
@@ -23,6 +24,7 @@ export function RecycleBinTab({
   onActivate,
   onContextMenu,
 }: RecycleBinTabProps) {
+  const boxDragActive = useUiStore((state) => Boolean(state.draggedBoxId));
   const registerDropElement = useCallback(
     (element: HTMLDivElement | null) => registerPageDropElement(page.id, element),
     [page.id],
@@ -39,7 +41,11 @@ export function RecycleBinTab({
         .join(' ')}
       data-page-drop-id={page.id}
       layout="position"
-      transition={{ layout: { type: 'spring', stiffness: 460, damping: 38, mass: 0.72 } }}
+      transition={{
+        layout: boxDragActive
+          ? { type: 'tween', duration: 0 }
+          : { type: 'spring', stiffness: 460, damping: 38, mass: 0.72 },
+      }}
       onContextMenu={onContextMenu}
     >
       <TabPill

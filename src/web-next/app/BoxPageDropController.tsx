@@ -22,15 +22,23 @@ import { isCollectionPageId, isRecycleBinPageId } from '../domain/workspace';
 
 export function BoxPageDropController() {
   const draggedBoxId = useUiStore((state) => state.draggedBoxId);
-  const transferGenerationRef = useRef(0);
-  const activeTransferPageIdRef = useRef<string | null>(null);
+  const originPageIdRef = useRef<string | null>(null);
+  const previewPageIdRef = useRef<string | null>(null);
+  const didOptimisticPreviewRef = useRef(false);
 
   useEffect(() => {
     if (!draggedBoxId) {
-      transferGenerationRef.current = 0;
-      activeTransferPageIdRef.current = null;
+      originPageIdRef.current = null;
+      previewPageIdRef.current = null;
+      didOptimisticPreviewRef.current = false;
       return;
     }
+
+    const workspaceAtStart = useWorkspaceStore.getState();
+    const movingAtStart = workspaceAtStart.projection.boxes.find((box) => box.id === draggedBoxId);
+    originPageIdRef.current = movingAtStart?.pageId ?? null;
+    previewPageIdRef.current = movingAtStart?.pageId ?? null;
+    didOptimisticPreviewRef.current = false;
 
     const ui = useUiStore.getState();
     let topBarRect = getTopBarElement()?.getBoundingClientRect();
@@ -49,6 +57,10 @@ export function BoxPageDropController() {
         clientY <= topBarRect.bottom + 10,
       );
 
+    /**
+     * Hover only patches local projection so the active tab, page scene, and
+     * floating box switch together in the same frame. Runtime write happens on release.
+     */
     const previewPageUnderPointer = (clientX: number, clientY: number, pageId: string | null) => {
       if (!pageId || isCollectionPageId(pageId)) return;
 
@@ -56,21 +68,13 @@ export function BoxPageDropController() {
       const movingBox = workspace.projection.boxes.find((box) => box.id === draggedBoxId);
       if (!movingBox) return;
 
-      if (movingBox.pageId === pageId) {
-        if (workspace.projection.activePageId !== pageId) {
-          workspace.setActivePage(pageId);
-        }
+      if (previewPageIdRef.current === pageId && movingBox.pageId === pageId) {
         return;
       }
-
-      if (activeTransferPageIdRef.current === pageId) return;
-      activeTransferPageIdRef.current = pageId;
 
       const dragSession = useUiStore.getState().boxDragSession;
       const sizeSource = dragSession?.latestFrame ?? movingBox.frame;
       const transformOrigin = dragSession?.transformOrigin ?? '50% 50%';
-      // Keep the grab point under the cursor across page cameras so the compact
-      // floating box does not jump when the destination page mounts.
       const nextFrame = framePreservingGrabUnderPointer(
         clientX,
         clientY,
@@ -80,15 +84,10 @@ export function BoxPageDropController() {
       );
       if (!nextFrame) return;
 
-      // Rebase before the async write so remounted frames read stable coordinates.
       useUiStore.getState().rebaseBoxDragSession(nextFrame, clientX, clientY);
-
-      const generation = ++transferGenerationRef.current;
-      void workspace.moveBoxToPage(draggedBoxId, pageId, nextFrame).catch(() => {
-        if (generation === transferGenerationRef.current) {
-          activeTransferPageIdRef.current = null;
-        }
-      });
+      workspace.previewBoxOnPage(draggedBoxId, pageId, nextFrame);
+      previewPageIdRef.current = pageId;
+      didOptimisticPreviewRef.current = true;
     };
 
     const updateDropTarget = ({ clientX, clientY }: { clientX: number; clientY: number }) => {
@@ -98,8 +97,6 @@ export function BoxPageDropController() {
       ui.setBoxDropPage(pageId);
       if (overTopBar) {
         previewPageUnderPointer(clientX, clientY, pageId);
-      } else {
-        activeTransferPageIdRef.current = null;
       }
     };
 
@@ -109,7 +106,9 @@ export function BoxPageDropController() {
         frameScheduler.schedule({ clientX: event.clientX, clientY: event.clientY }),
       onEnd: (reason, event) => {
         if (reason === 'pointerup' && event instanceof PointerEvent) {
-          commitBoxDragRelease(draggedBoxId, event);
+          commitBoxDragRelease(draggedBoxId, event, originPageIdRef.current);
+        } else if (didOptimisticPreviewRef.current) {
+          void useWorkspaceStore.getState().revertOptimisticProjection();
         }
         useUiStore.getState().endBoxDrag();
       },
@@ -127,7 +126,11 @@ export function BoxPageDropController() {
   return null;
 }
 
-function commitBoxDragRelease(draggedBoxId: string, event: PointerEvent) {
+function commitBoxDragRelease(
+  draggedBoxId: string,
+  event: PointerEvent,
+  originPageId: string | null,
+) {
   const ui = useUiStore.getState();
   const workspace = useWorkspaceStore.getState();
   const movingBox = workspace.projection.boxes.find((box) => box.id === draggedBoxId);
@@ -137,7 +140,11 @@ function commitBoxDragRelease(draggedBoxId: string, event: PointerEvent) {
   const tabPageId = findPageDropAtPoint(event.clientX, event.clientY) ?? ui.boxDropPageId;
 
   if (tabPageId && isCollectionPageId(tabPageId)) {
-    if (isRecycleBinPageId(movingBox.pageId)) return;
+    if (isRecycleBinPageId(movingBox.pageId) || isRecycleBinPageId(originPageId ?? '')) return;
+    // Roll back local page preview before collection write (box stays on origin page).
+    if (originPageId && movingBox.pageId !== originPageId) {
+      workspace.previewBoxOnPage(draggedBoxId, originPageId, dragSession.latestFrame);
+    }
     workspace.addBoxToCollection(draggedBoxId);
     ui.selectBox(null);
     workspace.setActivePage(tabPageId);
@@ -186,8 +193,17 @@ function commitBoxDragRelease(draggedBoxId: string, event: PointerEvent) {
 
   ui.setPendingBoxLanding(draggedBoxId, landingFrame);
 
-  if (movingBox.pageId !== destinationPageId) {
-    void workspace.moveBoxToPage(draggedBoxId, destinationPageId, landingFrame);
+  // Projection may already show destination via optimistic preview; Runtime still
+  // holds origin until this write. Compare against drag-start page, not projection.
+  const persistedPageId = originPageId ?? movingBox.pageId;
+  if (persistedPageId !== destinationPageId) {
+    // Align local projection before the async write so landing springs from the right page.
+    if (movingBox.pageId !== destinationPageId) {
+      workspace.previewBoxOnPage(draggedBoxId, destinationPageId, landingFrame);
+    }
+    void workspace.moveBoxToPage(draggedBoxId, destinationPageId, landingFrame).catch(() => {
+      void workspace.revertOptimisticProjection();
+    });
     return;
   }
 

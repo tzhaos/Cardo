@@ -69,6 +69,13 @@ interface WorkspaceStore {
     pageId: string,
     frame?: BoxFrame,
   ) => Promise<DatabaseCommandResult>;
+  /**
+   * Local-only preview while a box is dragged across page tabs. Does not write
+   * Runtime; release must commit with moveBoxToPage / updateBoxFrame.
+   */
+  previewBoxOnPage: (boxId: string, pageId: string, frame: BoxFrame) => void;
+  /** Drop optimistic drag previews by re-querying the authoritative projection. */
+  revertOptimisticProjection: () => Promise<void>;
   addBoxToCollection: (boxId: string) => void;
   removeBoxFromCollection: (boxId: string) => void;
   moveItemBetweenBoxes: (
@@ -165,6 +172,33 @@ const actions = {
     fireCommand({ type: 'box.setViewMode', boxId, viewMode }),
   moveBoxToPage: (boxId: string, pageId: string, frame?: BoxFrame) =>
     runCommand({ type: 'box.moveToPage', boxId, pageId, frame }),
+  previewBoxOnPage: (boxId: string, pageId: string, frame: BoxFrame) => {
+    const projection = state.projection;
+    const box = projection.boxes.find((entry) => entry.id === boxId);
+    if (!box) return;
+    if (
+      box.pageId === pageId &&
+      projection.activePageId === pageId &&
+      box.frame.x === frame.x &&
+      box.frame.y === frame.y &&
+      box.frame.width === frame.width &&
+      box.frame.height === frame.height
+    ) {
+      return;
+    }
+    state = {
+      ...state,
+      projection: {
+        ...projection,
+        activePageId: pageId,
+        boxes: projection.boxes.map((entry) =>
+          entry.id === boxId ? { ...entry, pageId, frame: { ...frame } } : entry,
+        ),
+      },
+    };
+    emitChange();
+  },
+  revertOptimisticProjection: () => refreshProjection(),
   addBoxToCollection: (boxId: string) => fireCommand({ type: 'box.collect', boxId }),
   removeBoxFromCollection: (boxId: string) =>
     fireCommand({ type: 'box.removeFromCollection', boxId }),

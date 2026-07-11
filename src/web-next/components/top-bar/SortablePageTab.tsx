@@ -87,13 +87,15 @@ export function SortablePageTab({
       value={page.id}
       dragControls={controls}
       dragListener={false}
-      layout={boxDragActive ? false : 'position'}
+      layout="position"
       initial={boxDragActive ? false : { opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={boxDragActive ? undefined : { opacity: 0, scale: 0.8, width: 0 }}
       whileDrag={{ opacity: 0.68, scale: 1.03, zIndex: 80 }}
       transition={
-        boxDragActive ? { duration: 0 } : { type: 'spring', bounce: 0, duration: 0.4 }
+        boxDragActive
+          ? { type: 'tween', duration: 0 }
+          : { type: 'spring', bounce: 0, duration: 0.4 }
       }
       onPointerDownCapture={beginLongPress}
       onClickCapture={(event) => {

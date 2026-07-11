@@ -147,7 +147,9 @@ export function TopBar() {
         transition={{
           opacity: { duration: 0.12, delay: pageToDelete ? 0 : 0.1 },
           x: { duration: 0.16, delay: pageToDelete ? 0 : 0.08 },
-          layout: { type: 'spring', stiffness: 460, damping: 38, mass: 0.72 },
+          layout: draggedBoxId
+            ? { type: 'tween', duration: 0 }
+            : { type: 'spring', stiffness: 460, damping: 38, mass: 0.72 },
         }}
         aria-hidden={Boolean(pageToDelete)}
       >

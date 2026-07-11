@@ -448,12 +448,20 @@ export function BaseBoxFrame({
           ? deleteMotion.permanent
             ? { duration: 0.24, ease: [0.4, 0, 1, 1] }
             : { duration: 0.52, ease: [0.22, 0.72, 0.18, 1] }
-          : {
-              y: { type: 'spring', damping: 30, stiffness: 420, mass: 0.55 },
-              scale: { type: 'spring', damping: 28, stiffness: 380, mass: 0.6 },
-              borderRadius: { duration: 0.2 },
-              opacity: { duration: 0.16 },
-            }
+          : dragging
+            ? {
+                // Snap with the pointer / tab chrome — springs lag cross-page handoff.
+                y: { type: 'tween', duration: 0.12, ease: [0.2, 0.8, 0.2, 1] },
+                scale: { type: 'tween', duration: 0.14, ease: [0.2, 0.8, 0.2, 1] },
+                borderRadius: { duration: 0.12 },
+                opacity: { duration: 0.1 },
+              }
+            : {
+                y: { type: 'spring', damping: 30, stiffness: 420, mass: 0.55 },
+                scale: { type: 'spring', damping: 28, stiffness: 380, mass: 0.6 },
+                borderRadius: { duration: 0.2 },
+                opacity: { duration: 0.16 },
+              }
       }
       onAnimationComplete={finishDeleteMotion}
       onPointerDown={() => selectBox(box.id)}
