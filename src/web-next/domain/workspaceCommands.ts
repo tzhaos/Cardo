@@ -1,4 +1,8 @@
-import type { CanvasViewportSize } from './canvasGeometry';
+import {
+  getWorkspaceCommandDefinition,
+  parseWorkspaceCommand,
+  type WorkspaceCommand,
+} from '../../core/contracts/workspaceCommands';
 import { createItem as createWorkspaceItem } from './factories';
 import {
   addBox,
@@ -33,83 +37,9 @@ import {
   updatePageBoxFrames,
 } from './reducers';
 import { isSystemPageId } from './workspace';
-import type {
-  BoxFrame,
-  BoxItem,
-  WorkspaceBoxDetailMode,
-  WorkspaceBoxIcon,
-  WorkspaceBoxPreset,
-  WorkspaceBoxViewMode,
-  WorkspaceItemType,
-  WorkspaceSnapshot,
-} from './workspace';
+import type { BoxItem, WorkspaceSnapshot } from './workspace';
 
-export type WorkspaceCommand =
-  | { type: 'workspace.import'; snapshot: WorkspaceSnapshot }
-  | { type: 'page.create'; title: string }
-  | { type: 'page.rename'; pageId: string; title: string }
-  | { type: 'page.delete'; pageId: string }
-  | { type: 'page.reorder'; orderedPageIds: string[] }
-  | { type: 'page.setDefault'; pageId: string }
-  | {
-      type: 'box.create';
-      pageId: string;
-      preset: WorkspaceBoxPreset;
-      frame: BoxFrame;
-      title?: string;
-    }
-  | {
-      type: 'item.paste';
-      pageId: string;
-      targetBoxId: string | null;
-      temporaryFrame: BoxFrame;
-      itemType: WorkspaceItemType;
-      draft: Record<string, string>;
-    }
-  | { type: 'box.updateFrame'; boxId: string; frame: BoxFrame }
-  | { type: 'collection.updateBoxFrame'; boxId: string; frame: BoxFrame }
-  | {
-      type: 'collection.updateView';
-      boxId: string;
-      patch: {
-        viewMode?: WorkspaceBoxViewMode;
-        detailMode?: WorkspaceBoxDetailMode;
-        order?: number;
-      };
-    }
-  | { type: 'canvas.arrange'; pageId: string; frames: Record<string, BoxFrame> }
-  | { type: 'collection.arrange'; frames: Record<string, BoxFrame> }
-  | { type: 'box.rename'; boxId: string; title: string }
-  | { type: 'box.promote'; boxId: string; title: string }
-  | { type: 'box.setDetailMode'; boxId: string; detailMode: WorkspaceBoxDetailMode }
-  | { type: 'box.setLocked'; boxId: string; isLocked: boolean }
-  | { type: 'box.setAppearance'; boxId: string; icon?: WorkspaceBoxIcon; accent?: string }
-  | { type: 'box.setPreset'; boxId: string; preset: WorkspaceBoxPreset }
-  | { type: 'box.setViewMode'; boxId: string; viewMode: WorkspaceBoxViewMode }
-  | { type: 'box.moveToPage'; boxId: string; pageId: string; frame?: BoxFrame }
-  | { type: 'box.collect'; boxId: string }
-  | { type: 'box.removeFromCollection'; boxId: string }
-  | {
-      type: 'item.moveBetweenBoxes';
-      sourceBoxId: string;
-      targetBoxId: string;
-      itemId: string;
-      targetIndex?: number;
-    }
-  | { type: 'box.delete'; boxId: string }
-  | {
-      type: 'item.create';
-      boxId: string;
-      itemType: WorkspaceItemType;
-      draft: Record<string, string>;
-    }
-  | { type: 'item.rename'; boxId: string; itemId: string; title: string }
-  | { type: 'item.editContent'; boxId: string; itemId: string; content: string }
-  | { type: 'item.setPinned'; boxId: string; itemId: string; isPinned: boolean }
-  | { type: 'item.reorder'; boxId: string; orderedItemIds: string[] }
-  | { type: 'item.delete'; boxId: string; itemId: string }
-  | { type: 'bookmark.setFavicon'; boxId: string; itemId: string; favicon: string }
-  | { type: 'system.constrainFrames'; viewport: CanvasViewportSize };
+export type { WorkspaceCommand } from '../../core/contracts/workspaceCommands';
 
 export interface WorkspaceCommandResult {
   snapshot: WorkspaceSnapshot;
@@ -120,8 +50,9 @@ export interface WorkspaceCommandResult {
 
 export function executeWorkspaceCommand(
   snapshot: WorkspaceSnapshot,
-  command: WorkspaceCommand,
+  input: WorkspaceCommand,
 ): WorkspaceCommandResult {
+  const command = parseWorkspaceCommand(input);
   switch (command.type) {
     case 'workspace.import':
       return { snapshot: command.snapshot };
@@ -230,7 +161,7 @@ export function executeWorkspaceCommand(
 }
 
 export function isUndoableWorkspaceCommand(command: WorkspaceCommand) {
-  return command.type !== 'bookmark.setFavicon' && command.type !== 'system.constrainFrames';
+  return getWorkspaceCommandDefinition(command.type).undoable;
 }
 
 function pasteItem(
