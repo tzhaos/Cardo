@@ -26,6 +26,7 @@ import {
 import { useCanvasStore } from '../../app/stores/canvasStore';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
+import { useInlineRename } from '../../app/useInlineRename';
 import {
   constrainBoxFrameToCanvas,
   constrainBoxResizeToCanvas,
@@ -88,7 +89,6 @@ export function BaseBoxFrame({
   const addViewState = useUiStore((state) => state.addDrafts[box.id]);
   const closeAddView = useUiStore((state) => state.closeAddView);
   const { openMenu, closeMenu } = useFloatingMenu();
-  const [renamingTitle, setRenamingTitle] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [appearanceView, setAppearanceView] = useState(false);
   const [deleteMotion, setDeleteMotion] = useState<BoxDeleteMotion | null>(null);
@@ -96,9 +96,7 @@ export function BaseBoxFrame({
     boxDropRelease?.boxId === box.id ? boxDropRelease.entryTransformOrigin : '50% 50%',
   );
   const [dropLandingStarted, setDropLandingStarted] = useState(false);
-  const [titleDraft, setTitleDraft] = useState(box.title);
   const articleRef = useRef<HTMLElement>(null);
-  const titleInputRef = useRef<HTMLInputElement>(null);
   const pointerSessionRef = useRef<WindowPointerSession | null>(null);
   const deleteTargetRef = useRef<HTMLElement | null>(null);
   const deleteCommittedRef = useRef(false);
@@ -110,6 +108,10 @@ export function BaseBoxFrame({
   const dragTiltTarget = useMotionValue(0);
   const dragTilt = useSpring(dragTiltTarget, { stiffness: 320, damping: 26, mass: 0.45 });
   const { t } = useI18n();
+  const titleRename = useInlineRename({
+    value: box.title,
+    onCommit: (title) => renameBox(box.id, title),
+  });
 
   useEffect(
     () => () => {
@@ -118,41 +120,6 @@ export function BaseBoxFrame({
     },
     [],
   );
-
-  useEffect(() => {
-    if (!renamingTitle) {
-      setTitleDraft(box.title);
-    }
-  }, [box.title, renamingTitle]);
-
-  useEffect(() => {
-    if (renamingTitle) {
-      titleInputRef.current?.focus();
-      titleInputRef.current?.select();
-    }
-  }, [renamingTitle]);
-  useEffect(() => {
-    if (!renamingTitle) return;
-
-    const commitOnOutsidePointer = (event: PointerEvent) => {
-      const input = titleInputRef.current;
-      const target = event.target;
-      if (!input || (target instanceof Node && input.contains(target))) return;
-      input.blur();
-    };
-
-    window.addEventListener('pointerdown', commitOnOutsidePointer, true);
-    return () => window.removeEventListener('pointerdown', commitOnOutsidePointer, true);
-  }, [renamingTitle]);
-
-  const commitTitle = () => {
-    if (titleDraft.trim()) {
-      renameBox(box.id, titleDraft);
-    } else {
-      setTitleDraft(box.title);
-    }
-    setRenamingTitle(false);
-  };
 
   const beginDrag = (event: ReactPointerEvent<HTMLElement>) => {
     if (box.isLocked) {
@@ -419,6 +386,10 @@ export function BaseBoxFrame({
       onPointerDown={() => selectBox(box.id)}
       onContextMenu={(event) => {
         event.preventDefault();
+        if (titleRename.renaming) {
+          event.stopPropagation();
+          return;
+        }
         setAppearanceView(false);
         selectBox(box.id);
         if (isTemporary) {
@@ -434,7 +405,7 @@ export function BaseBoxFrame({
               id: 'rename',
               label: t('menu.rename'),
               icon: <SquarePen size={16} />,
-              onSelect: () => setRenamingTitle(true),
+              onSelect: () => titleRename.start(),
             },
             {
               id: 'add',
@@ -495,9 +466,8 @@ export function BaseBoxFrame({
             data-no-drag
             onClick={() => {
               const title = t('box.collectedItems');
-              setTitleDraft(title);
               promoteTemporaryBox(box.id, title);
-              setRenamingTitle(true);
+              titleRename.start(title);
             }}
             title={t('box.promote')}
             aria-label={t('box.promote')}
@@ -525,29 +495,22 @@ export function BaseBoxFrame({
             >
               {icon}
             </button>
-            {renamingTitle ? (
+            {titleRename.renaming ? (
               <input
-                ref={titleInputRef}
+                ref={titleRename.inputRef}
                 className="wbn-inline-rename wbn-box-title-input"
                 aria-label={t('box.rename', { title: box.title })}
-                value={titleDraft}
-                onChange={(event) => setTitleDraft(event.target.value)}
-                onBlur={commitTitle}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    event.currentTarget.blur();
-                  }
-                  if (event.key === 'Escape') {
-                    setTitleDraft(box.title);
-                    setRenamingTitle(false);
-                  }
-                }}
+                value={titleRename.draft}
+                onChange={(event) => titleRename.setDraft(event.target.value)}
+                onBlur={titleRename.commit}
+                onKeyDown={titleRename.onKeyDown}
+                onContextMenu={titleRename.onContextMenu}
               />
             ) : (
               <span
                 className="wbn-box-title"
                 data-no-drag
-                onDoubleClick={() => setRenamingTitle(true)}
+                onDoubleClick={() => titleRename.start()}
               >
                 {box.title}
               </span>

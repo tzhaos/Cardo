@@ -53,7 +53,7 @@ export function LocalResourceItem({
   return (
     <div
       className={`wbn-item-row wbn-local-item wbn-local-item-${item.type}${item.isPinned ? ' wbn-item-pinned' : ''}${highlight ? ' wbn-item-new' : ''}${deleteView ? ' wbn-item-delete-state' : ''}${editView ? ' wbn-item-edit-state' : ''}`}
-      onContextMenu={openContextMenu}
+      onContextMenu={rename.renaming ? rename.onContextMenu : openContextMenu}
     >
       <AnimatePresence initial={false} mode="wait">
         {deleteView ? (
@@ -101,10 +101,8 @@ export function LocalResourceItem({
                   value={rename.draft}
                   onChange={(event) => rename.setDraft(event.target.value)}
                   onBlur={rename.commit}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter') event.currentTarget.blur();
-                    if (event.key === 'Escape') rename.cancel();
-                  }}
+                  onKeyDown={rename.onKeyDown}
+                  onContextMenu={rename.onContextMenu}
                 />
               ) : (
                 <strong

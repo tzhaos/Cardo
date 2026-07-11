@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { WorkspacePage } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
+import { useInlineRename } from '../../app/useInlineRename';
 
 interface TabPillProps {
   page: WorkspacePage;
@@ -25,47 +26,24 @@ export function TabPill({
   onRename,
   onRenameRequestHandled,
 }: TabPillProps) {
-  const [renaming, setRenaming] = useState(false);
-  const [draft, setDraft] = useState(page.title);
-  const inputRef = useRef<HTMLInputElement>(null);
   const { t } = useI18n();
+  const rename = useInlineRename({
+    value: page.title,
+    onCommit: onRename,
+    ignoreOutsidePointer: isTopBarTarget,
+  });
 
-  useEffect(() => setDraft(page.title), [page.title]);
   useEffect(() => {
     if (!renameRequested || systemPage) return;
-    setDraft(page.title);
-    setRenaming(true);
+    rename.start();
     onRenameRequestHandled?.();
-  }, [onRenameRequestHandled, page.title, renameRequested, systemPage]);
-  useEffect(() => {
-    if (renaming) {
-      inputRef.current?.focus();
-      inputRef.current?.select();
-    }
-  }, [renaming]);
-  useEffect(() => {
-    if (!renaming) return;
-
-    const commitOnOutsidePointer = (event: PointerEvent) => {
-      const target = event.target;
-      if (target instanceof Element && target.closest('[data-top-bar]')) return;
-      inputRef.current?.blur();
-    };
-
-    window.addEventListener('pointerdown', commitOnOutsidePointer, true);
-    return () => window.removeEventListener('pointerdown', commitOnOutsidePointer, true);
-  }, [renaming]);
-
-  const commitRename = () => {
-    if (draft.trim()) onRename(draft);
-    setRenaming(false);
-  };
+  }, [onRenameRequestHandled, rename.start, renameRequested, systemPage]);
 
   return (
     <motion.div
       layout="position"
       transition={{ layout: { type: 'spring', stiffness: 500, damping: 40, mass: 0.68 } }}
-      className={`wbn-tab-pill${active ? ' wbn-tab-pill-active' : ''}${renaming ? ' wbn-tab-pill-renaming' : ''}${systemPage ? ' wbn-tab-pill-system' : ''}`}
+      className={`wbn-tab-pill${active ? ' wbn-tab-pill-active' : ''}${rename.renaming ? ' wbn-tab-pill-renaming' : ''}${systemPage ? ' wbn-tab-pill-system' : ''}`}
     >
       <button
         type="button"
@@ -75,7 +53,7 @@ export function TabPill({
         onClick={onActivate}
         onDoubleClick={(event) => {
           event.stopPropagation();
-          if (!systemPage) setRenaming(true);
+          if (!systemPage) rename.start();
         }}
       >
         <AnimatePresence initial={false}>
@@ -92,25 +70,24 @@ export function TabPill({
         </AnimatePresence>
         <span className="wbn-tab-label">{icon ?? page.title}</span>
       </button>
-      {renaming ? (
-        <div className="wbn-tab-rename-layer">
+      {rename.renaming ? (
+        <div className="wbn-tab-rename-layer" onContextMenu={rename.onContextMenu}>
           <input
-            ref={inputRef}
+            ref={rename.inputRef}
             className="wbn-inline-rename wbn-tab-rename-input"
             aria-label={t('page.rename', { title: page.title })}
-            value={draft}
-            onChange={(event) => setDraft(event.target.value)}
-            onBlur={commitRename}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') event.currentTarget.blur();
-              if (event.key === 'Escape') {
-                setDraft(page.title);
-                setRenaming(false);
-              }
-            }}
+            value={rename.draft}
+            onChange={(event) => rename.setDraft(event.target.value)}
+            onBlur={rename.commit}
+            onKeyDown={rename.onKeyDown}
+            onContextMenu={rename.onContextMenu}
           />
         </div>
       ) : null}
     </motion.div>
   );
+}
+
+function isTopBarTarget(target: EventTarget | null) {
+  return target instanceof Element && Boolean(target.closest('[data-top-bar]'));
 }
