@@ -2634,7 +2634,7 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
   gap: 6px;
 }
 
-.wbn-segmented-control .wbn-segment-active {
+.wbn-segmented-control [data-state='on'] {
   color: var(--wbn-text);
 }
 

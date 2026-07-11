@@ -41,6 +41,7 @@ import {
 } from '../../ui/primitives/select';
 import { Input } from '../../ui/primitives/input';
 import { Button } from '../../ui/primitives/button';
+import { ToggleGroup, ToggleGroupItem } from '../../ui/primitives/toggle-group';
 
 type SettingsSection = 'general' | 'appearance' | 'data' | 'about';
 
@@ -295,14 +296,19 @@ function GeneralSettings({
             <small>{t('settings.languageDescription')}</small>
           </span>
         </div>
-        <div className="wbn-segmented-control" aria-label={t('settings.language')}>
-          <SegmentButton active={locale === 'en'} onClick={() => setLocale('en')}>
+        <ToggleGroup
+          aria-label={t('settings.language')}
+          type="single"
+          value={locale}
+          onValueChange={(value) => value && setLocale(value as 'en' | 'zh')}
+        >
+          <SegmentButton active={locale === 'en'} value="en">
             EN
           </SegmentButton>
-          <SegmentButton active={locale === 'zh'} onClick={() => setLocale('zh')}>
+          <SegmentButton active={locale === 'zh'} value="zh">
             文
           </SegmentButton>
-        </div>
+        </ToggleGroup>
       </div>
       <div className="wbn-settings-subheading">
         <span>{t('settings.searchEngine')}</span>
@@ -382,16 +388,21 @@ function AppearanceSettings({
             <small>{t('settings.modeDescription')}</small>
           </span>
         </div>
-        <div className="wbn-segmented-control" aria-label={t('settings.mode')}>
-          <SegmentButton active={colorMode === 'light'} onClick={() => setColorMode('light')}>
+        <ToggleGroup
+          aria-label={t('settings.mode')}
+          type="single"
+          value={colorMode}
+          onValueChange={(value) => value && setColorMode(value as WebNextColorMode)}
+        >
+          <SegmentButton active={colorMode === 'light'} value="light">
             <Sun size={14} />
             {t('settings.light')}
           </SegmentButton>
-          <SegmentButton active={colorMode === 'dark'} onClick={() => setColorMode('dark')}>
+          <SegmentButton active={colorMode === 'dark'} value="dark">
             <Moon size={14} />
             {t('settings.dark')}
           </SegmentButton>
-        </div>
+        </ToggleGroup>
       </div>
       <div className="wbn-settings-subheading">
         <span>{t('settings.theme')}</span>
@@ -472,19 +483,14 @@ function SettingsHeading({ title, description }: { title: string; description: s
 function SegmentButton({
   active,
   children,
-  onClick,
+  value,
 }: {
   active: boolean;
   children: React.ReactNode;
-  onClick: () => void;
+  value: string;
 }) {
   return (
-    <button
-      aria-pressed={active}
-      className={active ? 'wbn-segment-active' : ''}
-      type="button"
-      onClick={onClick}
-    >
+    <ToggleGroupItem value={value}>
       <motion.span
         className="wbn-segment-indicator"
         initial={false}
@@ -492,6 +498,6 @@ function SegmentButton({
         transition={{ type: 'spring', stiffness: 420, damping: 32, mass: 0.55 }}
       />
       <span>{children}</span>
-    </button>
+    </ToggleGroupItem>
   );
 }
