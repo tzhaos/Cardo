@@ -21,6 +21,24 @@ function getDatabaseWorker() {
     name: 'khaosbox-database',
   });
   worker.addEventListener('message', (event: MessageEvent<unknown>) => {
+    // Storage mode diagnostics from the worker are not request/response pairs.
+    if (
+      event.data &&
+      typeof event.data === 'object' &&
+      'type' in event.data &&
+      (event.data as { type?: string }).type === 'khaosbox-db-storage'
+    ) {
+      const storage = (event.data as { storage?: string }).storage ?? 'unknown';
+      if (storage === 'memory') {
+        console.error(
+          '[KhaosBox] Extension database is in-memory. Workspace changes will not survive reloads.',
+        );
+      } else {
+        console.info(`[KhaosBox] Extension database ready (${storage}).`);
+      }
+      return;
+    }
+
     const parsed = databaseWorkerResponseSchema.safeParse(event.data);
     if (!parsed.success) return;
     const pending = pendingRequests.get(parsed.data.id);
