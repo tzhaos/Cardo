@@ -51,6 +51,70 @@
   opacity: 0.34;
 }
 
+.wbn-history-shared-hint-detail {
+  display: block;
+  margin-top: 0.35rem;
+  max-width: 16rem;
+  color: var(--wbn-muted, #888);
+  font-size: 0.78rem;
+  font-weight: 400;
+  line-height: 1.35;
+  white-space: normal;
+}
+
+.wbn-runtime-connection-banner {
+  position: fixed;
+  z-index: 120;
+  top: 24px;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: min(28rem, calc(100vw - 2rem));
+  border: 1px solid var(--wbn-border);
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  background: var(--wbn-surface);
+  box-shadow: var(--wbn-shadow);
+  color: var(--wbn-text);
+  font-size: 0.85rem;
+  line-height: 1.3;
+  backdrop-filter: blur(12px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.wbn-app-desktop .wbn-runtime-connection-banner {
+  top: 64px;
+}
+
+.wbn-runtime-connection-banner-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--wbn-muted, #888);
+}
+
+.wbn-runtime-connection-banner--reconnecting .wbn-runtime-connection-banner-dot {
+  background: #d97706;
+  animation: wbn-runtime-pulse 1.1s ease-in-out infinite;
+}
+
+.wbn-runtime-connection-banner--disconnected .wbn-runtime-connection-banner-dot {
+  background: #dc2626;
+}
+
+@keyframes wbn-runtime-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 .wbn-desktop-titlebar {
   position: fixed;
   z-index: 220;

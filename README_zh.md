@@ -2,27 +2,60 @@
 
 KhaosBox 是一个多宿主 TypeScript 空间工作台，用自由卡片式 box 管理链接、笔记、文件、文件夹、网站收藏和常用启动入口。
 
+产品方向为 Cardo：本机唯一 Runtime 持有 SQLite 与业务写入；Web、Desktop 与浏览器扩展均为该 Runtime 的客户端。详见 `docs/architecture/local-runtime-multi-client.md`。
+
 ## 宿主
 
-- 浏览器扩展：Manifest V3 新标签页工作区。
-- 桌面端：复用同一套 React 体验的 Electron shell。
+- Cardo Runtime：工作区唯一权威（CLI `cardo serve` / `cardo open`，或 Desktop embed）。
+- Web UI：由 Runtime 托管在 `/app/`（通过 `cardo open` 打开）。
+- 浏览器扩展：Manifest V3 客户端；工具栏打开扩展页，经 Native Messaging 发现 Runtime。
+- 桌面端：Electron 壳；优先 attach，缺失则 embed；与 Web 同一 RuntimeClient 路径。
 
 ## 架构
 
 ```text
 src/
-|-- core/       # 运行时无关的领域模型、编解码、协议和端口
-|-- web/        # React UI、Zustand store、用例和功能控制器
-|-- extension/  # MV3 启动入口、Chrome 适配器和扩展宿主
-|-- desktop/    # Electron main、preload、renderer 和桌面适配器
-`-- native-host/# 本地资源打开桥接
+|-- core/       # 领域、契约、Command/Query/History、migrator
+|-- runtime/    # Cardo Runtime HTTP、锁、discovery、事件
+|-- client/     # RuntimeClient（HTTP + fetch stream）
+|-- cli/        # cardo serve / open / status / stop
+|-- web-next/   # React UI、空间工作区与平台接入
+|-- extension/  # MV3 启动、Chrome 适配、Runtime 发现
+|-- desktop/    # Electron main、preload、renderer、attach/embed
+`-- native-host/# 瘦 Native Messaging Host（discover + 可选 relay）
 ```
 
-浏览器扩展和 Electron 桌面端都复用 `src/web-next`。平台能力通过 `src/core/ports` 注入。
+各图形表面复用 `src/web-next`，经 `RuntimeClient` 访问 Runtime。非 DB 壳能力仍在 `src/core/ports`。
 
-## 本地资源
+## Cardo CLI
 
-文件和文件夹通过可选的 Native Messaging Host 打开。浏览器扩展向 `com.khaosbox.local_bridge` 发送 `open-local-resource` 消息，host 再调用系统文件管理器打开本地路径。Electron 桌面端通过自己的 preload IPC bridge 打开本地资源。
+构建 CLI 与托管 Web UI：
+
+```bash
+npm run cardo:build
+```
+
+常用命令（构建后；bin 为 `cardo`）：
+
+```bash
+# 确保 Runtime 可用并打开 Web UI（一次性 code bootstrap，URL 不含长效 token）
+npm run cardo -- open
+
+# 前台 Runtime（阻塞至 Ctrl+C 或 cardo stop）
+npm run cardo -- serve
+
+# 健康 / 诊断
+npm run cardo -- status
+
+# 强制停止
+npm run cardo -- stop
+```
+
+`cardo open` 在无健康 Runtime 时会拉起分离进程，再打开浏览器。当前活动页面与全局撤销栈在所有已连接客户端之间共享。
+
+## 本地资源与 Native Messaging
+
+扩展通过瘦 Native Messaging Host 发现 Runtime（`npm run native-host:install` 注册 Chrome/Edge，或 Desktop 安装）。本地路径经 Runtime capability 打开，不会成为第二写库。
 
 ## 安装
 
@@ -36,7 +69,10 @@ npm install
 | ------------------------------- | --------------------------------------------- |
 | `npm run dev`                   | 持续构建扩展到 `artifacts/extension/unpacked` |
 | `npm run build`                 | 构建浏览器扩展                                |
-| `npm run desktop:build`         | 构建 Electron renderer、main 和 preload       |
+| `npm run cardo:build`           | 构建 CLI 与 Runtime 托管 Web UI               |
+| `npm run cardo -- open`         | 确保 Runtime 并打开 Web UI                    |
+| `npm run cardo -- serve`        | 前台 Cardo Runtime                            |
+| `npm run desktop:build`         | 构建 web-runtime、Electron renderer/main/preload |
 | `npm run desktop:start`         | 构建并启动 Electron 桌面端                    |
 | `npm run native-host:build`     | 构建 Native Messaging Host exe                |
 | `npm run native-host:install`   | 为 Chrome 和 Edge 注册 host                   |
@@ -49,9 +85,11 @@ npm install
 
 ```bash
 npm run build
+npm run native-host:install
+npm run cardo -- open
 ```
 
-在 Chrome 或 Edge 中以未打包扩展加载 `artifacts/extension/unpacked`。
+在 Chrome 或 Edge 中以未打包扩展加载 `artifacts/extension/unpacked`。v1 主入口为工具栏打开的扩展页。需 Runtime 在跑且 Native Host 已注册。
 
 ## 桌面端
 
@@ -59,7 +97,7 @@ npm run build
 npm run desktop:start
 ```
 
-构建产物位于 `artifacts/desktop`。
+构建产物位于 `artifacts/desktop`。若 Runtime 已在运行（例如 `cardo serve`），Desktop 仅 attach；否则 Main embed 同一库路径的 Runtime。
 
 ## CI 与发布
 

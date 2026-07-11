@@ -277,6 +277,17 @@ function GeneralSettings({
         title={t('settings.general')}
         description={t('settings.generalDescription')}
       />
+      <div className="wbn-settings-card wbn-settings-card-static">
+        <div className="wbn-settings-card-copy">
+          <IconFrame>
+            <CircleHelp size={18} />
+          </IconFrame>
+          <span>
+            {t('settings.multiClient')}
+            <small>{t('settings.multiClientDescription')}</small>
+          </span>
+        </div>
+      </div>
       <div className="wbn-settings-card">
         <div className="wbn-settings-card-copy">
           <LanguageStateIcon locale={locale} />

@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import type { BoxFrame, WorkspaceItemType } from '../../domain/workspace';
 
+export type RuntimeConnectionStatus = 'connected' | 'reconnecting' | 'disconnected';
+
 export interface AddDraftState {
   mode: boolean;
   itemType?: WorkspaceItemType;
@@ -35,7 +37,10 @@ interface UiStore {
   selectedBoxId: string | null;
   highlightedBoxId: string | null;
   searchQuery: string;
+  /** Ephemeral Runtime event-stream status (not persisted). */
+  runtimeConnectionStatus: RuntimeConnectionStatus;
   setSearchQuery: (query: string) => void;
+  setRuntimeConnectionStatus: (status: RuntimeConnectionStatus) => void;
   selectBox: (boxId: string | null) => void;
   highlightBox: (boxId: string) => void;
   openAddView: (boxId: string, itemType?: WorkspaceItemType) => void;
@@ -75,7 +80,12 @@ export const useUiStore = create<UiStore>((set) => ({
   selectedBoxId: null,
   highlightedBoxId: null,
   searchQuery: '',
+  runtimeConnectionStatus: 'connected',
   setSearchQuery: (query) => set({ searchQuery: query }),
+  setRuntimeConnectionStatus: (status) =>
+    set((state) =>
+      state.runtimeConnectionStatus === status ? state : { runtimeConnectionStatus: status },
+    ),
   selectBox: (boxId) => set({ selectedBoxId: boxId }),
   highlightBox: (boxId) => {
     if (boxHighlightTimeout !== null) window.clearTimeout(boxHighlightTimeout);

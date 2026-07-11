@@ -169,7 +169,7 @@ flowchart LR
 19. 事件订阅 transport：`fetch` + ReadableStream（或等价带 Authorization 的 stream），禁止依赖无法设 header 的 `EventSource`；禁止 SSE URL 长效 token。
 20. `activity.record` 永不递增 revision，永不写 `history_entries`。
 21. Native Messaging host 保持独立瘦进程：只读 discovery（+ optional relay），永不打开 SQLite；Desktop 与 CLI 安装时注册 NM。
-22. hostPlatform 双模：按 bootstrap 注入选择 RuntimeClient 或本地 DatabasePort；PR3 只让 Runtime-hosted Web 默认 Runtime，Desktop/Extension 默认本地直至 PR4/PR5。
+22. hostPlatform：PR6 后仅 RuntimeClient（bootstrap 注入 baseUrl+token / one-time code）；local DatabasePort 业务路径与 `CARDO_USE_RUNTIME` 已删除。
 23. 野外 schema 版本仅 0 与 3；3→4 创建 `runtime_meta`；若见 1/2 则 fail hard。
 24. 所有成功 mutation 的 HTTP 响应（`command.ok`、`history.ok`、`ensureInitialized.ok` 当 created）必须带 `revision` + `scopes`，供 initiator 在忽略 self-echo SSE 时 apply。
 25. `workspace.ensureInitialized` 首次写入 +revision 并发 SSE（无 history_entries）；幂等 no-op 不涨。
@@ -206,9 +206,8 @@ flowchart TB
 
 ```text
 web-next (Web / Extension page / Desktop renderer)
-  -> hostPlatform (dual-mode facade)
-       mode=local  -> createDatabaseClient(AppPorts.database)  [pre-PR4/5 defaults]
-       mode=runtime -> RuntimeClient
+  -> hostPlatform (Runtime-only facade, post-PR6)
+       RuntimeClient
          -> Transport: HTTP + fetch stream (Authorization header)
               Extension: NM discover first; optional NM relay if HTTP blocked
               Desktop v1: same HTTP (not required IPC tunnel)
@@ -792,29 +791,29 @@ export type RuntimeHostConfig = RuntimeHostConfigFile & {
 3. path resolver 保证 CLI 与 Desktop 同 db 文件（见 §2.1）。
 4. Desktop embed 必须传入 `serveStaticDir`；attach 模式不 listen 端口。
 
-### 6.16 hostPlatform 双模与 RuntimeClient
+### 6.16 hostPlatform 与 RuntimeClient（PR6 后终态）
+
+PR3–PR5 曾短暂保留 local/runtime 双模与 `CARDO_USE_RUNTIME`；PR6 已删除 local DB 业务路径与 mode flag。终态：
 
 ```text
 bootstrap (per surface):
-  setHostPlatformMode('runtime' | 'local')
-  // optional override: env CARDO_USE_RUNTIME=0|1
+  inject window.__CARDO_RUNTIME__  or  ?code= exchange  or  session token
+  -> RuntimeClient only (fail closed; no OPFS / local SQLite fallback)
 
-hostPlatform.dispatchDatabaseCommand:
-  if mode === 'runtime' -> RuntimeClient.command
-  else -> createDatabaseClient(AppPorts.database) + executeDatabaseCommand
+hostPlatform.dispatchDatabaseCommand / query* / history* / export*:
+  -> RuntimeClient only
 
-defaults by PR:
-  PR3: Web(runtime-hosted) = runtime; Desktop renderer = local; Extension = local
-  PR4: Desktop renderer = runtime
-  PR5: Extension = runtime (+ OPFS write hard-off)
-  PR6: local path deleted; mode flag removed
+defaults (post-PR6):
+  Web / Desktop / Extension = RuntimeClient
 ```
 
-选择机制：bootstrap 注入（运行时），不是仅靠 compile-time 死代码切分；便于同一 web-next 树被 extension Vite 与 desktop renderer 共用。
+选择机制仍是 bootstrap 注入（运行时），同一 web-next 树被 extension Vite、desktop renderer、Runtime 托管 Web 共用。
 
-非 DB：`openExternalUrl` / clipboard / websiteIcons 仍 AppPorts。`openLocalResource` 在 runtime 模式走 Runtime capability。
+非 DB：`openExternalUrl` / clipboard / websiteIcons 仍 AppPorts。`openLocalResource` 走 Runtime capability。
 
 Client 队列：本地 UX 串行；`baseRevision` advisory；`localRevision` 仅服务端赋值。
+
+PR7 UX：i18n 说明共享 activePage / 全局 undo；`onConnectionChange` 驱动重连横幅；Extension 无 Runtime 时引导安装 NM / `cardo serve|open`。
 
 ### 6.17 scopesFromChanges 伪代码（完整表意识）
 
@@ -1134,8 +1133,12 @@ graceActive: boolean
 ### PR7 — 体验抛光
 
 - Depends: PR6
-- Files: i18n（activePage/undo 共享说明）；重连 UX；安装/NM 引导；npm 体验
+- Files: i18n（activePage/undo 共享说明）；重连 UX；安装/NM 引导；CLI help / README；设计文档双模残留注记
+- Description: 多 client 产品文案；RuntimeClient `onConnectionChange` 横幅；Extension 按错误类型引导；`cardo` help 与 README 注明 serve/open。
 - Exit criteria:
+  - 设置与历史控件说明共享 activePage / 全局 undo。
+  - 事件流重连时 UI 有简短状态（reconnecting / disconnected）。
+  - Extension 无 Runtime / 缺 NM 时引导含 `cardo` 与 `native-host:install`。
   - Web+Desktop+Extension 同开手工验收。
   - 横切清单勾选完成。
   - `npm run build` 与 `npm run desktop:build` 通过。
@@ -1145,14 +1148,14 @@ graceActive: boolean
 1. Exclusive lock + health：第二写者 attach。
 2. Token 默认 on；无 token 拒绝业务 API。
 3. 事件：fetch stream + Authorization；reconnect catch-up。
-4. Migrator：v3→4 含 runtime_meta；1/2 fail；opener 三处共用。
+4. Migrator：v3→4 含 runtime_meta；1/2 fail；opener 三处共用（Runtime / Desktop open；Extension OPFS opener 已随 PR6 删除）。
 5. revision：mutating+undo/redo +1；activity 不 +1；不进 history；history.ok / ensureInitialized.ok 形状完整。
-6. Extension：无权威第二库；OPFS 写硬禁用（PR5+）。
+6. Extension：无权威第二库；OPFS 写硬禁用并已删除（PR5–PR6）。
 7. Desktop/CLI 同路径；attach/embed 正确；last-client grace 生命周期（auto vs foreground）。
 8. 协议：hello.ok clientId、history.ok、ensureInitialized、activity、export、exportOperationLog、typed queries、import-only-command；bootstrap = Bearer processToken。
-9. hostPlatform 双模在 PR3–PR5 不打断未迁移表面。
-10. Agents：PR0/1 过渡注记；PR6 终态。
-11. Migrator 仅在 core，三 opener 可共用且 Worker 无 runtime 依赖。
+9. hostPlatform：PR3–PR5 双模过渡已完成；PR6 起仅 RuntimeClient（无 local 业务路径 / 无 `CARDO_USE_RUNTIME`）。
+10. Agents：PR6 终态（Runtime 唯一持库与四表面角色）。
+11. Migrator 仅在 core；Runtime / Desktop opener 共用；无 browser Worker 持库。
 12. Extension v1 主入口为独立扩展页。
 
 ## 17. References
@@ -1166,16 +1169,19 @@ graceActive: boolean
 - `src/core/contracts/workspaceQueries.ts`
 - `src/core/contracts/history.ts`
 - `src/core/contracts/database.ts`
+- `src/core/contracts/runtimeProtocol.ts`
 - `src/core/database/schema.ts`
 - `src/core/database/version.ts`
 - `src/core/database/workspaceQueries.ts`
 - `src/core/database/initializeWorkspaceDatabase.ts`
+- `src/client/runtimeClient.ts`
+- `src/cli/main.ts`
 - `src/web-next/platform/hostPlatform.ts`
 - `src/web-next/app/stores/workspaceStore.ts`
 - `src/web-next/app/stores/preferencesStore.ts`
 - `src/desktop/database/desktopDatabase.ts`
 - `src/desktop/main.ts`
-- `src/extension/database/databaseWorker.ts`
+- `src/extension/bootstrap/runtimeGuide.ts`
 - `src/native-host/main.ts`
 - `src/core/protocols/nativeMessaging.ts`
 - OpenCode serve：本地 HTTP、多 client、事件流（模式参考，非业务复制）

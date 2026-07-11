@@ -6,6 +6,7 @@ import { WorkspaceCanvas } from '../components/canvas/WorkspaceCanvas';
 import { CanvasToolsToolbar } from '../components/canvas/CanvasToolsToolbar';
 import { SettingsWindow } from '../components/settings/SettingsWindow';
 import { HistoryToolbar } from '../components/history-toolbar/HistoryToolbar';
+import { RuntimeConnectionBanner } from '../components/runtime/RuntimeConnectionBanner';
 import { TopBar } from '../components/top-bar/TopBar';
 import { applyWebNextTheme } from '../themes/themeRegistry';
 import { useCancelActivePointerOnWindowExit } from './useCancelActivePointerOnWindowExit';
@@ -38,6 +39,7 @@ export default function WebNextApp() {
         <BoxPageDropController />
         <TopBar />
         <HistoryToolbar />
+        <RuntimeConnectionBanner />
         <WorkspaceCanvas />
         <CanvasToolsToolbar />
         <BottomToolbar />

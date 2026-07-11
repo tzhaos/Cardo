@@ -56,6 +56,9 @@ export async function resetHostPlatformForRetry(): Promise<void> {
   runtimeClient = null;
   ensureReadyPromise = null;
   readyLocked = false;
+  void import('../app/stores/uiStore').then(({ useUiStore }) => {
+    useUiStore.getState().setRuntimeConnectionStatus('disconnected');
+  });
   if (previous) {
     try {
       await previous.close();
@@ -141,10 +144,20 @@ async function startRuntimeMode(
     client,
     clientVersion: typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0',
     onApplyScopes: applyRuntimeScopes,
+    onConnectionChange: (status) => {
+      void import('../app/stores/uiStore').then(({ useUiStore }) => {
+        useUiStore.getState().setRuntimeConnectionStatus(status);
+      });
+    },
   });
   await clientInstance.connect();
   runtimeClient = clientInstance;
   readyLocked = true;
+
+  // connect() waits for first ready; mark connected for any brief pre-stream UI.
+  void import('../app/stores/uiStore').then(({ useUiStore }) => {
+    useUiStore.getState().setRuntimeConnectionStatus('connected');
+  });
 
   if (typeof window !== 'undefined') {
     // once: avoid stacking listeners if startRuntimeMode is re-entered after retry reset.

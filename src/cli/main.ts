@@ -22,14 +22,26 @@ import { issueBootstrapCode } from '../client/runtimeClient';
 
 const HELP = `cardo — Cardo local runtime steward
 
+Cardo Runtime is the single local authority for workspace data.
+Web, Desktop, and the browser extension are clients of that Runtime.
+
 Usage:
-  cardo serve              Start Runtime in foreground (lifetime=foreground)
-  cardo serve --daemon-child
-                           Detached child mode (lifetime=auto; used by open)
-  cardo status             Show Runtime health / diagnostics
+  cardo                    Same as \`cardo open\`
+  cardo open               Ensure Runtime is up (spawn detached if needed),
+                           then open the Web UI with a one-time bootstrap code
+  cardo serve              Start Runtime in the foreground (lifetime=foreground;
+                           stays up until Ctrl+C or \`cardo stop\`)
+  cardo status             Show Runtime health and authenticated diagnostics
   cardo stop               Force-stop Runtime via authenticated shutdown
-  cardo open               Spawn detached Runtime if needed; open Web with one-time code
   cardo help               Show this help
+
+Notes:
+  - Prefer \`cardo open\` for everyday use; it does not block the terminal.
+  - \`cardo serve\` is for long-lived foreground hosting (e.g. development).
+  - Discovery + token live under the shared data dir (same path as Desktop).
+  - Browser extension needs a registered native messaging host
+    (\`npm run native-host:install\` or Cardo Desktop install).
+  - Never put the long-lived process token in a URL; open uses a short-lived code.
 `;
 
 async function main(): Promise<void> {

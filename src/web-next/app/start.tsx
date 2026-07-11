@@ -98,12 +98,13 @@ function renderBootstrapError(message: string, surface?: StartWebNextAppOptions[
       (Boolean(window.khaosboxDesktop) || window.__CARDO_RUNTIME_MISSING__ === true));
   if (surface === 'extension') {
     hint.textContent =
-      'Start Cardo Desktop or `cardo serve` / `cardo open`, ensure the native host is installed, then reload this page.';
+      'Start Cardo Desktop or `cardo serve` / `cardo open`, run `npm run native-host:install` if needed, then Retry or reload this page.';
   } else if (isDesktop) {
     hint.textContent =
-      'Desktop needs a healthy Cardo Runtime with /app UI. Restart Desktop or run `cardo serve` after `npm run desktop:build`.';
+      'Desktop needs a healthy Cardo Runtime with /app UI. Restart Desktop or run `cardo serve` after `npm run desktop:build` / `npm run cardo:build`.';
   } else {
-    hint.textContent = 'Run `cardo open` again to obtain a fresh one-time code.';
+    hint.textContent =
+      'Run `cardo open` again for a fresh one-time code. Prefer `cardo open` over pasting long-lived tokens into the URL.';
   }
   hint.style.cssText = 'margin:0;color:#555;font-size:0.9rem;';
   panel.append(title, body, hint);
