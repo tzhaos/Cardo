@@ -60,7 +60,8 @@ interface BoxDeleteMotion {
   y: number;
   scale: number;
   opacity: number;
-  borderRadius: number;
+  /** CSS length or theme token (never hardcode 16/24 — packs control box radius). */
+  borderRadius: string;
   permanent: boolean;
 }
 
@@ -405,7 +406,7 @@ export function BaseBoxFrame({
         y: 8,
         scale: 0.82,
         opacity: 0,
-        borderRadius: 16,
+        borderRadius: 'var(--cardo-radius-xl)',
         permanent: true,
       });
       return;
@@ -426,7 +427,7 @@ export function BaseBoxFrame({
         : 8,
       scale: compactScale * 0.9,
       opacity: targetRect ? 0.18 : 0,
-      borderRadius: 24,
+      borderRadius: 'var(--cardo-radius-pill)',
       permanent: false,
     });
   };
@@ -457,7 +458,10 @@ export function BaseBoxFrame({
         y: deleteMotion?.y ?? (dragging && !draggingOverTopBar ? -7 : 0),
         scale: deleteMotion?.scale ?? visualScale,
         opacity: deleteMotion?.opacity ?? (draggingOverTopBar ? 0.94 : dragging ? 0.97 : 1),
-        borderRadius: deleteMotion?.borderRadius ?? (draggingOverTopBar ? 24 : 16),
+        // Theme packs own radius tokens; hardcoded px here used to force Classic 16px forever.
+        borderRadius:
+          deleteMotion?.borderRadius ??
+          (draggingOverTopBar ? 'var(--cardo-radius-pill)' : 'var(--cardo-radius-xl)'),
       }}
       transition={
         deleteMotion

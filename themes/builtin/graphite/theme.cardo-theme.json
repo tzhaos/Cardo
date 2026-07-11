@@ -9,8 +9,8 @@
       "zh": "石墨"
     },
     "description": {
-      "en": "Industrial flat light and dark — near-square radii, hard edges, no blur.",
-      "zh": "工业扁平深浅双套：近直角、硬边、无模糊。"
+      "en": "Industrial flat light and dark — square corners (0 radius), hard edges, no blur.",
+      "zh": "工业扁平深浅双套：直角（圆角 0）、硬边、无模糊。"
     },
     "tokens": {
       "colors": {
@@ -88,12 +88,12 @@
         "lineHeightBase": "1.45"
       },
       "radii": {
-        "xs": "2px",
-        "sm": "3px",
-        "md": "4px",
-        "lg": "6px",
-        "xl": "8px",
-        "pill": "4px"
+        "xs": "0px",
+        "sm": "0px",
+        "md": "0px",
+        "lg": "0px",
+        "xl": "0px",
+        "pill": "0px"
       },
       "space": {
         "1": "4px",

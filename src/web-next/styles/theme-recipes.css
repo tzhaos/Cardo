@@ -206,12 +206,13 @@
   letter-spacing: 0.005em;
 }
 
-/* ── Graphite: industrial flat, hairline edge, zero soft glass ──────────────── */
+/* ── Graphite: industrial square panels, hairline edge, zero soft glass ─────── */
+/* Radii tokens are 0; also force xl so motion/CSS both resolve to square. */
 
 [data-cardo-theme='graphite'] .cardo-box,
 [data-cardo-theme='graphite'] .cardo-collection-box {
   border: 1px solid var(--cardo-border);
-  border-radius: var(--cardo-radius-md);
+  border-radius: 0;
   background-image: none;
   background-color: var(--cardo-panel);
   box-shadow: none;
