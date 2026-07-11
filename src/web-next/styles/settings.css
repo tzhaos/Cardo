@@ -706,15 +706,16 @@
   background: var(--cardo-panel-content);
 }
 
-.cardo-about-icon {
-  display: inline-flex;
+.cardo-about-logo {
+  display: block;
   width: 48px;
   height: 48px;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--cardo-radius-xl);
-  background: linear-gradient(145deg, rgba(59, 130, 246, 0.18), rgba(168, 85, 247, 0.14));
-  color: var(--cardo-blue);
+  flex: 0 0 auto;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px var(--cardo-border);
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .cardo-about-card > span:last-child {

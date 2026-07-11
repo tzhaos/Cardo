@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Box, Maximize2, Minus, Square, X } from 'lucide-react';
+import { Maximize2, Minus, Square, X } from 'lucide-react';
+import cardoMarkUrl from '../../assets/brand/cardo-mark.svg';
 import { useI18n } from '../web-next/i18n/useI18n';
 import { Button } from '../web-next/ui/primitives/button';
 
@@ -39,7 +40,14 @@ export default function DesktopTitleBar() {
       onDoubleClick={() => void bridge.toggleMaximizeWindow()}
     >
       <div className="cardo-desktop-titlebar-brand">
-        <Box size={15} />
+        <img
+          className="cardo-desktop-titlebar-logo"
+          src={cardoMarkUrl}
+          alt=""
+          width={16}
+          height={16}
+          draggable={false}
+        />
         <span>Cardo</span>
       </div>
       <div

@@ -285,8 +285,15 @@
   letter-spacing: 0.01em;
 }
 
-.cardo-desktop-titlebar-brand svg {
-  color: var(--cardo-blue);
+.cardo-desktop-titlebar-logo {
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  border-radius: 4px;
+  object-fit: cover;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .cardo-desktop-window-controls {

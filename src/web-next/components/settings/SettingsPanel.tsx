@@ -6,7 +6,6 @@ import {
   Database,
   Download,
   FileDown,
-  Languages,
   Moon,
   Palette,
   Settings,
@@ -15,6 +14,7 @@ import {
   Upload,
   X,
 } from 'lucide-react';
+import cardoMarkUrl from '../../../../assets/brand/cardo-mark.svg';
 import { AnimatePresence, motion } from 'motion/react';
 import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import { useI18n } from '../../i18n/useI18n';
@@ -52,9 +52,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/primitives/ta
 type SettingsSection = 'general' | 'appearance' | 'data' | 'about';
 
 /**
- * Product settings stay intentionally simple: language, search, theme pack,
- * light/dark, backup. Layout/CSS/feature/color-override editors belong in
- * future extension surface, not the default shell.
+ * Product settings shell: language, search, theme pack, light/dark, backup.
+ * Advanced theme/layout/feature editors may exist as preferences + catalog keys
+ * but are not mounted here until product UI explicitly exposes them.
+ * User-facing copy must describe current controls only — never roadmap promises.
  */
 export function SettingsPanel({
   onClose,
@@ -299,10 +300,10 @@ function GeneralSettings({
           onValueChange={(value) => value && setLocale(preferenceLocaleSchema.parse(value))}
         >
           <SegmentButton active={locale === 'zh'} value="zh">
-            中文
+            {t('settings.chinese')}
           </SegmentButton>
           <SegmentButton active={locale === 'en'} value="en">
-            English
+            {t('settings.english')}
           </SegmentButton>
         </ToggleGroup>
       </div>
@@ -455,9 +456,14 @@ function AboutSettings() {
     <>
       <SettingsHeading title={t('settings.about')} description={t('settings.aboutDescription')} />
       <div className="cardo-about-card">
-        <IconFrame className="cardo-about-icon">
-          <Languages size={22} />
-        </IconFrame>
+        <img
+          className="cardo-about-logo"
+          src={cardoMarkUrl}
+          alt="Cardo"
+          width={48}
+          height={48}
+          draggable={false}
+        />
         <span>
           Cardo
           <small>{t('settings.webNextEdition')}</small>
