@@ -1,8 +1,8 @@
-import type { ItemType } from '../model/item';
+import type { WorkspaceItemType } from '../../../contracts/workspace';
 
 interface ParsedLocalPath {
   normalizedPath: string;
-  type: Extract<ItemType, 'file' | 'folder' | 'shortcut'>;
+  type: Extract<WorkspaceItemType, 'file' | 'folder' | 'shortcut'>;
 }
 
 const SHORTCUT_EXTENSIONS = new Set(['app', 'exe', 'lnk']);
