@@ -45,7 +45,7 @@
 | System page ids | `cardo-collection` / `cardo-recycle-bin`（schema v5 单向改写） |
 | 日志 / i18n / 错误串 | Cardo |
 | UI 封装目录 `src/web-next/ui/khaos` | 产品组件目录名可后续视觉 PR 再改；不阻塞标识 SoT |
-| 品牌文件 `assets/brand/khaosbox-*` | 资产文件名可后续视觉 PR 更换 |
+| 品牌文件 `assets/brand/cardo-*` | orbit mark + inverted-bar wordmark；扩展/托盘/Electron 图标同源 |
 
 ## 4. Path SoT
 
