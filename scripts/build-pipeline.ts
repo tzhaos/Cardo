@@ -36,7 +36,11 @@ const stages: BuildStage[] = [
     command: ['run', 'native-host:build'],
     artifacts: ['artifacts/native-host/khaosbox-native-host.exe'],
   },
-  { name: 'Electron Windows 出包', command: ['run', 'desktop:package'], artifacts: desktopArtifacts },
+  {
+    name: 'Electron Windows 出包',
+    command: ['run', 'desktop:package'],
+    artifacts: desktopArtifacts,
+  },
 ];
 
 for (const stage of stages) {

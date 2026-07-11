@@ -43,9 +43,8 @@ export function WorkspaceCanvas() {
     canvasRef.current = element;
     registerCanvasElement(element);
   }, []);
-  const { handlePointerDownCapture, isLocked, isPanModifierActive, isPanning } = useCanvasPan(
-    activePageId,
-  );
+  const { handlePointerDownCapture, isLocked, isPanModifierActive, isPanning } =
+    useCanvasPan(activePageId);
   useCanvasViewport(canvasRef);
   const canvasBounds = useMemo(() => createCanvasWorldBounds(viewportSize), [viewportSize]);
   const pageOrder = useMemo(
@@ -120,11 +119,7 @@ export function WorkspaceCanvas() {
               ? [
                   {
                     id: 'set-default-page',
-                    label: t(
-                      activePageId === defaultPageId
-                        ? 'page.default'
-                        : 'page.setDefault',
-                    ),
+                    label: t(activePageId === defaultPageId ? 'page.default' : 'page.setDefault'),
                     icon: <House size={16} />,
                     disabled: activePageId === defaultPageId,
                     onSelect: () => setDefaultPage(activePageId),
@@ -181,12 +176,15 @@ export function WorkspaceCanvas() {
   );
 }
 
-function PageBoxes({ pageId, skipEntryAnimation }: { pageId: string; skipEntryAnimation: boolean }) {
+function PageBoxes({
+  pageId,
+  skipEntryAnimation,
+}: {
+  pageId: string;
+  skipEntryAnimation: boolean;
+}) {
   const allBoxes = useWorkspaceStore((state) => state.projection.boxes);
-  const boxes = useMemo(
-    () => allBoxes.filter((box) => box.pageId === pageId),
-    [allBoxes, pageId],
-  );
+  const boxes = useMemo(() => allBoxes.filter((box) => box.pageId === pageId), [allBoxes, pageId]);
 
   return boxes.map((box) => (
     <WorkspaceBoxRenderer box={box} key={box.id} skipEntryAnimation={skipEntryAnimation} />

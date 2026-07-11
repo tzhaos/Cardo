@@ -76,7 +76,11 @@ function ContextMenuSurface({
         <span aria-hidden style={triggerStyle} />
       </DropdownMenuTrigger>
       {state ? (
-        <DropdownMenuContent align="start" side="bottom" onCloseAutoFocus={(event) => event.preventDefault()}>
+        <DropdownMenuContent
+          align="start"
+          side="bottom"
+          onCloseAutoFocus={(event) => event.preventDefault()}
+        >
           <MenuItems items={state.items} closeMenu={onClose} />
         </DropdownMenuContent>
       ) : null}
@@ -94,7 +98,11 @@ function MenuItem({ item, closeMenu }: { item: ContextMenuItem; closeMenu: () =>
       <IconFrame className="wbn-menu-icon">{item.icon}</IconFrame>
       <span>{item.label}</span>
       <IconFrame className="wbn-menu-trailing">
-        {item.children ? <ChevronRight size={14} /> : item.shortcut ? <kbd>{item.shortcut}</kbd> : null}
+        {item.children ? (
+          <ChevronRight size={14} />
+        ) : item.shortcut ? (
+          <kbd>{item.shortcut}</kbd>
+        ) : null}
       </IconFrame>
     </>
   );

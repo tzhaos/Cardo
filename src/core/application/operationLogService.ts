@@ -8,10 +8,7 @@ export interface ActivityLogInput {
   details?: Record<string, string | number | boolean | null>;
 }
 
-export async function recordDatabaseActivity(
-  database: KhaosDatabase,
-  input: ActivityLogInput,
-) {
+export async function recordDatabaseActivity(database: KhaosDatabase, input: ActivityLogInput) {
   const transactionId = crypto.randomUUID();
   await database.insert(operationLog).values({
     id: crypto.randomUUID(),

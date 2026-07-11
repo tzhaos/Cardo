@@ -11,13 +11,18 @@ import {
   desktopVoidResponseSchema,
   desktopWebsiteIconResponseSchema,
 } from '../core/contracts/desktopIpc';
-import { databaseExecuteRequestSchema, databaseExecuteResponseSchema } from '../core/contracts/database';
+import {
+  databaseExecuteRequestSchema,
+  databaseExecuteResponseSchema,
+} from '../core/contracts/database';
 
 const bridge: DesktopBridge = {
-  minimizeWindow: async () => desktopVoidResponseSchema.parse(await ipcRenderer.invoke('window:minimize')),
+  minimizeWindow: async () =>
+    desktopVoidResponseSchema.parse(await ipcRenderer.invoke('window:minimize')),
   toggleMaximizeWindow: async () =>
     desktopBooleanResponseSchema.parse(await ipcRenderer.invoke('window:toggle-maximize')),
-  closeWindow: async () => desktopVoidResponseSchema.parse(await ipcRenderer.invoke('window:close')),
+  closeWindow: async () =>
+    desktopVoidResponseSchema.parse(await ipcRenderer.invoke('window:close')),
   isWindowMaximized: async () =>
     desktopBooleanResponseSchema.parse(await ipcRenderer.invoke('window:is-maximized')),
   onWindowMaximizedChange: (callback) => {
@@ -35,7 +40,10 @@ const bridge: DesktopBridge = {
     desktopTextResponseSchema.parse(await ipcRenderer.invoke('clipboard:read-text')),
   writeClipboardText: async (text) =>
     desktopVoidResponseSchema.parse(
-      await ipcRenderer.invoke('clipboard:write-text', desktopClipboardWriteRequestSchema.parse({ text })),
+      await ipcRenderer.invoke(
+        'clipboard:write-text',
+        desktopClipboardWriteRequestSchema.parse({ text }),
+      ),
     ),
   openExternal: async (url) =>
     desktopVoidResponseSchema.parse(
@@ -50,11 +58,17 @@ const bridge: DesktopBridge = {
     ),
   saveJson: async (filename, payload) =>
     desktopVoidResponseSchema.parse(
-      await ipcRenderer.invoke('dialog:save-json', desktopSaveFileRequestSchema.parse({ filename, payload })),
+      await ipcRenderer.invoke(
+        'dialog:save-json',
+        desktopSaveFileRequestSchema.parse({ filename, payload }),
+      ),
     ),
   saveText: async (filename, payload) =>
     desktopVoidResponseSchema.parse(
-      await ipcRenderer.invoke('dialog:save-text', desktopSaveFileRequestSchema.parse({ filename, payload })),
+      await ipcRenderer.invoke(
+        'dialog:save-text',
+        desktopSaveFileRequestSchema.parse({ filename, payload }),
+      ),
     ),
   resolveWebsiteIcon: async (url) =>
     desktopWebsiteIconResponseSchema.parse(

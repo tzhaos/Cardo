@@ -104,8 +104,7 @@ const actions = {
   renamePage: (pageId: string, title: string) =>
     fireCommand({ type: 'page.rename', pageId, title }),
   deletePage: (pageId: string) => fireCommand({ type: 'page.delete', pageId }),
-  reorderPages: (orderedPageIds: string[]) =>
-    fireCommand({ type: 'page.reorder', orderedPageIds }),
+  reorderPages: (orderedPageIds: string[]) => fireCommand({ type: 'page.reorder', orderedPageIds }),
   setActivePage: (pageId: string, _origin = 'navigation') =>
     fireCommand({ type: 'page.open', pageId }),
   setDefaultPage: (pageId: string) => fireCommand({ type: 'page.setDefault', pageId }),
@@ -156,10 +155,8 @@ const actions = {
     fireCommand({ type: 'box.setDetailMode', boxId, detailMode }),
   setBoxLocked: (boxId: string, isLocked: boolean) =>
     fireCommand({ type: 'box.setLocked', boxId, isLocked }),
-  setBoxAppearance: (
-    boxId: string,
-    appearance: { icon?: WorkspaceBoxIcon; accent?: string },
-  ) => fireCommand({ type: 'box.setAppearance', boxId, ...appearance }),
+  setBoxAppearance: (boxId: string, appearance: { icon?: WorkspaceBoxIcon; accent?: string }) =>
+    fireCommand({ type: 'box.setAppearance', boxId, ...appearance }),
   setBoxViewMode: (boxId: string, viewMode: WorkspaceBoxViewMode) =>
     fireCommand({ type: 'box.setViewMode', boxId, viewMode }),
   moveBoxToPage: (boxId: string, pageId: string, frame?: BoxFrame) =>
@@ -181,11 +178,7 @@ const actions = {
       targetIndex,
     }),
   deleteBox: (boxId: string) => fireCommand({ type: 'box.delete', boxId }),
-  createItem: async (
-    boxId: string,
-    itemType: WorkspaceItemType,
-    draft: Record<string, string>,
-  ) => {
+  createItem: async (boxId: string, itemType: WorkspaceItemType, draft: Record<string, string>) => {
     const result = await runCommand({ type: 'item.create', boxId, itemType, draft });
     return requireCreatedItem(result, 'item.create').item;
   },
@@ -292,7 +285,9 @@ function enqueue<T>(task: () => Promise<T>): Promise<T> {
 function requireCreatedItem(result: DatabaseCommandResult, commandType: string) {
   const itemId = result.createdItemId;
   const item = itemId
-    ? state.projection.boxes.flatMap((box) => box.items).find((candidate) => candidate.id === itemId)
+    ? state.projection.boxes
+        .flatMap((box) => box.items)
+        .find((candidate) => candidate.id === itemId)
     : undefined;
   if (!item) throw new Error(`${commandType} completed without an Item projection.`);
   const box = state.projection.boxes.find((candidate) =>
@@ -318,7 +313,11 @@ type WorkspaceStoreHook = {
 
 export const useWorkspaceStore = Object.assign(
   function useWorkspaceStoreSelector<T>(selector: (current: WorkspaceStore) => T) {
-    return useSyncExternalStore(subscribe, () => selector(state), () => selector(state));
+    return useSyncExternalStore(
+      subscribe,
+      () => selector(state),
+      () => selector(state),
+    );
   },
   {
     getState: () => state,

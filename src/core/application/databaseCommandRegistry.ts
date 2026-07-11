@@ -1,19 +1,10 @@
-import type {
-  WorkspaceCommand,
-  WorkspaceCommandType,
-} from '../contracts/workspaceCommands';
+import type { WorkspaceCommand, WorkspaceCommandType } from '../contracts/workspaceCommands';
 import type { DatabaseCommandMutation, DatabaseTransaction } from './commandTypes';
 import { executePageCommand, type PageCommand } from './pageCommandHandlers';
 import { executeBoxCommand, type BoxCommand } from './boxCommandHandlers';
 import { executeItemCommand, type ItemCommand } from './itemCommandHandlers';
-import {
-  executePreferencesCommand,
-  type PreferencesCommand,
-} from './preferencesCommandHandlers';
-import {
-  executeWorkspaceImport,
-  type WorkspaceImportCommand,
-} from './workspaceCommandHandlers';
+import { executePreferencesCommand, type PreferencesCommand } from './preferencesCommandHandlers';
+import { executeWorkspaceImport, type WorkspaceImportCommand } from './workspaceCommandHandlers';
 
 export type DatabaseCommandHandler = (
   transaction: DatabaseTransaction,

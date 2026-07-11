@@ -141,46 +141,45 @@ export function CollectionPage() {
               onOpenMenu={(event) => {
                 event.preventDefault();
                 contextMenu.openMenu(event.clientX, event.clientY, [
-                    {
-                      id: 'view-mode',
-                      label: t(view.viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList'),
-                      icon:
-                        view.viewMode === 'list' ? <LayoutGrid size={16} /> : <List size={16} />,
-                      onSelect: () =>
-                        updateCollectionBoxView(box.id, {
-                          viewMode: view.viewMode === 'list' ? 'grid' : 'list',
-                        }),
-                    },
-                    {
-                      id: 'detail-mode',
-                      label: t(
-                        view.detailMode === 'detailed'
-                          ? 'box.switchToCompact'
-                          : 'box.switchToDetailed',
+                  {
+                    id: 'view-mode',
+                    label: t(view.viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList'),
+                    icon: view.viewMode === 'list' ? <LayoutGrid size={16} /> : <List size={16} />,
+                    onSelect: () =>
+                      updateCollectionBoxView(box.id, {
+                        viewMode: view.viewMode === 'list' ? 'grid' : 'list',
+                      }),
+                  },
+                  {
+                    id: 'detail-mode',
+                    label: t(
+                      view.detailMode === 'detailed'
+                        ? 'box.switchToCompact'
+                        : 'box.switchToDetailed',
+                    ),
+                    icon:
+                      view.detailMode === 'detailed' ? (
+                        <ChevronsDownUp size={16} />
+                      ) : (
+                        <ChevronsUpDown size={16} />
                       ),
-                      icon:
-                        view.detailMode === 'detailed' ? (
-                          <ChevronsDownUp size={16} />
-                        ) : (
-                          <ChevronsUpDown size={16} />
-                        ),
-                      onSelect: () =>
-                        updateCollectionBoxView(box.id, {
-                          detailMode: view.detailMode === 'detailed' ? 'compact' : 'detailed',
-                        }),
-                    },
-                    {
-                      id: 'locate-source',
-                      label: t('collection.locateSource'),
-                      icon: <LocateFixed size={16} />,
-                      onSelect: () => locateSource(box),
-                    },
-                    {
-                      id: 'remove',
-                      label: t('menu.removeFromCollection'),
-                      icon: <StarOff size={16} />,
-                      onSelect: () => removeBoxFromCollection(box.id),
-                    },
+                    onSelect: () =>
+                      updateCollectionBoxView(box.id, {
+                        detailMode: view.detailMode === 'detailed' ? 'compact' : 'detailed',
+                      }),
+                  },
+                  {
+                    id: 'locate-source',
+                    label: t('collection.locateSource'),
+                    icon: <LocateFixed size={16} />,
+                    onSelect: () => locateSource(box),
+                  },
+                  {
+                    id: 'remove',
+                    label: t('menu.removeFromCollection'),
+                    icon: <StarOff size={16} />,
+                    onSelect: () => removeBoxFromCollection(box.id),
+                  },
                 ]);
               }}
               t={t}

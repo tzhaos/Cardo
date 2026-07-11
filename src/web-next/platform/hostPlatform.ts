@@ -39,9 +39,7 @@ function getKhaosDatabase() {
 }
 
 export function initializeWorkspace(initialPreferences: InitialWorkspacePreferences) {
-  return runDatabaseTask(() =>
-    initializeWorkspaceDatabase(getKhaosDatabase(), initialPreferences),
-  );
+  return runDatabaseTask(() => initializeWorkspaceDatabase(getKhaosDatabase(), initialPreferences));
 }
 
 export function dispatchDatabaseCommand(command: WorkspaceCommand) {

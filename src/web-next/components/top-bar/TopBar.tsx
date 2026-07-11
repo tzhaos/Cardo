@@ -103,37 +103,37 @@ export function TopBar() {
   ) => {
     event.preventDefault();
     contextMenu.openMenu(event.clientX, event.clientY, [
-        {
-          id: 'new-page',
-          label: t('menu.newPage'),
-          icon: <Plus size={16} />,
-          onSelect: openNewPage,
-        },
-        ...(page
-          ? [
-              {
-                id: 'rename-page',
-                label: t('menu.rename'),
-                icon: <SquarePen size={16} />,
-                onSelect: () => setRenamePageId(page.id),
-              },
-              {
-                id: 'set-default-page',
-                label: t(page.id === defaultPageId ? 'page.default' : 'page.setDefault'),
-                icon: <House size={16} />,
-                disabled: page.id === defaultPageId,
-                onSelect: () => setDefaultPage(page.id),
-              },
-              {
-                id: 'delete-page',
-                label: t('page.delete', { title: page.title }),
-                icon: <Trash2 size={16} />,
-                danger: true,
-                disabled: workspacePages.length <= 1,
-                onSelect: () => setDeletePageId(page.id),
-              },
-            ]
-          : []),
+      {
+        id: 'new-page',
+        label: t('menu.newPage'),
+        icon: <Plus size={16} />,
+        onSelect: openNewPage,
+      },
+      ...(page
+        ? [
+            {
+              id: 'rename-page',
+              label: t('menu.rename'),
+              icon: <SquarePen size={16} />,
+              onSelect: () => setRenamePageId(page.id),
+            },
+            {
+              id: 'set-default-page',
+              label: t(page.id === defaultPageId ? 'page.default' : 'page.setDefault'),
+              icon: <House size={16} />,
+              disabled: page.id === defaultPageId,
+              onSelect: () => setDefaultPage(page.id),
+            },
+            {
+              id: 'delete-page',
+              label: t('page.delete', { title: page.title }),
+              icon: <Trash2 size={16} />,
+              danger: true,
+              disabled: workspacePages.length <= 1,
+              onSelect: () => setDeletePageId(page.id),
+            },
+          ]
+        : []),
     ]);
   };
 

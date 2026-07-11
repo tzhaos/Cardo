@@ -1,7 +1,4 @@
-import type {
-  DatabaseExecuteRequest,
-  DatabaseExecuteResponse,
-} from '../core/contracts/database';
+import type { DatabaseExecuteRequest, DatabaseExecuteResponse } from '../core/contracts/database';
 import type { DesktopLocalResourceResponse } from '../core/contracts/desktopIpc';
 
 export interface DesktopBridge {

@@ -1,22 +1,9 @@
 import { asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import type { ItemMetadata, WorkspaceItemType } from '../contracts/workspace';
 import type { WorkspaceCommand } from '../contracts/workspaceCommands';
-import {
-  APP_STATE_ID,
-  appState,
-  boxes,
-  boxItems,
-  items,
-  pages,
-} from '../database/schema';
-import {
-  COLLECTION_PAGE_ID,
-  RECYCLE_BIN_PAGE_ID,
-} from '../database/initializeWorkspaceDatabase';
-import type {
-  DatabaseCommandMutation,
-  DatabaseTransaction,
-} from './commandTypes';
+import { APP_STATE_ID, appState, boxes, boxItems, items, pages } from '../database/schema';
+import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID } from '../database/initializeWorkspaceDatabase';
+import type { DatabaseCommandMutation, DatabaseTransaction } from './commandTypes';
 import { chooseAvailableBoxAccent, DEFAULT_BOX_ICON } from '../domains/boxAppearance';
 
 type ItemCommandType =
@@ -46,12 +33,7 @@ export async function executeItemCommand(
     case 'item.editContent':
       return editItemContent(transaction, command.boxId, command.itemId, command.content);
     case 'item.setPinned':
-      return setItemPinned(
-        transaction,
-        command.boxId,
-        command.itemId,
-        command.isPinned,
-      );
+      return setItemPinned(transaction, command.boxId, command.itemId, command.isPinned);
     case 'item.reorder':
       return reorderItems(transaction, command.boxId, command.orderedItemIds);
     case 'item.moveBetweenBoxes':
@@ -72,11 +54,7 @@ async function pasteItem(
   }
   await requirePage(transaction, command.pageId);
   let targetBox = command.targetBoxId
-    ? await transaction
-        .select()
-        .from(boxes)
-        .where(eq(boxes.id, command.targetBoxId))
-        .get()
+    ? await transaction.select().from(boxes).where(eq(boxes.id, command.targetBoxId)).get()
     : undefined;
   const changes: DatabaseCommandMutation['changes'] = [];
 
@@ -167,10 +145,7 @@ async function createItemInBox(
   );
   changes.unshift(rowChange('items', { id: item.id }, null, item));
   const boxAfter = { ...box, updatedAt: item.createdAt };
-  await transaction
-    .update(boxes)
-    .set({ updatedAt: item.createdAt })
-    .where(eq(boxes.id, boxId));
+  await transaction.update(boxes).set({ updatedAt: item.createdAt }).where(eq(boxes.id, boxId));
   changes.push(rowChange('boxes', { id: boxId }, box, boxAfter));
   return {
     changes,
@@ -201,8 +176,7 @@ async function editItemContent(
   const item = await requireItem(transaction, itemId);
   const nextContent = content.trim();
   if (!nextContent || item.content === nextContent) return noMutation();
-  const metadata: ItemMetadata =
-    item.type === 'bookmark' ? { type: 'bookmark' } : item.metadata;
+  const metadata: ItemMetadata = item.type === 'bookmark' ? { type: 'bookmark' } : item.metadata;
   return updateItemAndBox(transaction, boxId, item, { content: nextContent, metadata });
 }
 
@@ -297,22 +271,13 @@ async function moveItemBetweenBoxes(
   const targetBox = await requireBox(transaction, command.targetBoxId);
   const sourcePlacements = await selectPlacements(transaction, sourceBox.id);
   const targetPlacements = await selectPlacements(transaction, targetBox.id);
-  const sourcePlacement = sourcePlacements.find(
-    (placement) => placement.itemId === command.itemId,
-  );
+  const sourcePlacement = sourcePlacements.find((placement) => placement.itemId === command.itemId);
   if (!sourcePlacement) throw new Error('Source Box does not contain the requested Item.');
   const changes: DatabaseCommandMutation['changes'] = [];
 
-  await transaction
-    .delete(boxItems)
-    .where(eq(boxItems.itemId, command.itemId));
+  await transaction.delete(boxItems).where(eq(boxItems.itemId, command.itemId));
   changes.push(
-    rowChange(
-      'box_items',
-      { boxId: sourceBox.id, itemId: command.itemId },
-      sourcePlacement,
-      null,
-    ),
+    rowChange('box_items', { boxId: sourceBox.id, itemId: command.itemId }, sourcePlacement, null),
   );
 
   const remainingSource = sourcePlacements.filter(
@@ -407,7 +372,12 @@ async function rewritePlacements(
     await transaction
       .update(boxItems)
       .set({ sortOrder: sql`${boxItems.sortOrder} + 100000` })
-      .where(inArray(boxItems.itemId, existing.map((placement) => placement.itemId)));
+      .where(
+        inArray(
+          boxItems.itemId,
+          existing.map((placement) => placement.itemId),
+        ),
+      );
   }
   const existingById = new Map(existing.map((placement) => [placement.itemId, placement]));
   const changes: DatabaseCommandMutation['changes'] = [];
@@ -424,15 +394,12 @@ async function rewritePlacements(
         .update(boxItems)
         .set({ sortOrder, isPinned: after.isPinned, boxId: after.boxId })
         .where(eq(boxItems.itemId, itemId));
-      if (before.sortOrder !== sortOrder || before.isPinned !== after.isPinned || before.boxId !== after.boxId) {
-        changes.push(
-          rowChange(
-            'box_items',
-            { boxId: before.boxId, itemId },
-            before,
-            after,
-          ),
-        );
+      if (
+        before.sortOrder !== sortOrder ||
+        before.isPinned !== after.isPinned ||
+        before.boxId !== after.boxId
+      ) {
+        changes.push(rowChange('box_items', { boxId: before.boxId, itemId }, before, after));
       }
     } else if (insertedItems.has(itemId)) {
       await transaction.insert(boxItems).values(after);
@@ -444,7 +411,11 @@ async function rewritePlacements(
 
 async function touchBoxes(transaction: DatabaseTransaction, boxIds: string[]) {
   const timestamp = new Date().toISOString();
-  const currentBoxes = await transaction.select().from(boxes).where(inArray(boxes.id, boxIds)).all();
+  const currentBoxes = await transaction
+    .select()
+    .from(boxes)
+    .where(inArray(boxes.id, boxIds))
+    .all();
   const changes: DatabaseCommandMutation['changes'] = [];
   for (const box of currentBoxes) {
     const after = { ...box, updatedAt: timestamp };

@@ -6,8 +6,7 @@ import { buttonVariants } from './button';
 import { cn } from '../lib/cn';
 
 export interface MotionButtonProps
-  extends Omit<HTMLMotionProps<'button'>, 'ref'>,
-    VariantProps<typeof buttonVariants> {}
+  extends Omit<HTMLMotionProps<'button'>, 'ref'>, VariantProps<typeof buttonVariants> {}
 
 /**
  * Motion-aware counterpart of the source-owned Button primitive. Keeping the

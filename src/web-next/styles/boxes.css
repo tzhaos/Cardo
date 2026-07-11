@@ -458,7 +458,6 @@ button.wbn-box-icon:focus-visible {
   padding: 5px;
 }
 
-
 .wbn-box-compact .wbn-box-footer {
   padding: 3px 6px;
 }
@@ -466,7 +465,6 @@ button.wbn-box-icon:focus-visible {
 .wbn-box-compact .wbn-box-footer button {
   padding: 4px 6px;
 }
-
 
 .wbn-box-content {
   display: flex;
@@ -489,8 +487,6 @@ button.wbn-box-icon:focus-visible {
   gap: 4px;
   padding: 8px;
 }
-
-
 
 .wbn-box-delete-view {
   display: flex !important;

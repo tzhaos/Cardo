@@ -1,12 +1,6 @@
 import { z } from 'zod';
 
-export const workspaceItemTypes = [
-  'file',
-  'shortcut',
-  'folder',
-  'bookmark',
-  'clipboard',
-] as const;
+export const workspaceItemTypes = ['file', 'shortcut', 'folder', 'bookmark', 'clipboard'] as const;
 export const workspaceBoxViewModes = ['list', 'grid'] as const;
 export const workspaceBoxDetailModes = ['detailed', 'compact'] as const;
 export const workspaceBoxKinds = ['normal', 'temporary'] as const;

@@ -3,12 +3,18 @@ import type { ComponentProps } from 'react';
 import { cn } from '../lib/cn';
 
 export function Tabs({ className, ...props }: ComponentProps<typeof TabsPrimitive.Root>) {
-  return <TabsPrimitive.Root data-slot="tabs" className={cn('wbn-ui-tabs', className)} {...props} />;
+  return (
+    <TabsPrimitive.Root data-slot="tabs" className={cn('wbn-ui-tabs', className)} {...props} />
+  );
 }
 
 export function TabsList({ className, ...props }: ComponentProps<typeof TabsPrimitive.List>) {
   return (
-    <TabsPrimitive.List data-slot="tabs-list" className={cn('wbn-ui-tabs-list', className)} {...props} />
+    <TabsPrimitive.List
+      data-slot="tabs-list"
+      className={cn('wbn-ui-tabs-list', className)}
+      {...props}
+    />
   );
 }
 

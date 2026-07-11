@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { entityIdSchema, workspaceBoxSchema, workspaceItemSchema, workspacePageSchema } from './workspace';
+import {
+  entityIdSchema,
+  workspaceBoxSchema,
+  workspaceItemSchema,
+  workspacePageSchema,
+} from './workspace';
 
 export const workspaceStateQuerySchema = z
   .object({

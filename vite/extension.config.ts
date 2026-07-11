@@ -3,10 +3,7 @@ import react from '@vitejs/plugin-react';
 import fs from 'node:fs';
 import path from 'node:path';
 import { defineConfig } from 'vite';
-import {
-  EXTENSION_LOCALE_CODES,
-  EXTENSION_LOCALE_MESSAGES,
-} from './extension-locales';
+import { EXTENSION_LOCALE_CODES, EXTENSION_LOCALE_MESSAGES } from './extension-locales';
 
 const EXTENSION_OUT_DIR = path.resolve(__dirname, '../artifacts/extension/unpacked');
 const PACKAGE_JSON = JSON.parse(

@@ -406,45 +406,45 @@ export function BaseBoxFrame({
           return;
         }
         contextMenu.openMenu(event.clientX, event.clientY, [
-            {
-              id: 'rename',
-              label: t('menu.rename'),
-              icon: <SquarePen size={16} />,
-              onSelect: () => titleRename.start(),
+          {
+            id: 'rename',
+            label: t('menu.rename'),
+            icon: <SquarePen size={16} />,
+            onSelect: () => titleRename.start(),
+          },
+          {
+            id: 'add',
+            label: t('menu.addItem'),
+            icon: <Plus size={16} />,
+            onSelect: () => {
+              setConfirmDelete(false);
+              onAddItem();
             },
-            {
-              id: 'add',
-              label: t('menu.addItem'),
-              icon: <Plus size={16} />,
-              onSelect: () => {
-                setConfirmDelete(false);
-                onAddItem();
-              },
-            },
-            {
-              id: 'lock',
-              label: t(box.isLocked ? 'menu.unlockBox' : 'menu.lockBox'),
-              icon: box.isLocked ? <Unlock size={16} /> : <Lock size={16} />,
-              onSelect: () => setBoxLocked(box.id, !box.isLocked),
-            },
-            ...(!isInRecycleBin
-              ? [
-                  {
-                    id: 'collection',
-                    label: t(isCollected ? 'menu.removeFromCollection' : 'menu.addToCollection'),
-                    icon: isCollected ? <StarOff size={16} /> : <Star size={16} />,
-                    onSelect: () =>
-                      isCollected ? removeBoxFromCollection(box.id) : addBoxToCollection(box.id),
-                  },
-                ]
-              : []),
-            {
-              id: 'delete',
-              label: t(isInRecycleBin ? 'menu.deletePermanently' : 'menu.moveToRecycleBin'),
-              icon: <Trash2 size={16} />,
-              danger: true,
-              onSelect: () => setConfirmDelete(true),
-            },
+          },
+          {
+            id: 'lock',
+            label: t(box.isLocked ? 'menu.unlockBox' : 'menu.lockBox'),
+            icon: box.isLocked ? <Unlock size={16} /> : <Lock size={16} />,
+            onSelect: () => setBoxLocked(box.id, !box.isLocked),
+          },
+          ...(!isInRecycleBin
+            ? [
+                {
+                  id: 'collection',
+                  label: t(isCollected ? 'menu.removeFromCollection' : 'menu.addToCollection'),
+                  icon: isCollected ? <StarOff size={16} /> : <Star size={16} />,
+                  onSelect: () =>
+                    isCollected ? removeBoxFromCollection(box.id) : addBoxToCollection(box.id),
+                },
+              ]
+            : []),
+          {
+            id: 'delete',
+            label: t(isInRecycleBin ? 'menu.deletePermanently' : 'menu.moveToRecycleBin'),
+            icon: <Trash2 size={16} />,
+            danger: true,
+            onSelect: () => setConfirmDelete(true),
+          },
         ]);
       }}
       style={

@@ -18,7 +18,9 @@ const idListSchema = z.array(entityIdSchema);
 export const workspaceProjectionContractSchema = workspaceProjectionSchema;
 
 const commandSchemas = [
-  z.object({ type: z.literal('workspace.import'), workspace: workspaceProjectionContractSchema }).strict(),
+  z
+    .object({ type: z.literal('workspace.import'), workspace: workspaceProjectionContractSchema })
+    .strict(),
   z.object({ type: z.literal('page.create'), title: titleSchema }).strict(),
   z.object({ type: z.literal('page.rename'), pageId: entityIdSchema, title: titleSchema }).strict(),
   z.object({ type: z.literal('page.delete'), pageId: entityIdSchema }).strict(),
@@ -26,9 +28,7 @@ const commandSchemas = [
   z.object({ type: z.literal('page.setDefault'), pageId: entityIdSchema }).strict(),
   z.object({ type: z.literal('page.open'), pageId: entityIdSchema }).strict(),
   z.object({ type: z.literal('preferences.setLocale'), locale: preferenceLocaleSchema }).strict(),
-  z
-    .object({ type: z.literal('preferences.setColorMode'), colorMode: colorModeSchema })
-    .strict(),
+  z.object({ type: z.literal('preferences.setColorMode'), colorMode: colorModeSchema }).strict(),
   z.object({ type: z.literal('preferences.setTheme'), themeId: entityIdSchema }).strict(),
   z
     .object({
@@ -60,7 +60,9 @@ const commandSchemas = [
       draft: itemDraftSchema,
     })
     .strict(),
-  z.object({ type: z.literal('box.updateFrame'), boxId: entityIdSchema, frame: boxFrameSchema }).strict(),
+  z
+    .object({ type: z.literal('box.updateFrame'), boxId: entityIdSchema, frame: boxFrameSchema })
+    .strict(),
   z
     .object({
       type: z.literal('collection.updateBoxFrame'),
@@ -103,7 +105,9 @@ const commandSchemas = [
       detailMode: workspaceBoxDetailModeSchema,
     })
     .strict(),
-  z.object({ type: z.literal('box.setLocked'), boxId: entityIdSchema, isLocked: z.boolean() }).strict(),
+  z
+    .object({ type: z.literal('box.setLocked'), boxId: entityIdSchema, isLocked: z.boolean() })
+    .strict(),
   z
     .object({
       type: z.literal('box.setAppearance'),

@@ -6,11 +6,7 @@ import type { KhaosDatabase } from './createDatabaseClient';
 import { boxes, boxItems, items, pages } from './schema';
 import { projectWorkspaceItem } from './workspaceQueries';
 
-export async function searchWorkspaceDatabase(
-  database: KhaosDatabase,
-  query: string,
-  limit = 60,
-) {
+export async function searchWorkspaceDatabase(database: KhaosDatabase, query: string, limit = 60) {
   const normalizedQuery = normalize(query);
   if (!normalizedQuery) return [];
   const tokens = normalizedQuery.split(/\s+/).filter(Boolean);
@@ -29,7 +25,11 @@ export async function searchWorkspaceDatabase(
   if (!allowedPageIds.length) return [];
 
   const [pageRows, boxRows, itemRows, placementRows] = await Promise.all([
-    database.select().from(pages).where(and(inArray(pages.id, allowedPageIds), pageCondition)).all(),
+    database
+      .select()
+      .from(pages)
+      .where(and(inArray(pages.id, allowedPageIds), pageCondition))
+      .all(),
     database
       .select({ box: boxes, page: pages })
       .from(boxes)
@@ -121,16 +121,18 @@ export async function searchWorkspaceDatabase(
     });
   }
 
-  return globalSearchResultSchema.array().parse(
-    results
-      .sort(
-        (first, second) =>
-          second.score - first.score ||
-          Date.parse(second.updatedAt) - Date.parse(first.updatedAt) ||
-          first.title.localeCompare(second.title),
-      )
-      .slice(0, limit),
-  );
+  return globalSearchResultSchema
+    .array()
+    .parse(
+      results
+        .sort(
+          (first, second) =>
+            second.score - first.score ||
+            Date.parse(second.updatedAt) - Date.parse(first.updatedAt) ||
+            first.title.localeCompare(second.title),
+        )
+        .slice(0, limit),
+    );
 }
 
 function createTextCondition(column: AnySQLiteColumn, tokens: string[]) {

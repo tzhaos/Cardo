@@ -23,13 +23,16 @@ import {
 export async function getPageTabs(database: KhaosDatabase) {
   const rows = await database.select().from(pages).orderBy(asc(pages.sortOrder)).all();
   return pageTabsQuerySchema.parse(
-    pageSelectSchema.array().parse(rows).map((page) => ({
-      id: page.id,
-      title: page.title,
-      order: page.sortOrder,
-      createdAt: page.createdAt,
-      updatedAt: page.updatedAt,
-    })),
+    pageSelectSchema
+      .array()
+      .parse(rows)
+      .map((page) => ({
+        id: page.id,
+        title: page.title,
+        order: page.sortOrder,
+        createdAt: page.createdAt,
+        updatedAt: page.updatedAt,
+      })),
   );
 }
 
@@ -50,9 +53,7 @@ export async function getPageBoxes(database: KhaosDatabase, pageId: string) {
 
 export async function getBoxItems(database: KhaosDatabase, boxId: string) {
   const projection = await getWorkspaceProjection(database);
-  return boxItemsQuerySchema.parse(
-    projection.boxes.find((box) => box.id === boxId)?.items ?? [],
-  );
+  return boxItemsQuerySchema.parse(projection.boxes.find((box) => box.id === boxId)?.items ?? []);
 }
 
 export async function getPreferences(database: KhaosDatabase) {
@@ -67,11 +68,7 @@ export async function getWorkspaceProjection(database: KhaosDatabase) {
     database.select().from(boxes).orderBy(asc(boxes.zIndex)).all(),
     database.select().from(items).all(),
     database.select().from(boxItems).orderBy(asc(boxItems.sortOrder)).all(),
-    database
-      .select()
-      .from(collectionBoxViews)
-      .orderBy(asc(collectionBoxViews.sortOrder))
-      .all(),
+    database.select().from(collectionBoxViews).orderBy(asc(collectionBoxViews.sortOrder)).all(),
   ]);
 
   const itemById = new Map(itemRows.map((item) => [item.id, item]));
@@ -140,7 +137,8 @@ export function projectWorkspaceItem(
     updatedAt: item.updatedAt,
   };
   if (item.type === 'bookmark') {
-    const metadata = item.metadata.type === 'bookmark' ? item.metadata : { type: 'bookmark' as const };
+    const metadata =
+      item.metadata.type === 'bookmark' ? item.metadata : { type: 'bookmark' as const };
     return {
       ...base,
       type: 'bookmark',
@@ -152,7 +150,8 @@ export function projectWorkspaceItem(
     return { ...base, type: 'clipboard', text: item.content };
   }
   if (item.type === 'shortcut') {
-    const metadata = item.metadata.type === 'shortcut' ? item.metadata : { type: 'shortcut' as const };
+    const metadata =
+      item.metadata.type === 'shortcut' ? item.metadata : { type: 'shortcut' as const };
     return {
       ...base,
       type: 'shortcut',

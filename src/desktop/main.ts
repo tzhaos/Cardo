@@ -345,11 +345,11 @@ function registerIpcHandlers() {
     desktopBooleanResponseSchema.parse(Boolean(getSenderWindow(event)?.isMaximized())),
   );
 
-  ipcMain.handle('database:execute', (_event, request: unknown) =>
-    executeDesktopDatabase(request),
-  );
+  ipcMain.handle('database:execute', (_event, request: unknown) => executeDesktopDatabase(request));
 
-  ipcMain.handle('clipboard:read-text', () => desktopTextResponseSchema.parse(clipboard.readText()));
+  ipcMain.handle('clipboard:read-text', () =>
+    desktopTextResponseSchema.parse(clipboard.readText()),
+  );
   ipcMain.handle('clipboard:write-text', (_event, input: unknown) => {
     clipboard.writeText(desktopClipboardWriteRequestSchema.parse(input).text);
     return desktopVoidResponseSchema.parse(undefined);
@@ -368,11 +368,17 @@ function registerIpcHandlers() {
     const normalized = normalizeLocalResourcePath(resourcePath);
 
     if (!normalized.ok) {
-      return desktopLocalResourceResponseSchema.parse({ ok: false, error: normalized.errorMessage });
+      return desktopLocalResourceResponseSchema.parse({
+        ok: false,
+        error: normalized.errorMessage,
+      });
     }
 
     if (process.platform === 'win32' && !fs.existsSync(normalized.path)) {
-      return desktopLocalResourceResponseSchema.parse({ ok: false, error: 'Local path does not exist.' });
+      return desktopLocalResourceResponseSchema.parse({
+        ok: false,
+        error: 'Local path does not exist.',
+      });
     }
 
     const error = await shell.openPath(normalized.path);

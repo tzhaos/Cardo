@@ -198,7 +198,8 @@ async function applyRowChange(
     }
     case 'preferences': {
       const id = requireNumberKey(key, 'id');
-      if (!target) return void (await transaction.delete(preferences).where(eq(preferences.id, id)));
+      if (!target)
+        return void (await transaction.delete(preferences).where(eq(preferences.id, id)));
       const row = preferencesSelectSchema.parse(target);
       if (!current) return void (await transaction.insert(preferences).values(row));
       return void (await transaction.update(preferences).set(row).where(eq(preferences.id, id)));

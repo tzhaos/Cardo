@@ -99,10 +99,7 @@ export function SettingsPanel({
       >
         <TabsList className="wbn-settings-nav" aria-label={t('settings.sections')}>
           {sections.map(({ id, icon: Icon, label }) => (
-            <TabsTrigger
-              key={id}
-              value={id}
-            >
+            <TabsTrigger key={id} value={id}>
               {section === id ? (
                 <motion.span
                   className="wbn-settings-nav-indicator"
@@ -117,10 +114,7 @@ export function SettingsPanel({
             </TabsTrigger>
           ))}
         </TabsList>
-        <TabsContent
-          className="wbn-settings-content wbn-custom-scrollbar"
-          value={section}
-        >
+        <TabsContent className="wbn-settings-content wbn-custom-scrollbar" value={section}>
           <AnimatePresence mode="wait" initial={false}>
             <motion.section
               key={section}

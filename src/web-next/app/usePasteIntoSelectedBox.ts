@@ -44,15 +44,10 @@ export function usePasteIntoSelectedBox() {
       const camera = canvas.pages[pageId]?.camera ?? { panX: 0, panY: 0, zoom: 1 };
       const bounds = createCanvasWorldBounds(canvas.viewportSize);
       const center = getCanvasViewportCenter(camera, canvas.viewportSize);
-      const temporaryFrame = targetBox?.frame ?? findNewBoxFrame(projection, pageId, center, bounds);
+      const temporaryFrame =
+        targetBox?.frame ?? findNewBoxFrame(projection, pageId, center, bounds);
       void workspaceStore
-        .pasteItem(
-          pageId,
-          targetBox?.id ?? null,
-          temporaryFrame,
-          pasteItem.type,
-          pasteItem.draft,
-        )
+        .pasteItem(pageId, targetBox?.id ?? null, temporaryFrame, pasteItem.type, pasteItem.draft)
         .then((result) => {
           if (!result.boxId) return;
           useUiStore.getState().selectBox(result.boxId);

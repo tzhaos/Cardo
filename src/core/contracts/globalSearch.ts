@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { boxFrameSchema, entityIdSchema, isoDateTimeSchema, workspaceItemSchema } from './workspace';
+import {
+  boxFrameSchema,
+  entityIdSchema,
+  isoDateTimeSchema,
+  workspaceItemSchema,
+} from './workspace';
 
 const pageSummarySchema = z
   .object({

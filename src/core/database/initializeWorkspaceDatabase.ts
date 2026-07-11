@@ -1,13 +1,6 @@
 import { eq } from 'drizzle-orm';
 import type { KhaosDatabase } from './createDatabaseClient';
-import {
-  APP_STATE_ID,
-  PREFERENCES_ID,
-  appState,
-  boxes,
-  pages,
-  preferences,
-} from './schema';
+import { APP_STATE_ID, PREFERENCES_ID, appState, boxes, pages, preferences } from './schema';
 import { DATABASE_SCHEMA_VERSION } from './version';
 import type { ColorMode, PreferenceLocale } from '../contracts/preferences';
 import type { WorkspaceBoxIcon } from '../contracts/workspace';
@@ -75,11 +68,31 @@ export async function initializeWorkspaceDatabase(
       },
     ]);
 
-    await transaction.insert(boxes).values([
-      createInitialBox(defaultPageId, 'Folder Box', 'folder', '#3b82f6', 120, 130, 1, timestamp),
-      createInitialBox(defaultPageId, 'Bookmark Box', 'bookmark', '#f97316', 500, 165, 2, timestamp),
-      createInitialBox(defaultPageId, 'Clipboard Box', 'clipboard', '#10b981', 170, 380, 3, timestamp),
-    ]);
+    await transaction
+      .insert(boxes)
+      .values([
+        createInitialBox(defaultPageId, 'Folder Box', 'folder', '#3b82f6', 120, 130, 1, timestamp),
+        createInitialBox(
+          defaultPageId,
+          'Bookmark Box',
+          'bookmark',
+          '#f97316',
+          500,
+          165,
+          2,
+          timestamp,
+        ),
+        createInitialBox(
+          defaultPageId,
+          'Clipboard Box',
+          'clipboard',
+          '#10b981',
+          170,
+          380,
+          3,
+          timestamp,
+        ),
+      ]);
 
     await transaction.insert(appState).values({
       id: APP_STATE_ID,

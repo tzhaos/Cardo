@@ -1,10 +1,7 @@
 import { asc, desc, eq, inArray } from 'drizzle-orm';
 import type { BoxFrame } from '../contracts/workspace';
 import type { WorkspaceCommand } from '../contracts/workspaceCommands';
-import {
-  COLLECTION_PAGE_ID,
-  RECYCLE_BIN_PAGE_ID,
-} from '../database/initializeWorkspaceDatabase';
+import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID } from '../database/initializeWorkspaceDatabase';
 import {
   APP_STATE_ID,
   appState,
@@ -14,10 +11,7 @@ import {
   items,
   pages,
 } from '../database/schema';
-import type {
-  DatabaseCommandMutation,
-  DatabaseTransaction,
-} from './commandTypes';
+import type { DatabaseCommandMutation, DatabaseTransaction } from './commandTypes';
 import { chooseAvailableBoxAccent, DEFAULT_BOX_ICON } from '../domains/boxAppearance';
 
 type BoxCommandType =
@@ -279,7 +273,11 @@ async function deleteBox(transaction: DatabaseTransaction, boxId: string) {
     return { changes };
   }
 
-  const placements = await transaction.select().from(boxItems).where(eq(boxItems.boxId, boxId)).all();
+  const placements = await transaction
+    .select()
+    .from(boxItems)
+    .where(eq(boxItems.boxId, boxId))
+    .all();
   const itemIds = placements.map((placement) => placement.itemId);
   const boxItemsData = itemIds.length
     ? await transaction.select().from(items).where(inArray(items.id, itemIds)).all()
@@ -368,12 +366,12 @@ async function arrangePage(
 ) {
   const ids = Object.keys(frames);
   if (!ids.length) return noMutation();
-  const pageBoxes = await transaction
-    .select()
-    .from(boxes)
-    .where(eq(boxes.pageId, pageId))
-    .all();
-  return updateBoxFrames(transaction, pageBoxes.filter((box) => ids.includes(box.id)), frames);
+  const pageBoxes = await transaction.select().from(boxes).where(eq(boxes.pageId, pageId)).all();
+  return updateBoxFrames(
+    transaction,
+    pageBoxes.filter((box) => ids.includes(box.id)),
+    frames,
+  );
 }
 
 async function constrainFrames(
@@ -470,7 +468,12 @@ function frameColumns(frame: BoxFrame) {
 }
 
 function frameEquals(box: typeof boxes.$inferSelect, frame: BoxFrame) {
-  return box.x === frame.x && box.y === frame.y && box.width === frame.width && box.height === frame.height;
+  return (
+    box.x === frame.x &&
+    box.y === frame.y &&
+    box.width === frame.width &&
+    box.height === frame.height
+  );
 }
 
 function rowsEqual(

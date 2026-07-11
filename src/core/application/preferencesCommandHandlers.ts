@@ -1,10 +1,7 @@
 import { eq } from 'drizzle-orm';
 import type { WorkspaceCommand } from '../contracts/workspaceCommands';
 import { PREFERENCES_ID, preferences } from '../database/schema';
-import type {
-  DatabaseCommandMutation,
-  DatabaseTransaction,
-} from './commandTypes';
+import type { DatabaseCommandMutation, DatabaseTransaction } from './commandTypes';
 
 type PreferencesCommandType =
   | 'preferences.setLocale'
@@ -28,13 +25,14 @@ export async function executePreferencesCommand(
 
   const patch = getPatch(command);
   const after = { ...before, ...patch };
-  if (Object.keys(patch).every((key) => before[key as keyof typeof before] === after[key as keyof typeof after])) {
+  if (
+    Object.keys(patch).every(
+      (key) => before[key as keyof typeof before] === after[key as keyof typeof after],
+    )
+  ) {
     return { changes: [] };
   }
-  await transaction
-    .update(preferences)
-    .set(patch)
-    .where(eq(preferences.id, PREFERENCES_ID));
+  await transaction.update(preferences).set(patch).where(eq(preferences.id, PREFERENCES_ID));
   return {
     changes: [
       {

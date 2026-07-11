@@ -20,9 +20,6 @@ export const desktopLocalResourceResponseSchema = z.discriminatedUnion('ok', [
   z.object({ ok: z.literal(true) }).strict(),
   z.object({ ok: z.literal(false), error: z.string() }).strict(),
 ]);
-export const desktopWebsiteIconResponseSchema = z
-  .string()
-  .startsWith('data:image/')
-  .nullable();
+export const desktopWebsiteIconResponseSchema = z.string().startsWith('data:image/').nullable();
 
 export type DesktopLocalResourceResponse = z.infer<typeof desktopLocalResourceResponseSchema>;

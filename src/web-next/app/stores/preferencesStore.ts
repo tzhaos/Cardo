@@ -3,10 +3,7 @@ import type { WorkspaceCommand } from '../../../core/contracts/workspaceCommands
 import type { WebNextLocale } from '../../i18n/messages';
 import type { WebSearchEngineId } from '../../domain/webSearch';
 import { hasRegisteredWebNextTheme, type WebNextColorMode } from '../../themes/themeRegistry';
-import {
-  dispatchDatabaseCommand,
-  queryPreferences,
-} from '../../platform/hostPlatform';
+import { dispatchDatabaseCommand, queryPreferences } from '../../platform/hostPlatform';
 
 interface PreferencesStore {
   colorMode: WebNextColorMode;
@@ -31,8 +28,7 @@ const actions = {
   initialize: refreshPreferences,
   setColorMode: (colorMode: WebNextColorMode) =>
     fireCommand({ type: 'preferences.setColorMode', colorMode }),
-  setLocale: (locale: WebNextLocale) =>
-    fireCommand({ type: 'preferences.setLocale', locale }),
+  setLocale: (locale: WebNextLocale) => fireCommand({ type: 'preferences.setLocale', locale }),
   setThemeId: (themeId: string) => {
     if (hasRegisteredWebNextTheme(themeId)) {
       fireCommand({ type: 'preferences.setTheme', themeId });
@@ -42,8 +38,7 @@ const actions = {
     fireCommand({ type: 'preferences.setSearchEngine', searchEngine }),
   setCustomSearchTemplate: (customSearchTemplate: string) =>
     fireCommand({ type: 'preferences.setCustomSearchTemplate', customSearchTemplate }),
-  toggleColorMode: () =>
-    actions.setColorMode(state.colorMode === 'light' ? 'dark' : 'light'),
+  toggleColorMode: () => actions.setColorMode(state.colorMode === 'light' ? 'dark' : 'light'),
   toggleLocale: () => actions.setLocale(state.locale === 'en' ? 'zh' : 'en'),
 } satisfies Omit<
   PreferencesStore,
@@ -102,7 +97,11 @@ type PreferencesStoreHook = {
 
 export const usePreferencesStore = Object.assign(
   function usePreferencesSelector<T>(selector: (current: PreferencesStore) => T) {
-    return useSyncExternalStore(subscribe, () => selector(state), () => selector(state));
+    return useSyncExternalStore(
+      subscribe,
+      () => selector(state),
+      () => selector(state),
+    );
   },
   {
     getState: () => state,

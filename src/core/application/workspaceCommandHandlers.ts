@@ -10,10 +10,7 @@ import {
   pages,
 } from '../database/schema';
 import { DATABASE_SCHEMA_VERSION } from '../database/version';
-import type {
-  DatabaseCommandMutation,
-  DatabaseTransaction,
-} from './commandTypes';
+import type { DatabaseCommandMutation, DatabaseTransaction } from './commandTypes';
 
 export type WorkspaceImportCommand = Extract<WorkspaceCommand, { type: 'workspace.import' }>;
 

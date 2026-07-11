@@ -1,20 +1,8 @@
 import { asc, eq, inArray, notInArray, sql } from 'drizzle-orm';
 import type { WorkspaceCommand } from '../contracts/workspaceCommands';
-import {
-  COLLECTION_PAGE_ID,
-  RECYCLE_BIN_PAGE_ID,
-} from '../database/initializeWorkspaceDatabase';
-import {
-  APP_STATE_ID,
-  appState,
-  boxes,
-  collectionBoxViews,
-  pages,
-} from '../database/schema';
-import type {
-  DatabaseCommandMutation,
-  DatabaseTransaction,
-} from './commandTypes';
+import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID } from '../database/initializeWorkspaceDatabase';
+import { APP_STATE_ID, appState, boxes, collectionBoxViews, pages } from '../database/schema';
+import type { DatabaseCommandMutation, DatabaseTransaction } from './commandTypes';
 
 export type PageCommand = Extract<WorkspaceCommand, { type: `page.${string}` }>;
 
@@ -248,18 +236,14 @@ async function deletePage(transaction: DatabaseTransaction, pageId: string) {
     .update(pages)
     .set({ sortOrder: recycleAfter.sortOrder, updatedAt: timestamp })
     .where(eq(pages.id, RECYCLE_BIN_PAGE_ID));
-  changes.push(
-    rowChange('pages', { id: RECYCLE_BIN_PAGE_ID }, recyclePage, recycleAfter),
-  );
+  changes.push(rowChange('pages', { id: RECYCLE_BIN_PAGE_ID }, recyclePage, recycleAfter));
 
   const stateAfter = {
     ...stateBefore,
     activePageId:
       stateBefore.activePageId === pageId ? COLLECTION_PAGE_ID : stateBefore.activePageId,
     defaultPageId:
-      stateBefore.defaultPageId === pageId
-        ? remainingPages[0]!.id
-        : stateBefore.defaultPageId,
+      stateBefore.defaultPageId === pageId ? remainingPages[0]!.id : stateBefore.defaultPageId,
   };
   await transaction
     .update(appState)
