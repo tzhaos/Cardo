@@ -285,51 +285,52 @@ function GeneralSettings({
         title={t('settings.general')}
         description={t('settings.generalDescription')}
       />
-      <div className="cardo-settings-card">
-        <div className="cardo-settings-card-copy">
-          <LanguageStateIcon locale={locale} />
-          <span>
-            {t('settings.language')}
-            <small>{t('settings.languageDescription')}</small>
-          </span>
+      <div className="cardo-settings-list-group">
+        <div className="cardo-settings-card">
+          <div className="cardo-settings-card-copy">
+            <LanguageStateIcon locale={locale} />
+            <span>
+              {t('settings.language')}
+              <small>{t('settings.languageDescription')}</small>
+            </span>
+          </div>
+          <ToggleGroup
+            aria-label={t('settings.language')}
+            type="single"
+            value={locale}
+            onValueChange={(value) => value && setLocale(preferenceLocaleSchema.parse(value))}
+          >
+            <SegmentButton active={locale === 'zh'} value="zh">
+              {t('settings.chinese')}
+            </SegmentButton>
+            <SegmentButton active={locale === 'en'} value="en">
+              {t('settings.english')}
+            </SegmentButton>
+          </ToggleGroup>
         </div>
-        <ToggleGroup
-          aria-label={t('settings.language')}
-          type="single"
-          value={locale}
-          onValueChange={(value) => value && setLocale(preferenceLocaleSchema.parse(value))}
-        >
-          <SegmentButton active={locale === 'zh'} value="zh">
-            {t('settings.chinese')}
-          </SegmentButton>
-          <SegmentButton active={locale === 'en'} value="en">
-            {t('settings.english')}
-          </SegmentButton>
-        </ToggleGroup>
-      </div>
-      <div className="cardo-settings-subheading">
-        <span>{t('settings.searchEngine')}</span>
-        <small>{t('settings.searchEngineDescription')}</small>
-      </div>
-      <div className="cardo-settings-card">
-        <div className="cardo-settings-card-copy">
-          <span>{t('settings.searchEngine')}</span>
+        <div className="cardo-settings-card">
+          <div className="cardo-settings-card-copy">
+            <span>
+              {t('settings.searchEngine')}
+              <small>{t('settings.searchEngineDescription')}</small>
+            </span>
+          </div>
+          <Select
+            value={searchEngine}
+            onValueChange={(value) => setSearchEngine(webSearchEngineIdSchema.parse(value))}
+          >
+            <SelectTrigger aria-label={t('settings.searchEngine')}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end">
+              <SelectItem value="bing-cn">{t('settings.searchEngine.bingCn')}</SelectItem>
+              <SelectItem value="bing">{t('settings.searchEngine.bing')}</SelectItem>
+              <SelectItem value="baidu">{t('settings.searchEngine.baidu')}</SelectItem>
+              <SelectItem value="google">{t('settings.searchEngine.google')}</SelectItem>
+              <SelectItem value="custom">{t('settings.searchEngine.custom')}</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <Select
-          value={searchEngine}
-          onValueChange={(value) => setSearchEngine(webSearchEngineIdSchema.parse(value))}
-        >
-          <SelectTrigger aria-label={t('settings.searchEngine')}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent align="end">
-            <SelectItem value="bing-cn">{t('settings.searchEngine.bingCn')}</SelectItem>
-            <SelectItem value="bing">{t('settings.searchEngine.bing')}</SelectItem>
-            <SelectItem value="baidu">{t('settings.searchEngine.baidu')}</SelectItem>
-            <SelectItem value="google">{t('settings.searchEngine.google')}</SelectItem>
-            <SelectItem value="custom">{t('settings.searchEngine.custom')}</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
       {searchEngine === 'custom' ? (
         <label className="cardo-custom-search-template">
@@ -421,29 +422,31 @@ function AppearanceSettings({
         })}
       </ToggleGroup>
 
-      <div className="cardo-settings-card" style={{ marginTop: 16 }}>
-        <div className="cardo-settings-card-copy">
-          <ColorModeStateIcon colorMode={colorMode} />
-          <span>
-            {t('settings.mode')}
-            <small>{t('settings.modeDescription')}</small>
-          </span>
+      <div className="cardo-settings-list-group cardo-settings-list-group-spaced">
+        <div className="cardo-settings-card">
+          <div className="cardo-settings-card-copy">
+            <ColorModeStateIcon colorMode={colorMode} />
+            <span>
+              {t('settings.mode')}
+              <small>{t('settings.modeDescription')}</small>
+            </span>
+          </div>
+          <ToggleGroup
+            aria-label={t('settings.mode')}
+            type="single"
+            value={colorMode}
+            onValueChange={(value) => value && setColorMode(colorModeSchema.parse(value))}
+          >
+            <SegmentButton active={colorMode === 'light'} value="light">
+              <Sun size={14} />
+              {t('settings.light')}
+            </SegmentButton>
+            <SegmentButton active={colorMode === 'dark'} value="dark">
+              <Moon size={14} />
+              {t('settings.dark')}
+            </SegmentButton>
+          </ToggleGroup>
         </div>
-        <ToggleGroup
-          aria-label={t('settings.mode')}
-          type="single"
-          value={colorMode}
-          onValueChange={(value) => value && setColorMode(colorModeSchema.parse(value))}
-        >
-          <SegmentButton active={colorMode === 'light'} value="light">
-            <Sun size={14} />
-            {t('settings.light')}
-          </SegmentButton>
-          <SegmentButton active={colorMode === 'dark'} value="dark">
-            <Moon size={14} />
-            {t('settings.dark')}
-          </SegmentButton>
-        </ToggleGroup>
       </div>
     </>
   );

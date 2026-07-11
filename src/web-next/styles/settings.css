@@ -778,6 +778,313 @@
   color: currentColor;
 }
 
+/* Shared list grouping (Fluent uses this heavily; other themes keep simple stack). */
+.cardo-settings-list-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cardo-settings-list-group-spaced {
+  margin-top: 16px;
+}
+
+/* ── Windows 11 Settings (WinUI3 Fluent) shell — only when theme is windows ─── */
+/*
+ * Reference: Settings app — mica side nav, left selection rail, large page title,
+ * white elevated list cards, hairline row dividers, 8px control radius.
+ */
+
+[data-cardo-theme='windows'] .cardo-independent-menu.cardo-settings-window,
+[data-cardo-theme='windows'] .cardo-settings-window {
+  width: min(960px, calc(100vw - 40px));
+  height: min(680px, calc(100vh - 40px));
+  border: 1px solid color-mix(in srgb, var(--cardo-border) 80%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--cardo-canvas) 88%, var(--cardo-surface-strong));
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.04),
+    0 16px 48px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(var(--cardo-chrome-blur)) saturate(130%);
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur)) saturate(130%);
+}
+
+[data-cardo-theme='windows'] .cardo-settings-header {
+  min-height: 48px;
+  border-bottom: none;
+  padding: 0 12px 0 16px;
+  background: transparent;
+}
+
+[data-cardo-theme='windows'] .cardo-settings-header > div {
+  gap: 10px;
+  color: var(--cardo-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+[data-cardo-theme='windows'] .cardo-settings-header button {
+  width: 36px;
+  height: 32px;
+  border-radius: 4px;
+}
+
+[data-cardo-theme='windows'] .cardo-settings-layout {
+  grid-template-columns: 248px minmax(0, 1fr);
+  gap: 0;
+}
+
+[data-cardo-theme='windows'] .cardo-settings-nav {
+  gap: 2px;
+  border-right: none;
+  padding: 8px 12px 16px;
+  background: transparent;
+}
+
+[data-cardo-theme='windows'] .cardo-settings-nav button {
+  min-height: 40px;
+  gap: 12px;
+  border-radius: 4px;
+  padding: 0 12px 0 14px;
+  color: var(--cardo-text);
+  font-size: 14px;
+  font-weight: 400;
+}
+
+[data-cardo-theme='windows'] .cardo-settings-nav button:hover {
+  background: color-mix(in srgb, var(--cardo-text) 4%, transparent);
+}
+
+[data-cardo-theme='windows'] .cardo-settings-nav-indicator {
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--cardo-text) 6%, transparent);
+  box-shadow: none;
+}
+
+/* Left selection rail — Win11 Settings signature */
+[data-cardo-theme='windows'] .cardo-settings-nav [data-state='active']::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 0;
+  z-index: 2;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--cardo-blue);
+}
+
+[data-cardo-theme='windows'] .cardo-settings-nav [data-state='active'] {
+  color: var(--cardo-text) !important;
+  font-weight: 600;
+}
+
+/* Multi-color nav icons (Fluent Settings uses accent-tinted glyphs) */
+[data-cardo-theme='windows'] .cardo-settings-nav button:nth-child(1) .cardo-icon-frame {
+  color: #0078d4;
+}
+[data-cardo-theme='windows'] .cardo-settings-nav button:nth-child(2) .cardo-icon-frame {
+  color: #8764b8;
+}
+[data-cardo-theme='windows'] .cardo-settings-nav button:nth-child(3) .cardo-icon-frame {
+  color: #038387;
+}
+[data-cardo-theme='windows'] .cardo-settings-nav button:nth-child(4) .cardo-icon-frame {
+  color: #ca5010;
+}
+
+[data-cardo-theme='windows'][data-color-mode='dark'] .cardo-settings-nav button:nth-child(1) .cardo-icon-frame {
+  color: #60cdff;
+}
+[data-cardo-theme='windows'][data-color-mode='dark'] .cardo-settings-nav button:nth-child(2) .cardo-icon-frame {
+  color: #b6a0ff;
+}
+[data-cardo-theme='windows'][data-color-mode='dark'] .cardo-settings-nav button:nth-child(3) .cardo-icon-frame {
+  color: #30e1e1;
+}
+[data-cardo-theme='windows'][data-color-mode='dark'] .cardo-settings-nav button:nth-child(4) .cardo-icon-frame {
+  color: #ff8c00;
+}
+
+[data-cardo-theme='windows'] .cardo-settings-content {
+  padding: 12px 28px 28px 20px;
+  background: transparent;
+}
+
+[data-cardo-theme='windows'] .cardo-settings-heading {
+  margin-bottom: 20px;
+}
+
+[data-cardo-theme='windows'] .cardo-settings-heading h2 {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+
+[data-cardo-theme='windows'] .cardo-settings-heading p {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+[data-cardo-theme='windows'] .cardo-settings-subheading {
+  margin: 20px 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+[data-cardo-theme='windows'] .cardo-settings-subheading small {
+  font-size: 12px;
+}
+
+/* Grouped SettingsCard / Expander-like list */
+[data-cardo-theme='windows'] .cardo-settings-list-group {
+  gap: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--cardo-surface-strong);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--cardo-border) 70%, transparent),
+    0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+[data-cardo-theme='windows'] .cardo-settings-list-group .cardo-settings-card {
+  border: none;
+  border-radius: 0;
+  padding: 14px 16px;
+  background: transparent;
+  min-height: 56px;
+}
+
+[data-cardo-theme='windows'] .cardo-settings-list-group .cardo-settings-card + .cardo-settings-card {
+  border-top: 1px solid color-mix(in srgb, var(--cardo-divider) 85%, transparent);
+}
+
+[data-cardo-theme='windows'] .cardo-settings-list-group .cardo-settings-card:hover {
+  background: color-mix(in srgb, var(--cardo-text) 3%, transparent);
+}
+
+[data-cardo-theme='windows'] .cardo-settings-card-copy > span:last-child {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+[data-cardo-theme='windows'] .cardo-settings-card-copy small {
+  font-size: 12px;
+}
+
+/* Standalone cards (when not in a list group) */
+[data-cardo-theme='windows'] .cardo-settings-content > .cardo-settings-card,
+[data-cardo-theme='windows'] .cardo-settings-content > .cardo-about-card {
+  border: none;
+  border-radius: 8px;
+  background: var(--cardo-surface-strong);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--cardo-border) 70%, transparent),
+    0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+[data-cardo-theme='windows'] .cardo-about-details {
+  border: none;
+  border-radius: 8px;
+  background: var(--cardo-surface-strong);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--cardo-border) 70%, transparent),
+    0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+[data-cardo-theme='windows'] .cardo-about-details div {
+  min-height: 52px;
+  padding: 0 16px;
+}
+
+[data-cardo-theme='windows'] .cardo-about-details dt,
+[data-cardo-theme='windows'] .cardo-about-details dd {
+  font-size: 13px;
+}
+
+/* Segmented control → WinUI-like pill track */
+[data-cardo-theme='windows'] .cardo-segmented-control {
+  gap: 0;
+  border: 1px solid color-mix(in srgb, var(--cardo-border) 80%, transparent);
+  border-radius: 4px;
+  padding: 2px;
+  background: color-mix(in srgb, var(--cardo-text) 4%, transparent);
+}
+
+[data-cardo-theme='windows'] .cardo-segmented-control button {
+  min-width: 56px;
+  height: 28px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+[data-cardo-theme='windows'] .cardo-segment-indicator {
+  border: none;
+  border-radius: 3px;
+  background: var(--cardo-surface-strong);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--cardo-border) 60%, transparent),
+    0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+/* Theme pack tiles */
+[data-cardo-theme='windows'] .cardo-theme-pack-grid {
+  gap: 10px;
+}
+
+[data-cardo-theme='windows'] .cardo-theme-pack-card {
+  border: 1px solid color-mix(in srgb, var(--cardo-border) 80%, transparent);
+  border-radius: 8px;
+  background: var(--cardo-surface-strong);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+[data-cardo-theme='windows'] .cardo-theme-pack-card-selected {
+  border-color: var(--cardo-blue);
+  box-shadow: 0 0 0 1px var(--cardo-blue);
+}
+
+[data-cardo-theme='windows'] .cardo-theme-pack-preview {
+  border-radius: 4px;
+  height: 72px;
+}
+
+[data-cardo-theme='windows'] .cardo-data-actions {
+  gap: 10px;
+}
+
+[data-cardo-theme='windows'] .cardo-data-actions > button {
+  border: none;
+  border-radius: 8px;
+  background: var(--cardo-surface-strong);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--cardo-border) 70%, transparent),
+    0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+[data-cardo-theme='windows'] .cardo-custom-search-template {
+  margin-top: 12px;
+  border-radius: 8px;
+  padding: 14px 16px;
+  background: var(--cardo-surface-strong);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--cardo-border) 70%, transparent),
+    0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+[data-cardo-theme='windows'] .cardo-custom-search-template input {
+  height: 32px;
+  border-radius: 4px;
+  border-color: color-mix(in srgb, var(--cardo-border) 90%, transparent);
+}
+
+[data-cardo-theme='windows'] .cardo-custom-search-template input:focus {
+  border-color: var(--cardo-blue);
+  box-shadow: 0 0 0 1px var(--cardo-blue);
+}
+
 .cardo-language-en,
 .cardo-language-zh,
 .cardo-theme-sun,
