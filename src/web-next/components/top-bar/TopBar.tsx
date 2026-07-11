@@ -16,7 +16,9 @@ import { MotionButton } from '../../ui/primitives/motion-button';
 import { useContextMenu } from '../../ui/khaos/context-menu';
 
 export function TopBar() {
-  const projection = useWorkspaceStore((state) => state.projection);
+  const persistedPageRows = useWorkspaceStore((state) => state.projection.pages);
+  const activePageId = useWorkspaceStore((state) => state.projection.activePageId);
+  const defaultPageId = useWorkspaceStore((state) => state.projection.defaultPageId);
   const createPage = useWorkspaceStore((state) => state.createPage);
   const renamePage = useWorkspaceStore((state) => state.renamePage);
   const deletePage = useWorkspaceStore((state) => state.deletePage);
@@ -33,8 +35,8 @@ export function TopBar() {
   const { t } = useI18n();
 
   const persistedPages = useMemo(
-    () => [...projection.pages].sort((first, second) => first.order - second.order),
-    [projection.pages],
+    () => [...persistedPageRows].sort((first, second) => first.order - second.order),
+    [persistedPageRows],
   );
   const workspacePages = useMemo(
     () => persistedPages.filter((page) => !isSystemPageId(page.id)),
@@ -56,7 +58,9 @@ export function TopBar() {
     .map((pageId) => pagesById.get(pageId))
     .filter((page): page is (typeof persistedPages)[number] => Boolean(page));
   const pageToDelete = workspacePages.find((page) => page.id === deletePageId);
-  const deleteBoxCount = projection.boxes.filter((box) => box.pageId === deletePageId).length;
+  const deleteBoxCount = useWorkspaceStore(
+    (state) => state.projection.boxes.filter((box) => box.pageId === deletePageId).length,
+  );
 
   useEffect(() => {
     if (!deletePageId) {
@@ -115,9 +119,9 @@ export function TopBar() {
               },
               {
                 id: 'set-default-page',
-                label: t(page.id === projection.defaultPageId ? 'page.default' : 'page.setDefault'),
+                label: t(page.id === defaultPageId ? 'page.default' : 'page.setDefault'),
                 icon: <House size={16} />,
-                disabled: page.id === projection.defaultPageId,
+                disabled: page.id === defaultPageId,
                 onSelect: () => setDefaultPage(page.id),
               },
               {
@@ -157,7 +161,7 @@ export function TopBar() {
         >
           {collectionPage ? (
             <CollectionTab
-              active={collectionPage.id === projection.activePageId}
+              active={collectionPage.id === activePageId}
               highlighted={boxDropPageId === collectionPage.id}
               page={collectionPage}
               released={boxDropRelease?.pageId === collectionPage.id}
@@ -171,7 +175,7 @@ export function TopBar() {
           <AnimatePresence mode="popLayout">
             {pages.map((page) => (
               <SortablePageTab
-                active={page.id === projection.activePageId}
+                active={page.id === activePageId}
                 className={[
                   boxDropPageId === page.id ? 'wbn-box-drop-target' : '',
                   boxDropRelease?.pageId === page.id ? 'wbn-box-drop-released' : '',
@@ -192,7 +196,7 @@ export function TopBar() {
           </AnimatePresence>
           {recycleBinPage ? (
             <RecycleBinTab
-              active={recycleBinPage.id === projection.activePageId}
+              active={recycleBinPage.id === activePageId}
               highlighted={boxDropPageId === recycleBinPage.id}
               page={recycleBinPage}
               released={boxDropRelease?.pageId === recycleBinPage.id}
