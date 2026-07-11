@@ -10,6 +10,11 @@ function createDefaultAppPorts(): AppPorts {
         throw new Error('Browser bookmarks port is not configured.');
       },
     },
+    database: {
+      execute: async () => {
+        throw new Error('Database port is not configured.');
+      },
+    },
     workspaceStorage: {
       getItem: (name) => memoryStorage.get(name) ?? null,
       setItem: (name, value) => {

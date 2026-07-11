@@ -1,6 +1,7 @@
 import type { AppPorts } from '../../core/ports/AppPorts';
 import { getDesktopBridge } from '../bridge';
 import { fetchWebDavPort } from '../sync/fetchWebDavPort';
+import { databaseExecuteResponseSchema } from '../../core/contracts/database';
 
 export function createDesktopPorts(): AppPorts {
   return {
@@ -9,6 +10,10 @@ export function createDesktopPorts(): AppPorts {
       requestTree: async () => {
         throw new Error('Browser bookmarks import is only available in the browser extension.');
       },
+    },
+    database: {
+      execute: async (request) =>
+        databaseExecuteResponseSchema.parse(await getDesktopBridge().databaseExecute(request)),
     },
     workspaceStorage: {
       getItem: (name) => getDesktopBridge().storageGet(name),

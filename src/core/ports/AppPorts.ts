@@ -1,5 +1,6 @@
 import type { BrowserBookmarksPort } from './BrowserBookmarksPort';
 import type { ClipboardPort } from './ClipboardPort';
+import type { DatabasePort } from './DatabasePort';
 import type { FileExportPort } from './FileExportPort';
 import type { FileImportPort } from './FileImportPort';
 import type { LocalResourcePort } from './LocalResourcePort';
@@ -11,6 +12,7 @@ import type { WebsiteIconPort } from './WebsiteIconPort';
 
 export interface AppPorts {
   browserBookmarks: BrowserBookmarksPort;
+  database: DatabasePort;
   workspaceStorage: WorkspaceStoragePort;
   clipboard: ClipboardPort;
   fileExport: FileExportPort;

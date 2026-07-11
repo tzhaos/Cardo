@@ -9,6 +9,7 @@ import { browserRuntimeDocumentPort } from '../runtime/browserRuntimeDocumentPor
 import { extensionStateStorage } from '../storage/stateStorage';
 import { extensionWebDavPort } from '../sync/extensionWebDavPort';
 import { browserWebsiteIconPort } from '../website-icons/browserWebsiteIconPort';
+import { extensionDatabasePort } from '../database/extensionDatabasePort';
 
 /**
  * Canonical port bundle for the Manifest V3 extension runtime.
@@ -16,6 +17,7 @@ import { browserWebsiteIconPort } from '../website-icons/browserWebsiteIconPort'
 export function createExtensionPorts(): AppPorts {
   return {
     browserBookmarks: browserBookmarksPort,
+    database: extensionDatabasePort,
     workspaceStorage: extensionStateStorage,
     clipboard: browserClipboardPort,
     fileExport: browserFileExportPort,
