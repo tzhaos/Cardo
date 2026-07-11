@@ -33,6 +33,11 @@ import {
 } from '../../platform/hostPlatform';
 import { isValidCustomSearchTemplate, type WebSearchEngineId } from '../../domain/webSearch';
 import {
+  colorModeSchema,
+  preferenceLocaleSchema,
+  webSearchEngineIdSchema,
+} from '../../../core/contracts/preferences';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -290,7 +295,7 @@ function GeneralSettings({
           aria-label={t('settings.language')}
           type="single"
           value={locale}
-          onValueChange={(value) => value && setLocale(value as 'en' | 'zh')}
+          onValueChange={(value) => value && setLocale(preferenceLocaleSchema.parse(value))}
         >
           <SegmentButton active={locale === 'en'} value="en">
             EN
@@ -313,7 +318,7 @@ function GeneralSettings({
         </div>
         <Select
           value={searchEngine}
-          onValueChange={(value) => setSearchEngine(value as WebSearchEngineId)}
+          onValueChange={(value) => setSearchEngine(webSearchEngineIdSchema.parse(value))}
         >
           <SelectTrigger aria-label={t('settings.searchEngine')}>
             <SelectValue />
@@ -382,7 +387,7 @@ function AppearanceSettings({
           aria-label={t('settings.mode')}
           type="single"
           value={colorMode}
-          onValueChange={(value) => value && setColorMode(value as WebNextColorMode)}
+          onValueChange={(value) => value && setColorMode(colorModeSchema.parse(value))}
         >
           <SegmentButton active={colorMode === 'light'} value="light">
             <Sun size={14} />

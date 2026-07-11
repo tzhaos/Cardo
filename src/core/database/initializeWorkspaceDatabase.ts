@@ -10,13 +10,14 @@ import {
 } from './schema';
 import { DATABASE_SCHEMA_VERSION } from './version';
 import { getDefaultBoxAccent, getDefaultBoxIcon } from '../domains/boxAppearance';
+import type { ColorMode, PreferenceLocale } from '../contracts/preferences';
 
 export const COLLECTION_PAGE_ID = 'khaosbox-collection';
 export const RECYCLE_BIN_PAGE_ID = 'khaosbox-recycle-bin';
 
 export interface InitialWorkspacePreferences {
-  locale: 'en' | 'zh';
-  colorMode: 'light' | 'dark';
+  locale: PreferenceLocale;
+  colorMode: ColorMode;
 }
 
 export async function initializeWorkspaceDatabase(

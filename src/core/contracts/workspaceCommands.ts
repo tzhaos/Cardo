@@ -10,6 +10,7 @@ import {
   workspaceItemTypeSchema,
   workspaceProjectionSchema,
 } from './workspace';
+import { colorModeSchema, preferenceLocaleSchema, webSearchEngineIdSchema } from './preferences';
 
 const titleSchema = z.string().max(512);
 const itemDraftSchema = z.record(z.string(), z.string());
@@ -25,15 +26,15 @@ const commandSchemas = [
   z.object({ type: z.literal('page.reorder'), orderedPageIds: idListSchema }).strict(),
   z.object({ type: z.literal('page.setDefault'), pageId: entityIdSchema }).strict(),
   z.object({ type: z.literal('page.open'), pageId: entityIdSchema }).strict(),
-  z.object({ type: z.literal('preferences.setLocale'), locale: z.enum(['en', 'zh']) }).strict(),
+  z.object({ type: z.literal('preferences.setLocale'), locale: preferenceLocaleSchema }).strict(),
   z
-    .object({ type: z.literal('preferences.setColorMode'), colorMode: z.enum(['light', 'dark']) })
+    .object({ type: z.literal('preferences.setColorMode'), colorMode: colorModeSchema })
     .strict(),
   z.object({ type: z.literal('preferences.setTheme'), themeId: entityIdSchema }).strict(),
   z
     .object({
       type: z.literal('preferences.setSearchEngine'),
-      searchEngine: z.enum(['bing-cn', 'bing', 'baidu', 'google', 'custom']),
+      searchEngine: webSearchEngineIdSchema,
     })
     .strict(),
   z

@@ -18,6 +18,7 @@ import {
   workspaceItemTypes,
 } from '../contracts/workspace';
 import { DATABASE_SCHEMA_VERSION } from './version';
+import { colorModes, preferenceLocales, webSearchEngineIds } from '../contracts/preferences';
 
 export { DATABASE_SCHEMA_VERSION } from './version';
 export const APP_STATE_ID = 1;
@@ -119,11 +120,11 @@ export const collectionBoxViews = sqliteTable('collection_box_views', {
 
 export const preferences = sqliteTable('preferences', {
   id: integer('id').primaryKey(),
-  locale: text('locale', { enum: ['en', 'zh'] }).notNull(),
-  colorMode: text('color_mode', { enum: ['light', 'dark'] }).notNull(),
+  locale: text('locale', { enum: preferenceLocales }).notNull(),
+  colorMode: text('color_mode', { enum: colorModes }).notNull(),
   themeId: text('theme_id').notNull(),
   searchEngine: text('search_engine', {
-    enum: ['bing-cn', 'bing', 'baidu', 'google', 'custom'],
+    enum: webSearchEngineIds,
   }).notNull(),
   customSearchTemplate: text('custom_search_template').notNull(),
 });

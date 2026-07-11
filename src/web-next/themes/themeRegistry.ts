@@ -1,6 +1,8 @@
 import type { WebNextLocale } from '../i18n/messages';
 
-export type WebNextColorMode = 'light' | 'dark';
+import type { ColorMode } from '../../core/contracts/preferences';
+
+export type WebNextColorMode = ColorMode;
 
 export interface WebNextThemePalette {
   canvas: string;

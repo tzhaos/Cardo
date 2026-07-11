@@ -1,4 +1,6 @@
-export type WebSearchEngineId = 'bing-cn' | 'bing' | 'baidu' | 'google' | 'custom';
+import type { WebSearchEngineId } from '../../core/contracts/preferences';
+
+export type { WebSearchEngineId } from '../../core/contracts/preferences';
 
 export const DEFAULT_WEB_SEARCH_ENGINE: WebSearchEngineId = 'bing-cn';
 
@@ -8,16 +10,6 @@ const SEARCH_URL_TEMPLATES: Record<Exclude<WebSearchEngineId, 'custom'>, string>
   baidu: 'https://www.baidu.com/s?wd={query}',
   google: 'https://www.google.com/search?q={query}',
 };
-
-export function isWebSearchEngineId(value: unknown): value is WebSearchEngineId {
-  return (
-    value === 'bing-cn' ||
-    value === 'bing' ||
-    value === 'baidu' ||
-    value === 'google' ||
-    value === 'custom'
-  );
-}
 
 export function isValidCustomSearchTemplate(template: string) {
   if (!template.includes('{query}')) return false;
