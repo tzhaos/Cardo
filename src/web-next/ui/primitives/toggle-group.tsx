@@ -4,12 +4,15 @@ import { cn } from '../lib/cn';
 
 export function ToggleGroup({
   className,
+  variant = 'segmented',
   ...props
-}: ComponentProps<typeof ToggleGroupPrimitive.Root>) {
+}: ComponentProps<typeof ToggleGroupPrimitive.Root> & {
+  variant?: 'plain' | 'segmented';
+}) {
   return (
     <ToggleGroupPrimitive.Root
       data-slot="toggle-group"
-      className={cn('wbn-segmented-control', className)}
+      className={cn(variant === 'segmented' && 'wbn-segmented-control', className)}
       {...props}
     />
   );

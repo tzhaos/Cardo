@@ -414,36 +414,42 @@ function AppearanceSettings({
         <span>{t('settings.theme')}</span>
         <small>{t('settings.themeDescription')}</small>
       </div>
-      <div className="wbn-theme-grid">
+      <ToggleGroup
+        className="wbn-theme-grid"
+        type="single"
+        variant="plain"
+        value={themeId}
+        onValueChange={(value) => value && setThemeId(value)}
+        aria-label={t('settings.theme')}
+      >
         {themes.map((theme) => {
           const selected = theme.id === themeId;
           return (
-            <motion.button
-              aria-pressed={selected}
-              className={selected ? 'wbn-theme-card wbn-theme-card-selected' : 'wbn-theme-card'}
-              key={theme.id}
-              type="button"
-              onClick={() => setThemeId(theme.id)}
-              whileTap={{ scale: 0.985 }}
-            >
-              <span className="wbn-theme-preview">
-                <span style={{ background: theme.palettes.light.canvas }} />
-                <span style={{ background: theme.palettes.dark.canvas }} />
-                <i style={{ background: theme.palettes[colorMode].panel }} />
-              </span>
-              <span className="wbn-theme-card-copy">
-                <span>{theme.name[locale]}</span>
-                <small>{theme.description[locale]}</small>
-              </span>
-              {selected ? (
-                <IconFrame className="wbn-theme-check">
-                  <Check size={12} />
-                </IconFrame>
-              ) : null}
-            </motion.button>
+            <ToggleGroupItem asChild key={theme.id} value={theme.id}>
+              <motion.button
+                className={selected ? 'wbn-theme-card wbn-theme-card-selected' : 'wbn-theme-card'}
+                type="button"
+                whileTap={{ scale: 0.985 }}
+              >
+                <span className="wbn-theme-preview">
+                  <span style={{ background: theme.palettes.light.canvas }} />
+                  <span style={{ background: theme.palettes.dark.canvas }} />
+                  <i style={{ background: theme.palettes[colorMode].panel }} />
+                </span>
+                <span className="wbn-theme-card-copy">
+                  <span>{theme.name[locale]}</span>
+                  <small>{theme.description[locale]}</small>
+                </span>
+                {selected ? (
+                  <IconFrame className="wbn-theme-check">
+                    <Check size={12} />
+                  </IconFrame>
+                ) : null}
+              </motion.button>
+            </ToggleGroupItem>
           );
         })}
-      </div>
+      </ToggleGroup>
     </>
   );
 }
