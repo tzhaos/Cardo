@@ -1,6 +1,6 @@
 import type { BoxItem } from '../domain/workspace';
-import { recordOperation } from './stores/operationJournalStore';
 import { useWorkspaceStore } from './stores/workspaceStore';
+import { recordActivity } from '../platform/hostPlatform';
 
 export function recordBoxActivity(
   boxId: string,
@@ -11,11 +11,8 @@ export function recordBoxActivity(
   const box = snapshot.boxes.find((candidate) => candidate.id === boxId);
   if (!box) return;
   const page = snapshot.pages.find((candidate) => candidate.id === box.pageId);
-  recordOperation({
-    category: 'activity',
+  recordActivity({
     action,
-    source: 'user',
-    undoable: false,
     target: {
       pageId: box.pageId,
       pageTitle: page?.title,
@@ -36,11 +33,8 @@ export function recordItemActivity(
   const box = snapshot.boxes.find((candidate) => candidate.id === boxId);
   if (!box) return;
   const page = snapshot.pages.find((candidate) => candidate.id === box.pageId);
-  recordOperation({
-    category: 'activity',
+  recordActivity({
     action,
-    source: 'user',
-    undoable: false,
     target: {
       pageId: box.pageId,
       pageTitle: page?.title,

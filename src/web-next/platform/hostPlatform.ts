@@ -9,6 +9,11 @@ import {
   undoDatabaseCommand,
 } from '../../core/application/historyEngine';
 import { getWorkspaceSnapshot } from '../../core/database/workspaceQueries';
+import {
+  getOperationLogEntries,
+  recordDatabaseActivity,
+  type ActivityLogInput,
+} from '../../core/application/operationLogService';
 
 let database: KhaosDatabase | null = null;
 
@@ -35,6 +40,34 @@ export function queryDatabaseHistoryState() {
 
 export function queryWorkspaceSnapshot() {
   return getWorkspaceSnapshot(getKhaosDatabase());
+}
+
+export function recordActivity(input: ActivityLogInput) {
+  void recordDatabaseActivity(getKhaosDatabase(), input).catch((error: unknown) =>
+    console.error('Failed to record activity', error),
+  );
+}
+
+export async function exportOperationLog() {
+  const entries = await getOperationLogEntries(getKhaosDatabase());
+  const exportedAt = new Date().toISOString();
+  getAppPorts().fileExport.downloadJson(
+    `khaosbox-operation-log-${exportedAt.slice(0, 10)}.json`,
+    JSON.stringify(
+      {
+        format: 'khaosbox-operation-log',
+        version: 1,
+        exportedAt,
+        entries,
+      },
+      null,
+      2,
+    ),
+  );
+  await recordDatabaseActivity(getKhaosDatabase(), {
+    action: 'journal.export',
+    details: { eventCount: entries.length },
+  });
 }
 
 /**

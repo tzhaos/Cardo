@@ -9,7 +9,6 @@ export function startWebNextApp() {
     import('./bootstrap'),
     import('./stores/preferencesStore'),
     import('./stores/workspaceStore'),
-    import('./stores/operationJournalStore'),
     import('./stores/independentMenuStore'),
     import('../platform/hostPlatform'),
     import('../../core/database/initializeWorkspaceDatabase'),
@@ -19,7 +18,6 @@ export function startWebNextApp() {
       { renderWebNextRoot },
       { usePreferencesStore },
       { useWorkspaceStore },
-      { useOperationJournalStore },
       { useIndependentMenuStore },
       { getKhaosDatabase },
       { initializeWorkspaceDatabase },
@@ -31,7 +29,6 @@ export function startWebNextApp() {
       await useWorkspaceStore.initialize();
       await Promise.all([
         usePreferencesStore.persist.rehydrate(),
-        useOperationJournalStore.persist.rehydrate(),
         useIndependentMenuStore.persist.rehydrate(),
       ]);
       renderWebNextRoot(<WebNextApp />);

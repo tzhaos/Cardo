@@ -30,7 +30,7 @@ import {
   workspaceTransferDocumentSchema,
 } from '../../../core/contracts/workspaceTransfer';
 import { useUiStore } from '../../app/stores/uiStore';
-import { exportOperationJournal } from '../../app/stores/operationJournalStore';
+import { exportOperationLog } from '../../platform/hostPlatform';
 import { isValidCustomSearchTemplate, type WebSearchEngineId } from '../../domain/webSearch';
 
 type SettingsSection = 'general' | 'appearance' | 'data' | 'about';
@@ -198,7 +198,7 @@ function DataSettings() {
             <small>{t('settings.importDataDescription')}</small>
           </span>
         </button>
-        <button type="button" onClick={exportOperationJournal}>
+        <button type="button" onClick={() => void exportOperationLog()}>
           <IconFrame>
             <FileDown size={18} />
           </IconFrame>
