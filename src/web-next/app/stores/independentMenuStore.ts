@@ -19,7 +19,7 @@ interface IndependentMenuStore {
   toggleMenu: (menuId: IndependentMenuId) => void;
 }
 
-const SETTINGS_DEFAULT_SIZE = { width: 640, height: 430 };
+const SETTINGS_DEFAULT_SIZE = { width: 860, height: 620 };
 
 export const useIndependentMenuStore = create<IndependentMenuStore>()((set) => ({
   menus: createDefaultMenus(),

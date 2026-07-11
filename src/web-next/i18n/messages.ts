@@ -149,9 +149,9 @@ export const WEB_NEXT_MESSAGES = {
     'settings.expertCssDescription': 'Optional snippet for advanced styling. Off by default.',
     'settings.mode': 'Color mode',
     'settings.modeDescription': 'Every theme includes both light and dark palettes.',
-    'settings.theme': 'Theme',
+    'settings.theme': 'Theme pack',
     'settings.themeDescription':
-      'Classic freezes the current official product look. Ocean and Orchid are official alternates.',
+      'Choose a designed theme pack to switch the whole look. Classic is the official product default.',
     'settings.themeOfficial': 'Official',
     'settings.exportTheme': 'Export theme pack',
     'settings.exportThemeDescription': 'Download the selected pack as .cardo-theme.json.',
@@ -445,9 +445,9 @@ export const WEB_NEXT_MESSAGES = {
     'settings.expertCssDescription': '可选样式片段，默认关闭。',
     'settings.mode': '明暗模式',
     'settings.modeDescription': '每套主题都同时提供浅色与深色调色板。',
-    'settings.theme': '主题',
+    'settings.theme': '主题包',
     'settings.themeDescription':
-      '经典主题冻结当前官方产品视觉；海洋与兰紫为官方备选。',
+      '选择一套设计好的主题包来切换整体外观。经典为主官方默认。',
     'settings.themeOfficial': '官方',
     'settings.exportTheme': '导出主题包',
     'settings.exportThemeDescription': '将当前选中主题下载为 .cardo-theme.json。',

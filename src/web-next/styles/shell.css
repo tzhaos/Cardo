@@ -286,8 +286,8 @@
 .cardo-independent-menu {
   position: fixed;
   z-index: 180;
-  width: min(640px, calc(100vw - 32px));
-  height: min(430px, calc(100vh - 32px));
+  width: min(860px, calc(100vw - 32px));
+  height: min(620px, calc(100vh - 32px));
   overflow: hidden;
   border: 1px solid var(--cardo-border);
   border-radius: var(--cardo-radius-xl);
@@ -318,6 +318,6 @@ body.cardo-independent-menu-dragging .cardo-independent-menu {
 
   .cardo-independent-menu {
     width: calc(100vw - 20px);
-    height: min(440px, calc(100vh - 20px));
+    height: min(640px, calc(100vh - 20px));
   }
 }
