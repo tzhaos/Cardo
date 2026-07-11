@@ -25,6 +25,7 @@ import {
   preferenceLocales,
   webSearchEngineIds,
 } from '../contracts/preferences';
+import type { FeatureFlagOverrides } from '../contracts/featureCatalog';
 import type {
   ImportedThemePacks,
   ThemeColorOverrides,
@@ -149,6 +150,11 @@ export const preferences = sqliteTable('preferences', {
   importedThemePacks: text('imported_theme_packs', { mode: 'json' })
     .$type<ImportedThemePacks>()
     .notNull(),
+  /**
+   * Feature Catalog overrides. Empty object ⇒ all official Cardo defaults (on).
+   * Only stores deviations so classic shell stays unchanged out of the box.
+   */
+  featureFlags: text('feature_flags', { mode: 'json' }).$type<FeatureFlagOverrides>().notNull(),
   searchEngine: text('search_engine', {
     enum: webSearchEngineIds,
   }).notNull(),

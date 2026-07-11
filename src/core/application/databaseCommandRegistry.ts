@@ -32,6 +32,7 @@ export const databaseCommandRegistry = Object.freeze({
   'preferences.setThemeColorOverrides': executePreferencesCommand,
   'preferences.setThemeOptionValues': executePreferencesCommand,
   'preferences.setImportedThemePacks': executePreferencesCommand,
+  'preferences.setFeatureFlags': executePreferencesCommand,
   'preferences.setSearchEngine': executePreferencesCommand,
   'preferences.setCustomSearchTemplate': executePreferencesCommand,
   'box.create': executeBoxCommand,

@@ -13,6 +13,14 @@ import {
   DEFAULT_FONT_SCALE,
 } from '../../../core/contracts/preferences';
 import type {
+  FeatureFlagOverrides,
+  FeatureId,
+} from '../../../core/contracts/featureCatalog';
+import {
+  featureFlagOverridesSchema,
+  withFeatureEnabled,
+} from '../../../core/contracts/featureCatalog';
+import type {
   ImportedThemePacks,
   OverridableColorKey,
   ThemeColorOverrides,
@@ -44,6 +52,7 @@ interface PreferencesStore {
   themeColorOverrides: ThemeColorOverrides;
   themeOptionValues: ThemeOptionValues;
   importedThemePacks: ImportedThemePacks;
+  featureFlags: FeatureFlagOverrides;
   searchEngine: WebSearchEngineId;
   customSearchTemplate: string;
   initialize: () => Promise<void>;
@@ -63,6 +72,8 @@ interface PreferencesStore {
   resetThemeOptionValues: () => void;
   importThemePack: (pack: ThemePack) => void;
   removeImportedThemePack: (themeId: string) => void;
+  setFeatureEnabled: (featureId: FeatureId, enabled: boolean) => void;
+  resetFeatureFlags: () => void;
   setSearchEngine: (searchEngine: WebSearchEngineId) => void;
   setCustomSearchTemplate: (customSearchTemplate: string) => void;
   toggleColorMode: () => void;
@@ -156,6 +167,15 @@ const actions = {
       fireCommand({ type: 'preferences.setTheme', themeId: OFFICIAL_DEFAULT_THEME_ID });
     }
   },
+  setFeatureEnabled: (featureId: FeatureId, enabled: boolean) => {
+    const next = featureFlagOverridesSchema.parse(
+      withFeatureEnabled(state.featureFlags, featureId, enabled),
+    );
+    fireCommand({ type: 'preferences.setFeatureFlags', featureFlags: next });
+  },
+  resetFeatureFlags: () => {
+    fireCommand({ type: 'preferences.setFeatureFlags', featureFlags: {} });
+  },
   setSearchEngine: (searchEngine: WebSearchEngineId) =>
     fireCommand({ type: 'preferences.setSearchEngine', searchEngine }),
   setCustomSearchTemplate: (customSearchTemplate: string) =>
@@ -173,6 +193,7 @@ const actions = {
   | 'themeColorOverrides'
   | 'themeOptionValues'
   | 'importedThemePacks'
+  | 'featureFlags'
   | 'searchEngine'
   | 'customSearchTemplate'
 >;
@@ -187,6 +208,7 @@ let state: PreferencesStore = {
   themeColorOverrides: {},
   themeOptionValues: {},
   importedThemePacks: [],
+  featureFlags: {},
   searchEngine: 'bing-cn',
   customSearchTemplate: '',
   ...actions,
@@ -201,6 +223,7 @@ async function refreshPreferences() {
     preferences.themeColorOverrides ?? {},
   );
   const themeOptionValues = themeOptionValuesSchema.parse(preferences.themeOptionValues ?? {});
+  const featureFlags = featureFlagOverridesSchema.parse(preferences.featureFlags ?? {});
 
   // Official packs stay code-defined; only rehydrate user imports.
   syncImportedThemePacks(importedThemePacks);
@@ -220,6 +243,7 @@ async function refreshPreferences() {
     themeColorOverrides,
     themeOptionValues,
     importedThemePacks,
+    featureFlags,
     searchEngine: preferences.searchEngine,
     customSearchTemplate: preferences.customSearchTemplate,
   };

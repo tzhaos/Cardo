@@ -17,6 +17,7 @@ import {
   preferenceLocaleSchema,
   webSearchEngineIdSchema,
 } from './preferences';
+import { featureFlagOverridesSchema } from './featureCatalog';
 import {
   importedThemePacksSchema,
   themeColorOverridesSchema,
@@ -63,6 +64,12 @@ const commandSchemas = [
     .object({
       type: z.literal('preferences.setImportedThemePacks'),
       importedThemePacks: importedThemePacksSchema,
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal('preferences.setFeatureFlags'),
+      featureFlags: featureFlagOverridesSchema,
     })
     .strict(),
   z
@@ -278,6 +285,7 @@ const nonUndoableCommandTypes = new Set<WorkspaceCommandType>([
   'preferences.setThemeColorOverrides',
   'preferences.setThemeOptionValues',
   'preferences.setImportedThemePacks',
+  'preferences.setFeatureFlags',
   'preferences.setSearchEngine',
   'preferences.setCustomSearchTemplate',
   'system.constrainFrames',

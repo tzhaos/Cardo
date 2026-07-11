@@ -19,8 +19,10 @@ import { GlobalSearchPanel } from '../global-search/GlobalSearchPanel';
 import { createWebSearchUrl } from '../../domain/webSearch';
 import { openExternalUrl } from '../../platform/hostPlatform';
 import { Input } from '../../ui/primitives/input';
+import { useFeatureEnabled } from '../../shell/FeatureGate';
 
 export function BottomToolbar() {
+  const globalSearchEnabled = useFeatureEnabled('chrome.globalSearch');
   const createBox = useWorkspaceStore((state) => state.createBox);
   const activePageId = useWorkspaceStore((state) => state.projection.activePageId);
   const panX = useCanvasStore((state) => state.pages[activePageId]?.camera.panX ?? 0);
@@ -62,10 +64,18 @@ export function BottomToolbar() {
     openExternalUrl(webSearchUrl);
   };
 
+  useEffect(() => {
+    if (!globalSearchEnabled && isSearchActive) {
+      closeSearch();
+    }
+  }, [globalSearchEnabled, isSearchActive]);
+
   return (
     <div className="wbn-bottom-shell">
       <AnimatePresence>
-        {isSearchActive && searchQuery.trim() ? <GlobalSearchPanel query={searchQuery} /> : null}
+        {globalSearchEnabled && isSearchActive && searchQuery.trim() ? (
+          <GlobalSearchPanel query={searchQuery} />
+        ) : null}
       </AnimatePresence>
       <div className="wbn-bottom-toolbar" aria-label={t('toolbar.workspaceTools')}>
         <IconButton
@@ -86,7 +96,8 @@ export function BottomToolbar() {
             <Settings size={18} />
           </motion.span>
         </IconButton>
-        <div className="wbn-toolbar-divider" />
+        {globalSearchEnabled ? <div className="wbn-toolbar-divider" /> : null}
+        {globalSearchEnabled ? (
         <motion.div
           className={`wbn-search-pill${isSearchActive ? ' wbn-search-pill-active' : ''}`}
           animate={{ width: isSearchActive ? 360 : 40 }}
@@ -126,6 +137,7 @@ export function BottomToolbar() {
             <Globe2 size={17} />
           </IconButton>
         </motion.div>
+        ) : null}
         {!isSystemPageId(activePageId) ? (
           <>
             <div className="wbn-toolbar-divider" />

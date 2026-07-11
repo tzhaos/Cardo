@@ -13,6 +13,7 @@ import runtimeMetaMigrationSql from '../../../drizzle/0001_runtime_meta.sql?raw'
 import systemPageIdsMigrationSql from '../../../drizzle/0002_system_page_ids.sql?raw';
 import themePreferencesMigrationSql from '../../../drizzle/0003_theme_preferences.sql?raw';
 import themeCustomizationMigrationSql from '../../../drizzle/0004_theme_customization.sql?raw';
+import featureFlagsMigrationSql from '../../../drizzle/0005_feature_flags.sql?raw';
 import { BASELINE_SCHEMA_VERSION, DATABASE_SCHEMA_VERSION } from './version';
 
 export interface MigratorAdapter {
@@ -34,6 +35,7 @@ const FORWARD_MIGRATIONS: Readonly<Record<number, string>> = {
   5: systemPageIdsMigrationSql,
   6: themePreferencesMigrationSql,
   7: themeCustomizationMigrationSql,
+  8: featureFlagsMigrationSql,
 };
 
 /**

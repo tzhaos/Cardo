@@ -19,6 +19,7 @@ export function SortablePageTab({
   onContextMenu,
   onReorderStart,
   onReorderEnd,
+  reorderable = true,
 }: {
   page: WorkspacePage;
   active: boolean;
@@ -30,6 +31,7 @@ export function SortablePageTab({
   onContextMenu: (event: React.MouseEvent<HTMLElement>) => void;
   onReorderStart: () => void;
   onReorderEnd: () => void;
+  reorderable?: boolean;
 }) {
   const controls = useDragControls();
   const registerDropElement = useCallback(
@@ -42,7 +44,7 @@ export function SortablePageTab({
   useEffect(() => () => cancelLongPressRef.current?.(), []);
 
   const beginLongPress = (event: ReactPointerEvent<HTMLElement>) => {
-    if (event.button !== 0 || !event.isPrimary) return;
+    if (!reorderable || event.button !== 0 || !event.isPrimary) return;
     event.persist();
     cancelLongPressRef.current?.();
     const start = { x: event.clientX, y: event.clientY };

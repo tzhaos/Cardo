@@ -8,6 +8,7 @@ import {
   FileDown,
   Globe2,
   Languages,
+  LayoutGrid,
   Moon,
   Palette,
   RotateCcw,
@@ -28,6 +29,7 @@ import { IconButton, IconFrame } from '../../ui/khaos/icon-button';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import type { WorkspaceProjection } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
+import { useFeatureEnabled } from '../../shell/FeatureGate';
 import {
   exportOperationLog,
   exportThemePackFile,
@@ -35,6 +37,11 @@ import {
   parseWorkspaceImportFile,
 } from '../../platform/hostPlatform';
 import { isValidCustomSearchTemplate, type WebSearchEngineId } from '../../domain/webSearch';
+import {
+  FEATURE_CATALOG,
+  type FeatureDefinition,
+  type FeatureId,
+} from '../../../core/contracts/featureCatalog';
 import {
   colorModeSchema,
   densitySchema,
@@ -73,7 +80,7 @@ import { MotionButton } from '../../ui/primitives/motion-button';
 import { ToggleGroup, ToggleGroupItem } from '../../ui/primitives/toggle-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/primitives/tabs';
 
-type SettingsSection = 'general' | 'appearance' | 'data' | 'about';
+type SettingsSection = 'general' | 'interface' | 'appearance' | 'data' | 'about';
 
 export function SettingsPanel({
   onClose,
@@ -104,6 +111,7 @@ export function SettingsPanel({
   const themes = useMemo(() => getRegisteredWebNextThemes(), [importedThemePacks]);
   const sections = [
     { id: 'general' as const, icon: SlidersHorizontal, label: t('settings.general') },
+    { id: 'interface' as const, icon: LayoutGrid, label: t('settings.interface') },
     { id: 'appearance' as const, icon: Palette, label: t('settings.appearance') },
     { id: 'data' as const, icon: Database, label: t('settings.data') },
     { id: 'about' as const, icon: CircleHelp, label: t('settings.about') },
@@ -163,6 +171,7 @@ export function SettingsPanel({
                   setCustomSearchTemplate={setCustomSearchTemplate}
                 />
               ) : null}
+              {section === 'interface' ? <InterfaceSettings /> : null}
               {section === 'appearance' ? (
                 <AppearanceSettings
                   colorMode={colorMode}
@@ -185,6 +194,80 @@ export function SettingsPanel({
           </AnimatePresence>
         </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+function InterfaceSettings() {
+  const { t } = useI18n();
+  const featureFlags = usePreferencesStore((state) => state.featureFlags);
+  const setFeatureEnabled = usePreferencesStore((state) => state.setFeatureEnabled);
+  const resetFeatureFlags = usePreferencesStore((state) => state.resetFeatureFlags);
+  const hasOverrides = Object.keys(featureFlags).length > 0;
+
+  return (
+    <>
+      <SettingsHeading
+        title={t('settings.interface')}
+        description={t('settings.interfaceDescription')}
+      />
+      {FEATURE_CATALOG.map((feature) => (
+        <FeatureFlagRow
+          key={feature.id}
+          feature={feature}
+          onToggle={setFeatureEnabled}
+        />
+      ))}
+      {hasOverrides ? (
+        <Button
+          variant="ghost"
+          className="wbn-theme-reset-button"
+          onClick={() => resetFeatureFlags()}
+        >
+          <RotateCcw size={14} />
+          {t('settings.resetFeatures')}
+        </Button>
+      ) : null}
+    </>
+  );
+}
+
+function FeatureFlagRow({
+  feature,
+  onToggle,
+}: {
+  feature: FeatureDefinition;
+  onToggle: (featureId: FeatureId, enabled: boolean) => void;
+}) {
+  const { t } = useI18n();
+  const enabled = useFeatureEnabled(feature.id);
+  const label = t(feature.labelKey as WebNextMessageKey);
+  const description = t(feature.descriptionKey as WebNextMessageKey);
+
+  return (
+    <div className="wbn-settings-card">
+      <div className="wbn-settings-card-copy">
+        <span>
+          {label}
+          <small>{description}</small>
+        </span>
+      </div>
+      <ToggleGroup
+        aria-label={label}
+        type="single"
+        value={enabled ? 'on' : 'off'}
+        onValueChange={(next) => {
+          if (!next) return;
+          onToggle(feature.id, next === 'on');
+        }}
+      >
+        <SegmentButton active={!enabled} value="off">
+          {t('settings.optionOff')}
+        </SegmentButton>
+        <SegmentButton active={enabled} value="on">
+          {t('settings.optionOn')}
+        </SegmentButton>
+      </ToggleGroup>
     </div>
   );
 }

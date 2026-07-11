@@ -14,6 +14,7 @@ type PreferencesCommandType =
   | 'preferences.setThemeColorOverrides'
   | 'preferences.setThemeOptionValues'
   | 'preferences.setImportedThemePacks'
+  | 'preferences.setFeatureFlags'
   | 'preferences.setSearchEngine'
   | 'preferences.setCustomSearchTemplate';
 
@@ -61,6 +62,8 @@ function getPatch(command: PreferencesCommand): Partial<typeof preferences.$infe
       return { themeOptionValues: command.themeOptionValues };
     case 'preferences.setImportedThemePacks':
       return { importedThemePacks: command.importedThemePacks };
+    case 'preferences.setFeatureFlags':
+      return { featureFlags: command.featureFlags };
     case 'preferences.setSearchEngine':
       return { searchEngine: command.searchEngine };
     case 'preferences.setCustomSearchTemplate':

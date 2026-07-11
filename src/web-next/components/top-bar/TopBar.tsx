@@ -14,8 +14,12 @@ import { TabDeleteConfirmView } from './TabDeleteConfirmView';
 import { SortablePageTab } from './SortablePageTab';
 import { MotionButton } from '../../ui/primitives/motion-button';
 import { useContextMenu } from '../../ui/khaos/context-menu';
+import { useFeatureEnabled } from '../../shell/FeatureGate';
 
 export function TopBar() {
+  const showCollection = useFeatureEnabled('workspace.collection');
+  const showRecycleBin = useFeatureEnabled('workspace.recycleBin');
+  const multiPage = useFeatureEnabled('workspace.multiPage');
   const persistedPageRows = useWorkspaceStore((state) => state.projection.pages);
   const activePageId = useWorkspaceStore((state) => state.projection.activePageId);
   const defaultPageId = useWorkspaceStore((state) => state.projection.defaultPageId);
@@ -97,18 +101,27 @@ export function TopBar() {
     .join(' ');
 
   const openNewPage = () => createPage(t('page.untitled'));
+  const visiblePages = multiPage
+    ? pages
+    : pages.filter((page) => page.id === activePageId).length > 0
+      ? pages.filter((page) => page.id === activePageId)
+      : pages.slice(0, 1);
   const openPageMenu = (
     event: ReactMouseEvent<HTMLElement>,
     page?: (typeof workspacePages)[number],
   ) => {
     event.preventDefault();
     contextMenu.openMenu(event.clientX, event.clientY, [
-      {
-        id: 'new-page',
-        label: t('menu.newPage'),
-        icon: <Plus size={16} />,
-        onSelect: openNewPage,
-      },
+      ...(multiPage
+        ? [
+            {
+              id: 'new-page',
+              label: t('menu.newPage'),
+              icon: <Plus size={16} />,
+              onSelect: openNewPage,
+            },
+          ]
+        : []),
       ...(page
         ? [
             {
@@ -117,21 +130,25 @@ export function TopBar() {
               icon: <SquarePen size={16} />,
               onSelect: () => setRenamePageId(page.id),
             },
-            {
-              id: 'set-default-page',
-              label: t(page.id === defaultPageId ? 'page.default' : 'page.setDefault'),
-              icon: <House size={16} />,
-              disabled: page.id === defaultPageId,
-              onSelect: () => setDefaultPage(page.id),
-            },
-            {
-              id: 'delete-page',
-              label: t('page.delete', { title: page.title }),
-              icon: <Trash2 size={16} />,
-              danger: true,
-              disabled: workspacePages.length <= 1,
-              onSelect: () => setDeletePageId(page.id),
-            },
+            ...(multiPage
+              ? [
+                  {
+                    id: 'set-default-page',
+                    label: t(page.id === defaultPageId ? 'page.default' : 'page.setDefault'),
+                    icon: <House size={16} />,
+                    disabled: page.id === defaultPageId,
+                    onSelect: () => setDefaultPage(page.id),
+                  },
+                  {
+                    id: 'delete-page',
+                    label: t('page.delete', { title: page.title }),
+                    icon: <Trash2 size={16} />,
+                    danger: true,
+                    disabled: workspacePages.length <= 1,
+                    onSelect: () => setDeletePageId(page.id),
+                  },
+                ]
+              : []),
           ]
         : []),
     ]);
@@ -159,7 +176,7 @@ export function TopBar() {
           onReorder={updateOrder}
           aria-label={t('page.workspacePages')}
         >
-          {collectionPage ? (
+          {showCollection && collectionPage ? (
             <CollectionTab
               active={collectionPage.id === activePageId}
               highlighted={boxDropPageId === collectionPage.id}
@@ -173,7 +190,7 @@ export function TopBar() {
             />
           ) : null}
           <AnimatePresence mode="popLayout">
-            {pages.map((page) => (
+            {visiblePages.map((page) => (
               <SortablePageTab
                 active={page.id === activePageId}
                 className={[
@@ -189,12 +206,13 @@ export function TopBar() {
                 onContextMenu={(event) => openPageMenu(event, page)}
                 onRename={(title) => renamePage(page.id, title)}
                 onRenameRequestHandled={() => setRenamePageId(null)}
-                onReorderStart={startReordering}
-                onReorderEnd={finishReordering}
+                onReorderStart={multiPage ? startReordering : () => undefined}
+                onReorderEnd={multiPage ? finishReordering : () => undefined}
+                reorderable={multiPage}
               />
             ))}
           </AnimatePresence>
-          {recycleBinPage ? (
+          {showRecycleBin && recycleBinPage ? (
             <RecycleBinTab
               active={recycleBinPage.id === activePageId}
               highlighted={boxDropPageId === recycleBinPage.id}
@@ -205,18 +223,20 @@ export function TopBar() {
             />
           ) : null}
         </Reorder.Group>
-        <motion.div className="wbn-top-actions" layout="position">
-          <MotionButton
-            variant="icon"
-            className="wbn-icon-button"
-            type="button"
-            onClick={openNewPage}
-            aria-label={t('page.add')}
-            whileTap={{ scale: 0.9 }}
-          >
-            <Plus size={18} />
-          </MotionButton>
-        </motion.div>
+        {multiPage ? (
+          <motion.div className="wbn-top-actions" layout="position">
+            <MotionButton
+              variant="icon"
+              className="wbn-icon-button"
+              type="button"
+              onClick={openNewPage}
+              aria-label={t('page.add')}
+              whileTap={{ scale: 0.9 }}
+            >
+              <Plus size={18} />
+            </MotionButton>
+          </motion.div>
+        ) : null}
       </motion.div>
       <AnimatePresence>
         {pageToDelete ? (

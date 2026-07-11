@@ -100,6 +100,7 @@ export async function initializeWorkspaceDatabase(
       themeColorOverrides: {},
       themeOptionValues: {},
       importedThemePacks: [],
+      featureFlags: {},
       searchEngine: 'bing-cn',
       customSearchTemplate: '',
     });

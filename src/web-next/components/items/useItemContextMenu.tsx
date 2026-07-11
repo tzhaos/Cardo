@@ -2,6 +2,7 @@ import type { MouseEvent, ReactNode } from 'react';
 import { Edit2, Pin, PinOff, SquarePen, Trash2 } from 'lucide-react';
 import { useI18n } from '../../i18n/useI18n';
 import { useContextMenu } from '../../ui/khaos/context-menu';
+import { useFeatureEnabled } from '../../shell/FeatureGate';
 
 export function useItemContextMenu({
   pinned,
@@ -20,9 +21,11 @@ export function useItemContextMenu({
 }) {
   const { openMenu } = useContextMenu();
   const { t } = useI18n();
+  const contextMenuEnabled = useFeatureEnabled('item.contextMenu');
 
   return {
     onContextMenu: (event: MouseEvent<HTMLElement>) => {
+      if (!contextMenuEnabled) return;
       event.preventDefault();
       event.stopPropagation();
       openMenu(event.clientX, event.clientY, [

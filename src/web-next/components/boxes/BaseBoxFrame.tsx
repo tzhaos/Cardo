@@ -39,6 +39,7 @@ import {
 } from '../../app/windowPointerSession';
 import { useContextMenu } from '../../ui/khaos/context-menu';
 import { useI18n } from '../../i18n/useI18n';
+import { useFeatureEnabled } from '../../shell/FeatureGate';
 import { BoxAppearanceView } from './BoxAppearancePopover';
 import { Input } from '../../ui/primitives/input';
 import { Button } from '../../ui/primitives/button';
@@ -98,6 +99,7 @@ export function BaseBoxFrame({
   const addViewState = useUiStore((state) => state.addDrafts[box.id]);
   const closeAddView = useUiStore((state) => state.closeAddView);
   const contextMenu = useContextMenu();
+  const appearanceEnabled = useFeatureEnabled('box.appearancePopover');
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [appearanceView, setAppearanceView] = useState(false);
   const [deleteMotion, setDeleteMotion] = useState<BoxDeleteMotion | null>(null);
@@ -300,7 +302,9 @@ export function BaseBoxFrame({
     detailMode === 'compact' ? 'wbn-box-compact' : '',
     box.isLocked ? 'wbn-box-locked' : '',
     isTemporary ? 'wbn-box-temporary' : '',
-    addViewState?.mode || appearanceView || confirmDelete ? 'wbn-box-local-view' : '',
+    addViewState?.mode || (appearanceEnabled && appearanceView) || confirmDelete
+      ? 'wbn-box-local-view'
+      : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -551,10 +555,12 @@ export function BaseBoxFrame({
               className="wbn-box-icon wbn-icon-frame"
               type="button"
               data-no-drag
-              title={t('box.changePreset')}
-              aria-label={t('box.changePreset')}
-              aria-pressed={appearanceView}
+              title={appearanceEnabled ? t('box.changePreset') : box.title}
+              aria-label={appearanceEnabled ? t('box.changePreset') : box.title}
+              aria-pressed={appearanceEnabled ? appearanceView : undefined}
+              disabled={!appearanceEnabled}
               onClick={() => {
+                if (!appearanceEnabled) return;
                 contextMenu.closeMenu();
                 setConfirmDelete(false);
                 closeAddView(box.id);
@@ -658,7 +664,7 @@ export function BaseBoxFrame({
       <div
         className={`wbn-box-content wbn-box-content-mixed${confirmDelete ? ' wbn-box-delete-view' : ''}`}
       >
-        {appearanceView ? (
+        {appearanceEnabled && appearanceView ? (
           <BoxAppearanceView
             box={box}
             accent={accent}

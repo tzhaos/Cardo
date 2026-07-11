@@ -9,6 +9,7 @@ import { HistoryToolbar } from '../components/history-toolbar/HistoryToolbar';
 import { RuntimeConnectionBanner } from '../components/runtime/RuntimeConnectionBanner';
 import { TopBar } from '../components/top-bar/TopBar';
 import { applyWebNextTheme } from '../themes/themeRegistry';
+import { FeatureGate } from '../shell/FeatureGate';
 import { useCancelActivePointerOnWindowExit } from './useCancelActivePointerOnWindowExit';
 import { usePasteIntoSelectedBox } from './usePasteIntoSelectedBox';
 import { useWorkspaceHistoryShortcuts } from './useWorkspaceHistoryShortcuts';
@@ -57,12 +58,22 @@ export default function WebNextApp() {
       <div className={`wbn-app${isDesktopHost ? ' wbn-app-desktop' : ''}`}>
         <DesktopTitleBar />
         <BoxPageDropController />
-        <TopBar />
-        <HistoryToolbar />
-        <RuntimeConnectionBanner />
+        <FeatureGate feature="chrome.topBar">
+          <TopBar />
+        </FeatureGate>
+        <FeatureGate feature="chrome.historyToolbar">
+          <HistoryToolbar />
+        </FeatureGate>
+        <FeatureGate feature="chrome.runtimeBanner">
+          <RuntimeConnectionBanner />
+        </FeatureGate>
         <WorkspaceCanvas />
-        <CanvasToolsToolbar />
-        <BottomToolbar />
+        <FeatureGate feature="chrome.canvasTools">
+          <CanvasToolsToolbar />
+        </FeatureGate>
+        <FeatureGate feature="chrome.bottomToolbar">
+          <BottomToolbar />
+        </FeatureGate>
         <SettingsWindow />
         <ContextMenuHost />
       </div>
