@@ -36,7 +36,7 @@ export function ClipboardBox({
         <SortableItemList
           boxId={box.id}
           items={items}
-          viewMode={box.viewMode ?? 'list'}
+          viewMode={box.viewMode}
           renderItem={(item) => (
             <ClipboardItem
               boxId={box.id}

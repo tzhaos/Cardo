@@ -149,7 +149,7 @@ function DataSettings() {
   const exportData = () => {
     const payload = {
       format: 'khaosbox-workspace',
-      version: 2,
+      version: 3,
       exportedAt: new Date().toISOString(),
       snapshot,
     };

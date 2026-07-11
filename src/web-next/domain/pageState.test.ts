@@ -7,6 +7,8 @@ function createSnapshot(): WorkspaceSnapshot {
   return {
     activePageId: 'page-a',
     defaultPageId: 'page-a',
+    collectionBoxIds: [],
+    collectionViews: {},
     pages: [
       { id: COLLECTION_PAGE_ID, title: 'Collection', order: -1, createdAt: '', updatedAt: '' },
       { id: 'page-a', title: 'A', order: 0, createdAt: '', updatedAt: '' },

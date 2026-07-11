@@ -6,8 +6,14 @@ import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID, type WorkspaceSnapshot } from 
 const fallback: WorkspaceSnapshot = {
   activePageId: 'fallback',
   defaultPageId: 'fallback',
-  pages: [{ id: 'fallback', title: 'Fallback', order: 0, createdAt: '', updatedAt: '' }],
+  pages: [
+    { id: COLLECTION_PAGE_ID, title: 'Collection', order: -1, createdAt: '', updatedAt: '' },
+    { id: 'fallback', title: 'Fallback', order: 0, createdAt: '', updatedAt: '' },
+    { id: RECYCLE_BIN_PAGE_ID, title: 'Recycle Bin', order: 1, createdAt: '', updatedAt: '' },
+  ],
   boxes: [],
+  collectionBoxIds: [],
+  collectionViews: {},
 };
 
 test('restored workspaces open the declared default page', () => {
@@ -16,10 +22,14 @@ test('restored workspaces open the declared default page', () => {
       activePageId: 'page-a',
       defaultPageId: 'page-a',
       pages: [
+        { id: COLLECTION_PAGE_ID, title: 'Collection', order: -1, createdAt: '', updatedAt: '' },
         { id: 'page-b', title: 'B', order: 1, createdAt: '', updatedAt: '' },
         { id: 'page-a', title: 'A', order: 0, createdAt: '', updatedAt: '' },
+        { id: RECYCLE_BIN_PAGE_ID, title: 'Recycle Bin', order: 2, createdAt: '', updatedAt: '' },
       ],
       boxes: [],
+      collectionBoxIds: [],
+      collectionViews: {},
     },
     fallback,
   );
@@ -38,10 +48,14 @@ test('persisted active pages do not override the default start page', () => {
       activePageId: 'page-b',
       defaultPageId: 'page-a',
       pages: [
+        { id: COLLECTION_PAGE_ID, title: 'Collection', order: -1, createdAt: '', updatedAt: '' },
         { id: 'page-a', title: 'A', order: 0, createdAt: '', updatedAt: '' },
         { id: 'page-b', title: 'B', order: 1, createdAt: '', updatedAt: '' },
+        { id: RECYCLE_BIN_PAGE_ID, title: 'Recycle Bin', order: 2, createdAt: '', updatedAt: '' },
       ],
       boxes: [],
+      collectionBoxIds: [],
+      collectionViews: {},
     },
     fallback,
   );
@@ -59,8 +73,14 @@ test('extracts a workspace from the persisted Zustand envelope', () => {
       snapshot: {
         activePageId: 'page-a',
         defaultPageId: 'page-a',
-        pages: [{ id: 'page-a', title: 'A', order: 0, createdAt: '', updatedAt: '' }],
+        pages: [
+          { id: COLLECTION_PAGE_ID, title: 'Collection', order: -1, createdAt: '', updatedAt: '' },
+          { id: 'page-a', title: 'A', order: 0, createdAt: '', updatedAt: '' },
+          { id: RECYCLE_BIN_PAGE_ID, title: 'Recycle Bin', order: 1, createdAt: '', updatedAt: '' },
+        ],
         boxes: [],
+        collectionBoxIds: [],
+        collectionViews: {},
       },
     },
   });

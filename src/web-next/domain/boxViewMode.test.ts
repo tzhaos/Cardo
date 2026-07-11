@@ -6,16 +6,21 @@ import type { WorkspaceSnapshot } from './workspace';
 const snapshot: WorkspaceSnapshot = {
   activePageId: 'page-a',
   defaultPageId: 'page-a',
+  collectionBoxIds: [],
+  collectionViews: {},
   pages: [{ id: 'page-a', title: 'A', order: 0, createdAt: '', updatedAt: '' }],
   boxes: [
     {
       id: 'box-a',
       pageId: 'page-a',
       preset: 'bookmark',
+      kind: 'normal',
       title: 'Bookmarks',
       frame: { x: 0, y: 0, width: 320, height: 240 },
       items: [],
       viewMode: 'list',
+      detailMode: 'detailed',
+      isLocked: false,
       createdAt: '',
       updatedAt: '',
     },

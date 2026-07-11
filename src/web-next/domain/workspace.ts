@@ -51,7 +51,7 @@ export interface BaseBoxItem {
   id: string;
   type: WorkspaceItemType;
   title: string;
-  isPinned?: boolean;
+  isPinned: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -89,13 +89,13 @@ export interface WorkspaceBox {
   id: string;
   pageId: string;
   preset: WorkspaceBoxPreset;
-  kind?: WorkspaceBoxKind;
+  kind: WorkspaceBoxKind;
   title: string;
   frame: BoxFrame;
   items: BoxItem[];
-  viewMode?: WorkspaceBoxViewMode;
-  detailMode?: WorkspaceBoxDetailMode;
-  isLocked?: boolean;
+  viewMode: WorkspaceBoxViewMode;
+  detailMode: WorkspaceBoxDetailMode;
+  isLocked: boolean;
   icon?: WorkspaceBoxIcon;
   accent?: string;
   createdAt: string;
@@ -115,6 +115,6 @@ export interface WorkspaceSnapshot {
   activePageId: string;
   defaultPageId: string;
   boxes: WorkspaceBox[];
-  collectionBoxIds?: string[];
-  collectionViews?: Record<string, CollectionBoxView>;
+  collectionBoxIds: string[];
+  collectionViews: Record<string, CollectionBoxView>;
 }

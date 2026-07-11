@@ -7,6 +7,8 @@ function createSnapshot(): WorkspaceSnapshot {
   return {
     activePageId: 'page-a',
     defaultPageId: 'page-a',
+    collectionBoxIds: [],
+    collectionViews: {},
     pages: [
       { id: COLLECTION_PAGE_ID, title: 'Collection', order: -1, createdAt: '', updatedAt: '' },
       { id: 'page-a', title: 'A', order: 0, createdAt: '', updatedAt: '' },
@@ -24,9 +26,13 @@ function createSnapshot(): WorkspaceSnapshot {
         id: 'box-a',
         pageId: 'page-a',
         preset: 'folder',
+        kind: 'normal',
         title: 'A box',
         frame: { x: 0, y: 0, width: 320, height: 240 },
         items: [],
+        viewMode: 'list',
+        detailMode: 'detailed',
+        isLocked: false,
         createdAt: '',
         updatedAt: '',
       },

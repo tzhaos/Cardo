@@ -36,7 +36,7 @@ export function BookmarkBox({
         <SortableItemList
           boxId={box.id}
           items={items}
-          viewMode={box.viewMode ?? 'list'}
+          viewMode={box.viewMode}
           renderItem={(item) => (
             <BookmarkItem
               boxId={box.id}

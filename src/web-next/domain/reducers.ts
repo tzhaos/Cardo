@@ -90,11 +90,9 @@ export function deletePage(snapshot: WorkspaceSnapshot, pageId: string) {
           box.pageId === pageId ? { ...box, pageId: recycleBinPage.id, updatedAt: nowIso() } : box,
         )
       : snapshot.boxes.filter((box) => box.pageId !== pageId),
-    collectionBoxIds: (snapshot.collectionBoxIds ?? []).filter(
-      (boxId) => !removedBoxIds.has(boxId),
-    ),
+    collectionBoxIds: snapshot.collectionBoxIds.filter((boxId) => !removedBoxIds.has(boxId)),
     collectionViews: Object.fromEntries(
-      Object.entries(snapshot.collectionViews ?? {}).filter(([boxId]) => !removedBoxIds.has(boxId)),
+      Object.entries(snapshot.collectionViews).filter(([boxId]) => !removedBoxIds.has(boxId)),
     ),
   };
 }
@@ -347,7 +345,7 @@ export function deleteBox(snapshot: WorkspaceSnapshot, boxId: string) {
           ? { ...candidate, pageId: recycleBinPage.id, updatedAt: nowIso() }
           : candidate,
       ),
-      collectionBoxIds: (snapshot.collectionBoxIds ?? []).filter((id) => id !== boxId),
+      collectionBoxIds: snapshot.collectionBoxIds.filter((id) => id !== boxId),
       collectionViews: omitCollectionView(snapshot.collectionViews, boxId),
     };
   }
@@ -355,14 +353,14 @@ export function deleteBox(snapshot: WorkspaceSnapshot, boxId: string) {
   return {
     ...snapshot,
     boxes: snapshot.boxes.filter((box) => box.id !== boxId),
-    collectionBoxIds: (snapshot.collectionBoxIds ?? []).filter((id) => id !== boxId),
+    collectionBoxIds: snapshot.collectionBoxIds.filter((id) => id !== boxId),
     collectionViews: omitCollectionView(snapshot.collectionViews, boxId),
   };
 }
 
 export function addBoxToCollection(snapshot: WorkspaceSnapshot, boxId: string) {
   const box = snapshot.boxes.find((candidate) => candidate.id === boxId);
-  if (!box || isRecycleBinPageId(box.pageId) || (snapshot.collectionBoxIds ?? []).includes(boxId)) {
+  if (!box || isRecycleBinPageId(box.pageId) || snapshot.collectionBoxIds.includes(boxId)) {
     return snapshot;
   }
 
@@ -371,16 +369,16 @@ export function addBoxToCollection(snapshot: WorkspaceSnapshot, boxId: string) {
     activePageId: snapshot.pages.some((page) => isCollectionPageId(page.id))
       ? snapshot.pages.find((page) => isCollectionPageId(page.id))!.id
       : snapshot.activePageId,
-    collectionBoxIds: [...(snapshot.collectionBoxIds ?? []), boxId],
+    collectionBoxIds: [...snapshot.collectionBoxIds, boxId],
     collectionViews: {
-      ...(snapshot.collectionViews ?? {}),
-      [boxId]: createCollectionView(box, (snapshot.collectionBoxIds ?? []).length),
+      ...snapshot.collectionViews,
+      [boxId]: createCollectionView(box, snapshot.collectionBoxIds.length),
     },
   };
 }
 
 export function removeBoxFromCollection(snapshot: WorkspaceSnapshot, boxId: string) {
-  const collectionBoxIds = snapshot.collectionBoxIds ?? [];
+  const collectionBoxIds = snapshot.collectionBoxIds;
   if (!collectionBoxIds.includes(boxId)) return snapshot;
   return {
     ...snapshot,
@@ -394,16 +392,15 @@ export function updateCollectionBoxView(
   boxId: string,
   patch: Partial<Omit<NonNullable<WorkspaceSnapshot['collectionViews']>[string], 'boxId'>>,
 ) {
-  if (!(snapshot.collectionBoxIds ?? []).includes(boxId)) return snapshot;
+  if (!snapshot.collectionBoxIds.includes(boxId)) return snapshot;
   const box = snapshot.boxes.find((candidate) => candidate.id === boxId);
   if (!box) return snapshot;
-  const current =
-    snapshot.collectionViews?.[boxId] ??
-    createCollectionView(box, (snapshot.collectionBoxIds ?? []).indexOf(boxId));
+  const current = snapshot.collectionViews[boxId];
+  if (!current) return snapshot;
   return {
     ...snapshot,
     collectionViews: {
-      ...(snapshot.collectionViews ?? {}),
+      ...snapshot.collectionViews,
       [boxId]: { ...current, ...patch, boxId },
     },
   };
@@ -414,16 +411,15 @@ export function updateCollectionBoxFrames(
   frames: Record<string, BoxFrame>,
 ) {
   const entries = Object.entries(frames).filter(([boxId]) =>
-    (snapshot.collectionBoxIds ?? []).includes(boxId),
+    snapshot.collectionBoxIds.includes(boxId),
   );
   if (!entries.length) return snapshot;
-  const collectionViews = { ...(snapshot.collectionViews ?? {}) };
+  const collectionViews = { ...snapshot.collectionViews };
   for (const [boxId, frame] of entries) {
     const box = snapshot.boxes.find((candidate) => candidate.id === boxId);
     if (!box) continue;
     const current =
-      collectionViews[boxId] ??
-      createCollectionView(box, (snapshot.collectionBoxIds ?? []).indexOf(boxId));
+      collectionViews[boxId] ?? createCollectionView(box, snapshot.collectionBoxIds.indexOf(boxId));
     collectionViews[boxId] = { ...current, frame };
   }
   return { ...snapshot, collectionViews };
@@ -438,14 +434,14 @@ function createCollectionView(box: WorkspaceBox, index: number) {
       width: Math.max(280, Math.min(520, box.frame.width)),
       height: Math.max(220, Math.min(460, box.frame.height)),
     },
-    viewMode: box.viewMode ?? ('list' as const),
-    detailMode: box.detailMode ?? ('detailed' as const),
+    viewMode: box.viewMode,
+    detailMode: box.detailMode,
     order: index,
   };
 }
 
 function omitCollectionView(views: WorkspaceSnapshot['collectionViews'], boxId: string) {
-  if (!views?.[boxId]) return views ?? {};
+  if (!views[boxId]) return views;
   return Object.fromEntries(Object.entries(views).filter(([id]) => id !== boxId));
 }
 

@@ -278,7 +278,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
     }),
     {
       name: 'khaosbox.web-next.workspace',
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => webNextStorage),
       skipHydration: true,
       partialize: ({ snapshot }) => ({ snapshot }),
@@ -396,7 +396,7 @@ function createCommandOperation(
       });
     }
     case 'collection.updateBoxFrame': {
-      const current = before.collectionViews?.[command.boxId]?.frame;
+      const current = before.collectionViews[command.boxId]?.frame;
       const resized =
         current &&
         (current.width !== command.frame.width || current.height !== command.frame.height);

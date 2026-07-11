@@ -70,13 +70,13 @@ export function CollectionPage() {
     () => new Map(snapshot.boxes.map((box) => [box.id, box])),
     [snapshot.boxes],
   );
-  const entries = (snapshot.collectionBoxIds ?? [])
-    .map((boxId, index) => {
+  const entries = snapshot.collectionBoxIds
+    .map((boxId) => {
       const box = boxesById.get(boxId);
       if (!box || isRecycleBinPageId(box.pageId)) return null;
       return {
         box,
-        view: snapshot.collectionViews?.[boxId] ?? createFallbackView(box, index),
+        view: snapshot.collectionViews[boxId]!,
       };
     })
     .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
@@ -408,21 +408,6 @@ function constrainCollectionFrame(frame: BoxFrame, viewport: { width: number; he
     y: Math.max(72, Math.min(frame.y, Math.max(72, viewport.height - height - 72))),
     width,
     height,
-  };
-}
-
-function createFallbackView(box: WorkspaceBox, index: number): CollectionBoxView {
-  return {
-    boxId: box.id,
-    frame: {
-      x: 64 + (index % 3) * 350,
-      y: 92 + Math.floor(index / 3) * 290,
-      width: 320,
-      height: 260,
-    },
-    viewMode: box.viewMode ?? 'list',
-    detailMode: box.detailMode ?? 'detailed',
-    order: index,
   };
 }
 

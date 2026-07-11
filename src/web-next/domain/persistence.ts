@@ -1,4 +1,3 @@
-import { createCollectionPage, createRecycleBinPage } from './factories';
 import {
   isCollectionPageId,
   isRecycleBinPageId,
@@ -6,7 +5,6 @@ import {
   type BoxItem,
   type WorkspaceBox,
   type CollectionBoxView,
-  type WorkspaceBoxPreset,
   type WorkspacePage,
   type WorkspaceSnapshot,
 } from './workspace';
@@ -21,55 +19,67 @@ export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null
     !isRecord(input) ||
     !Array.isArray(input.pages) ||
     !Array.isArray(input.boxes) ||
+    !Array.isArray(input.collectionBoxIds) ||
+    !isRecord(input.collectionViews) ||
+    typeof input.activePageId !== 'string' ||
     typeof input.defaultPageId !== 'string'
   ) {
     return null;
   }
 
-  const parsedPages = input.pages
-    .filter(isWorkspacePage)
-    .sort((first, second) => first.order - second.order)
-    .map((page, order) => ({ ...page, order }));
+  if (!input.pages.every(isWorkspacePage)) return null;
+  const parsedPages = [...input.pages].sort((first, second) => first.order - second.order);
+  if (new Set(parsedPages.map((page) => page.id)).size !== parsedPages.length) return null;
   const workspacePages = parsedPages.filter((page) => !isSystemPageId(page.id));
-  if (workspacePages.length === 0) {
+  const collectionPages = parsedPages.filter((page) => isCollectionPageId(page.id));
+  const recycleBinPages = parsedPages.filter((page) => isRecycleBinPageId(page.id));
+  if (workspacePages.length === 0 || collectionPages.length !== 1 || recycleBinPages.length !== 1)
     return null;
-  }
   const defaultPageId = input.defaultPageId;
   if (!workspacePages.some((page) => page.id === defaultPageId)) {
     return null;
   }
-  const existingRecycleBin = parsedPages.find((page) => isRecycleBinPageId(page.id));
-  const existingCollection = parsedPages.find((page) => isCollectionPageId(page.id));
   const pages = [
-    existingCollection
-      ? { ...existingCollection, title: 'Collection', order: -1 }
-      : createCollectionPage(),
+    { ...collectionPages[0]!, order: -1 },
     ...workspacePages.map((page, order) => ({ ...page, order })),
-    existingRecycleBin
-      ? { ...existingRecycleBin, title: 'Recycle Bin', order: workspacePages.length }
-      : createRecycleBinPage(workspacePages.length),
+    { ...recycleBinPages[0]!, order: workspacePages.length },
   ];
 
   const pageIds = new Set(pages.map((page) => page.id));
-  const boxes = input.boxes
-    .map(parseWorkspaceBox)
-    .filter((box): box is WorkspaceBox => box !== null)
-    .filter((box) => pageIds.has(box.pageId) && !isCollectionPageId(box.pageId));
+  if (!pageIds.has(input.activePageId)) return null;
+  const parsedBoxes = input.boxes.map(parseWorkspaceBox);
+  if (parsedBoxes.some((box) => box === null)) return null;
+  const boxes = parsedBoxes as WorkspaceBox[];
+  if (
+    new Set(boxes.map((box) => box.id)).size !== boxes.length ||
+    boxes.some((box) => !pageIds.has(box.pageId) || isCollectionPageId(box.pageId))
+  ) {
+    return null;
+  }
   const collectableBoxIds = new Set(
     boxes.filter((box) => !isRecycleBinPageId(box.pageId)).map((box) => box.id),
   );
-  const collectionBoxIds = Array.isArray(input.collectionBoxIds)
-    ? [
-        ...new Set(input.collectionBoxIds.filter((id): id is string => typeof id === 'string')),
-      ].filter((id) => collectableBoxIds.has(id))
-    : [];
-  const storedCollectionViews = isRecord(input.collectionViews) ? input.collectionViews : {};
-  const collectionViews = Object.fromEntries(
-    collectionBoxIds.map((boxId, index) => {
-      const box = boxes.find((candidate) => candidate.id === boxId)!;
-      return [boxId, parseCollectionBoxView(storedCollectionViews[boxId], box, index)];
-    }),
-  );
+  if (
+    !input.collectionBoxIds.every((id): id is string => typeof id === 'string') ||
+    new Set(input.collectionBoxIds).size !== input.collectionBoxIds.length ||
+    input.collectionBoxIds.some((id) => !collectableBoxIds.has(id))
+  ) {
+    return null;
+  }
+  const collectionBoxIds = [...input.collectionBoxIds];
+  const storedViewIds = Object.keys(input.collectionViews);
+  if (
+    storedViewIds.length !== collectionBoxIds.length ||
+    storedViewIds.some((boxId) => !collectionBoxIds.includes(boxId))
+  ) {
+    return null;
+  }
+  const collectionViews: Record<string, CollectionBoxView> = {};
+  for (const boxId of collectionBoxIds) {
+    const view = parseCollectionBoxView(input.collectionViews[boxId], boxId);
+    if (!view) return null;
+    collectionViews[boxId] = view;
+  }
 
   return {
     pages,
@@ -81,44 +91,33 @@ export function parseWorkspaceSnapshot(input: unknown): WorkspaceSnapshot | null
   };
 }
 
-function parseCollectionBoxView(
-  input: unknown,
-  box: WorkspaceBox,
-  index: number,
-): CollectionBoxView {
-  const fallback: CollectionBoxView = {
-    boxId: box.id,
-    frame: {
-      x: 64 + (index % 3) * 350,
-      y: 92 + Math.floor(index / 3) * 290,
-      width: Math.max(280, Math.min(520, box.frame.width)),
-      height: Math.max(220, Math.min(460, box.frame.height)),
-    },
-    viewMode: box.viewMode ?? 'list',
-    detailMode: box.detailMode ?? 'detailed',
-    order: index,
-  };
-  if (!isRecord(input) || !isRecord(input.frame)) return fallback;
+function parseCollectionBoxView(input: unknown, boxId: string): CollectionBoxView | null {
+  if (!isRecord(input) || input.boxId !== boxId || !isRecord(input.frame)) return null;
   const frame = input.frame;
   if (
     typeof frame.x !== 'number' ||
     typeof frame.y !== 'number' ||
     typeof frame.width !== 'number' ||
-    typeof frame.height !== 'number'
+    typeof frame.height !== 'number' ||
+    frame.width <= 0 ||
+    frame.height <= 0 ||
+    (input.viewMode !== 'list' && input.viewMode !== 'grid') ||
+    (input.detailMode !== 'detailed' && input.detailMode !== 'compact') ||
+    typeof input.order !== 'number'
   ) {
-    return fallback;
+    return null;
   }
   return {
-    boxId: box.id,
+    boxId,
     frame: {
       x: frame.x,
       y: frame.y,
-      width: Math.max(240, frame.width),
-      height: Math.max(170, frame.height),
+      width: frame.width,
+      height: frame.height,
     },
-    viewMode: input.viewMode === 'grid' ? 'grid' : 'list',
-    detailMode: input.detailMode === 'compact' ? 'compact' : 'detailed',
-    order: typeof input.order === 'number' ? input.order : index,
+    viewMode: input.viewMode,
+    detailMode: input.detailMode,
+    order: input.order,
   };
 }
 
@@ -154,45 +153,46 @@ function parseWorkspaceBox(input: unknown): WorkspaceBox | null {
     typeof input.frame.width !== 'number' ||
     typeof input.frame.height !== 'number' ||
     !Array.isArray(input.items) ||
-    (input.viewMode !== undefined && input.viewMode !== 'list' && input.viewMode !== 'grid') ||
-    (input.detailMode !== undefined &&
-      input.detailMode !== 'detailed' &&
-      input.detailMode !== 'compact') ||
-    (input.isLocked !== undefined && typeof input.isLocked !== 'boolean') ||
-    (input.isPinned !== undefined && typeof input.isPinned !== 'boolean') ||
+    !isWorkspaceBoxPreset(input.preset) ||
+    (input.kind !== 'normal' && input.kind !== 'temporary') ||
+    (input.viewMode !== 'list' && input.viewMode !== 'grid') ||
+    (input.detailMode !== 'detailed' && input.detailMode !== 'compact') ||
+    typeof input.isLocked !== 'boolean' ||
+    (input.icon !== undefined && !isWorkspaceBoxIcon(input.icon)) ||
+    (input.accent !== undefined && typeof input.accent !== 'string') ||
     typeof input.createdAt !== 'string' ||
     typeof input.updatedAt !== 'string'
   ) {
     return null;
   }
 
-  const accent = typeof input.accent === 'string' ? normalizeBoxAccent(input.accent) : null;
+  const accent = input.accent === undefined ? undefined : normalizeBoxAccent(input.accent);
+  if (input.accent !== undefined && !accent) return null;
+  const parsedItems = input.items.map(parseBoxItem);
+  if (parsedItems.some((item) => item === null)) return null;
+  const items = parsedItems as BoxItem[];
+  if (new Set(items.map((item) => item.id)).size !== items.length) return null;
 
   return {
     id: input.id,
     pageId: input.pageId,
-    preset: resolveBoxPreset(input.preset ?? input.type),
-    kind: input.kind === 'temporary' ? 'temporary' : 'normal',
+    preset: input.preset,
+    kind: input.kind,
     title: input.title,
     frame: input.frame as WorkspaceBox['frame'],
-    items: input.items.map(parseBoxItem).filter((item): item is BoxItem => item !== null),
-    ...(input.viewMode ? { viewMode: input.viewMode } : {}),
-    ...(input.detailMode ? { detailMode: input.detailMode } : {}),
-    isLocked:
-      typeof input.isLocked === 'boolean'
-        ? input.isLocked
-        : typeof input.isPinned === 'boolean'
-          ? input.isPinned
-          : false,
-    ...(isWorkspaceBoxIcon(input.icon) ? { icon: input.icon } : {}),
+    items,
+    viewMode: input.viewMode,
+    detailMode: input.detailMode,
+    isLocked: input.isLocked,
+    ...(input.icon ? { icon: input.icon } : {}),
     ...(accent ? { accent } : {}),
     createdAt: input.createdAt,
     updatedAt: input.updatedAt,
   };
 }
 
-function resolveBoxPreset(input: unknown): WorkspaceBoxPreset {
-  return input === 'folder' || input === 'bookmark' || input === 'clipboard' ? input : 'general';
+function isWorkspaceBoxPreset(input: unknown): input is WorkspaceBox['preset'] {
+  return input === 'general' || input === 'folder' || input === 'bookmark' || input === 'clipboard';
 }
 
 function parseBoxItem(input: unknown): BoxItem | null {
@@ -200,9 +200,9 @@ function parseBoxItem(input: unknown): BoxItem | null {
     !isRecord(input) ||
     typeof input.id !== 'string' ||
     typeof input.title !== 'string' ||
+    typeof input.isPinned !== 'boolean' ||
     typeof input.createdAt !== 'string' ||
-    typeof input.updatedAt !== 'string' ||
-    (input.isPinned !== undefined && typeof input.isPinned !== 'boolean')
+    typeof input.updatedAt !== 'string'
   ) {
     return null;
   }
@@ -210,12 +210,16 @@ function parseBoxItem(input: unknown): BoxItem | null {
   const base = {
     id: input.id,
     title: input.title,
-    ...(typeof input.isPinned === 'boolean' ? { isPinned: input.isPinned } : {}),
+    isPinned: input.isPinned,
     createdAt: input.createdAt,
     updatedAt: input.updatedAt,
   };
 
-  if (input.type === 'bookmark' && typeof input.url === 'string') {
+  if (
+    input.type === 'bookmark' &&
+    typeof input.url === 'string' &&
+    (input.favicon === undefined || typeof input.favicon === 'string')
+  ) {
     return {
       ...base,
       type: 'bookmark',
@@ -224,21 +228,28 @@ function parseBoxItem(input: unknown): BoxItem | null {
     };
   }
 
-  if (input.type === 'clipboard' && typeof input.text === 'string') {
+  if (input.type === 'clipboard' && input.title === '' && typeof input.text === 'string') {
     return { ...base, type: 'clipboard', title: '', text: input.text };
   }
 
+  if ((input.type === 'file' || input.type === 'folder') && typeof input.path === 'string') {
+    return { ...base, type: input.type, path: input.path };
+  }
+
   if (
-    (input.type === 'file' || input.type === 'shortcut' || input.type === 'folder') &&
-    typeof input.path === 'string'
+    input.type === 'shortcut' &&
+    typeof input.path === 'string' &&
+    (input.targetType === undefined ||
+      input.targetType === 'file' ||
+      input.targetType === 'folder' ||
+      input.targetType === 'application')
   ) {
-    const normalizedType =
-      input.type === 'folder' && input.kind === 'file'
-        ? 'file'
-        : input.type === 'folder' && input.kind === 'path'
-          ? 'shortcut'
-          : input.type;
-    return { ...base, type: normalizedType, path: input.path };
+    return {
+      ...base,
+      type: 'shortcut',
+      path: input.path,
+      ...(input.targetType ? { targetType: input.targetType } : {}),
+    };
   }
 
   return null;
