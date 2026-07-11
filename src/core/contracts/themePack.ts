@@ -308,6 +308,7 @@ export const OFFICIAL_BUILT_IN_THEME_IDS: ReadonlySet<string> = new Set([
   'graphite',
   'material',
   'apple',
+  'windows',
 ]);
 
 /** CSS custom property names written by the Theme Runtime. */

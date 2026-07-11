@@ -438,3 +438,107 @@
   -webkit-backdrop-filter: blur(24px) saturate(160%);
   box-shadow: var(--cardo-inset-shadow);
 }
+
+/* ── Windows 11 Fluent: Mica canvas + Acrylic panels, 8px radius, accent blue ─ */
+/*
+ * Distinct from Apple liquid glass: cooler gray base, less saturate, denser fill,
+ * hard 1px strokes, Segoe-scale chrome, WinUI motion easing via tokens.
+ */
+
+[data-cardo-theme='windows'] .cardo-app {
+  background-color: var(--cardo-canvas);
+  background-image:
+    radial-gradient(
+      ellipse 90% 70% at 0% 0%,
+      color-mix(in srgb, var(--cardo-blue) 14%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 70% 60% at 100% 100%,
+      color-mix(in srgb, var(--cardo-purple) 10%, transparent),
+      transparent 50%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--cardo-canvas) 92%, var(--cardo-blue)) 0%,
+      var(--cardo-canvas) 40%,
+      var(--cardo-canvas) 100%
+    );
+  background-attachment: fixed;
+}
+
+[data-cardo-theme='windows'] .cardo-box,
+[data-cardo-theme='windows'] .cardo-collection-box {
+  contain: layout;
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-xl);
+  background-color: var(--cardo-panel);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--cardo-surface-strong) 70%, transparent) 0%,
+    var(--cardo-panel) 48%,
+    var(--cardo-panel-bottom) 100%
+  );
+  box-shadow: var(--cardo-shadow);
+  backdrop-filter: blur(var(--cardo-chrome-blur)) saturate(125%);
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur)) saturate(125%);
+}
+
+[data-cardo-theme='windows'] .cardo-box:hover,
+[data-cardo-theme='windows'] .cardo-collection-box:hover {
+  border-color: color-mix(in srgb, var(--cardo-border) 55%, var(--cardo-blue));
+  box-shadow: var(--cardo-shadow-hover);
+}
+
+[data-cardo-theme='windows'] .cardo-box-header,
+[data-cardo-theme='windows'] .cardo-collection-box-header,
+[data-cardo-theme='windows'] .cardo-temporary-box-header {
+  border-bottom: 1px solid var(--cardo-divider);
+  background: color-mix(in srgb, var(--cardo-panel-chrome) 80%, transparent);
+  padding: 10px 12px;
+}
+
+[data-cardo-theme='windows'] .cardo-box-title,
+[data-cardo-theme='windows'] .cardo-collection-box-title {
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+[data-cardo-theme='windows'] .cardo-box-content,
+[data-cardo-theme='windows'] .cardo-collection-box-content {
+  background: transparent;
+}
+
+[data-cardo-theme='windows'] .cardo-box-footer {
+  border-top: 1px solid var(--cardo-divider);
+  background: var(--cardo-panel-bottom);
+}
+
+[data-cardo-theme='windows'] .cardo-box-temporary {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--box-accent) 40%, var(--cardo-border));
+  background-image: none;
+  background-color: color-mix(in srgb, var(--cardo-panel) 82%, var(--box-accent));
+  box-shadow: var(--cardo-shadow);
+  backdrop-filter: blur(var(--cardo-chrome-blur)) saturate(125%);
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur)) saturate(125%);
+}
+
+/* Title bar / tool chrome: Acrylic bar (not Apple vibrancy) */
+[data-cardo-theme='windows'] .cardo-top-bar,
+[data-cardo-theme='windows'] .cardo-history-controls,
+[data-cardo-theme='windows'] .cardo-canvas-tools,
+[data-cardo-theme='windows'] .cardo-bottom-toolbar {
+  background: var(--cardo-surface) !important;
+  border-color: var(--cardo-border) !important;
+  border-radius: var(--cardo-radius-lg) !important;
+  box-shadow: var(--cardo-shadow) !important;
+  backdrop-filter: blur(var(--cardo-chrome-blur)) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur)) saturate(130%) !important;
+}
+
+[data-cardo-theme='windows'] .cardo-tab-pill-active {
+  background: color-mix(in srgb, var(--cardo-blue) 14%, var(--cardo-surface-strong));
+  color: var(--cardo-text);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cardo-blue) 22%, transparent);
+}

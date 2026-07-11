@@ -1,0 +1,242 @@
+{
+  "format": "cardo-theme",
+  "version": 1,
+  "pack": {
+    "id": "windows",
+    "version": "1.0.0",
+    "name": {
+      "en": "Windows",
+      "zh": "Windows"
+    },
+    "description": {
+      "en": "Windows 11 Fluent — Mica/Acrylic surfaces, Segoe UI, system accent blue, snappy chrome.",
+      "zh": "Windows 11 Fluent：Mica/Acrylic 表面、Segoe UI、系统强调蓝、利落壳层。"
+    },
+    "tokens": {
+      "colors": {
+        "light": {
+          "canvas": "#f3f3f3",
+          "surface": "rgba(255, 255, 255, 0.7)",
+          "surfaceStrong": "rgba(255, 255, 255, 0.88)",
+          "panel": "rgba(255, 255, 255, 0.82)",
+          "panelBottom": "rgba(243, 243, 243, 0.92)",
+          "panelContent": "rgba(255, 255, 255, 0.45)",
+          "panelChrome": "rgba(255, 255, 255, 0.55)",
+          "border": "rgba(0, 0, 0, 0.08)",
+          "borderSubtle": "rgba(0, 0, 0, 0.05)",
+          "divider": "rgba(0, 0, 0, 0.08)",
+          "text": "#1a1a1a",
+          "softText": "#2b2b2b",
+          "secondaryText": "#5d5d5d",
+          "muted": "#8a8a8a",
+          "hover": "rgba(0, 0, 0, 0.04)",
+          "active": "rgba(0, 120, 212, 0.12)",
+          "input": "#ffffff",
+          "itemHover": "rgba(0, 0, 0, 0.04)",
+          "glyph": "#f3f3f3",
+          "neutralButton": "rgba(0, 0, 0, 0.06)",
+          "neutralButtonHover": "rgba(0, 0, 0, 0.1)",
+          "createBackground": "#0078d4",
+          "createText": "#ffffff",
+          "scrollbar": "rgba(0, 0, 0, 0.22)",
+          "scrollbarHover": "rgba(0, 0, 0, 0.36)",
+          "selectionRing": "rgba(0, 120, 212, 0.28)",
+          "blue": "#0078d4",
+          "orange": "#ca5010",
+          "purple": "#8764b8",
+          "emerald": "#107c10",
+          "red": "#c42b1c"
+        },
+        "dark": {
+          "canvas": "#202020",
+          "surface": "rgba(44, 44, 44, 0.78)",
+          "surfaceStrong": "rgba(50, 50, 50, 0.92)",
+          "panel": "rgba(44, 44, 44, 0.88)",
+          "panelBottom": "rgba(32, 32, 32, 0.95)",
+          "panelContent": "rgba(32, 32, 32, 0.55)",
+          "panelChrome": "rgba(50, 50, 50, 0.72)",
+          "border": "rgba(255, 255, 255, 0.09)",
+          "borderSubtle": "rgba(255, 255, 255, 0.06)",
+          "divider": "rgba(255, 255, 255, 0.09)",
+          "text": "#ffffff",
+          "softText": "#f3f3f3",
+          "secondaryText": "#c8c8c8",
+          "muted": "#9a9a9a",
+          "hover": "rgba(255, 255, 255, 0.06)",
+          "active": "rgba(96, 205, 255, 0.16)",
+          "input": "#2c2c2c",
+          "itemHover": "rgba(255, 255, 255, 0.06)",
+          "glyph": "#2c2c2c",
+          "neutralButton": "rgba(255, 255, 255, 0.08)",
+          "neutralButtonHover": "rgba(255, 255, 255, 0.12)",
+          "createBackground": "#60cdff",
+          "createText": "#003e92",
+          "scrollbar": "rgba(255, 255, 255, 0.22)",
+          "scrollbarHover": "rgba(255, 255, 255, 0.36)",
+          "selectionRing": "rgba(96, 205, 255, 0.32)",
+          "blue": "#60cdff",
+          "orange": "#ff8c00",
+          "purple": "#b6a0ff",
+          "emerald": "#6ccb5f",
+          "red": "#ff99a4"
+        }
+      },
+      "fonts": {
+        "sans": "'Segoe UI Variable', 'Segoe UI', 'Segoe UI Web (West European)', system-ui, -apple-system, 'Microsoft YaHei UI', 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', ui-sans-serif, sans-serif",
+        "mono": "Consolas, 'Cascadia Mono', 'Segoe UI Mono', ui-monospace, monospace",
+        "sizeBase": "14px",
+        "lineHeightBase": "1.4"
+      },
+      "radii": {
+        "xs": "2px",
+        "sm": "4px",
+        "md": "6px",
+        "lg": "8px",
+        "xl": "8px",
+        "pill": "999px"
+      },
+      "space": {
+        "1": "4px",
+        "2": "8px",
+        "3": "12px",
+        "4": "16px",
+        "5": "20px",
+        "6": "24px",
+        "7": "32px",
+        "8": "40px"
+      },
+      "elevation": {
+        "light": {
+          "shadow": "0 0 0 1px rgba(0,0,0,.04), 0 2px 4px rgba(0,0,0,.04), 0 8px 16px rgba(0,0,0,.06)",
+          "shadowHover": "0 0 0 1px rgba(0,0,0,.06), 0 4px 8px rgba(0,0,0,.06), 0 16px 32px rgba(0,0,0,.08)",
+          "insetShadow": "inset 0 1px 0 rgba(255,255,255,.7)"
+        },
+        "dark": {
+          "shadow": "0 0 0 1px rgba(0,0,0,.4), 0 2px 6px rgba(0,0,0,.35), 0 12px 28px rgba(0,0,0,.4)",
+          "shadowHover": "0 0 0 1px rgba(255,255,255,.06), 0 4px 12px rgba(0,0,0,.45), 0 18px 40px rgba(0,0,0,.5)",
+          "insetShadow": "inset 0 1px 0 rgba(255,255,255,.06)"
+        }
+      },
+      "motion": {
+        "durationFast": "83ms",
+        "durationNormal": "167ms",
+        "easing": "cubic-bezier(0.1, 0.9, 0.2, 1)"
+      },
+      "chrome": {
+        "blur": "30px",
+        "topbarOffset": "12px"
+      }
+    },
+    "options": [
+      {
+        "id": "chrome.surface",
+        "type": "select",
+        "label": {
+          "en": "Chrome surface",
+          "zh": "壳层表面"
+        },
+        "description": {
+          "en": "Acrylic is the Fluent default. Solid is opaque Mica-like fill without blur.",
+          "zh": "Acrylic 为 Fluent 默认；实心为无模糊的不透明 Mica 感填充。"
+        },
+        "default": "glass",
+        "choices": [
+          {
+            "id": "glass",
+            "label": {
+              "en": "Acrylic",
+              "zh": "Acrylic"
+            }
+          },
+          {
+            "id": "solid",
+            "label": {
+              "en": "Solid / Mica",
+              "zh": "实心 / Mica"
+            },
+            "tokens": {
+              "colors": {
+                "light": {
+                  "surface": "rgba(243, 243, 243, 0.98)",
+                  "surfaceStrong": "#ffffff",
+                  "panel": "#ffffff",
+                  "panelBottom": "#f3f3f3",
+                  "panelContent": "rgba(255, 255, 255, 0.94)",
+                  "panelChrome": "rgba(243, 243, 243, 0.96)"
+                },
+                "dark": {
+                  "surface": "rgba(32, 32, 32, 0.98)",
+                  "surfaceStrong": "#2c2c2c",
+                  "panel": "#2c2c2c",
+                  "panelBottom": "#202020",
+                  "panelContent": "rgba(32, 32, 32, 0.94)",
+                  "panelChrome": "rgba(44, 44, 44, 0.96)"
+                }
+              },
+              "chrome": {
+                "blur": "0px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "corners",
+        "type": "select",
+        "label": {
+          "en": "Corners",
+          "zh": "圆角"
+        },
+        "description": {
+          "en": "Default matches Windows 11 control radius (8px cards).",
+          "zh": "默认贴近 Windows 11 控件圆角（卡片约 8px）。"
+        },
+        "default": "default",
+        "choices": [
+          {
+            "id": "default",
+            "label": {
+              "en": "Default (Win11)",
+              "zh": "默认（Win11）"
+            }
+          },
+          {
+            "id": "soft",
+            "label": {
+              "en": "Softer",
+              "zh": "更圆"
+            },
+            "tokens": {
+              "radii": {
+                "xs": "4px",
+                "sm": "6px",
+                "md": "8px",
+                "lg": "12px",
+                "xl": "12px",
+                "pill": "999px"
+              }
+            }
+          },
+          {
+            "id": "sharp",
+            "label": {
+              "en": "Win10-ish",
+              "zh": "偏 Win10"
+            },
+            "tokens": {
+              "radii": {
+                "xs": "0px",
+                "sm": "2px",
+                "md": "2px",
+                "lg": "4px",
+                "xl": "4px",
+                "pill": "999px"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "layoutProfileId": "classic"
+  }
+}

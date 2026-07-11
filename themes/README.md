@@ -46,7 +46,7 @@ themes/
 非法或会被忽略的情况：
 
 - 缺少入口文件 / JSON 解析失败 / Zod 校验失败
-- `pack.id` 与官方内置 id 冲突（`classic`、`github`、`one`、`nord`、`solarized`、`paper`、`graphite`、`material`、`apple`）
+- `pack.id` 与官方内置 id 冲突（`classic`、`github`、`one`、`nord`、`solarized`、`paper`、`graphite`、`material`、`apple`、`windows`）
 - 文件超过约 256KB
 - 同 id 重复出现（先扫到的生效）
 
