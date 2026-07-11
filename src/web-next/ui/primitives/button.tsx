@@ -9,6 +9,7 @@ export const buttonVariants = cva('wbn-ui-button', {
       default: 'wbn-ui-button-default',
       ghost: 'wbn-ui-button-ghost',
       danger: 'wbn-ui-button-danger',
+      card: 'wbn-ui-button-card',
       icon: 'wbn-icon-button',
     },
     size: {

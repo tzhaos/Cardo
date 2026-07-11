@@ -179,7 +179,7 @@ function DataSettings() {
     <>
       <SettingsHeading title={t('settings.data')} description={t('settings.dataDescription')} />
       <div className="wbn-data-actions">
-        <button type="button" onClick={() => void exportWorkspaceData()}>
+        <Button variant="card" onClick={() => void exportWorkspaceData()}>
           <IconFrame>
             <Download size={18} />
           </IconFrame>
@@ -187,8 +187,8 @@ function DataSettings() {
             {t('settings.exportData')}
             <small>{t('settings.exportDataDescription')}</small>
           </span>
-        </button>
-        <button type="button" onClick={() => inputRef.current?.click()}>
+        </Button>
+        <Button variant="card" onClick={() => inputRef.current?.click()}>
           <IconFrame>
             <Upload size={18} />
           </IconFrame>
@@ -196,8 +196,8 @@ function DataSettings() {
             {t('settings.importData')}
             <small>{t('settings.importDataDescription')}</small>
           </span>
-        </button>
-        <button type="button" onClick={() => void exportOperationLog()}>
+        </Button>
+        <Button variant="card" onClick={() => void exportOperationLog()}>
           <IconFrame>
             <FileDown size={18} />
           </IconFrame>
@@ -205,7 +205,7 @@ function DataSettings() {
             {t('settings.exportLog')}
             <small>{t('settings.exportLogDescription')}</small>
           </span>
-        </button>
+        </Button>
       </div>
       <input
         className="wbn-data-file-input"
