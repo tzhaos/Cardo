@@ -1,28 +1,15 @@
 # Cardo brand assets
 
-## Selection
-
-| Role | Source candidate |
-| --- | --- |
-| Mark | `candidates/hub/u02-orbit` |
-| Type | `candidates/wordmark/w09-inverted-bar` |
-
-## Files
+Selected identity: orbit mark + inverted-bar wordmark.
 
 | File | Use |
 | --- | --- |
-| `cardo-mark.svg` | App icon, extension, favicon base |
-| `cardo-mark-monochrome.svg` | Single-color contexts |
-| `cardo-wordmark.svg` | Type only (dark bar + CARDO) |
-| `cardo-lockup.svg` | Logo + wordmark on dark |
-| `cardo-lockup-light.svg` | Logo + wordmark on light |
+| `cardo-mark.svg` | App / extension icon base |
+| `cardo-mark-monochrome.svg` | Single-color mark |
+| `cardo-wordmark.svg` | Type only |
+| `cardo-lockup.svg` | Logo + wordmark (dark) |
+| `cardo-lockup-light.svg` | Logo + wordmark (light) |
 
-## Palette
+Extension PNGs: `assets/extension-shell/icons/icon-{16,32,48,128}.png`
 
-- Tile / bar: `#171C24` / `#111827`
-- Orbit accent: `#38BDF8`
-- Icon light: `#F8FBFF`
-
-## Extension / tray PNGs
-
-Generated from `cardo-mark.svg` into `assets/extension-shell/icons/icon-{16,32,48,128}.png`.
+Palette: tile `#171C24` / bar `#111827`, accent `#38BDF8`, light `#F8FBFF`.
