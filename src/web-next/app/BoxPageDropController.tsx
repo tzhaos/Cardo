@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { createLatestFrameScheduler } from './motion/frameScheduler';
 import { getPageCanvasState, useCanvasStore } from './stores/canvasStore';
 import { useUiStore } from './stores/uiStore';
@@ -12,6 +12,8 @@ import {
 } from './interactionElementRegistry';
 import {
   clientPointToCanvasWorld,
+  constrainBoxFrameToCanvas,
+  createCanvasWorldBounds,
   getCanvasViewportCenter,
   getVisibleCanvasWorldBounds,
 } from '../domain/canvasGeometry';
@@ -22,6 +24,8 @@ export function BoxPageDropController() {
   const draggedBoxId = useUiStore((state) => state.draggedBoxId);
   const boxDropRelease = useUiStore((state) => state.boxDropRelease);
   const clearBoxDropRelease = useUiStore((state) => state.clearBoxDropRelease);
+  const transferGenerationRef = useRef(0);
+  const activeTransferPageIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!boxDropRelease) return;
@@ -30,7 +34,11 @@ export function BoxPageDropController() {
   }, [boxDropRelease, clearBoxDropRelease]);
 
   useEffect(() => {
-    if (!draggedBoxId) return;
+    if (!draggedBoxId) {
+      transferGenerationRef.current = 0;
+      activeTransferPageIdRef.current = null;
+      return;
+    }
 
     const ui = useUiStore.getState();
     let topBarRect = getTopBarElement()?.getBoundingClientRect();
@@ -48,11 +56,72 @@ export function BoxPageDropController() {
         clientY >= topBarRect.top - 10 &&
         clientY <= topBarRect.bottom + 10,
       );
+
+    const previewPageUnderPointer = (clientX: number, clientY: number, pageId: string | null) => {
+      if (!pageId || isCollectionPageId(pageId)) return;
+
+      const workspace = useWorkspaceStore.getState();
+      const movingBox = workspace.projection.boxes.find((box) => box.id === draggedBoxId);
+      if (!movingBox) return;
+
+      if (movingBox.pageId === pageId) {
+        if (workspace.projection.activePageId !== pageId) {
+          workspace.setActivePage(pageId);
+        }
+        return;
+      }
+
+      if (activeTransferPageIdRef.current === pageId) return;
+      activeTransferPageIdRef.current = pageId;
+
+      const canvas = useCanvasStore.getState();
+      const canvasRect = getCanvasElement()?.getBoundingClientRect();
+      if (!canvasRect) return;
+
+      const targetPageCanvas = getPageCanvasState(canvas, pageId);
+      const pointerWorld = clientPointToCanvasWorld(
+        { clientX, clientY },
+        canvasRect,
+        targetPageCanvas.camera,
+      );
+      const dragSession = useUiStore.getState().boxDragSession;
+      const frameSource = dragSession?.latestFrame ?? movingBox.frame;
+      const nextFrame = constrainBoxFrameToCanvas(
+        {
+          ...frameSource,
+          x: Math.round(pointerWorld.x - frameSource.width / 2),
+          y: Math.round(pointerWorld.y - frameSource.height / 2),
+        },
+        createCanvasWorldBounds(canvas.viewportSize),
+      );
+
+      const generation = ++transferGenerationRef.current;
+      void workspace
+        .moveBoxToPage(draggedBoxId, pageId, nextFrame)
+        .then(() => {
+          if (generation !== transferGenerationRef.current) return;
+          if (useUiStore.getState().draggedBoxId !== draggedBoxId) return;
+          useUiStore.getState().rebaseBoxDragSession(nextFrame, clientX, clientY);
+        })
+        .catch(() => {
+          if (generation === transferGenerationRef.current) {
+            activeTransferPageIdRef.current = null;
+          }
+        });
+    };
+
     const updateDropTarget = ({ clientX, clientY }: { clientX: number; clientY: number }) => {
       const overTopBar = resolveTopBarHover(clientX, clientY);
+      const pageId = overTopBar ? findPageDropAtPoint(clientX, clientY) : null;
       ui.setBoxDragOverTopBar(overTopBar);
-      ui.setBoxDropPage(overTopBar ? findPageDropAtPoint(clientX, clientY) : null);
+      ui.setBoxDropPage(pageId);
+      if (overTopBar) {
+        previewPageUnderPointer(clientX, clientY, pageId);
+      } else {
+        activeTransferPageIdRef.current = null;
+      }
     };
+
     const frameScheduler = createLatestFrameScheduler(updateDropTarget);
     const session = startWindowPointerSession({
       onMove: (event) =>
@@ -82,22 +151,50 @@ function finishDrop(draggedBoxId: string, event: PointerEvent) {
   const targetPageId =
     findPageDropAtPoint(event.clientX, event.clientY) ?? useUiStore.getState().boxDropPageId;
   const movingBox = currentProjection.boxes.find((box) => box.id === draggedBoxId);
-  if (!targetPageId || !movingBox || movingBox.pageId === targetPageId) return;
+  if (!targetPageId || !movingBox) return;
 
   const ui = useUiStore.getState();
   const workspace = useWorkspaceStore.getState();
+  const dragSession = ui.boxDragSession;
+  const releaseFrame = dragSession?.latestFrame ?? movingBox.frame;
+
   if (isCollectionPageId(targetPageId)) {
     if (isRecycleBinPageId(movingBox.pageId)) return;
     ui.finishBoxDrop(
       draggedBoxId,
       targetPageId,
-      movingBox.frame,
+      releaseFrame,
       1,
-      `${movingBox.frame.width / 2}px ${movingBox.frame.height / 2}px`,
+      `${releaseFrame.width / 2}px ${releaseFrame.height / 2}px`,
     );
     workspace.addBoxToCollection(draggedBoxId);
     ui.selectBox(null);
     workspace.setActivePage(targetPageId);
+    return;
+  }
+
+  // Hover transfer already moved the box and switched pages.
+  if (movingBox.pageId === targetPageId) {
+    if (currentProjection.activePageId !== targetPageId) {
+      workspace.setActivePage(targetPageId);
+    }
+    // Releasing on a tab should land in free space, not under the chrome.
+    if (ui.boxDragOverTopBar) {
+      const canvasState = useCanvasStore.getState();
+      const targetPageCanvas = getPageCanvasState(canvasState, targetPageId);
+      const visibleBounds = getVisibleCanvasWorldBounds(
+        targetPageCanvas.camera,
+        canvasState.viewportSize,
+      );
+      const landingFrame = findPageLandingFrame(
+        currentProjection,
+        draggedBoxId,
+        targetPageId,
+        getCanvasViewportCenter(targetPageCanvas.camera, canvasState.viewportSize),
+        visibleBounds,
+      );
+      workspace.updateBoxFrame(draggedBoxId, landingFrame ?? releaseFrame);
+    }
     return;
   }
 
@@ -114,18 +211,18 @@ function finishDrop(draggedBoxId: string, event: PointerEvent) {
     getCanvasViewportCenter(targetPageCanvas.camera, canvasState.viewportSize),
     visibleBounds,
   );
-  const targetFrame = landingFrame ?? movingBox.frame;
+  const targetFrame = landingFrame ?? releaseFrame;
   const compactScale = Math.max(
     0.22,
-    Math.min(0.46, 136 / movingBox.frame.width, 86 / movingBox.frame.height),
+    Math.min(0.46, 136 / releaseFrame.width, 86 / releaseFrame.height),
   );
   const entryScale = compactScale * 0.9;
   const releaseElement = getBoxElement(draggedBoxId);
   const releaseRect = releaseElement?.getBoundingClientRect();
   const computedOrigin = releaseElement
     ? window.getComputedStyle(releaseElement).transformOrigin
-    : `${movingBox.frame.width / 2}px ${movingBox.frame.height / 2}px`;
-  const [originX = movingBox.frame.width / 2, originY = movingBox.frame.height / 2] = computedOrigin
+    : `${releaseFrame.width / 2}px ${releaseFrame.height / 2}px`;
+  const [originX = releaseFrame.width / 2, originY = releaseFrame.height / 2] = computedOrigin
     .split(' ')
     .map((value) => Number.parseFloat(value));
   const canvasRect = getCanvasElement()?.getBoundingClientRect() ?? { left: 0, top: 0 };
@@ -145,5 +242,5 @@ function finishDrop(draggedBoxId: string, event: PointerEvent) {
     y: releaseTopLeft.y - originY * (1 - entryScale),
   };
   ui.finishBoxDrop(draggedBoxId, targetPageId, entryFrame, entryScale, computedOrigin);
-  workspace.moveBoxToPage(draggedBoxId, targetPageId, targetFrame);
+  void workspace.moveBoxToPage(draggedBoxId, targetPageId, targetFrame);
 }

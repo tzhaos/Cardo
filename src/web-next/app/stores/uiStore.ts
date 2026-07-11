@@ -8,9 +8,20 @@ export interface AddDraftState {
   highlightItemId?: string;
 }
 
+export interface BoxDragSession {
+  boxId: string;
+  pointerId: number;
+  startClientX: number;
+  startClientY: number;
+  startFrame: BoxFrame;
+  latestFrame: BoxFrame;
+  transformOrigin: string;
+}
+
 interface UiStore {
   addDrafts: Record<string, AddDraftState>;
   draggedBoxId: string | null;
+  boxDragSession: BoxDragSession | null;
   boxDragOverTopBar: boolean;
   boxDropPageId: string | null;
   boxDropRelease: {
@@ -31,7 +42,9 @@ interface UiStore {
   updateDraft: (boxId: string, patch: Record<string, string>) => void;
   closeAddView: (boxId: string) => void;
   markCreated: (boxId: string, itemId: string) => void;
-  beginBoxDrag: (boxId: string) => void;
+  beginBoxDrag: (session: BoxDragSession) => void;
+  updateBoxDragFrame: (frame: BoxFrame) => void;
+  rebaseBoxDragSession: (frame: BoxFrame, clientX: number, clientY: number) => void;
   setBoxDragOverTopBar: (overTopBar: boolean) => void;
   setBoxDropPage: (pageId: string | null) => void;
   finishBoxDrop: (
@@ -51,6 +64,7 @@ let boxHighlightTimeout: number | null = null;
 export const useUiStore = create<UiStore>((set) => ({
   addDrafts: {},
   draggedBoxId: null,
+  boxDragSession: null,
   boxDragOverTopBar: false,
   boxDropPageId: null,
   boxDropRelease: null,
@@ -98,14 +112,35 @@ export const useUiStore = create<UiStore>((set) => ({
     set((state) => ({
       addDrafts: { ...state.addDrafts, [boxId]: { ...emptyDraft, highlightItemId: itemId } },
     })),
-  beginBoxDrag: (boxId) =>
+  beginBoxDrag: (session) =>
     set({
-      draggedBoxId: boxId,
+      draggedBoxId: session.boxId,
+      boxDragSession: session,
       boxDragOverTopBar: false,
       boxDropPageId: null,
       boxDropRelease: null,
-      selectedBoxId: boxId,
+      selectedBoxId: session.boxId,
     }),
+  updateBoxDragFrame: (frame) =>
+    set((state) =>
+      state.boxDragSession
+        ? { boxDragSession: { ...state.boxDragSession, latestFrame: frame } }
+        : state,
+    ),
+  rebaseBoxDragSession: (frame, clientX, clientY) =>
+    set((state) =>
+      state.boxDragSession
+        ? {
+            boxDragSession: {
+              ...state.boxDragSession,
+              startClientX: clientX,
+              startClientY: clientY,
+              startFrame: frame,
+              latestFrame: frame,
+            },
+          }
+        : state,
+    ),
   setBoxDragOverTopBar: (overTopBar) =>
     set((state) =>
       state.draggedBoxId && state.boxDragOverTopBar !== overTopBar
@@ -119,5 +154,11 @@ export const useUiStore = create<UiStore>((set) => ({
   finishBoxDrop: (boxId, pageId, entryFrame, entryScale, entryTransformOrigin) =>
     set({ boxDropRelease: { boxId, pageId, entryFrame, entryScale, entryTransformOrigin } }),
   clearBoxDropRelease: () => set({ boxDropRelease: null }),
-  endBoxDrag: () => set({ draggedBoxId: null, boxDragOverTopBar: false, boxDropPageId: null }),
+  endBoxDrag: () =>
+    set({
+      draggedBoxId: null,
+      boxDragSession: null,
+      boxDragOverTopBar: false,
+      boxDropPageId: null,
+    }),
 }));

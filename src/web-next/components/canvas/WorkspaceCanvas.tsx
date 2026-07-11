@@ -5,6 +5,7 @@ import { House, PanelTop, Plus, Star, Trash2 } from 'lucide-react';
 import { useCanvasPan } from '../../app/useCanvasPan';
 import { useCanvasViewport } from '../../app/useCanvasViewport';
 import { getPageCanvasState, useCanvasStore } from '../../app/stores/canvasStore';
+import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { registerCanvasElement } from '../../app/interactionElementRegistry';
 import {
@@ -40,6 +41,7 @@ export function WorkspaceCanvas() {
   const createBox = useWorkspaceStore((state) => state.createBox);
   const createPage = useWorkspaceStore((state) => state.createPage);
   const setDefaultPage = useWorkspaceStore((state) => state.setDefaultPage);
+  const draggedBoxId = useUiStore((state) => state.draggedBoxId);
   const viewportSize = useCanvasStore((state) => state.viewportSize);
   const contextMenu = useContextMenu();
   const { items: canvasTools } = useCanvasTools();
@@ -163,10 +165,11 @@ export function WorkspaceCanvas() {
           className="wbn-page-scene"
           custom={pageTransitionDirection}
           key={activePageId}
-          variants={pageSceneVariants}
-          initial="enter"
-          animate="center"
-          exit="exit"
+          variants={draggedBoxId ? undefined : pageSceneVariants}
+          initial={draggedBoxId ? false : 'enter'}
+          animate={draggedBoxId ? { x: 0, opacity: 1 } : 'center'}
+          exit={draggedBoxId ? undefined : 'exit'}
+          transition={draggedBoxId ? { duration: 0 } : undefined}
         >
           {isCollection ? (
             <CanvasWorld pageId={activePageId}>
@@ -176,7 +179,10 @@ export function WorkspaceCanvas() {
           ) : (
             <CanvasWorld pageId={activePageId}>
               <div className="wbn-canvas-boundary" style={boundaryStyle} />
-              <PageBoxes pageId={activePageId} skipEntryAnimation={isPageSwitch} />
+              <PageBoxes
+                pageId={activePageId}
+                skipEntryAnimation={isPageSwitch || Boolean(draggedBoxId)}
+              />
             </CanvasWorld>
           )}
           <AnimatePresence>

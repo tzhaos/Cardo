@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import {
   ChevronsDownUp,
@@ -19,6 +19,7 @@ import { animate as animateMotion, motion, useMotionValue, useSpring } from 'mot
 import type { MotionStyle } from 'motion/react';
 import {
   RECYCLE_BIN_PAGE_ID,
+  isCollectionPageId,
   isRecycleBinPageId,
   type WorkspaceBox,
   type WorkspaceBoxIcon,
@@ -82,8 +83,10 @@ export function BaseBoxFrame({
   const addBoxToCollection = useWorkspaceStore((state) => state.addBoxToCollection);
   const removeBoxFromCollection = useWorkspaceStore((state) => state.removeBoxFromCollection);
   const beginBoxDrag = useUiStore((state) => state.beginBoxDrag);
+  const updateBoxDragFrame = useUiStore((state) => state.updateBoxDragFrame);
   const endBoxDrag = useUiStore((state) => state.endBoxDrag);
   const draggedBoxId = useUiStore((state) => state.draggedBoxId);
+  const boxDragSession = useUiStore((state) => state.boxDragSession);
   const boxDragOverTopBar = useUiStore((state) => state.boxDragOverTopBar);
   const boxDropPageId = useUiStore((state) => state.boxDropPageId);
   const boxDropRelease = useUiStore((state) => state.boxDropRelease);
@@ -124,13 +127,91 @@ export function BaseBoxFrame({
     onCommit: (title) => renameBox(box.id, title),
   });
 
+  const attachDragPointerSession = useCallback(
+    (session: {
+      pointerId: number;
+      startClientX: number;
+      startClientY: number;
+      startFrame: (typeof box)['frame'];
+      transformOrigin: string;
+    }) => {
+      pointerSessionRef.current?.dispose();
+      setDragTransformOrigin(session.transformOrigin);
+      boxLeft.set(session.startFrame.x);
+      boxTop.set(session.startFrame.y);
+      let latestFrame = session.startFrame;
+      const pointerSession = startWindowPointerSession({
+        pointerId: session.pointerId,
+        onMove: (moveEvent) => {
+          const activeSession = useUiStore.getState().boxDragSession;
+          const baseFrame = activeSession?.startFrame ?? session.startFrame;
+          const baseClientX = activeSession?.startClientX ?? session.startClientX;
+          const baseClientY = activeSession?.startClientY ?? session.startClientY;
+          dragTiltTarget.set(
+            Math.max(-2.2, Math.min(2.2, (moveEvent.clientX - baseClientX) / 180)),
+          );
+          latestFrame = constrainBoxFrameToCanvas(
+            {
+              ...baseFrame,
+              x: Math.round(baseFrame.x + moveEvent.clientX - baseClientX),
+              y: Math.round(baseFrame.y + moveEvent.clientY - baseClientY),
+            },
+            createCanvasWorldBounds(useCanvasStore.getState().viewportSize),
+          );
+          boxLeft.set(latestFrame.x);
+          boxTop.set(latestFrame.y);
+          updateBoxDragFrame(latestFrame);
+        },
+        onEnd: (reason) => {
+          dragTiltTarget.set(0);
+          const ui = useUiStore.getState();
+          const stillForeignDropTarget =
+            ui.boxDragOverTopBar &&
+            ui.boxDropPageId !== null &&
+            ui.boxDropPageId !== box.pageId &&
+            !isCollectionPageId(ui.boxDropPageId);
+          // Collection drop and unfinished foreign transfers are finalized by BoxPageDropController.
+          if (!stillForeignDropTarget) {
+            updateBoxFrame(box.id, latestFrame);
+          }
+          if (pointerSessionRef.current === pointerSession) {
+            pointerSessionRef.current = null;
+          }
+          if (reason === 'pointerup') {
+            window.setTimeout(endBoxDrag, 0);
+          } else {
+            endBoxDrag();
+          }
+        },
+      });
+      pointerSessionRef.current = pointerSession;
+    },
+    [
+      box.id,
+      box.pageId,
+      boxLeft,
+      boxTop,
+      dragTiltTarget,
+      endBoxDrag,
+      updateBoxDragFrame,
+      updateBoxFrame,
+    ],
+  );
+
   useEffect(
     () => () => {
-      pointerSessionRef.current?.end();
+      // Dispose listeners only — do not end the drag. Cross-page hover remounts this box.
+      pointerSessionRef.current?.dispose();
+      pointerSessionRef.current = null;
       deleteTargetRef.current?.classList.remove('wbn-box-drop-target');
     },
     [],
   );
+
+  useLayoutEffect(() => {
+    if (draggedBoxId !== box.id || !boxDragSession || pointerSessionRef.current) return;
+    attachDragPointerSession(boxDragSession);
+  }, [attachDragPointerSession, box.id, box.pageId, boxDragSession, draggedBoxId]);
 
   const beginDrag = (event: ReactPointerEvent<HTMLElement>) => {
     if (box.isLocked) {
@@ -144,10 +225,10 @@ export function BaseBoxFrame({
     event.preventDefault();
     setAppearanceView(false);
     contextMenu.closeMenu();
-    pointerSessionRef.current?.end();
-    beginBoxDrag(box.id);
+    pointerSessionRef.current?.dispose();
     const boxElement = event.currentTarget.closest<HTMLElement>('[data-canvas-box]');
     const boxRect = boxElement?.getBoundingClientRect();
+    let transformOrigin = '50% 50%';
     if (boxRect) {
       const originX = Math.max(
         0,
@@ -157,44 +238,19 @@ export function BaseBoxFrame({
         0,
         Math.min(100, ((event.clientY - boxRect.top) / boxRect.height) * 100),
       );
-      setDragTransformOrigin(`${originX}% ${originY}%`);
+      transformOrigin = `${originX}% ${originY}%`;
     }
-    const startX = event.clientX;
-    const startY = event.clientY;
-    const startFrame = box.frame;
-    let latestFrame = startFrame;
-    const session = startWindowPointerSession({
+    const session = {
+      boxId: box.id,
       pointerId: event.pointerId,
-      onMove: (moveEvent) => {
-        dragTiltTarget.set(Math.max(-2.2, Math.min(2.2, (moveEvent.clientX - startX) / 180)));
-        latestFrame = constrainBoxFrameToCanvas(
-          {
-            ...startFrame,
-            x: Math.round(startFrame.x + moveEvent.clientX - startX),
-            y: Math.round(startFrame.y + moveEvent.clientY - startY),
-          },
-          createCanvasWorldBounds(useCanvasStore.getState().viewportSize),
-        );
-        boxLeft.set(latestFrame.x);
-        boxTop.set(latestFrame.y);
-      },
-      onEnd: (reason) => {
-        dragTiltTarget.set(0);
-        const droppingOnTopBar = useUiStore.getState().boxDragOverTopBar;
-        if (!droppingOnTopBar) {
-          updateBoxFrame(box.id, latestFrame);
-        }
-        if (pointerSessionRef.current === session) {
-          pointerSessionRef.current = null;
-        }
-        if (reason === 'pointerup') {
-          window.setTimeout(endBoxDrag, 0);
-        } else {
-          endBoxDrag();
-        }
-      },
-    });
-    pointerSessionRef.current = session;
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startFrame: box.frame,
+      latestFrame: box.frame,
+      transformOrigin,
+    };
+    beginBoxDrag(session);
+    attachDragPointerSession(session);
   };
 
   const beginResize = (event: ReactPointerEvent<HTMLButtonElement>) => {

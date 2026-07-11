@@ -65,7 +65,11 @@ interface WorkspaceStore {
     appearance: { icon?: WorkspaceBoxIcon; accent?: string },
   ) => void;
   setBoxViewMode: (boxId: string, viewMode: WorkspaceBoxViewMode) => void;
-  moveBoxToPage: (boxId: string, pageId: string, frame?: BoxFrame) => void;
+  moveBoxToPage: (
+    boxId: string,
+    pageId: string,
+    frame?: BoxFrame,
+  ) => Promise<DatabaseCommandResult>;
   addBoxToCollection: (boxId: string) => void;
   removeBoxFromCollection: (boxId: string) => void;
   moveItemBetweenBoxes: (
@@ -165,7 +169,7 @@ const actions = {
   setBoxViewMode: (boxId: string, viewMode: WorkspaceBoxViewMode) =>
     fireCommand({ type: 'box.setViewMode', boxId, viewMode }),
   moveBoxToPage: (boxId: string, pageId: string, frame?: BoxFrame) =>
-    fireCommand({ type: 'box.moveToPage', boxId, pageId, frame }),
+    runCommand({ type: 'box.moveToPage', boxId, pageId, frame }),
   addBoxToCollection: (boxId: string) => fireCommand({ type: 'box.collect', boxId }),
   removeBoxFromCollection: (boxId: string) =>
     fireCommand({ type: 'box.removeFromCollection', boxId }),
