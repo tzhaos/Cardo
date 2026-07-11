@@ -3,7 +3,6 @@ import type { KhaosDatabase } from './createDatabaseClient';
 import { APP_STATE_ID, PREFERENCES_ID, appState, boxes, pages, preferences } from './schema';
 import { DATABASE_SCHEMA_VERSION } from './version';
 import type { ColorMode, PreferenceLocale } from '../contracts/preferences';
-import type { WorkspaceBoxIcon } from '../contracts/workspace';
 
 export const COLLECTION_PAGE_ID = 'khaosbox-collection';
 export const RECYCLE_BIN_PAGE_ID = 'khaosbox-recycle-bin';
@@ -68,31 +67,7 @@ export async function initializeWorkspaceDatabase(
       },
     ]);
 
-    await transaction
-      .insert(boxes)
-      .values([
-        createInitialBox(defaultPageId, 'Folder Box', 'folder', '#3b82f6', 120, 130, 1, timestamp),
-        createInitialBox(
-          defaultPageId,
-          'Bookmark Box',
-          'bookmark',
-          '#f97316',
-          500,
-          165,
-          2,
-          timestamp,
-        ),
-        createInitialBox(
-          defaultPageId,
-          'Clipboard Box',
-          'clipboard',
-          '#10b981',
-          170,
-          380,
-          3,
-          timestamp,
-        ),
-      ]);
+    await transaction.insert(boxes).values(createInitialBox(defaultPageId, timestamp));
 
     await transaction.insert(appState).values({
       id: APP_STATE_ID,
@@ -112,31 +87,22 @@ export async function initializeWorkspaceDatabase(
   });
 }
 
-function createInitialBox(
-  pageId: string,
-  title: string,
-  icon: WorkspaceBoxIcon,
-  accent: string,
-  x: number,
-  y: number,
-  zIndex: number,
-  timestamp: string,
-) {
+function createInitialBox(pageId: string, timestamp: string) {
   return {
     id: `box-${crypto.randomUUID()}`,
     pageId,
     kind: 'normal' as const,
-    title,
-    x,
-    y,
+    title: 'Box',
+    x: 120,
+    y: 130,
     width: 320,
     height: 240,
     viewMode: 'list' as const,
     detailMode: 'detailed' as const,
     isLocked: false,
-    icon,
-    accent,
-    zIndex,
+    icon: 'box' as const,
+    accent: '#3b82f6',
+    zIndex: 1,
     createdAt: timestamp,
     updatedAt: timestamp,
   };
