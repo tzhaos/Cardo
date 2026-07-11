@@ -22,7 +22,12 @@ import { useCanvasTools } from './useCanvasTools';
 import { CollectionPage } from '../collection/CollectionPage';
 
 export function WorkspaceCanvas() {
-  const projection = useWorkspaceStore((state) => state.projection);
+  const activePageId = useWorkspaceStore((state) => state.projection.activePageId);
+  const defaultPageId = useWorkspaceStore((state) => state.projection.defaultPageId);
+  const pageRows = useWorkspaceStore((state) => state.projection.pages);
+  const activePageBoxCount = useWorkspaceStore(
+    (state) => state.projection.boxes.filter((box) => box.pageId === activePageId).length,
+  );
   const createBox = useWorkspaceStore((state) => state.createBox);
   const createPage = useWorkspaceStore((state) => state.createPage);
   const setDefaultPage = useWorkspaceStore((state) => state.setDefaultPage);
@@ -30,33 +35,29 @@ export function WorkspaceCanvas() {
   const contextMenu = useContextMenu();
   const { items: canvasTools } = useCanvasTools();
   const { t } = useI18n();
-  const boxes = useMemo(
-    () => projection.boxes.filter((box) => box.pageId === projection.activePageId),
-    [projection.activePageId, projection.boxes],
-  );
-  const isRecycleBin = isRecycleBinPageId(projection.activePageId);
-  const isCollection = isCollectionPageId(projection.activePageId);
-  const previousActivePageIdRef = useRef(projection.activePageId);
+  const isRecycleBin = isRecycleBinPageId(activePageId);
+  const isCollection = isCollectionPageId(activePageId);
+  const previousActivePageIdRef = useRef(activePageId);
   const canvasRef = useRef<HTMLElement>(null);
   const setCanvasElement = useCallback((element: HTMLElement | null) => {
     canvasRef.current = element;
     registerCanvasElement(element);
   }, []);
   const { handlePointerDownCapture, isLocked, isPanModifierActive, isPanning } = useCanvasPan(
-    projection.activePageId,
+    activePageId,
   );
   useCanvasViewport(canvasRef);
   const canvasBounds = useMemo(() => createCanvasWorldBounds(viewportSize), [viewportSize]);
   const pageOrder = useMemo(
-    () => [...projection.pages].sort((first, second) => first.order - second.order),
-    [projection.pages],
+    () => [...pageRows].sort((first, second) => first.order - second.order),
+    [pageRows],
   );
   const previousPageIndex = pageOrder.findIndex(
     (page) => page.id === previousActivePageIdRef.current,
   );
-  const activePageIndex = pageOrder.findIndex((page) => page.id === projection.activePageId);
+  const activePageIndex = pageOrder.findIndex((page) => page.id === activePageId);
   const pageTransitionDirection = activePageIndex < previousPageIndex ? -1 : 1;
-  const isPageSwitch = previousActivePageIdRef.current !== projection.activePageId;
+  const isPageSwitch = previousActivePageIdRef.current !== activePageId;
   const canvasClassName = [
     'wbn-canvas',
     isCollection ? 'wbn-canvas-collection' : '',
@@ -74,8 +75,8 @@ export function WorkspaceCanvas() {
   } satisfies CSSProperties;
 
   useEffect(() => {
-    previousActivePageIdRef.current = projection.activePageId;
-  }, [projection.activePageId]);
+    previousActivePageIdRef.current = activePageId;
+  }, [activePageId]);
 
   return (
     <main
@@ -90,7 +91,7 @@ export function WorkspaceCanvas() {
 
         event.preventDefault();
         const rect = event.currentTarget.getBoundingClientRect();
-        const camera = getPageCanvasState(useCanvasStore.getState(), projection.activePageId).camera;
+        const camera = getPageCanvasState(useCanvasStore.getState(), activePageId).camera;
         const point = clientPointToCanvasWorld(event, rect, camera);
         const canCreate = !isRecycleBin && !isCollection;
         contextMenu.openMenu(event.clientX, event.clientY, [
@@ -120,13 +121,13 @@ export function WorkspaceCanvas() {
                   {
                     id: 'set-default-page',
                     label: t(
-                      projection.activePageId === projection.defaultPageId
+                      activePageId === defaultPageId
                         ? 'page.default'
                         : 'page.setDefault',
                     ),
                     icon: <House size={16} />,
-                    disabled: projection.activePageId === projection.defaultPageId,
-                    onSelect: () => setDefaultPage(projection.activePageId),
+                    disabled: activePageId === defaultPageId,
+                    onSelect: () => setDefaultPage(activePageId),
                   },
                 ]
               : []),
@@ -142,27 +143,25 @@ export function WorkspaceCanvas() {
         <motion.section
           className="wbn-page-scene"
           custom={pageTransitionDirection}
-          key={projection.activePageId}
+          key={activePageId}
           variants={pageSceneVariants}
           initial="enter"
           animate="center"
           exit="exit"
         >
           {isCollection ? (
-            <CanvasWorld pageId={projection.activePageId}>
+            <CanvasWorld pageId={activePageId}>
               <div className="wbn-canvas-boundary" style={boundaryStyle} />
               <CollectionPage />
             </CanvasWorld>
           ) : (
-            <CanvasWorld pageId={projection.activePageId}>
+            <CanvasWorld pageId={activePageId}>
               <div className="wbn-canvas-boundary" style={boundaryStyle} />
-              {boxes.map((box) => (
-                <WorkspaceBoxRenderer box={box} key={box.id} skipEntryAnimation={isPageSwitch} />
-              ))}
+              <PageBoxes pageId={activePageId} skipEntryAnimation={isPageSwitch} />
             </CanvasWorld>
           )}
           <AnimatePresence>
-            {isRecycleBin && boxes.length === 0 ? (
+            {isRecycleBin && activePageBoxCount === 0 ? (
               <motion.div
                 className="wbn-recycle-bin-empty"
                 initial={{ opacity: 0, y: 8 }}
@@ -176,10 +175,22 @@ export function WorkspaceCanvas() {
           </AnimatePresence>
         </motion.section>
       </AnimatePresence>
-      <CanvasBoundaryFeedback pageId={projection.activePageId} />
+      <CanvasBoundaryFeedback pageId={activePageId} />
       {contextMenu.menu}
     </main>
   );
+}
+
+function PageBoxes({ pageId, skipEntryAnimation }: { pageId: string; skipEntryAnimation: boolean }) {
+  const allBoxes = useWorkspaceStore((state) => state.projection.boxes);
+  const boxes = useMemo(
+    () => allBoxes.filter((box) => box.pageId === pageId),
+    [allBoxes, pageId],
+  );
+
+  return boxes.map((box) => (
+    <WorkspaceBoxRenderer box={box} key={box.id} skipEntryAnimation={skipEntryAnimation} />
+  ));
 }
 
 function CanvasBoundaryFeedback({ pageId }: { pageId: string }) {
