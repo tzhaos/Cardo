@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { useFloatingMenu } from '../components/floating-menu/useFloatingMenu';
 import { useUiStore } from './stores/uiStore';
 import { useCanvasStore } from './stores/canvasStore';
 import { startWindowPointerSession, type WindowPointerSession } from './windowPointerSession';
@@ -13,7 +12,6 @@ export function useCanvasPan(pageId: string) {
   const setInteractionMode = useCanvasStore((state) => state.setInteractionMode);
   const setPanModifierActive = useCanvasStore((state) => state.setPanModifierActive);
   const selectBox = useUiStore((state) => state.selectBox);
-  const { closeMenu } = useFloatingMenu();
   const pointerSessionRef = useRef<WindowPointerSession | null>(null);
 
   useEffect(
@@ -70,7 +68,6 @@ export function useCanvasPan(pageId: string) {
 
     event.preventDefault();
     event.stopPropagation();
-    closeMenu();
     if (!startsOnBox) {
       selectBox(null);
     }

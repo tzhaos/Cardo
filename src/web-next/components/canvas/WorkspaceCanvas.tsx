@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { AnimatePresence, motion, type Variants } from 'motion/react';
-import { House, Trash2 } from 'lucide-react';
+import { House, PanelTop, Plus, Trash2 } from 'lucide-react';
 import { useCanvasPan } from '../../app/useCanvasPan';
 import { useCanvasViewport } from '../../app/useCanvasViewport';
 import { getPageCanvasState, useCanvasStore } from '../../app/stores/canvasStore';
@@ -20,7 +20,7 @@ import {
   type WorkspaceBoxPreset,
 } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
-import { useFloatingMenu } from '../floating-menu/useFloatingMenu';
+import { useContextMenu } from '../../ui/khaos/context-menu';
 import { WorkspaceBoxRenderer } from './WorkspaceBoxRenderer';
 import { useCanvasTools } from './useCanvasTools';
 import { CollectionPage } from '../collection/CollectionPage';
@@ -31,7 +31,7 @@ export function WorkspaceCanvas() {
   const createPage = useWorkspaceStore((state) => state.createPage);
   const setDefaultPage = useWorkspaceStore((state) => state.setDefaultPage);
   const viewportSize = useCanvasStore((state) => state.viewportSize);
-  const { openCanvasMenu } = useFloatingMenu();
+  const contextMenu = useContextMenu();
   const { items: canvasTools } = useCanvasTools();
   const { t } = useI18n();
   const boxes = useMemo(
@@ -96,19 +96,32 @@ export function WorkspaceCanvas() {
         const rect = event.currentTarget.getBoundingClientRect();
         const camera = getPageCanvasState(useCanvasStore.getState(), projection.activePageId).camera;
         const point = clientPointToCanvasWorld(event, rect, camera);
-        openCanvasMenu(event.clientX, event.clientY, {
-          ...(isRecycleBin || isCollection
-            ? {}
-            : {
-                createPage: () => createPage(t('page.untitled')),
-                createBox: (preset: WorkspaceBoxPreset) =>
-                  createBox(
-                    preset,
-                    constrainBoxFrameToCanvas(createBoxFrameCenteredAt(point), canvasBounds),
-                    getBoxPresetLabel(preset, t),
-                  ),
-              }),
-          canvasTools: [
+        const canCreate = !isRecycleBin && !isCollection;
+        contextMenu.openMenu(event.clientX, event.clientY, [
+          ...(canCreate
+            ? [
+                {
+                  id: 'new-page',
+                  label: t('menu.newPage'),
+                  icon: <PanelTop size={16} />,
+                  onSelect: () => createPage(t('page.untitled')),
+                },
+                {
+                  id: 'new-box',
+                  label: t('menu.newBox'),
+                  icon: <Plus size={16} />,
+                  onSelect: () => {
+                    const preset: WorkspaceBoxPreset = 'general';
+                    createBox(
+                      preset,
+                      constrainBoxFrameToCanvas(createBoxFrameCenteredAt(point), canvasBounds),
+                      getBoxPresetLabel(preset, t),
+                    );
+                  },
+                },
+              ]
+            : []),
+          ...[
             ...(!isRecycleBin && !isCollection
               ? [
                   {
@@ -125,8 +138,11 @@ export function WorkspaceCanvas() {
                 ]
               : []),
             ...canvasTools,
-          ],
-        });
+          ].map((item, index) => ({
+            ...item,
+            separatorBefore: index === 0 && canCreate ? true : item.separatorBefore,
+          })),
+        ]);
       }}
     >
       <AnimatePresence initial={false} mode="sync" custom={pageTransitionDirection}>
@@ -168,6 +184,7 @@ export function WorkspaceCanvas() {
         </motion.section>
       </AnimatePresence>
       <CanvasBoundaryFeedback pageId={projection.activePageId} />
+      {contextMenu.menu}
     </main>
   );
 }

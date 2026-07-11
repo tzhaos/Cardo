@@ -3,7 +3,7 @@ import { LocateFixed, Lock, Unlock } from 'lucide-react';
 import { useCanvasStore } from '../../app/stores/canvasStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { useI18n } from '../../i18n/useI18n';
-import type { FloatingMenuItem } from '../floating-menu/menuTypes';
+import type { ContextMenuItem } from '../../ui/khaos/context-menu';
 
 export function useCanvasTools() {
   const activePageId = useWorkspaceStore((state) => state.projection.activePageId);
@@ -14,7 +14,7 @@ export function useCanvasTools() {
   const toggleLocked = useCanvasStore((state) => state.toggleLocked);
   const { t } = useI18n();
 
-  const items = useMemo<FloatingMenuItem[]>(
+  const items = useMemo<ContextMenuItem[]>(
     () => [
       {
         id: 'return-to-origin',
