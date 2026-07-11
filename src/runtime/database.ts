@@ -32,7 +32,16 @@ export function openRuntimeDatabase(dbPath: string): RuntimeDatabaseHandle {
           const versionRow = raw.prepare('PRAGMA user_version').get() as
             | { user_version?: number }
             | undefined;
-          return versionRow?.user_version ?? 0;
+          const value = versionRow?.user_version;
+          return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+        },
+        listPreferenceColumns: () => {
+          const rows = raw.prepare('PRAGMA table_info(preferences)').all() as Array<{
+            name?: string;
+          }>;
+          return rows
+            .map((row) => row.name)
+            .filter((name): name is string => typeof name === 'string' && name.length > 0);
         },
       }),
     );
