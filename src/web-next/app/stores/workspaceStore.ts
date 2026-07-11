@@ -26,7 +26,7 @@ interface WorkspaceStore {
   historyFuture: readonly true[];
   initialize: () => Promise<void>;
   dispatchCommand: (command: WorkspaceCommand) => Promise<DatabaseCommandResult>;
-  replaceSnapshot: (snapshot: WorkspaceSnapshot) => void;
+  importWorkspace: (snapshot: WorkspaceSnapshot) => void;
   createPage: (title?: string) => void;
   renamePage: (pageId: string, title: string) => void;
   deletePage: (pageId: string) => void;
@@ -100,7 +100,7 @@ const emptySnapshot: WorkspaceSnapshot = {
 const actions = {
   initialize: refreshProjection,
   dispatchCommand: runCommand,
-  replaceSnapshot: (snapshot: WorkspaceSnapshot) =>
+  importWorkspace: (snapshot: WorkspaceSnapshot) =>
     fireCommand({ type: 'workspace.import', snapshot }),
   createPage: (title = 'Untitled') => fireCommand({ type: 'page.create', title }),
   renamePage: (pageId: string, title: string) =>

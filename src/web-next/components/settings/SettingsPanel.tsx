@@ -25,11 +25,12 @@ import { ColorModeStateIcon, LanguageStateIcon } from './StateIcons';
 import { IconButton, IconFrame } from '../../ui/khaos/icon-button';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import type { WorkspaceSnapshot } from '../../domain/workspace';
-import {
-  workspaceTransferDocumentSchema,
-} from '../../../core/contracts/workspaceTransfer';
 import { useUiStore } from '../../app/stores/uiStore';
-import { exportOperationLog, exportWorkspaceData } from '../../platform/hostPlatform';
+import {
+  exportOperationLog,
+  exportWorkspaceData,
+  parseWorkspaceImportFile,
+} from '../../platform/hostPlatform';
 import { isValidCustomSearchTemplate, type WebSearchEngineId } from '../../domain/webSearch';
 import {
   Select,
@@ -153,7 +154,7 @@ export function SettingsPanel({
 }
 
 function DataSettings() {
-  const replaceSnapshot = useWorkspaceStore((state) => state.replaceSnapshot);
+  const importWorkspace = useWorkspaceStore((state) => state.importWorkspace);
   const selectBox = useUiStore((state) => state.selectBox);
   const inputRef = useRef<HTMLInputElement>(null);
   const [pendingImport, setPendingImport] = useState<{
@@ -165,9 +166,9 @@ function DataSettings() {
 
   const readImportFile = async (file: File) => {
     try {
-      const parsed = workspaceTransferDocumentSchema.parse(JSON.parse(await file.text()));
+      const parsed = await parseWorkspaceImportFile(file);
       setImportError(false);
-      setPendingImport({ snapshot: parsed.snapshot, fileName: file.name });
+      setPendingImport(parsed);
     } catch {
       setPendingImport(null);
       setImportError(true);
@@ -238,7 +239,7 @@ function DataSettings() {
                 className="wbn-data-import-confirm-button"
                 variant="default"
                 onClick={() => {
-                  replaceSnapshot(pendingImport.snapshot);
+                  importWorkspace(pendingImport.snapshot);
                   selectBox(null);
                   setPendingImport(null);
                 }}

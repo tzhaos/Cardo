@@ -102,6 +102,14 @@ export async function exportWorkspaceData() {
   });
 }
 
+export async function parseWorkspaceImportFile(file: File) {
+  const document = workspaceTransferDocumentSchema.parse(JSON.parse(await file.text()));
+  return {
+    fileName: file.name,
+    snapshot: document.snapshot,
+  };
+}
+
 export function queryPreferences() {
   return runDatabaseTask(() => getPreferences(getKhaosDatabase()));
 }
