@@ -288,6 +288,8 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .cardo-canvas-world {

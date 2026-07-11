@@ -280,18 +280,31 @@ function cameraTransform(camera: { panX: number; panY: number; zoom?: number }) 
   return `translate3d(${camera.panX}px, ${camera.panY}px, 0)`;
 }
 
+/**
+ * Horizontal page turn (not fade).
+ * direction > 0 → navigating forward (higher tab order): enter from right, exit left.
+ * direction < 0 → navigating backward: enter from left, exit right.
+ * Cross-page box drag disables these variants so the floating box stays stable.
+ */
+const PAGE_SLIDE_TRANSITION = {
+  type: 'tween' as const,
+  duration: 0.34,
+  ease: [0.22, 0.82, 0.2, 1] as const,
+};
+
 const pageSceneVariants: Variants = {
-  enter: (direction: number) => ({ opacity: 0, x: direction * 18, scale: 0.992 }),
-  center: {
+  enter: (direction: number) => ({
+    x: `${direction * 100}%`,
     opacity: 1,
+  }),
+  center: {
     x: 0,
-    scale: 1,
-    transition: { type: 'tween', duration: 0.24, ease: [0.2, 0.8, 0.2, 1] },
+    opacity: 1,
+    transition: PAGE_SLIDE_TRANSITION,
   },
   exit: (direction: number) => ({
-    opacity: 0,
-    x: direction * -12,
-    scale: 0.996,
-    transition: { type: 'tween', duration: 0.16, ease: [0.4, 0, 1, 1] },
+    x: `${direction * -100}%`,
+    opacity: 1,
+    transition: PAGE_SLIDE_TRANSITION,
   }),
 };
