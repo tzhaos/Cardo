@@ -14,6 +14,10 @@ import {
   recordDatabaseActivity,
   type ActivityLogInput,
 } from '../../core/application/operationLogService';
+import {
+  WORKSPACE_TRANSFER_VERSION,
+  workspaceTransferDocumentSchema,
+} from '../../core/contracts/workspaceTransfer';
 
 let database: KhaosDatabase | null = null;
 let databaseTaskQueue: Promise<unknown> = Promise.resolve();
@@ -69,6 +73,31 @@ export async function exportOperationLog() {
     await recordDatabaseActivity(getKhaosDatabase(), {
       action: 'journal.export',
       details: { eventCount: entries.length },
+    });
+  });
+}
+
+export async function exportWorkspaceData() {
+  await runDatabaseTask(async () => {
+    const snapshot = await getWorkspaceSnapshot(getKhaosDatabase());
+    const exportedAt = new Date().toISOString();
+    const document = workspaceTransferDocumentSchema.parse({
+      format: 'khaosbox-workspace',
+      version: WORKSPACE_TRANSFER_VERSION,
+      exportedAt,
+      snapshot,
+    });
+    getAppPorts().fileExport.downloadJson(
+      `khaosbox-${exportedAt.slice(0, 10)}.json`,
+      JSON.stringify(document, null, 2),
+    );
+    await recordDatabaseActivity(getKhaosDatabase(), {
+      action: 'workspace.export',
+      details: {
+        pageCount: snapshot.pages.length,
+        boxCount: snapshot.boxes.length,
+        itemCount: new Set(snapshot.boxes.flatMap((box) => box.items.map((item) => item.id))).size,
+      },
     });
   });
 }

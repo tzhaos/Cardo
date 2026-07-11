@@ -26,11 +26,10 @@ import { IconButton, IconFrame } from '../../ui/khaos/icon-button';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import type { WorkspaceSnapshot } from '../../domain/workspace';
 import {
-  WORKSPACE_TRANSFER_VERSION,
   workspaceTransferDocumentSchema,
 } from '../../../core/contracts/workspaceTransfer';
 import { useUiStore } from '../../app/stores/uiStore';
-import { exportOperationLog } from '../../platform/hostPlatform';
+import { exportOperationLog, exportWorkspaceData } from '../../platform/hostPlatform';
 import { isValidCustomSearchTemplate, type WebSearchEngineId } from '../../domain/webSearch';
 import {
   Select,
@@ -154,7 +153,6 @@ export function SettingsPanel({
 }
 
 function DataSettings() {
-  const snapshot = useWorkspaceStore((state) => state.snapshot);
   const replaceSnapshot = useWorkspaceStore((state) => state.replaceSnapshot);
   const selectBox = useUiStore((state) => state.selectBox);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -164,22 +162,6 @@ function DataSettings() {
   } | null>(null);
   const [importError, setImportError] = useState(false);
   const { t } = useI18n();
-
-  const exportData = () => {
-    const payload = {
-      format: 'khaosbox-workspace',
-      version: WORKSPACE_TRANSFER_VERSION,
-      exportedAt: new Date().toISOString(),
-      snapshot,
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `khaosbox-${new Date().toISOString().slice(0, 10)}.json`;
-    link.click();
-    window.setTimeout(() => URL.revokeObjectURL(url), 0);
-  };
 
   const readImportFile = async (file: File) => {
     try {
@@ -196,7 +178,7 @@ function DataSettings() {
     <>
       <SettingsHeading title={t('settings.data')} description={t('settings.dataDescription')} />
       <div className="wbn-data-actions">
-        <button type="button" onClick={exportData}>
+        <button type="button" onClick={() => void exportWorkspaceData()}>
           <IconFrame>
             <Download size={18} />
           </IconFrame>
