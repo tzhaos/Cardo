@@ -22,43 +22,39 @@ export function usePasteIntoSelectedBox() {
       const selectedBoxId = useUiStore.getState().selectedBoxId;
       const workspaceStore = useWorkspaceStore.getState();
       const snapshot = workspaceStore.snapshot;
+      const pageId = isSystemPageId(snapshot.activePageId)
+        ? [...snapshot.pages]
+            .filter((page) => !isSystemPageId(page.id))
+            .sort((first, second) => first.order - second.order)[0]?.id
+        : snapshot.activePageId;
+      if (!pageId) return;
       let targetBox =
         selectedBoxId && !isSystemPageId(snapshot.activePageId)
           ? snapshot.boxes.find((candidate) => candidate.id === selectedBoxId)
           : undefined;
-      if (targetBox?.pageId !== snapshot.activePageId) targetBox = undefined;
+      if (targetBox?.pageId !== pageId) targetBox = undefined;
 
       if (!targetBox) {
-        const pageId = isSystemPageId(snapshot.activePageId)
-          ? [...snapshot.pages]
-              .filter((page) => !isSystemPageId(page.id))
-              .sort((first, second) => first.order - second.order)[0]?.id
-          : snapshot.activePageId;
-        if (!pageId) return;
         targetBox = snapshot.boxes.find(
           (candidate) => candidate.pageId === pageId && candidate.kind === 'temporary',
         );
-
-        if (!targetBox) {
-          const canvas = useCanvasStore.getState();
-          const camera = canvas.pages[pageId]?.camera ?? { panX: 0, panY: 0, zoom: 1 };
-          const bounds = createCanvasWorldBounds(canvas.viewportSize);
-          const center = getCanvasViewportCenter(camera, canvas.viewportSize);
-          const frame = findNewBoxFrame(snapshot, pageId, center, bounds);
-          const boxId = workspaceStore.createTemporaryBox(pageId, frame);
-          targetBox = useWorkspaceStore
-            .getState()
-            .snapshot.boxes.find((candidate) => candidate.id === boxId);
-        }
       }
 
-      if (!targetBox) return;
-
-      const item = useWorkspaceStore
-        .getState()
-        .createItem(targetBox.id, pasteItem.type, pasteItem.draft);
-      useUiStore.getState().selectBox(targetBox.id);
-      useUiStore.getState().markCreated(targetBox.id, item.id);
+      const canvas = useCanvasStore.getState();
+      const camera = canvas.pages[pageId]?.camera ?? { panX: 0, panY: 0, zoom: 1 };
+      const bounds = createCanvasWorldBounds(canvas.viewportSize);
+      const center = getCanvasViewportCenter(camera, canvas.viewportSize);
+      const temporaryFrame = targetBox?.frame ?? findNewBoxFrame(snapshot, pageId, center, bounds);
+      const result = workspaceStore.pasteItem(
+        pageId,
+        targetBox?.id ?? null,
+        temporaryFrame,
+        pasteItem.type,
+        pasteItem.draft,
+      );
+      if (!result.boxId) return;
+      useUiStore.getState().selectBox(result.boxId);
+      useUiStore.getState().markCreated(result.boxId, result.item.id);
     };
 
     window.addEventListener('paste', onPaste);

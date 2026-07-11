@@ -8,7 +8,7 @@ import {
   type OperationSource,
   type OperationTarget,
 } from './operationJournalStore';
-import { createDefaultWorkspace, createItem } from '../../domain/factories';
+import { createDefaultWorkspace } from '../../domain/factories';
 import { restoreWorkspaceSnapshot } from '../../domain/persistence';
 import type {
   BoxFrame,
@@ -21,44 +21,19 @@ import type {
   WorkspaceSnapshot,
 } from '../../domain/workspace';
 import type { CanvasViewportSize } from '../../domain/canvasGeometry';
+import { setActivePage } from '../../domain/reducers';
 import {
-  addBoxToCollection,
-  addBox,
-  addItem,
-  addPage,
-  deleteBox,
-  deleteItem,
-  deletePage,
-  moveBoxToPage,
-  moveItemBetweenBoxes,
-  removeBoxFromCollection,
-  promoteTemporaryBox,
-  renameBox,
-  renameItem,
-  renamePage,
-  reorderItems,
-  reorderPages,
-  setActivePage,
-  setDefaultPage,
-  setBoxAppearance,
-  setBoxDetailMode,
-  setBoxLocked,
-  setBoxPreset,
-  setBoxViewMode,
-  setItemPinned,
-  setBookmarkFavicon,
-  updateBoxFrame,
-  updatePageBoxFrames,
-  updateCollectionBoxView,
-  updateCollectionBoxFrames,
-  updateItemContent,
-  constrainWorkspaceFramesToViewport,
-} from '../../domain/reducers';
+  executeWorkspaceCommand,
+  isUndoableWorkspaceCommand,
+  type WorkspaceCommand,
+  type WorkspaceCommandResult,
+} from '../../domain/workspaceCommands';
 
 interface WorkspaceStore {
   snapshot: WorkspaceSnapshot;
   historyPast: WorkspaceHistoryEntry[];
   historyFuture: WorkspaceHistoryEntry[];
+  dispatchCommand: (command: WorkspaceCommand) => WorkspaceCommandResult;
   replaceSnapshot: (snapshot: WorkspaceSnapshot) => void;
   createPage: (title?: string) => string;
   renamePage: (pageId: string, title: string) => void;
@@ -67,7 +42,13 @@ interface WorkspaceStore {
   setActivePage: (pageId: string, origin?: string) => void;
   setDefaultPage: (pageId: string) => void;
   createBox: (preset: WorkspaceBoxPreset, frame: BoxFrame, title?: string) => void;
-  createTemporaryBox: (pageId: string, frame: BoxFrame) => string;
+  pasteItem: (
+    pageId: string,
+    targetBoxId: string | null,
+    temporaryFrame: BoxFrame,
+    type: WorkspaceItemType,
+    draft: Record<string, string>,
+  ) => { boxId: string; item: BoxItem };
   updateBoxFrame: (boxId: string, frame: BoxFrame) => void;
   updateCollectionBoxFrame: (boxId: string, frame: BoxFrame) => void;
   updateCollectionBoxView: (
@@ -108,26 +89,10 @@ interface WorkspaceStore {
   deleteItem: (boxId: string, itemId: string) => void;
 }
 
-export type WorkspaceHistoryAction =
-  | 'deleteItem'
-  | 'deleteBox'
-  | 'moveBox'
-  | 'resizeBox'
-  | 'deletePage'
-  | 'setDefaultPage'
-  | 'moveBoxToPage'
-  | 'arrangeBoxes'
-  | 'arrangeCollectionBoxes'
-  | 'collectBox'
-  | 'removeCollectedBox'
-  | 'moveCollectionBox'
-  | 'resizeCollectionBox'
-  | 'importData';
-
 interface WorkspaceHistoryEntry {
   before: WorkspaceSnapshot;
   after: WorkspaceSnapshot;
-  action: WorkspaceHistoryAction;
+  action: string;
   eventId: string;
   redoNavigationPageId?: string;
 }
@@ -140,56 +105,28 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       snapshot: createDefaultWorkspace(),
       historyPast: [],
       historyFuture: [],
-      replaceSnapshot: (snapshot) =>
-        set((state) =>
-          recordHistory(
-            state,
-            snapshot,
-            'importData',
-            operation('workspace.import', undefined, undefined, 'import', 'system'),
-          ),
-        ),
-      createPage: (title = 'Untitled') => {
-        let createdPageId = '';
+      dispatchCommand: (command) => {
+        let result: WorkspaceCommandResult = { snapshot: get().snapshot };
         set((state) => {
-          const nextSnapshot = addPage(state.snapshot, title);
-          createdPageId = nextSnapshot.activePageId;
-          return recordMutation(
-            state,
-            nextSnapshot,
-            operation('page.create', getPageTarget(nextSnapshot, createdPageId)),
-          );
+          result = executeWorkspaceCommand(state.snapshot, command);
+          return commitWorkspaceCommand(state, result, command);
         });
-        return createdPageId;
+        return result;
       },
-      renamePage: (pageId, title) =>
-        set((state) =>
-          recordMutation(
-            state,
-            renamePage(state.snapshot, pageId, title),
-            operation('page.rename', getPageTarget(state.snapshot, pageId), {
-              from: state.snapshot.pages.find((page) => page.id === pageId)?.title ?? '',
-              to: title.trim(),
-            }),
-          ),
-        ),
-      deletePage: (pageId) =>
-        set((state) =>
-          recordHistory(
-            state,
-            deletePage(state.snapshot, pageId),
-            'deletePage',
-            operation('page.delete', getPageTarget(state.snapshot, pageId)),
-          ),
-        ),
-      reorderPages: (orderedPageIds) =>
-        set((state) =>
-          recordMutation(
-            state,
-            reorderPages(state.snapshot, orderedPageIds),
-            operation('page.reorder', undefined, { count: orderedPageIds.length }),
-          ),
-        ),
+      replaceSnapshot: (snapshot) => {
+        get().dispatchCommand({ type: 'workspace.import', snapshot });
+      },
+      createPage: (title = 'Untitled') =>
+        get().dispatchCommand({ type: 'page.create', title }).createdPageId ?? '',
+      renamePage: (pageId, title) => {
+        get().dispatchCommand({ type: 'page.rename', pageId, title });
+      },
+      deletePage: (pageId) => {
+        get().dispatchCommand({ type: 'page.delete', pageId });
+      },
+      reorderPages: (orderedPageIds) => {
+        get().dispatchCommand({ type: 'page.reorder', orderedPageIds });
+      },
       setActivePage: (pageId, origin = 'navigation') =>
         set((state) => {
           const nextSnapshot = setActivePage(state.snapshot, pageId);
@@ -201,116 +138,44 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           });
           return { snapshot: nextSnapshot };
         }),
-      setDefaultPage: (pageId) =>
-        set((state) =>
-          recordHistory(
-            state,
-            setDefaultPage(state.snapshot, pageId),
-            'setDefaultPage',
-            operation('page.setDefault', getPageTarget(state.snapshot, pageId)),
-          ),
-        ),
-      createBox: (preset, frame, title) =>
-        set((state) => {
-          const nextSnapshot = addBox(
-            state.snapshot,
-            state.snapshot.activePageId,
-            preset,
-            frame,
-            title,
-          );
-          const box = nextSnapshot.boxes.at(-1);
-          return recordMutation(
-            state,
-            nextSnapshot,
-            operation('box.create', box ? getBoxTarget(nextSnapshot, box.id) : undefined, {
-              preset,
-            }),
-          );
-        }),
-      createTemporaryBox: (pageId, frame) => {
-        let createdBoxId = '';
-        set((state) => {
-          const snapshot = addBox(state.snapshot, pageId, 'general', frame, '', 'temporary');
-          createdBoxId = snapshot.boxes.at(-1)?.id ?? '';
-          const nextSnapshot = { ...snapshot, activePageId: pageId };
-          return recordMutation(
-            state,
-            nextSnapshot,
-            operation(
-              'box.temporary.create',
-              getBoxTarget(nextSnapshot, createdBoxId),
-              undefined,
-              'system',
-              'system',
-            ),
-          );
-        });
-        return createdBoxId;
+      setDefaultPage: (pageId) => {
+        get().dispatchCommand({ type: 'page.setDefault', pageId });
       },
-      updateBoxFrame: (boxId, frame) =>
-        set((state) => {
-          const box = state.snapshot.boxes.find((candidate) => candidate.id === boxId);
-          const action =
-            box && (box.frame.width !== frame.width || box.frame.height !== frame.height)
-              ? 'resizeBox'
-              : 'moveBox';
-          return recordHistory(
-            state,
-            updateBoxFrame(state.snapshot, boxId, frame),
-            action,
-            operation(
-              action === 'resizeBox' ? 'box.resize' : 'box.move',
-              getBoxTarget(state.snapshot, boxId),
-              { x: frame.x, y: frame.y, width: frame.width, height: frame.height },
-            ),
-          );
-        }),
-      updateCollectionBoxFrame: (boxId, frame) =>
-        set((state) => {
-          const current = state.snapshot.collectionViews?.[boxId]?.frame;
-          const action =
-            current && (current.width !== frame.width || current.height !== frame.height)
-              ? 'resizeCollectionBox'
-              : 'moveCollectionBox';
-          return recordHistory(
-            state,
-            updateCollectionBoxView(state.snapshot, boxId, { frame }),
-            action,
-            operation(
-              `collection.${action === 'resizeCollectionBox' ? 'resize' : 'move'}`,
-              getBoxTarget(state.snapshot, boxId),
-            ),
-          );
-        }),
-      updateCollectionBoxView: (boxId, patch) =>
-        set((state) =>
-          recordMutation(
-            state,
-            updateCollectionBoxView(state.snapshot, boxId, patch),
-            operation('collection.updateView', getBoxTarget(state.snapshot, boxId), patch),
-          ),
-        ),
-      applyPageBoxLayout: (pageId, frames) =>
-        set((state) =>
-          recordHistory(
-            state,
-            updatePageBoxFrames(state.snapshot, pageId, frames),
-            'arrangeBoxes',
-            operation('canvas.arrange', getPageTarget(state.snapshot, pageId), {
-              count: Object.keys(frames).length,
-            }),
-          ),
-        ),
-      applyCollectionBoxLayout: (frames) =>
-        set((state) =>
-          recordHistory(
-            state,
-            updateCollectionBoxFrames(state.snapshot, frames),
-            'arrangeCollectionBoxes',
-            operation('collection.arrange', undefined, { count: Object.keys(frames).length }),
-          ),
-        ),
+      createBox: (preset, frame, title) => {
+        get().dispatchCommand({
+          type: 'box.create',
+          pageId: get().snapshot.activePageId,
+          preset,
+          frame,
+          title,
+        });
+      },
+      pasteItem: (pageId, targetBoxId, temporaryFrame, itemType, draft) => {
+        const result = get().dispatchCommand({
+          type: 'item.paste',
+          pageId,
+          targetBoxId,
+          temporaryFrame,
+          itemType,
+          draft,
+        });
+        return requireCreatedItem(result, 'item.paste');
+      },
+      updateBoxFrame: (boxId, frame) => {
+        get().dispatchCommand({ type: 'box.updateFrame', boxId, frame });
+      },
+      updateCollectionBoxFrame: (boxId, frame) => {
+        get().dispatchCommand({ type: 'collection.updateBoxFrame', boxId, frame });
+      },
+      updateCollectionBoxView: (boxId, patch) => {
+        get().dispatchCommand({ type: 'collection.updateView', boxId, patch });
+      },
+      applyPageBoxLayout: (pageId, frames) => {
+        get().dispatchCommand({ type: 'canvas.arrange', pageId, frames });
+      },
+      applyCollectionBoxLayout: (frames) => {
+        get().dispatchCommand({ type: 'collection.arrange', frames });
+      },
       undo: () =>
         set((state) => {
           const entry = state.historyPast.at(-1);
@@ -343,197 +208,73 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           };
         }),
       constrainFramesToViewport: (viewport) => {
-        const snapshot = get().snapshot;
-        const nextSnapshot = constrainWorkspaceFramesToViewport(snapshot, viewport);
-        if (nextSnapshot !== snapshot) {
-          recordOperation(
-            operation(
-              'canvas.constrainFrames',
-              undefined,
-              { width: viewport.width, height: viewport.height },
-              'system',
-              'system',
-            ),
-          );
-          set({ snapshot: nextSnapshot });
-        }
+        get().dispatchCommand({ type: 'system.constrainFrames', viewport });
       },
-      renameBox: (boxId, title) =>
-        set((state) =>
-          recordMutation(
-            state,
-            renameBox(state.snapshot, boxId, title),
-            operation('box.rename', getBoxTarget(state.snapshot, boxId), {
-              from: state.snapshot.boxes.find((box) => box.id === boxId)?.title ?? '',
-              to: title.trim(),
-            }),
-          ),
-        ),
-      promoteTemporaryBox: (boxId, title) =>
-        set((state) =>
-          recordMutation(
-            state,
-            promoteTemporaryBox(state.snapshot, boxId, title),
-            operation('box.promote', getBoxTarget(state.snapshot, boxId), { title }),
-          ),
-        ),
-      setBoxDetailMode: (boxId, detailMode) =>
-        set((state) =>
-          recordMutation(
-            state,
-            setBoxDetailMode(state.snapshot, boxId, detailMode),
-            operation('box.setDetailMode', getBoxTarget(state.snapshot, boxId), { detailMode }),
-          ),
-        ),
-      setBoxLocked: (boxId, isLocked) =>
-        set((state) =>
-          recordMutation(
-            state,
-            setBoxLocked(state.snapshot, boxId, isLocked),
-            operation('box.setLocked', getBoxTarget(state.snapshot, boxId), { isLocked }),
-          ),
-        ),
-      setBoxAppearance: (boxId, appearance) =>
-        set((state) =>
-          recordMutation(
-            state,
-            setBoxAppearance(state.snapshot, boxId, appearance),
-            operation('box.setAppearance', getBoxTarget(state.snapshot, boxId), {
-              ...(appearance.icon ? { icon: appearance.icon } : {}),
-              ...(appearance.accent ? { accent: appearance.accent } : {}),
-            }),
-          ),
-        ),
-      setBoxPreset: (boxId, preset) =>
-        set((state) =>
-          recordMutation(
-            state,
-            setBoxPreset(state.snapshot, boxId, preset),
-            operation('box.setPreset', getBoxTarget(state.snapshot, boxId), { preset }),
-          ),
-        ),
-      setBoxViewMode: (boxId, viewMode) =>
-        set((state) =>
-          recordMutation(
-            state,
-            setBoxViewMode(state.snapshot, boxId, viewMode),
-            operation('box.setViewMode', getBoxTarget(state.snapshot, boxId), { viewMode }),
-          ),
-        ),
-      moveBoxToPage: (boxId, pageId, frame) =>
-        set((state) =>
-          recordHistory(
-            state,
-            moveBoxToPage(state.snapshot, boxId, pageId, frame),
-            'moveBoxToPage',
-            operation('box.moveToPage', getBoxTarget(state.snapshot, boxId), {
-              toPageTitle: state.snapshot.pages.find((page) => page.id === pageId)?.title ?? '',
-            }),
-          ),
-        ),
-      addBoxToCollection: (boxId) =>
-        set((state) =>
-          recordHistory(
-            state,
-            addBoxToCollection(state.snapshot, boxId),
-            'collectBox',
-            operation('box.collect', getBoxTarget(state.snapshot, boxId)),
-          ),
-        ),
-      removeBoxFromCollection: (boxId) =>
-        set((state) =>
-          recordHistory(
-            state,
-            removeBoxFromCollection(state.snapshot, boxId),
-            'removeCollectedBox',
-            operation('box.removeFromCollection', getBoxTarget(state.snapshot, boxId)),
-          ),
-        ),
-      moveItemBetweenBoxes: (sourceBoxId, targetBoxId, itemId, targetIndex) =>
-        set((state) =>
-          recordMutation(
-            state,
-            moveItemBetweenBoxes(state.snapshot, sourceBoxId, targetBoxId, itemId, targetIndex),
-            operation('item.moveBetweenBoxes', getItemTarget(state.snapshot, sourceBoxId, itemId), {
-              targetBoxTitle:
-                state.snapshot.boxes.find((box) => box.id === targetBoxId)?.title ?? '',
-              targetIndex: targetIndex ?? -1,
-            }),
-          ),
-        ),
-      deleteBox: (boxId) =>
-        set((state) =>
-          recordHistory(
-            state,
-            deleteBox(state.snapshot, boxId),
-            'deleteBox',
-            operation('box.delete', getBoxTarget(state.snapshot, boxId)),
-          ),
-        ),
-      createItem: (boxId, type, draft) => {
-        const item = createItem(type, draft as never);
-        set((state) =>
-          recordMutation(
-            state,
-            addItem(state.snapshot, boxId, item),
-            operation('item.create', getItemTargetAfterCreate(state.snapshot, boxId, item), {
-              type,
-              ...(item.type === 'clipboard' ? { contentLength: item.text.length } : {}),
-            }),
-          ),
-        );
-        return item;
+      renameBox: (boxId, title) => {
+        get().dispatchCommand({ type: 'box.rename', boxId, title });
       },
-      renameItem: (boxId, itemId, title) =>
-        set((state) =>
-          recordMutation(
-            state,
-            renameItem(state.snapshot, boxId, itemId, title),
-            operation('item.rename', getItemTarget(state.snapshot, boxId, itemId), { to: title }),
-          ),
-        ),
-      updateItemContent: (boxId, itemId, content) =>
-        set((state) =>
-          recordMutation(
-            state,
-            updateItemContent(state.snapshot, boxId, itemId, content),
-            operation('item.editContent', getItemTarget(state.snapshot, boxId, itemId), {
-              contentLength: content.length,
-            }),
-          ),
-        ),
-      setItemPinned: (boxId, itemId, isPinned) =>
-        set((state) =>
-          recordMutation(
-            state,
-            setItemPinned(state.snapshot, boxId, itemId, isPinned),
-            operation('item.setPinned', getItemTarget(state.snapshot, boxId, itemId), { isPinned }),
-          ),
-        ),
-      setBookmarkFavicon: (boxId, itemId, favicon) =>
-        set((state) => {
-          const nextSnapshot = setBookmarkFavicon(state.snapshot, boxId, itemId, favicon);
-          return nextSnapshot === state.snapshot ? state : { snapshot: nextSnapshot };
-        }),
-      reorderItems: (boxId, orderedItemIds) =>
-        set((state) =>
-          recordMutation(
-            state,
-            reorderItems(state.snapshot, boxId, orderedItemIds),
-            operation('item.reorder', getBoxTarget(state.snapshot, boxId), {
-              count: orderedItemIds.length,
-            }),
-          ),
-        ),
-      deleteItem: (boxId, itemId) =>
-        set((state) =>
-          recordHistory(
-            state,
-            deleteItem(state.snapshot, boxId, itemId),
-            'deleteItem',
-            operation('item.delete', getItemTarget(state.snapshot, boxId, itemId)),
-          ),
-        ),
+      promoteTemporaryBox: (boxId, title) => {
+        get().dispatchCommand({ type: 'box.promote', boxId, title });
+      },
+      setBoxDetailMode: (boxId, detailMode) => {
+        get().dispatchCommand({ type: 'box.setDetailMode', boxId, detailMode });
+      },
+      setBoxLocked: (boxId, isLocked) => {
+        get().dispatchCommand({ type: 'box.setLocked', boxId, isLocked });
+      },
+      setBoxAppearance: (boxId, appearance) => {
+        get().dispatchCommand({ type: 'box.setAppearance', boxId, ...appearance });
+      },
+      setBoxPreset: (boxId, preset) => {
+        get().dispatchCommand({ type: 'box.setPreset', boxId, preset });
+      },
+      setBoxViewMode: (boxId, viewMode) => {
+        get().dispatchCommand({ type: 'box.setViewMode', boxId, viewMode });
+      },
+      moveBoxToPage: (boxId, pageId, frame) => {
+        get().dispatchCommand({ type: 'box.moveToPage', boxId, pageId, frame });
+      },
+      addBoxToCollection: (boxId) => {
+        get().dispatchCommand({ type: 'box.collect', boxId });
+      },
+      removeBoxFromCollection: (boxId) => {
+        get().dispatchCommand({ type: 'box.removeFromCollection', boxId });
+      },
+      moveItemBetweenBoxes: (sourceBoxId, targetBoxId, itemId, targetIndex) => {
+        get().dispatchCommand({
+          type: 'item.moveBetweenBoxes',
+          sourceBoxId,
+          targetBoxId,
+          itemId,
+          targetIndex,
+        });
+      },
+      deleteBox: (boxId) => {
+        get().dispatchCommand({ type: 'box.delete', boxId });
+      },
+      createItem: (boxId, itemType, draft) =>
+        requireCreatedItem(
+          get().dispatchCommand({ type: 'item.create', boxId, itemType, draft }),
+          'item.create',
+        ).item,
+      renameItem: (boxId, itemId, title) => {
+        get().dispatchCommand({ type: 'item.rename', boxId, itemId, title });
+      },
+      updateItemContent: (boxId, itemId, content) => {
+        get().dispatchCommand({ type: 'item.editContent', boxId, itemId, content });
+      },
+      setItemPinned: (boxId, itemId, isPinned) => {
+        get().dispatchCommand({ type: 'item.setPinned', boxId, itemId, isPinned });
+      },
+      setBookmarkFavicon: (boxId, itemId, favicon) => {
+        get().dispatchCommand({ type: 'bookmark.setFavicon', boxId, itemId, favicon });
+      },
+      reorderItems: (boxId, orderedItemIds) => {
+        get().dispatchCommand({ type: 'item.reorder', boxId, orderedItemIds });
+      },
+      deleteItem: (boxId, itemId) => {
+        get().dispatchCommand({ type: 'item.delete', boxId, itemId });
+      },
     }),
     {
       name: 'khaosbox.web-next.workspace',
@@ -552,17 +293,27 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
   ),
 );
 
-function recordHistory(
+function commitWorkspaceCommand(
   state: WorkspaceStore,
-  nextSnapshot: WorkspaceSnapshot,
-  action: WorkspaceHistoryAction,
-  journalEvent: OperationDraft,
+  result: WorkspaceCommandResult,
+  command: WorkspaceCommand,
 ): WorkspaceStore | Partial<WorkspaceStore> {
-  if (nextSnapshot === state.snapshot) return state;
-  const eventId = recordOperation({ ...journalEvent, undoable: true });
-  const entry = { before: state.snapshot, after: nextSnapshot, action, eventId };
+  if (result.snapshot === state.snapshot) return state;
+
+  const journalEvent = createCommandOperation(command, state.snapshot, result);
+  if (!journalEvent) return { snapshot: result.snapshot };
+  const undoable = isUndoableWorkspaceCommand(command);
+  const eventId = recordOperation({ ...journalEvent, undoable });
+  if (!undoable) return { snapshot: result.snapshot };
+
+  const entry = {
+    before: state.snapshot,
+    after: result.snapshot,
+    action: command.type,
+    eventId,
+  };
   return {
-    snapshot: nextSnapshot,
+    snapshot: result.snapshot,
     historyPast: [...state.historyPast, entry].slice(-HISTORY_LIMIT),
     historyFuture: [],
   };
@@ -574,14 +325,11 @@ function restoreHistoryNavigation(snapshot: WorkspaceSnapshot, pageId?: string) 
     : snapshot;
 }
 
-function recordMutation(
-  state: WorkspaceStore,
-  nextSnapshot: WorkspaceSnapshot,
-  journalEvent: OperationDraft,
-): WorkspaceStore | Partial<WorkspaceStore> {
-  if (nextSnapshot === state.snapshot) return state;
-  recordOperation(journalEvent);
-  return { snapshot: nextSnapshot };
+function requireCreatedItem(result: WorkspaceCommandResult, commandType: string) {
+  if (!result.item) {
+    throw new Error(`${commandType} completed without an item result`);
+  }
+  return { boxId: result.createdBoxId ?? '', item: result.item };
 }
 
 function operation(
@@ -592,6 +340,170 @@ function operation(
   category: OperationCategory = 'mutation',
 ): OperationDraft {
   return { action, target, details, source, category, undoable: false };
+}
+
+function createCommandOperation(
+  command: WorkspaceCommand,
+  before: WorkspaceSnapshot,
+  result: WorkspaceCommandResult,
+): OperationDraft | null {
+  switch (command.type) {
+    case 'workspace.import':
+      return operation('workspace.import', undefined, undefined, 'import', 'system');
+    case 'page.create':
+      return operation(
+        'page.create',
+        result.createdPageId ? getPageTarget(result.snapshot, result.createdPageId) : undefined,
+      );
+    case 'page.rename':
+      return operation('page.rename', getPageTarget(before, command.pageId), {
+        from: before.pages.find((page) => page.id === command.pageId)?.title ?? '',
+        to: command.title.trim(),
+      });
+    case 'page.delete':
+      return operation('page.delete', getPageTarget(before, command.pageId));
+    case 'page.reorder':
+      return operation('page.reorder', undefined, { count: command.orderedPageIds.length });
+    case 'page.setDefault':
+      return operation('page.setDefault', getPageTarget(before, command.pageId));
+    case 'box.create':
+      return operation(
+        'box.create',
+        result.createdBoxId ? getBoxTarget(result.snapshot, result.createdBoxId) : undefined,
+        { preset: command.preset },
+      );
+    case 'item.paste':
+      return operation(
+        'item.paste',
+        result.item && result.createdBoxId
+          ? getItemTargetAfterCreate(result.snapshot, result.createdBoxId, result.item)
+          : undefined,
+        {
+          type: command.itemType,
+          ...(result.item?.type === 'clipboard' ? { contentLength: result.item.text.length } : {}),
+        },
+      );
+    case 'box.updateFrame': {
+      const current = before.boxes.find((box) => box.id === command.boxId)?.frame;
+      const resized =
+        current &&
+        (current.width !== command.frame.width || current.height !== command.frame.height);
+      return operation(resized ? 'box.resize' : 'box.move', getBoxTarget(before, command.boxId), {
+        x: command.frame.x,
+        y: command.frame.y,
+        width: command.frame.width,
+        height: command.frame.height,
+      });
+    }
+    case 'collection.updateBoxFrame': {
+      const current = before.collectionViews?.[command.boxId]?.frame;
+      const resized =
+        current &&
+        (current.width !== command.frame.width || current.height !== command.frame.height);
+      return operation(
+        `collection.${resized ? 'resize' : 'move'}`,
+        getBoxTarget(before, command.boxId),
+      );
+    }
+    case 'collection.updateView':
+      return operation('collection.updateView', getBoxTarget(before, command.boxId), command.patch);
+    case 'canvas.arrange':
+      return operation('canvas.arrange', getPageTarget(before, command.pageId), {
+        count: Object.keys(command.frames).length,
+      });
+    case 'collection.arrange':
+      return operation('collection.arrange', undefined, {
+        count: Object.keys(command.frames).length,
+      });
+    case 'box.rename':
+      return operation('box.rename', getBoxTarget(before, command.boxId), {
+        from: before.boxes.find((box) => box.id === command.boxId)?.title ?? '',
+        to: command.title.trim(),
+      });
+    case 'box.promote':
+      return operation('box.promote', getBoxTarget(before, command.boxId), {
+        title: command.title,
+      });
+    case 'box.setDetailMode':
+      return operation('box.setDetailMode', getBoxTarget(before, command.boxId), {
+        detailMode: command.detailMode,
+      });
+    case 'box.setLocked':
+      return operation('box.setLocked', getBoxTarget(before, command.boxId), {
+        isLocked: command.isLocked,
+      });
+    case 'box.setAppearance':
+      return operation('box.setAppearance', getBoxTarget(before, command.boxId), {
+        ...(command.icon ? { icon: command.icon } : {}),
+        ...(command.accent ? { accent: command.accent } : {}),
+      });
+    case 'box.setPreset':
+      return operation('box.setPreset', getBoxTarget(before, command.boxId), {
+        preset: command.preset,
+      });
+    case 'box.setViewMode':
+      return operation('box.setViewMode', getBoxTarget(before, command.boxId), {
+        viewMode: command.viewMode,
+      });
+    case 'box.moveToPage':
+      return operation('box.moveToPage', getBoxTarget(before, command.boxId), {
+        toPageTitle: before.pages.find((page) => page.id === command.pageId)?.title ?? '',
+      });
+    case 'box.collect':
+      return operation('box.collect', getBoxTarget(before, command.boxId));
+    case 'box.removeFromCollection':
+      return operation('box.removeFromCollection', getBoxTarget(before, command.boxId));
+    case 'item.moveBetweenBoxes':
+      return operation(
+        'item.moveBetweenBoxes',
+        getItemTarget(before, command.sourceBoxId, command.itemId),
+        {
+          targetBoxTitle: before.boxes.find((box) => box.id === command.targetBoxId)?.title ?? '',
+          targetIndex: command.targetIndex ?? -1,
+        },
+      );
+    case 'box.delete':
+      return operation('box.delete', getBoxTarget(before, command.boxId));
+    case 'item.create':
+      return operation(
+        'item.create',
+        result.item
+          ? getItemTargetAfterCreate(result.snapshot, command.boxId, result.item)
+          : undefined,
+        {
+          type: command.itemType,
+          ...(result.item?.type === 'clipboard' ? { contentLength: result.item.text.length } : {}),
+        },
+      );
+    case 'item.rename':
+      return operation('item.rename', getItemTarget(before, command.boxId, command.itemId), {
+        to: command.title,
+      });
+    case 'item.editContent':
+      return operation('item.editContent', getItemTarget(before, command.boxId, command.itemId), {
+        contentLength: command.content.length,
+      });
+    case 'item.setPinned':
+      return operation('item.setPinned', getItemTarget(before, command.boxId, command.itemId), {
+        isPinned: command.isPinned,
+      });
+    case 'item.reorder':
+      return operation('item.reorder', getBoxTarget(before, command.boxId), {
+        count: command.orderedItemIds.length,
+      });
+    case 'item.delete':
+      return operation('item.delete', getItemTarget(before, command.boxId, command.itemId));
+    case 'bookmark.setFavicon':
+      return null;
+    case 'system.constrainFrames':
+      return operation(
+        'canvas.constrainFrames',
+        undefined,
+        { width: command.viewport.width, height: command.viewport.height },
+        'system',
+        'system',
+      );
+  }
 }
 
 function getPageTarget(snapshot: WorkspaceSnapshot, pageId: string): OperationTarget | undefined {
