@@ -3,69 +3,19 @@ import {
   boxFrameSchema,
   colorHexSchema,
   entityIdSchema,
-  isoDateTimeSchema,
   workspaceBoxDetailModeSchema,
   workspaceBoxIconSchema,
-  workspaceBoxKindSchema,
   workspaceBoxPresetSchema,
   workspaceBoxViewModeSchema,
-  workspaceItemSchema,
   workspaceItemTypeSchema,
+  workspaceSnapshotSchema,
 } from './workspace';
 
 const titleSchema = z.string().max(512);
 const itemDraftSchema = z.record(z.string(), z.string());
 const idListSchema = z.array(entityIdSchema);
 
-const pageSchema = z
-  .object({
-    id: entityIdSchema,
-    title: titleSchema,
-    order: z.number().int().nonnegative(),
-    createdAt: isoDateTimeSchema,
-    updatedAt: isoDateTimeSchema,
-  })
-  .strict();
-
-const boxSchema = z
-  .object({
-    id: entityIdSchema,
-    pageId: entityIdSchema,
-    preset: workspaceBoxPresetSchema,
-    kind: workspaceBoxKindSchema,
-    title: titleSchema,
-    frame: boxFrameSchema,
-    items: z.array(workspaceItemSchema),
-    viewMode: workspaceBoxViewModeSchema,
-    detailMode: workspaceBoxDetailModeSchema,
-    isLocked: z.boolean(),
-    icon: workspaceBoxIconSchema.optional(),
-    accent: colorHexSchema.optional(),
-    createdAt: isoDateTimeSchema,
-    updatedAt: isoDateTimeSchema,
-  })
-  .strict();
-
-const collectionBoxViewSchema = z
-  .object({
-    boxId: entityIdSchema,
-    frame: boxFrameSchema,
-    viewMode: workspaceBoxViewModeSchema,
-    detailMode: workspaceBoxDetailModeSchema,
-    order: z.number().int().nonnegative(),
-  })
-  .strict();
-
-export const workspaceSnapshotContractSchema = z
-  .object({
-    pages: z.array(pageSchema),
-    activePageId: entityIdSchema,
-    defaultPageId: entityIdSchema,
-    boxes: z.array(boxSchema),
-    collectionBoxIds: idListSchema,
-    collectionViews: z.record(entityIdSchema, collectionBoxViewSchema),
-  })
-  .strict();
+export const workspaceSnapshotContractSchema = workspaceSnapshotSchema;
 
 const commandSchemas = [
   z.object({ type: z.literal('workspace.import'), snapshot: workspaceSnapshotContractSchema }).strict(),

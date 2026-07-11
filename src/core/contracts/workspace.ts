@@ -106,6 +106,56 @@ export const historyRowChangeSchema = z
 
 export const historyChangeSetSchema = z.array(historyRowChangeSchema).min(1);
 
+export const workspacePageSchema = z
+  .object({
+    id: entityIdSchema,
+    title: z.string().max(512),
+    order: z.number().int(),
+    createdAt: isoDateTimeSchema,
+    updatedAt: isoDateTimeSchema,
+  })
+  .strict();
+
+export const workspaceBoxSchema = z
+  .object({
+    id: entityIdSchema,
+    pageId: entityIdSchema,
+    preset: workspaceBoxPresetSchema,
+    kind: workspaceBoxKindSchema,
+    title: z.string().max(512),
+    frame: boxFrameSchema,
+    items: z.array(workspaceItemSchema),
+    viewMode: workspaceBoxViewModeSchema,
+    detailMode: workspaceBoxDetailModeSchema,
+    isLocked: z.boolean(),
+    icon: workspaceBoxIconSchema.optional(),
+    accent: colorHexSchema.optional(),
+    createdAt: isoDateTimeSchema,
+    updatedAt: isoDateTimeSchema,
+  })
+  .strict();
+
+export const collectionBoxViewSchema = z
+  .object({
+    boxId: entityIdSchema,
+    frame: boxFrameSchema,
+    viewMode: workspaceBoxViewModeSchema,
+    detailMode: workspaceBoxDetailModeSchema,
+    order: z.number().int().nonnegative(),
+  })
+  .strict();
+
+export const workspaceSnapshotSchema = z
+  .object({
+    pages: z.array(workspacePageSchema),
+    activePageId: entityIdSchema,
+    defaultPageId: entityIdSchema,
+    boxes: z.array(workspaceBoxSchema),
+    collectionBoxIds: z.array(entityIdSchema),
+    collectionViews: z.record(entityIdSchema, collectionBoxViewSchema),
+  })
+  .strict();
+
 export type WorkspaceItem = z.infer<typeof workspaceItemSchema>;
 export type WorkspaceItemType = z.infer<typeof workspaceItemTypeSchema>;
 export type WorkspaceBoxPreset = z.infer<typeof workspaceBoxPresetSchema>;
@@ -116,3 +166,7 @@ export type WorkspaceBoxIcon = z.infer<typeof workspaceBoxIconSchema>;
 export type BoxFrame = z.infer<typeof boxFrameSchema>;
 export type ItemMetadata = z.infer<typeof itemMetadataSchema>;
 export type HistoryChangeSet = z.infer<typeof historyChangeSetSchema>;
+export type WorkspacePage = z.infer<typeof workspacePageSchema>;
+export type WorkspaceBox = z.infer<typeof workspaceBoxSchema>;
+export type CollectionBoxView = z.infer<typeof collectionBoxViewSchema>;
+export type WorkspaceSnapshot = z.infer<typeof workspaceSnapshotSchema>;
