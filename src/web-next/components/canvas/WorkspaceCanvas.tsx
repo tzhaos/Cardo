@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { AnimatePresence, motion, type Variants } from 'motion/react';
-import { House, PanelTop, Plus, Trash2 } from 'lucide-react';
+import { House, PanelTop, Plus, Star, Trash2 } from 'lucide-react';
 import { useCanvasPan } from '../../app/useCanvasPan';
 import { useCanvasViewport } from '../../app/useCanvasViewport';
 import { getPageCanvasState, useCanvasStore } from '../../app/stores/canvasStore';
@@ -28,6 +28,15 @@ export function WorkspaceCanvas() {
   const activePageBoxCount = useWorkspaceStore(
     (state) => state.projection.boxes.filter((box) => box.pageId === activePageId).length,
   );
+  const isCollectionEmpty = useWorkspaceStore((state) => {
+    const boxesById = new Map(state.projection.boxes.map((box) => [box.id, box]));
+    return !state.projection.collectionBoxIds.some((boxId) => {
+      const box = boxesById.get(boxId);
+      return Boolean(
+        box && state.projection.collectionViews[boxId] && !isRecycleBinPageId(box.pageId),
+      );
+    });
+  });
   const createBox = useWorkspaceStore((state) => state.createBox);
   const createPage = useWorkspaceStore((state) => state.createPage);
   const setDefaultPage = useWorkspaceStore((state) => state.setDefaultPage);
@@ -159,13 +168,24 @@ export function WorkspaceCanvas() {
           <AnimatePresence>
             {isRecycleBin && activePageBoxCount === 0 ? (
               <motion.div
-                className="wbn-recycle-bin-empty"
+                className="wbn-system-page-empty"
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 8 }}
               >
                 <Trash2 size={22} />
                 <span>{t('page.recycleBinEmpty')}</span>
+              </motion.div>
+            ) : null}
+            {isCollection && isCollectionEmpty ? (
+              <motion.div
+                className="wbn-system-page-empty"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+              >
+                <Star size={22} />
+                <span>{t('page.collectionEmpty')}</span>
               </motion.div>
             ) : null}
           </AnimatePresence>

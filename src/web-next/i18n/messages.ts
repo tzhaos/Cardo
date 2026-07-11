@@ -4,6 +4,8 @@ export const WEB_NEXT_MESSAGES = {
     'page.collection': 'Favorites',
     'page.recycleBinEmpty':
       'Deleted boxes appear here. Drag one to a workspace page to restore it.',
+    'page.collectionEmpty':
+      'Favorite boxes appear here. Drag a box onto Favorites to add a synced read-only view.',
     'page.untitled': 'Untitled',
     'page.workspacePages': 'Workspace pages',
     'page.add': 'Add page',
@@ -129,9 +131,6 @@ export const WEB_NEXT_MESSAGES = {
     'box.colorPicker': 'Open color picker',
     'box.colorCode': 'Hex color code',
     'collection.remove': 'Remove {title} from Favorites',
-    'collection.emptyTitle': 'No favorite boxes yet',
-    'collection.emptyDescription':
-      'Drag a box onto the Favorites tab to add a synced read-only view.',
     'box.addItem': 'Add Item',
     'box.closeAddView': 'Close add item view',
     'box.switchToGrid': 'Switch to grid view',
@@ -186,6 +185,7 @@ export const WEB_NEXT_MESSAGES = {
     'page.recycleBin': '回收站',
     'page.collection': '收藏',
     'page.recycleBinEmpty': '已删除的盒子会出现在这里。拖回任一工作页面即可恢复。',
+    'page.collectionEmpty': '收藏的盒子会出现在这里。将盒子拖到顶部“收藏”即可添加只读视图。',
     'page.deleteWithRecycleBinQuestion': '删除“{title}”？其中 {count} 个{boxes}将移至回收站。',
     'common.moveToRecycleBin': '移至回收站',
     'common.deletePermanently': '永久删除',
@@ -319,8 +319,6 @@ export const WEB_NEXT_MESSAGES = {
     'box.colorPicker': '打开调色板',
     'box.colorCode': '十六进制色号',
     'collection.remove': '从收藏中移除“{title}”',
-    'collection.emptyTitle': '还没有收藏盒子',
-    'collection.emptyDescription': '将盒子拖到顶部“收藏”，即可添加持续同步的只读视图。',
     'box.addItem': '添加项目',
     'box.closeAddView': '关闭添加项目视图',
     'box.rename': '重命名“{title}”',

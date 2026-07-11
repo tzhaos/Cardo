@@ -13,7 +13,6 @@ import {
   LayoutGrid,
   List,
   LocateFixed,
-  Star,
   StarOff,
   X,
 } from 'lucide-react';
@@ -121,81 +120,67 @@ export function CollectionPage() {
   return (
     <section className="wbn-collection-page" onContextMenu={(event) => event.preventDefault()}>
       <AnimatePresence>
-        {entries.length ? (
-          entries.map(({ box, view }) => (
-            <CollectionBox
-              box={box}
-              key={box.id}
-              pageTitle={pagesById.get(box.pageId)?.title ?? ''}
-              view={view}
-              viewport={viewport}
-              copiedItemId={copiedItemId}
-              maxOrder={entries.at(-1)?.view.order ?? 0}
-              onActivateItem={(item) => void activateItem(box.id, item)}
-              onFrameChange={(frame) => updateCollectionBoxFrame(box.id, frame)}
-              onViewChange={(patch) => updateCollectionBoxView(box.id, patch)}
-              onLocate={() => locateSource(box)}
-              onRemove={() => removeBoxFromCollection(box.id)}
-              onOpenMenu={(event) => {
-                event.preventDefault();
-                contextMenu.openMenu(event.clientX, event.clientY, [
-                  {
-                    id: 'view-mode',
-                    label: t(view.viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList'),
-                    icon: view.viewMode === 'list' ? <LayoutGrid size={16} /> : <List size={16} />,
-                    onSelect: () =>
-                      updateCollectionBoxView(box.id, {
-                        viewMode: view.viewMode === 'list' ? 'grid' : 'list',
-                      }),
-                  },
-                  {
-                    id: 'detail-mode',
-                    label: t(
-                      view.detailMode === 'detailed'
-                        ? 'box.switchToCompact'
-                        : 'box.switchToDetailed',
+        {entries.map(({ box, view }) => (
+          <CollectionBox
+            box={box}
+            key={box.id}
+            pageTitle={pagesById.get(box.pageId)?.title ?? ''}
+            view={view}
+            viewport={viewport}
+            copiedItemId={copiedItemId}
+            maxOrder={entries.at(-1)?.view.order ?? 0}
+            onActivateItem={(item) => void activateItem(box.id, item)}
+            onFrameChange={(frame) => updateCollectionBoxFrame(box.id, frame)}
+            onViewChange={(patch) => updateCollectionBoxView(box.id, patch)}
+            onLocate={() => locateSource(box)}
+            onRemove={() => removeBoxFromCollection(box.id)}
+            onOpenMenu={(event) => {
+              event.preventDefault();
+              contextMenu.openMenu(event.clientX, event.clientY, [
+                {
+                  id: 'view-mode',
+                  label: t(view.viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList'),
+                  icon: view.viewMode === 'list' ? <LayoutGrid size={16} /> : <List size={16} />,
+                  onSelect: () =>
+                    updateCollectionBoxView(box.id, {
+                      viewMode: view.viewMode === 'list' ? 'grid' : 'list',
+                    }),
+                },
+                {
+                  id: 'detail-mode',
+                  label: t(
+                    view.detailMode === 'detailed'
+                      ? 'box.switchToCompact'
+                      : 'box.switchToDetailed',
+                  ),
+                  icon:
+                    view.detailMode === 'detailed' ? (
+                      <ChevronsDownUp size={16} />
+                    ) : (
+                      <ChevronsUpDown size={16} />
                     ),
-                    icon:
-                      view.detailMode === 'detailed' ? (
-                        <ChevronsDownUp size={16} />
-                      ) : (
-                        <ChevronsUpDown size={16} />
-                      ),
-                    onSelect: () =>
-                      updateCollectionBoxView(box.id, {
-                        detailMode: view.detailMode === 'detailed' ? 'compact' : 'detailed',
-                      }),
-                  },
-                  {
-                    id: 'locate-source',
-                    label: t('collection.locateSource'),
-                    icon: <LocateFixed size={16} />,
-                    onSelect: () => locateSource(box),
-                  },
-                  {
-                    id: 'remove',
-                    label: t('menu.removeFromCollection'),
-                    icon: <StarOff size={16} />,
-                    onSelect: () => removeBoxFromCollection(box.id),
-                  },
-                ]);
-              }}
-              t={t}
-            />
-          ))
-        ) : (
-          <motion.div
-            className="wbn-collection-empty"
-            key="collection-empty"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-          >
-            <Star size={24} />
-            <strong>{t('collection.emptyTitle')}</strong>
-            <span>{t('collection.emptyDescription')}</span>
-          </motion.div>
-        )}
+                  onSelect: () =>
+                    updateCollectionBoxView(box.id, {
+                      detailMode: view.detailMode === 'detailed' ? 'compact' : 'detailed',
+                    }),
+                },
+                {
+                  id: 'locate-source',
+                  label: t('collection.locateSource'),
+                  icon: <LocateFixed size={16} />,
+                  onSelect: () => locateSource(box),
+                },
+                {
+                  id: 'remove',
+                  label: t('menu.removeFromCollection'),
+                  icon: <StarOff size={16} />,
+                  onSelect: () => removeBoxFromCollection(box.id),
+                },
+              ]);
+            }}
+            t={t}
+          />
+        ))}
       </AnimatePresence>
       {contextMenu.menu}
     </section>
