@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { KHAOSBOX_NATIVE_HOST_NAME } from '../src/core/protocols/nativeMessaging';
+import { CARDO_NATIVE_HOST_NAME } from '../src/core/protocols/nativeMessaging';
 
 const WINDOWS_BROWSER_NATIVE_HOST_KEYS = [
   'Google\\Chrome',
@@ -110,13 +110,20 @@ function getBrowserPreferenceFiles() {
   return preferenceFiles;
 }
 
-function pathLooksLikeKhaosBox(value: unknown) {
+/** Install-time extension discovery: Cardo paths plus historical KhaosBox paths. */
+function pathLooksLikeCardoExtension(value: unknown) {
+  if (typeof value !== 'string') {
+    return false;
+  }
+  const normalized = value.toLowerCase().replaceAll('\\', '/');
   return (
-    typeof value === 'string' && value.toLowerCase().replaceAll('\\', '/').includes('/khaosbox')
+    normalized.includes('/cardo') ||
+    normalized.includes('/khaosbox') ||
+    normalized.includes('khaosbox')
   );
 }
 
-function addKhaosBoxExtensionIdsFromText(text: string, extensionIds: Set<string>) {
+function addCardoExtensionIdsFromText(text: string, extensionIds: Set<string>) {
   for (const match of text.matchAll(
     /chrome-extension:\/\/([a-p]{32})\/extension\/pages\/newtab\.html/g,
   )) {
@@ -128,12 +135,12 @@ function addKhaosBoxExtensionIdsFromText(text: string, extensionIds: Set<string>
   }
 }
 
-function discoverKhaosBoxExtensionIdsFromPreferences() {
+function discoverCardoExtensionIdsFromPreferences() {
   const extensionIds = new Set<string>();
 
   for (const preferencesPath of getBrowserPreferenceFiles()) {
     const text = fs.readFileSync(preferencesPath, 'utf8');
-    addKhaosBoxExtensionIdsFromText(text, extensionIds);
+    addCardoExtensionIdsFromText(text, extensionIds);
 
     try {
       const preferences = JSON.parse(text) as {
@@ -163,7 +170,10 @@ function discoverKhaosBoxExtensionIdsFromPreferences() {
       )) {
         if (
           /^[a-p]{32}$/.test(extensionId) &&
-          (pathLooksLikeKhaosBox(extension.path) ||
+          (pathLooksLikeCardoExtension(extension.path) ||
+            JSON.stringify(extension.manifest ?? {})
+              .toLowerCase()
+              .includes('cardo') ||
             JSON.stringify(extension.manifest ?? {})
               .toLowerCase()
               .includes('khaosbox'))
@@ -175,7 +185,11 @@ function discoverKhaosBoxExtensionIdsFromPreferences() {
       for (const [extensionId, telemetry] of Object.entries(
         preferences.safebrowsing?.extension_telemetry_file_data ?? {},
       )) {
-        if (/^[a-p]{32}$/.test(extensionId) && JSON.stringify(telemetry).includes('KhaosBox')) {
+        const telemetryText = JSON.stringify(telemetry);
+        if (
+          /^[a-p]{32}$/.test(extensionId) &&
+          (telemetryText.includes('Cardo') || telemetryText.includes('KhaosBox'))
+        ) {
           extensionIds.add(extensionId);
         }
       }
@@ -188,10 +202,10 @@ function discoverKhaosBoxExtensionIdsFromPreferences() {
 }
 
 function writeManifest(hostDir: string, hostPath: string, extensionIds: string[]) {
-  const manifestPath = path.join(hostDir, `${KHAOSBOX_NATIVE_HOST_NAME}.json`);
+  const manifestPath = path.join(hostDir, `${CARDO_NATIVE_HOST_NAME}.json`);
   const manifest = {
-    name: KHAOSBOX_NATIVE_HOST_NAME,
-    description: 'KhaosBox local resource bridge',
+    name: CARDO_NATIVE_HOST_NAME,
+    description: 'Cardo local resource bridge',
     path: hostPath,
     type: 'stdio',
     allowed_origins: extensionIds.map((extensionId) => `chrome-extension://${extensionId}/`),
@@ -204,7 +218,7 @@ function writeManifest(hostDir: string, hostPath: string, extensionIds: string[]
 function registerWindowsNativeHost(browserKey: string, manifestPath: string) {
   execFileSync('reg', [
     'add',
-    `HKCU\\Software\\${browserKey}\\NativeMessagingHosts\\${KHAOSBOX_NATIVE_HOST_NAME}`,
+    `HKCU\\Software\\${browserKey}\\NativeMessagingHosts\\${CARDO_NATIVE_HOST_NAME}`,
     '/ve',
     '/t',
     'REG_SZ',
@@ -220,14 +234,14 @@ function main() {
   }
 
   const extensionIds = [
-    ...new Set([resolveExtensionId(), ...discoverKhaosBoxExtensionIdsFromPreferences()]),
+    ...new Set([resolveExtensionId(), ...discoverCardoExtensionIdsFromPreferences()]),
   ];
   const hostDir = path.resolve('artifacts/native-host');
-  const hostEntry = path.join(hostDir, 'khaosbox-native-host.exe');
+  const hostEntry = path.join(hostDir, 'cardo-native-host.exe');
 
   if (!fs.existsSync(hostEntry)) {
     throw new Error(
-      'Missing artifacts/native-host/khaosbox-native-host.exe. Run npm run native-host:build first.',
+      'Missing artifacts/native-host/cardo-native-host.exe. Run npm run native-host:build first.',
     );
   }
 
@@ -237,7 +251,7 @@ function main() {
     registerWindowsNativeHost(browserKey, manifestPath);
   }
 
-  console.log(`Registered ${KHAOSBOX_NATIVE_HOST_NAME}`);
+  console.log(`Registered ${CARDO_NATIVE_HOST_NAME}`);
   for (const extensionId of extensionIds) {
     console.log(`Allowed extension ${extensionId}`);
   }

@@ -31,7 +31,7 @@ export interface ButtonProps
 
 /**
  * Source-owned shadcn-style button primitive. Product geometry and colors are
- * supplied by KhaosBox semantic classes instead of shadcn's default theme.
+ * supplied by Cardo semantic classes instead of shadcn's default theme.
  */
 export function Button({
   asChild = false,

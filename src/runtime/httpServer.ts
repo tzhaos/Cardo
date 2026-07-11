@@ -11,7 +11,7 @@ import type { RuntimeAuth } from './auth';
 import type { CommandQueue } from './commandQueue';
 import type { EventHub } from './events';
 import type { ClientRegistry } from './clients';
-import type { KhaosDatabase } from '../core/database/createDatabaseClient';
+import type { CardoDatabase } from '../core/database/createDatabaseClient';
 import { executeDatabaseCommand } from '../core/application/executeDatabaseCommand';
 import { deriveInvalidationScopes } from '../core/application/invalidationScopes';
 import {
@@ -63,7 +63,7 @@ export interface RuntimeHttpContext {
   queue: CommandQueue;
   events: EventHub;
   clients: ClientRegistry;
-  database: KhaosDatabase;
+  database: CardoDatabase;
   dbPath: string;
   startedAtMs: number;
   getPort: () => number;

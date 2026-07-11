@@ -1,6 +1,6 @@
-# KhaosBox
+# Cardo
 
-KhaosBox 是一个多宿主 TypeScript 空间工作台，用自由卡片式 box 管理链接、笔记、文件、文件夹、网站收藏和常用启动入口。
+Cardo 是一个多宿主 TypeScript 空间工作台，用自由卡片式 box 管理链接、笔记、文件、文件夹、网站收藏和常用启动入口。
 
 产品方向为 Cardo：本机唯一 Runtime 持有 SQLite 与业务写入；Web、Desktop 与浏览器扩展均为该 Runtime 的客户端。详见 `docs/architecture/local-runtime-multi-client.md`。
 

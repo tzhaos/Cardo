@@ -2,10 +2,10 @@
  * Shared Cardo path resolver (CLI + Desktop embed/attach).
  *
  * v1 keeps one sqlite file so attach/embed share one DB (design §2.1).
- * Filename: khaosbox.sqlite
+ * Filename: khaosbox.sqlite (kept for data-path continuity after product rename).
  *
- * Directory SoT: package `name` segment `khaosbox` (NOT Electron productName
- * display string `KhaosBox`). Desktop Main must call `app.setName('khaosbox')`
+ * Directory SoT: CARDO_USER_DATA_DIR_NAME = 'khaosbox' (NOT package.json name `cardo`
+ * and NOT productName `Cardo`). Desktop Main must call `app.setName('khaosbox')`
  * before any `app.getPath('userData')` so Electron userData matches this resolver.
  * Both CLI and Desktop open via `resolveCardoDataPaths().dbPath`.
  *
@@ -28,7 +28,8 @@ export const CARDO_LOG_FILENAME = 'runtime.log';
 
 /**
  * Electron userData directory segment. Must match app.setName(...) on Desktop.
- * Intentionally the package.json `name` field (`khaosbox`), not productName (`KhaosBox`).
+ * Intentionally kept as `khaosbox` for AppData path continuity (not package name `cardo`
+ * or productName `Cardo`). Path relocation is a separate later PR.
  */
 export const CARDO_USER_DATA_DIR_NAME = 'khaosbox';
 

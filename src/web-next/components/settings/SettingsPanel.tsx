@@ -460,7 +460,7 @@ function AboutSettings() {
           <Languages size={22} />
         </IconFrame>
         <span>
-          KhaosBox
+          Cardo
           <small>{t('settings.webNextEdition')}</small>
         </span>
       </div>

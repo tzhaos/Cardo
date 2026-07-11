@@ -1,6 +1,6 @@
-# KhaosBox
+# Cardo
 
-KhaosBox is a multi-host TypeScript spatial workbench for organizing links, notes, files, folders, website bookmarks, and quick-launch collections in freeform template boxes.
+Cardo is a multi-host TypeScript spatial workbench for organizing links, notes, files, folders, website bookmarks, and quick-launch collections in freeform template boxes.
 
 Product direction is Cardo: one local Runtime holds SQLite and business writes; Web, Desktop, and the browser extension are clients of that Runtime. See `docs/architecture/local-runtime-multi-client.md`.
 

@@ -9,7 +9,7 @@ interface BuildStage {
 }
 
 const rootPackage = JSON.parse(fs.readFileSync('package.json', 'utf8')) as { version: string };
-const proxy = process.env.KHAOSBOX_BUILD_PROXY ?? 'http://127.0.0.1:7890';
+const proxy = process.env.CARDO_BUILD_PROXY ?? 'http://127.0.0.1:7890';
 const npmCliPath = process.env.npm_execpath;
 if (!npmCliPath) {
   throw new Error('无法定位当前 npm CLI。请通过 npm run release:build 启动流水线。');
@@ -21,8 +21,8 @@ const buildEnvironment = {
   NO_PROXY: process.env.NO_PROXY ?? process.env.no_proxy ?? 'localhost,127.0.0.1',
 };
 const desktopArtifacts = [
-  `artifacts/desktop-dist/KhaosBox Setup ${rootPackage.version}.exe`,
-  `artifacts/desktop-dist/KhaosBox ${rootPackage.version}.exe`,
+  `artifacts/desktop-dist/Cardo Setup ${rootPackage.version}.exe`,
+  `artifacts/desktop-dist/Cardo ${rootPackage.version}.exe`,
 ];
 const stages: BuildStage[] = [
   { name: '校验', command: ['run', 'check'], artifacts: [] },
@@ -34,7 +34,7 @@ const stages: BuildStage[] = [
   {
     name: 'Native Host 出包',
     command: ['run', 'native-host:build'],
-    artifacts: ['artifacts/native-host/khaosbox-native-host.exe'],
+    artifacts: ['artifacts/native-host/cardo-native-host.exe'],
   },
   {
     name: 'Electron Windows 出包',

@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import type { KhaosDatabase } from './createDatabaseClient';
+import type { CardoDatabase } from './createDatabaseClient';
 import { bumpRevision } from './revision';
 import { APP_STATE_ID, PREFERENCES_ID, appState, boxes, pages, preferences } from './schema';
 import { DATABASE_SCHEMA_VERSION } from './version';
@@ -19,7 +19,7 @@ export interface InitialWorkspacePreferences {
  * Returns whether this call created the workspace seed.
  */
 export async function initializeWorkspaceDatabase(
-  database: KhaosDatabase,
+  database: CardoDatabase,
   initialPreferences: InitialWorkspacePreferences,
 ): Promise<{ created: boolean }> {
   const existingState = await database

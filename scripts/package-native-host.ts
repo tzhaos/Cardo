@@ -17,7 +17,7 @@ function main() {
   const hostEntry = path.join(hostDir, 'host.cjs');
   const seaConfigPath = path.join(hostDir, 'sea-config.json');
   const seaBlobPath = path.join(hostDir, 'host.blob');
-  const hostExePath = path.join(hostDir, 'khaosbox-native-host.exe');
+  const hostExePath = path.join(hostDir, 'cardo-native-host.exe');
   const postjectCli = path.resolve('node_modules/postject/dist/cli.js');
 
   if (!fs.existsSync(hostEntry)) {

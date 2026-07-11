@@ -2,11 +2,11 @@ import { and, eq, inArray, notInArray, or, sql } from 'drizzle-orm';
 import type { AnySQLiteColumn } from 'drizzle-orm/sqlite-core';
 import { globalSearchResultSchema, type GlobalSearchResult } from '../contracts/globalSearch';
 import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID } from '../contracts/systemPages';
-import type { KhaosDatabase } from './createDatabaseClient';
+import type { CardoDatabase } from './createDatabaseClient';
 import { boxes, boxItems, items, pages } from './schema';
 import { projectWorkspaceItem } from './workspaceQueries';
 
-export async function searchWorkspaceDatabase(database: KhaosDatabase, query: string, limit = 60) {
+export async function searchWorkspaceDatabase(database: CardoDatabase, query: string, limit = 60) {
   const normalizedQuery = normalize(query);
   if (!normalizedQuery) return [];
   const tokens = normalizedQuery.split(/\s+/).filter(Boolean);

@@ -10,12 +10,12 @@ import {
   type DatabaseExecuteResponse,
 } from '../core/contracts/database';
 import { applyMigrations, createSqlExecMigratorAdapter } from '../core/database/migrator';
-import { createDatabaseClient, type KhaosDatabase } from '../core/database/createDatabaseClient';
+import { createDatabaseClient, type CardoDatabase } from '../core/database/createDatabaseClient';
 
 export interface RuntimeDatabaseHandle {
   raw: DatabaseSync;
   port: DatabasePort;
-  database: KhaosDatabase;
+  database: CardoDatabase;
   close: () => void;
 }
 

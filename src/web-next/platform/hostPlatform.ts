@@ -92,7 +92,7 @@ async function resolveRuntimeConnection(): Promise<void> {
 
   const isDesktopShell =
     typeof window !== 'undefined' &&
-    (Boolean(window.khaosboxDesktop) || window.__CARDO_RUNTIME_MISSING__ === true);
+    (Boolean(window.cardoDesktop) || window.__CARDO_RUNTIME_MISSING__ === true);
 
   const injection = readRuntimeInjection();
   if (injection) {
@@ -268,10 +268,10 @@ export async function exportOperationLog() {
     const exported = await requireRuntimeClient().exportOperationLog();
     const exportedAt = new Date().toISOString();
     getAppPorts().fileExport.downloadJson(
-      `khaosbox-operation-log-${exportedAt.slice(0, 10)}.json`,
+      `cardo-operation-log-${exportedAt.slice(0, 10)}.json`,
       JSON.stringify(
         {
-          format: 'khaosbox-operation-log',
+          format: 'cardo-operation-log',
           version: 1,
           exportedAt,
           entries: exported.entries,
@@ -292,7 +292,7 @@ export async function exportWorkspaceData() {
     const exported = await requireRuntimeClient().exportWorkspace();
     const document = exported.document;
     getAppPorts().fileExport.downloadJson(
-      `khaosbox-${document.exportedAt.slice(0, 10)}.json`,
+      `cardo-${document.exportedAt.slice(0, 10)}.json`,
       JSON.stringify(document, null, 2),
     );
     await requireRuntimeClient().activityRecord({

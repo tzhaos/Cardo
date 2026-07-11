@@ -6,7 +6,7 @@ import {
   pageTabsQuerySchema,
   workspaceStateQuerySchema,
 } from '../contracts/workspaceQueries';
-import type { KhaosDatabase } from './createDatabaseClient';
+import type { CardoDatabase } from './createDatabaseClient';
 import {
   appState,
   appStateSelectSchema,
@@ -20,7 +20,7 @@ import {
   items,
 } from './schema';
 
-export async function getPageTabs(database: KhaosDatabase) {
+export async function getPageTabs(database: CardoDatabase) {
   const rows = await database.select().from(pages).orderBy(asc(pages.sortOrder)).all();
   return pageTabsQuerySchema.parse(
     pageSelectSchema
@@ -36,9 +36,9 @@ export async function getPageTabs(database: KhaosDatabase) {
   );
 }
 
-export async function getWorkspaceState(database: KhaosDatabase) {
+export async function getWorkspaceState(database: CardoDatabase) {
   const row = await database.select().from(appState).limit(1).get();
-  if (!row) throw new Error('KhaosBox app state is not initialized.');
+  if (!row) throw new Error('Cardo app state is not initialized.');
   const state = appStateSelectSchema.parse(row);
   return workspaceStateQuerySchema.parse({
     activePageId: state.activePageId,
@@ -46,7 +46,7 @@ export async function getWorkspaceState(database: KhaosDatabase) {
   });
 }
 
-export async function getPageBoxes(database: KhaosDatabase, pageId: string) {
+export async function getPageBoxes(database: CardoDatabase, pageId: string) {
   const boxRows = await database
     .select()
     .from(boxes)
@@ -60,7 +60,7 @@ export async function getPageBoxes(database: KhaosDatabase, pageId: string) {
   return pageBoxesQuerySchema.parse(projectWorkspaceBoxes(boxRows, itemRows, placementRows));
 }
 
-export async function getBoxItems(database: KhaosDatabase, boxId: string) {
+export async function getBoxItems(database: CardoDatabase, boxId: string) {
   const { itemRows, placementRows } = await selectBoxContents(database, [boxId]);
   const itemById = new Map(itemRows.map((item) => [item.id, item]));
   return boxItemsQuerySchema.parse(
@@ -71,12 +71,12 @@ export async function getBoxItems(database: KhaosDatabase, boxId: string) {
   );
 }
 
-export async function getPreferences(database: KhaosDatabase) {
+export async function getPreferences(database: CardoDatabase) {
   const row = await database.select().from(preferences).limit(1).get();
   return row ? preferencesSelectSchema.parse(row) : null;
 }
 
-export async function getWorkspaceProjection(database: KhaosDatabase) {
+export async function getWorkspaceProjection(database: CardoDatabase) {
   const [state, pageRows, boxRows, itemRows, placementRows, collectionRows] = await Promise.all([
     getWorkspaceState(database),
     database.select().from(pages).orderBy(asc(pages.sortOrder)).all(),
@@ -115,7 +115,7 @@ export async function getWorkspaceProjection(database: KhaosDatabase) {
   });
 }
 
-async function selectBoxContents(database: KhaosDatabase, boxIds: string[]) {
+async function selectBoxContents(database: CardoDatabase, boxIds: string[]) {
   if (!boxIds.length) {
     return {
       itemRows: [] as Array<typeof items.$inferSelect>,

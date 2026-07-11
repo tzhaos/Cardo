@@ -25,7 +25,7 @@ export default function WebNextApp() {
   const colorMode = usePreferencesStore((state) => state.colorMode);
   const locale = usePreferencesStore((state) => state.locale);
   const themeId = usePreferencesStore((state) => state.themeId);
-  const isDesktopHost = typeof window !== 'undefined' && Boolean(window.khaosboxDesktop);
+  const isDesktopHost = typeof window !== 'undefined' && Boolean(window.cardoDesktop);
 
   useLayoutEffect(() => {
     document.documentElement.lang = locale === 'zh' ? 'zh-CN' : 'en';

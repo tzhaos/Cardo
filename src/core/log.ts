@@ -14,15 +14,15 @@ function isViteDev(): boolean {
 export const log = {
   debug(...args: unknown[]) {
     if (isViteDev()) {
-      console.debug('[KhaosBox]', ...args);
+      console.debug('[Cardo]', ...args);
     }
   },
   warn(...args: unknown[]) {
     if (isViteDev()) {
-      console.warn('[KhaosBox]', ...args);
+      console.warn('[Cardo]', ...args);
     }
   },
   error(...args: unknown[]) {
-    console.error('[KhaosBox]', ...args);
+    console.error('[Cardo]', ...args);
   },
 };

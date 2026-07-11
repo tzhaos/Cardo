@@ -6,7 +6,7 @@ const rootPackage = JSON.parse(fs.readFileSync('package.json', 'utf8')) as {
   version: string;
 };
 
-const productName = process.env.KHAOSBOX_DESKTOP_PRODUCT_NAME || 'KhaosBox';
+const productName = process.env.CARDO_DESKTOP_PRODUCT_NAME || 'Cardo';
 
 fs.writeFileSync(
   'artifacts/desktop/package.json',

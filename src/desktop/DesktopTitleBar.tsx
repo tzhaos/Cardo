@@ -5,7 +5,7 @@ import { Button } from '../web-next/ui/primitives/button';
 
 export default function DesktopTitleBar() {
   const [isMaximized, setMaximized] = useState(false);
-  const bridge = typeof window === 'undefined' ? undefined : window.khaosboxDesktop;
+  const bridge = typeof window === 'undefined' ? undefined : window.cardoDesktop;
   const { t } = useI18n();
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export default function DesktopTitleBar() {
     >
       <div className="wbn-desktop-titlebar-brand">
         <Box size={15} />
-        <span>KhaosBox</span>
+        <span>Cardo</span>
       </div>
       <div
         className="wbn-desktop-window-controls"

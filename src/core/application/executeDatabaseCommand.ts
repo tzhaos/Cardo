@@ -4,7 +4,7 @@ import {
   parseWorkspaceCommand,
 } from '../contracts/workspaceCommands';
 import { historyChangeSetSchema, type HistoryChangeSet } from '../contracts/history';
-import type { KhaosDatabase } from '../database/createDatabaseClient';
+import type { CardoDatabase } from '../database/createDatabaseClient';
 import { bumpRevision, getRevision } from '../database/revision';
 import { eq } from 'drizzle-orm';
 import { historyEntries, operationLog } from '../database/schema';
@@ -26,7 +26,7 @@ export interface DatabaseCommandExecution {
  * Local hostPlatform should use `.result` only.
  */
 export async function executeDatabaseCommand(
-  database: KhaosDatabase,
+  database: CardoDatabase,
   input: WorkspaceCommand,
 ): Promise<DatabaseCommandExecution> {
   const command = parseWorkspaceCommand(input);

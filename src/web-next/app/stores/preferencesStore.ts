@@ -57,7 +57,7 @@ let state: PreferencesStore = {
 
 async function refreshPreferences() {
   const preferences = await queryPreferences();
-  if (!preferences) throw new Error('KhaosBox preferences are not initialized.');
+  if (!preferences) throw new Error('Cardo preferences are not initialized.');
   state = {
     ...state,
     colorMode: preferences.colorMode,

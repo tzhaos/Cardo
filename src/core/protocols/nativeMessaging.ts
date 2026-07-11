@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const KHAOSBOX_NATIVE_HOST_NAME = 'com.khaosbox.local_bridge';
+export const CARDO_NATIVE_HOST_NAME = 'com.cardo.local_bridge';
 
 export const nativeHostOpenLocalResourceRequestSchema = z
   .object({

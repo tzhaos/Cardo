@@ -1,5 +1,11 @@
 import { execFileSync } from 'node:child_process';
-import { KHAOSBOX_NATIVE_HOST_NAME } from '../src/core/protocols/nativeMessaging';
+import { CARDO_NATIVE_HOST_NAME } from '../src/core/protocols/nativeMessaging';
+
+/** Current host plus legacy KhaosBox registration cleaned on uninstall. */
+const NATIVE_HOST_NAMES_TO_UNREGISTER = [
+  CARDO_NATIVE_HOST_NAME,
+  'com.khaosbox.local_bridge',
+] as const;
 
 const WINDOWS_BROWSER_NATIVE_HOST_KEYS = [
   'Google\\Chrome',
@@ -12,11 +18,11 @@ const WINDOWS_BROWSER_NATIVE_HOST_KEYS = [
   'Microsoft\\Edge SxS',
 ] as const;
 
-function deleteWindowsNativeHost(browserKey: string) {
+function deleteWindowsNativeHost(browserKey: string, hostName: string) {
   try {
     execFileSync('reg', [
       'delete',
-      `HKCU\\Software\\${browserKey}\\NativeMessagingHosts\\${KHAOSBOX_NATIVE_HOST_NAME}`,
+      `HKCU\\Software\\${browserKey}\\NativeMessagingHosts\\${hostName}`,
       '/f',
     ]);
   } catch {
@@ -30,9 +36,11 @@ function main() {
   }
 
   for (const browserKey of WINDOWS_BROWSER_NATIVE_HOST_KEYS) {
-    deleteWindowsNativeHost(browserKey);
+    for (const hostName of NATIVE_HOST_NAMES_TO_UNREGISTER) {
+      deleteWindowsNativeHost(browserKey, hostName);
+    }
   }
-  console.log(`Unregistered ${KHAOSBOX_NATIVE_HOST_NAME}`);
+  console.log(`Unregistered ${NATIVE_HOST_NAMES_TO_UNREGISTER.join(', ')}`);
 }
 
 main();

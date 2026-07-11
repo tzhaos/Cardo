@@ -4,7 +4,7 @@ import {
   type HistoryChangeSet,
   type HistoryRowChange,
 } from '../contracts/history';
-import type { KhaosDatabase } from '../database/createDatabaseClient';
+import type { CardoDatabase } from '../database/createDatabaseClient';
 import { bumpRevision, getRevision } from '../database/revision';
 import {
   appState,
@@ -34,7 +34,7 @@ export interface HistoryCommandExecution {
 }
 
 export async function undoDatabaseCommand(
-  database: KhaosDatabase,
+  database: CardoDatabase,
 ): Promise<HistoryCommandExecution> {
   return database.transaction(async (transaction) => {
     const entry = await transaction
@@ -75,7 +75,7 @@ export async function undoDatabaseCommand(
 }
 
 export async function redoDatabaseCommand(
-  database: KhaosDatabase,
+  database: CardoDatabase,
 ): Promise<HistoryCommandExecution> {
   return database.transaction(async (transaction) => {
     const entry = await transaction
@@ -115,7 +115,7 @@ export async function redoDatabaseCommand(
   });
 }
 
-export async function getDatabaseHistoryState(database: KhaosDatabase) {
+export async function getDatabaseHistoryState(database: CardoDatabase) {
   const [undoEntry, redoEntry] = await Promise.all([
     database
       .select({ id: historyEntries.id })

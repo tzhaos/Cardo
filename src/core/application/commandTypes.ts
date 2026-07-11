@@ -1,7 +1,7 @@
-import type { KhaosDatabase } from '../database/createDatabaseClient';
+import type { CardoDatabase } from '../database/createDatabaseClient';
 import type { HistoryChangeSet } from '../contracts/history';
 
-export type DatabaseTransaction = Parameters<Parameters<KhaosDatabase['transaction']>[0]>[0];
+export type DatabaseTransaction = Parameters<Parameters<CardoDatabase['transaction']>[0]>[0];
 
 export interface DatabaseCommandResult {
   createdPageId?: string;

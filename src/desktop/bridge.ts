@@ -19,14 +19,14 @@ export interface DesktopBridge {
 
 declare global {
   interface Window {
-    khaosboxDesktop?: DesktopBridge;
+    cardoDesktop?: DesktopBridge;
   }
 }
 
 export function getDesktopBridge() {
-  if (!window.khaosboxDesktop) {
-    throw new Error('KhaosBox desktop bridge is unavailable.');
+  if (!window.cardoDesktop) {
+    throw new Error('Cardo desktop bridge is unavailable.');
   }
 
-  return window.khaosboxDesktop;
+  return window.cardoDesktop;
 }

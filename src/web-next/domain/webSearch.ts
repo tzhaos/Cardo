@@ -14,7 +14,7 @@ const SEARCH_URL_TEMPLATES: Record<Exclude<WebSearchEngineId, 'custom'>, string>
 export function isValidCustomSearchTemplate(template: string) {
   if (!template.includes('{query}')) return false;
   try {
-    const url = new URL(template.replaceAll('{query}', 'khaosbox'));
+    const url = new URL(template.replaceAll('{query}', 'cardo'));
     return url.protocol === 'http:' || url.protocol === 'https:';
   } catch {
     return false;

@@ -94,4 +94,4 @@ const bridge: DesktopBridge = {
     ),
 };
 
-contextBridge.exposeInMainWorld('khaosboxDesktop', bridge);
+contextBridge.exposeInMainWorld('cardoDesktop', bridge);

@@ -415,7 +415,7 @@ function requireCreatedItem(result: DatabaseCommandResult, commandType: string) 
 }
 
 function reportCommandError(error: unknown) {
-  console.error('KhaosBox command failed', error);
+  console.error('Cardo command failed', error);
 }
 
 function subscribe(listener: () => void) {

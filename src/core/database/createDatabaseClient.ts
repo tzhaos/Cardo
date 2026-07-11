@@ -17,4 +17,4 @@ export function createDatabaseClient(port: DatabasePort) {
   );
 }
 
-export type KhaosDatabase = ReturnType<typeof createDatabaseClient>;
+export type CardoDatabase = ReturnType<typeof createDatabaseClient>;

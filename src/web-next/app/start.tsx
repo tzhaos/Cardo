@@ -95,7 +95,7 @@ function renderBootstrapError(message: string, surface?: StartWebNextAppOptions[
   const isDesktop =
     surface === 'desktop' ||
     (typeof window !== 'undefined' &&
-      (Boolean(window.khaosboxDesktop) || window.__CARDO_RUNTIME_MISSING__ === true));
+      (Boolean(window.cardoDesktop) || window.__CARDO_RUNTIME_MISSING__ === true));
   if (surface === 'extension') {
     hint.textContent =
       'Start Cardo Desktop or `cardo serve` / `cardo open`, run `npm run native-host:install` if needed, then Retry or reload this page.';

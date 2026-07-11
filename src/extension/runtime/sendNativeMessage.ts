@@ -1,5 +1,5 @@
 import {
-  KHAOSBOX_NATIVE_HOST_NAME,
+  CARDO_NATIVE_HOST_NAME,
   nativeHostRequestSchema,
   nativeHostResponseSchema,
   type NativeHostRequest,
@@ -23,7 +23,7 @@ export function sendNativeMessage(message: NativeHostRequest): Promise<NativeHos
   return new Promise<NativeHostResponse>((resolve, reject) => {
     try {
       const maybePromise = runtime.sendNativeMessage?.(
-        KHAOSBOX_NATIVE_HOST_NAME,
+        CARDO_NATIVE_HOST_NAME,
         request,
         (response) => {
           const lastErrorMessage = runtime.lastError?.message;

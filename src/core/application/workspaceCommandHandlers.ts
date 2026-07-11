@@ -56,7 +56,7 @@ async function readWorkspaceRows(transaction: DatabaseTransaction) {
     transaction.select().from(collectionBoxViews).all(),
     transaction.select().from(appState).get(),
   ]);
-  if (!state) throw new Error('KhaosBox app state is not initialized.');
+  if (!state) throw new Error('Cardo app state is not initialized.');
   return {
     pages: pageRows,
     boxes: boxRows,

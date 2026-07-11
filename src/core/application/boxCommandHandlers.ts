@@ -460,7 +460,7 @@ async function requireAppState(transaction: DatabaseTransaction) {
     .from(appState)
     .where(eq(appState.id, APP_STATE_ID))
     .get();
-  if (!state) throw new Error('KhaosBox app state is not initialized.');
+  if (!state) throw new Error('Cardo app state is not initialized.');
   return state;
 }
 

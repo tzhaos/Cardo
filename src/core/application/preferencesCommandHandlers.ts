@@ -22,7 +22,7 @@ export async function executePreferencesCommand(
     .from(preferences)
     .where(eq(preferences.id, PREFERENCES_ID))
     .get();
-  if (!before) throw new Error('KhaosBox preferences are not initialized.');
+  if (!before) throw new Error('Cardo preferences are not initialized.');
 
   const patch = getPatch(command);
   const after = { ...before, ...patch };

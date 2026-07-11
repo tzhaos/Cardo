@@ -1,7 +1,7 @@
 /**
  * Runtime-hosted Web entry (design §6.5 / §6.16).
  * Also used by Desktop BrowserWindow loading `${baseUrl}/app/` same-origin.
- * When preload exposes khaosboxDesktop, use Desktop shell ports (clipboard/dialogs/titlebar).
+ * When preload exposes cardoDesktop, use Desktop shell ports (clipboard/dialogs/titlebar).
  */
 
 import { configureAppPorts } from '../core/runtime/appPorts';
@@ -55,9 +55,9 @@ function createWebRuntimePorts(): AppPorts {
   };
 }
 
-// Desktop Electron shell: preload injects khaosboxDesktop + __CARDO_RUNTIME__.
+// Desktop Electron shell: preload injects cardoDesktop + __CARDO_RUNTIME__.
 const useDesktopPorts =
-  typeof window !== 'undefined' && Boolean(window.khaosboxDesktop);
+  typeof window !== 'undefined' && Boolean(window.cardoDesktop);
 
 configureAppPorts(useDesktopPorts ? createDesktopPorts() : createWebRuntimePorts());
 startWebNextApp();

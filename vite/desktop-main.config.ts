@@ -19,7 +19,7 @@ function copyDesktopTrayIcon() {
 
 export default defineConfig({
   define: {
-    __KHAOSBOX_DEBUG_PACKAGE__: JSON.stringify(process.env.KHAOSBOX_DEBUG_PACKAGE === '1'),
+    __CARDO_DEBUG_PACKAGE__: JSON.stringify(process.env.CARDO_DEBUG_PACKAGE === '1'),
   },
   plugins: [copyDesktopTrayIcon()],
   build: {

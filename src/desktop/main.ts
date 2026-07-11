@@ -38,13 +38,13 @@ import {
   type DesktopRuntimeConfig,
 } from '../core/contracts/desktopIpc';
 
-declare const __KHAOSBOX_DEBUG_PACKAGE__: boolean;
+declare const __CARDO_DEBUG_PACKAGE__: boolean;
 
-// Align Electron userData directory with shared path resolver package name (`khaosbox`),
-// not productName display string (`KhaosBox`). Must run before getPath('userData') / single-instance.
+// Align Electron userData with shared path resolver (`khaosbox` data dir for continuity),
+// not productName display string (`Cardo`). Must run before getPath('userData') / single-instance.
 app.setName(CARDO_USER_DATA_DIR_NAME);
 
-const isDebugPackage = __KHAOSBOX_DEBUG_PACKAGE__ || process.env.KHAOSBOX_DEBUG_PACKAGE === '1';
+const isDebugPackage = __CARDO_DEBUG_PACKAGE__ || process.env.CARDO_DEBUG_PACKAGE === '1';
 const desktopAppRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 let debugLogPath: string | null = null;
 let mainWindow: BrowserWindow | null = null;
@@ -145,8 +145,8 @@ function openDebugLogTerminal(logPath: string) {
   }
 
   const command = [
-    `$host.UI.RawUI.WindowTitle = 'KhaosBox Debug Log'`,
-    `Write-Host 'KhaosBox debug log:'`,
+    `$host.UI.RawUI.WindowTitle = 'Cardo Debug Log'`,
+    `Write-Host 'Cardo debug log:'`,
     `Write-Host '${logPath.replaceAll("'", "''")}'`,
     `Write-Host ''`,
     `Get-Content -LiteralPath '${logPath.replaceAll("'", "''")}' -Wait`,
@@ -271,7 +271,7 @@ function updateTrayMenu() {
   tray.setContextMenu(
     Menu.buildFromTemplate([
       {
-        label: windowVisible ? '隐藏 KhaosBox' : '显示 KhaosBox',
+        label: windowVisible ? '隐藏 Cardo' : '显示 Cardo',
         click: () => toggleMainWindow(),
       },
       { type: 'separator' },
@@ -312,7 +312,7 @@ function createTray() {
   }
 
   tray = new Tray(icon);
-  tray.setToolTip('KhaosBox');
+  tray.setToolTip('Cardo');
   tray.on('click', toggleMainWindow);
   updateTrayMenu();
 }
@@ -324,7 +324,7 @@ async function resolveWebsiteIcon(urlValue: string) {
     const response = await fetch(new URL('/favicon.ico', pageUrl), {
       redirect: 'follow',
       signal: AbortSignal.timeout(6000),
-      headers: { 'User-Agent': 'KhaosBox/1.0' },
+      headers: { 'User-Agent': 'Cardo/1.0' },
     });
     if (!response.ok) return null;
     const declaredSize = Number(response.headers.get('content-length') ?? 0);
@@ -467,7 +467,7 @@ async function createWindow() {
     height: 820,
     minWidth: 900,
     minHeight: 620,
-    title: 'KhaosBox',
+    title: 'Cardo',
     frame: false,
     webPreferences: {
       contextIsolation: true,
@@ -505,7 +505,7 @@ const singleInstanceLock = app.requestSingleInstanceLock();
 if (!singleInstanceLock) {
   app.quit();
 } else {
-  app.setAppUserModelId('com.khaosbox.desktop');
+  app.setAppUserModelId('com.cardo.desktop');
   registerIpcHandlers();
 
   app.on('second-instance', () => {

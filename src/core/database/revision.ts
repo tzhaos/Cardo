@@ -1,9 +1,9 @@
 import { eq } from 'drizzle-orm';
 import type { DatabaseTransaction } from '../application/commandTypes';
-import type { KhaosDatabase } from './createDatabaseClient';
+import type { CardoDatabase } from './createDatabaseClient';
 import { RUNTIME_META_ID, runtimeMeta } from './schema';
 
-type RevisionDb = DatabaseTransaction | KhaosDatabase;
+type RevisionDb = DatabaseTransaction | CardoDatabase;
 
 /**
  * Read the multi-client revision counter. Requires runtime_meta row (schema v4+).
