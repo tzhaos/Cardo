@@ -213,7 +213,7 @@ function DataSettings() {
           </span>
         </Button>
       </div>
-      <input
+      <Input
         className="wbn-data-file-input"
         ref={inputRef}
         type="file"

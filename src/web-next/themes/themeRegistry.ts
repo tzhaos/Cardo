@@ -295,8 +295,8 @@ export function getWebNextTheme(themeId: string) {
   return themeRegistry.get(themeId) ?? WEB_NEXT_BUILT_IN_THEMES[0];
 }
 
-export function isRegisteredWebNextTheme(themeId: unknown): themeId is string {
-  return typeof themeId === 'string' && themeRegistry.has(themeId);
+export function hasRegisteredWebNextTheme(themeId: string) {
+  return themeRegistry.has(themeId);
 }
 
 export function applyWebNextTheme(root: HTMLElement, themeId: string, colorMode: WebNextColorMode) {

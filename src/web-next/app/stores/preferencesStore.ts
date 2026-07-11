@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 import type { WorkspaceCommand } from '../../../core/contracts/workspaceCommands';
 import type { WebNextLocale } from '../../i18n/messages';
 import type { WebSearchEngineId } from '../../domain/webSearch';
-import { isRegisteredWebNextTheme, type WebNextColorMode } from '../../themes/themeRegistry';
+import { hasRegisteredWebNextTheme, type WebNextColorMode } from '../../themes/themeRegistry';
 import {
   dispatchDatabaseCommand,
   queryPreferences,
@@ -34,7 +34,7 @@ const actions = {
   setLocale: (locale: WebNextLocale) =>
     fireCommand({ type: 'preferences.setLocale', locale }),
   setThemeId: (themeId: string) => {
-    if (isRegisteredWebNextTheme(themeId)) {
+    if (hasRegisteredWebNextTheme(themeId)) {
       fireCommand({ type: 'preferences.setTheme', themeId });
     }
   },

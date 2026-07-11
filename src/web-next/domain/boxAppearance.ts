@@ -1,4 +1,3 @@
-import { workspaceBoxIconSchema } from '../../core/contracts/workspace';
 import {
   BOX_ACCENT_PRESETS,
   DEFAULT_BOX_ACCENT,
@@ -22,10 +21,6 @@ export const BOX_ICON_PRESETS: WorkspaceBoxIcon[] = [
   'star',
   'heart',
 ];
-
-export function isWorkspaceBoxIcon(value: unknown): value is WorkspaceBoxIcon {
-  return workspaceBoxIconSchema.safeParse(value).success;
-}
 
 export function normalizeBoxAccent(value: string) {
   const trimmed = value.trim();

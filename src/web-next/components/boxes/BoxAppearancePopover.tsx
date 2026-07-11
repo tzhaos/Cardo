@@ -103,7 +103,7 @@ export function BoxAppearanceView({
         <div className="wbn-box-custom-color-row">
           <label className="wbn-box-native-color" title={t('box.colorPicker')}>
             <Palette size={15} />
-            <input
+            <Input
               type="color"
               value={accent}
               aria-label={t('box.colorPicker')}
