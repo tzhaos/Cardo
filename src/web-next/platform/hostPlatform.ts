@@ -1,12 +1,11 @@
 /**
- * Runtime-only hostPlatform facade (design §6.16 / PR6).
+ * Runtime-only hostPlatform facade (design §6.16).
  *
  * All surfaces connect via RuntimeClient:
  * - Web: cardo open code exchange / same-origin session token
  * - Desktop: preload injects window.__CARDO_RUNTIME__ (fail-closed)
  * - Extension: NM runtime.discover injects window.__CARDO_RUNTIME__
  *
- * Local createDatabaseClient(AppPorts.database) dual-mode is retired.
  * AppPorts remains for non-DB shell capabilities only.
  */
 
@@ -42,10 +41,6 @@ let databaseTaskQueue: Promise<unknown> = Promise.resolve();
 /** Re-entrancy depth so applyScopes queries can run inside an active command task. */
 let databaseTaskDepth = 0;
 let ensureReadyPromise: Promise<void> | null = null;
-
-export function getRuntimeClient(): RuntimeClient | null {
-  return runtimeClient;
-}
 
 /**
  * Clear Runtime client state so Extension guide Retry can re-discover and re-hello

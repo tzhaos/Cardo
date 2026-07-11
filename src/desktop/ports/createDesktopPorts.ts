@@ -2,9 +2,8 @@ import type { AppPorts } from '../../core/ports/AppPorts';
 import { getDesktopBridge } from '../bridge';
 
 /**
- * Desktop shell AppPorts after PR6.
+ * Desktop shell AppPorts (clipboard, dialogs, tabs, icons, local open).
  * Business reads/writes go through RuntimeClient (hostPlatform).
- * No DatabasePort / raw SQL IPC path.
  */
 export function createDesktopPorts(): AppPorts {
   return {

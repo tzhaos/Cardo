@@ -13,7 +13,7 @@
     "dev": "vite build --watch --config vite/extension.config.ts",
     "build": "vite build --config vite/extension.config.ts",
     "release:build": "tsx scripts/build-pipeline.ts",
-    "desktop:build": "vite build --config vite/web-runtime.config.ts && vite build --config vite/desktop-renderer.config.ts && vite build --config vite/desktop-main.config.ts && vite build --config vite/desktop-preload.config.ts",
+    "desktop:build": "vite build --config vite/web-runtime.config.ts && vite build --config vite/desktop-main.config.ts && vite build --config vite/desktop-preload.config.ts",
     "desktop:write-package": "tsx scripts/write-desktop-app-package.ts",
     "desktop:package": "npm run desktop:build && npm run desktop:write-package && electron-builder --win",
     "desktop:package:debug": "set \"CARDO_DEBUG_PACKAGE=1\"&& set \"CARDO_DESKTOP_PRODUCT_NAME=Cardo Debug\"&& npm run desktop:build && npm run desktop:write-package && electron-builder --win",
@@ -87,8 +87,7 @@
       "output": "artifacts/desktop-dist"
     },
     "files": [
-      "main/**",
-      "renderer/**"
+      "main/**"
     ],
     "win": {
       "target": [

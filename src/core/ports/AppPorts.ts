@@ -6,7 +6,7 @@ import type { WebsiteIconPort } from './WebsiteIconPort';
 
 /**
  * Shell capabilities shared by Web / Extension / Desktop clients.
- * Business database I/O is Runtime-only via RuntimeClient (PR6); no DatabasePort here.
+ * Business database I/O is Runtime-only via RuntimeClient; no DatabasePort here.
  */
 export interface AppPorts {
   clipboard: ClipboardPort;

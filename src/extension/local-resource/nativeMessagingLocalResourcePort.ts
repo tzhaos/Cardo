@@ -2,9 +2,9 @@ import type { LocalResourcePort } from '../../core/ports/LocalResourcePort';
 import { sendNativeMessage } from '../runtime/sendNativeMessage';
 
 /**
- * Transitional NM open-local-resource (design §6.4.1).
- * Preferred path in Runtime mode is HTTP capability via hostPlatform;
- * this remains as non-DB fallback when local mode or Runtime open fails over.
+ * Extension shell LocalResourcePort via Native Messaging (design §6.4.1).
+ * UI open path prefers Runtime HTTP capability (hostPlatform.openLocalResource);
+ * this port remains for direct AppPorts shell opens when needed.
  */
 export const nativeMessagingLocalResourcePort: LocalResourcePort = {
   async requestOpen(resourcePath) {

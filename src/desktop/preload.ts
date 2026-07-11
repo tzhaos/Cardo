@@ -26,7 +26,7 @@ const runtimeConfigParse = desktopRuntimeConfigSchema.safeParse(rawRuntimeConfig
 if (runtimeConfigParse.success) {
   contextBridge.exposeInMainWorld('__CARDO_RUNTIME__', runtimeConfigParse.data);
 } else {
-  // Sentinel so hostPlatform can show a clear error without a local SQLite fallback.
+  // Sentinel so hostPlatform fails closed with a clear error (no local SQLite path).
   console.error(
     '[Cardo] Desktop preload: Runtime config missing or invalid; renderer will fail closed.',
     runtimeConfigParse.error?.message,

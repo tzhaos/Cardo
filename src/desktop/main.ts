@@ -378,9 +378,6 @@ function registerIpcHandlers() {
     desktopBooleanResponseSchema.parse(Boolean(getSenderWindow(event)?.isMaximized())),
   );
 
-  // Business database:execute removed (PR4). Renderer uses RuntimeClient only.
-  // Handler intentionally absent so accidental dual-writer paths fail closed.
-
   ipcMain.handle('clipboard:read-text', () =>
     desktopTextResponseSchema.parse(clipboard.readText()),
   );

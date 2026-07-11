@@ -52,8 +52,6 @@ interface WorkspaceStore {
     boxId: string,
     patch: { viewMode?: WorkspaceBoxViewMode; detailMode?: WorkspaceBoxDetailMode; order?: number },
   ) => void;
-  applyPageBoxLayout: (pageId: string, frames: Record<string, BoxFrame>) => void;
-  applyCollectionBoxLayout: (frames: Record<string, BoxFrame>) => void;
   undo: () => void;
   redo: () => void;
   constrainFramesToViewport: (viewport: CanvasViewportSize) => void;
@@ -150,10 +148,6 @@ const actions = {
     boxId: string,
     patch: { viewMode?: WorkspaceBoxViewMode; detailMode?: WorkspaceBoxDetailMode; order?: number },
   ) => fireCommand({ type: 'collection.updateView', boxId, patch }),
-  applyPageBoxLayout: (pageId: string, frames: Record<string, BoxFrame>) =>
-    fireCommand({ type: 'canvas.arrange', pageId, frames }),
-  applyCollectionBoxLayout: (frames: Record<string, BoxFrame>) =>
-    fireCommand({ type: 'collection.arrange', frames }),
   undo: () => fireHistoryChange('undo'),
   redo: () => fireHistoryChange('redo'),
   constrainFramesToViewport: (viewport: CanvasViewportSize) =>

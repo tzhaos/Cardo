@@ -1,5 +1,5 @@
 /**
- * Extension shell bootstrap (design §6.4 / PR6).
+ * Extension shell bootstrap (design §6.4).
  *
  * Primary path: toolbar → app.html → NM runtime.discover → inject
  * window.__CARDO_RUNTIME__ → RuntimeClient (same revision space as Web/Desktop).
