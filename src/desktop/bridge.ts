@@ -2,6 +2,7 @@ import type {
   DatabaseExecuteRequest,
   DatabaseExecuteResponse,
 } from '../core/contracts/database';
+import type { DesktopLocalResourceResponse } from '../core/contracts/desktopIpc';
 
 export interface DesktopBridge {
   minimizeWindow(): Promise<void>;
@@ -13,7 +14,7 @@ export interface DesktopBridge {
   readClipboardText(): Promise<string>;
   writeClipboardText(text: string): Promise<void>;
   openExternal(url: string): Promise<void>;
-  openLocalResource(resourcePath: string): Promise<{ ok: true } | { ok: false; error: string }>;
+  openLocalResource(resourcePath: string): Promise<DesktopLocalResourceResponse>;
   saveJson(filename: string, payload: string): Promise<void>;
   saveText(filename: string, payload: string): Promise<void>;
   resolveWebsiteIcon(url: string): Promise<string | null>;

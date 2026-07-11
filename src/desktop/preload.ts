@@ -1,33 +1,65 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { DesktopBridge } from './bridge';
+import {
+  desktopBooleanResponseSchema,
+  desktopClipboardWriteRequestSchema,
+  desktopLocalResourceRequestSchema,
+  desktopLocalResourceResponseSchema,
+  desktopSaveFileRequestSchema,
+  desktopTextResponseSchema,
+  desktopUrlRequestSchema,
+  desktopVoidResponseSchema,
+  desktopWebsiteIconResponseSchema,
+} from '../core/contracts/desktopIpc';
+import { databaseExecuteRequestSchema, databaseExecuteResponseSchema } from '../core/contracts/database';
 
 const bridge: DesktopBridge = {
-  minimizeWindow: () => ipcRenderer.invoke('window:minimize') as Promise<void>,
-  toggleMaximizeWindow: () => ipcRenderer.invoke('window:toggle-maximize') as Promise<boolean>,
-  closeWindow: () => ipcRenderer.invoke('window:close') as Promise<void>,
-  isWindowMaximized: () => ipcRenderer.invoke('window:is-maximized') as Promise<boolean>,
+  minimizeWindow: async () => desktopVoidResponseSchema.parse(await ipcRenderer.invoke('window:minimize')),
+  toggleMaximizeWindow: async () =>
+    desktopBooleanResponseSchema.parse(await ipcRenderer.invoke('window:toggle-maximize')),
+  closeWindow: async () => desktopVoidResponseSchema.parse(await ipcRenderer.invoke('window:close')),
+  isWindowMaximized: async () =>
+    desktopBooleanResponseSchema.parse(await ipcRenderer.invoke('window:is-maximized')),
   onWindowMaximizedChange: (callback) => {
     const listener = (_event: Electron.IpcRendererEvent, isMaximized: boolean) => {
-      callback(isMaximized);
+      callback(desktopBooleanResponseSchema.parse(isMaximized));
     };
     ipcRenderer.on('window:maximized-change', listener);
     return () => ipcRenderer.off('window:maximized-change', listener);
   },
-  databaseExecute: (request) =>
-    ipcRenderer.invoke('database:execute', request) as ReturnType<DesktopBridge['databaseExecute']>,
-  readClipboardText: () => ipcRenderer.invoke('clipboard:read-text') as Promise<string>,
-  writeClipboardText: (text) => ipcRenderer.invoke('clipboard:write-text', text) as Promise<void>,
-  openExternal: (url) => ipcRenderer.invoke('shell:open-external', url) as Promise<void>,
-  openLocalResource: (resourcePath) =>
-    ipcRenderer.invoke('shell:open-local-resource', resourcePath) as ReturnType<
-      DesktopBridge['openLocalResource']
-    >,
-  saveJson: (filename, payload) =>
-    ipcRenderer.invoke('dialog:save-json', filename, payload) as Promise<void>,
-  saveText: (filename, payload) =>
-    ipcRenderer.invoke('dialog:save-text', filename, payload) as Promise<void>,
-  resolveWebsiteIcon: (url) =>
-    ipcRenderer.invoke('website-icon:resolve', url) as Promise<string | null>,
+  databaseExecute: async (request) =>
+    databaseExecuteResponseSchema.parse(
+      await ipcRenderer.invoke('database:execute', databaseExecuteRequestSchema.parse(request)),
+    ),
+  readClipboardText: async () =>
+    desktopTextResponseSchema.parse(await ipcRenderer.invoke('clipboard:read-text')),
+  writeClipboardText: async (text) =>
+    desktopVoidResponseSchema.parse(
+      await ipcRenderer.invoke('clipboard:write-text', desktopClipboardWriteRequestSchema.parse({ text })),
+    ),
+  openExternal: async (url) =>
+    desktopVoidResponseSchema.parse(
+      await ipcRenderer.invoke('shell:open-external', desktopUrlRequestSchema.parse({ url })),
+    ),
+  openLocalResource: async (resourcePath) =>
+    desktopLocalResourceResponseSchema.parse(
+      await ipcRenderer.invoke(
+        'shell:open-local-resource',
+        desktopLocalResourceRequestSchema.parse({ resourcePath }),
+      ),
+    ),
+  saveJson: async (filename, payload) =>
+    desktopVoidResponseSchema.parse(
+      await ipcRenderer.invoke('dialog:save-json', desktopSaveFileRequestSchema.parse({ filename, payload })),
+    ),
+  saveText: async (filename, payload) =>
+    desktopVoidResponseSchema.parse(
+      await ipcRenderer.invoke('dialog:save-text', desktopSaveFileRequestSchema.parse({ filename, payload })),
+    ),
+  resolveWebsiteIcon: async (url) =>
+    desktopWebsiteIconResponseSchema.parse(
+      await ipcRenderer.invoke('website-icon:resolve', desktopUrlRequestSchema.parse({ url })),
+    ),
 };
 
 contextBridge.exposeInMainWorld('khaosboxDesktop', bridge);

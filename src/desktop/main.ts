@@ -1,4 +1,5 @@
 import {
+  desktopBooleanResponseSchema,
   app,
   BrowserWindow,
   clipboard,
@@ -19,6 +20,16 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { normalizeLocalResourcePath } from '../core/services/localResourcePath';
 import { executeDesktopDatabase, closeDesktopDatabase } from './database/desktopDatabase';
+import {
+  desktopClipboardWriteRequestSchema,
+  desktopLocalResourceRequestSchema,
+  desktopLocalResourceResponseSchema,
+  desktopSaveFileRequestSchema,
+  desktopTextResponseSchema,
+  desktopUrlRequestSchema,
+  desktopVoidResponseSchema,
+  desktopWebsiteIconResponseSchema,
+} from '../core/contracts/desktopIpc';
 
 declare const __KHAOSBOX_DEBUG_PACKAGE__: boolean;
 
@@ -195,7 +206,10 @@ function registerWindowDebugLogging(win: BrowserWindow) {
 function registerWindowStateEvents(win: BrowserWindow) {
   const sendMaximizedState = () => {
     if (!win.isDestroyed()) {
-      win.webContents.send('window:maximized-change', win.isMaximized());
+      win.webContents.send(
+        'window:maximized-change',
+        desktopBooleanResponseSchema.parse(win.isMaximized()),
+      );
     }
   };
 
@@ -303,13 +317,14 @@ function registerIpcHandlers() {
 
   ipcMain.handle('window:minimize', (event) => {
     getSenderWindow(event)?.minimize();
+    return desktopVoidResponseSchema.parse(undefined);
   });
 
   ipcMain.handle('window:toggle-maximize', (event) => {
     const win = getSenderWindow(event);
 
     if (!win) {
-      return false;
+      return desktopBooleanResponseSchema.parse(false);
     }
 
     if (win.isMaximized()) {
@@ -318,52 +333,69 @@ function registerIpcHandlers() {
       win.maximize();
     }
 
-    return win.isMaximized();
+    return desktopBooleanResponseSchema.parse(win.isMaximized());
   });
 
   ipcMain.handle('window:close', (event) => {
     getSenderWindow(event)?.close();
+    return desktopVoidResponseSchema.parse(undefined);
   });
 
-  ipcMain.handle('window:is-maximized', (event) => Boolean(getSenderWindow(event)?.isMaximized()));
+  ipcMain.handle('window:is-maximized', (event) =>
+    desktopBooleanResponseSchema.parse(Boolean(getSenderWindow(event)?.isMaximized())),
+  );
 
   ipcMain.handle('database:execute', (_event, request: unknown) =>
     executeDesktopDatabase(request),
   );
 
-  ipcMain.handle('clipboard:read-text', () => clipboard.readText());
-  ipcMain.handle('clipboard:write-text', (_event, text: string) => clipboard.writeText(text));
-  ipcMain.handle('shell:open-external', (_event, url: string) => shell.openExternal(url));
-  ipcMain.handle('website-icon:resolve', (_event, url: string) => resolveWebsiteIcon(url));
-  ipcMain.handle('shell:open-local-resource', async (_event, resourcePath: string) => {
+  ipcMain.handle('clipboard:read-text', () => desktopTextResponseSchema.parse(clipboard.readText()));
+  ipcMain.handle('clipboard:write-text', (_event, input: unknown) => {
+    clipboard.writeText(desktopClipboardWriteRequestSchema.parse(input).text);
+    return desktopVoidResponseSchema.parse(undefined);
+  });
+  ipcMain.handle('shell:open-external', async (_event, input: unknown) => {
+    await shell.openExternal(desktopUrlRequestSchema.parse(input).url);
+    return desktopVoidResponseSchema.parse(undefined);
+  });
+  ipcMain.handle('website-icon:resolve', async (_event, input: unknown) =>
+    desktopWebsiteIconResponseSchema.parse(
+      await resolveWebsiteIcon(desktopUrlRequestSchema.parse(input).url),
+    ),
+  );
+  ipcMain.handle('shell:open-local-resource', async (_event, input: unknown) => {
+    const { resourcePath } = desktopLocalResourceRequestSchema.parse(input);
     const normalized = normalizeLocalResourcePath(resourcePath);
 
     if (!normalized.ok) {
-      return { ok: false, error: normalized.errorMessage };
+      return desktopLocalResourceResponseSchema.parse({ ok: false, error: normalized.errorMessage });
     }
 
     if (process.platform === 'win32' && !fs.existsSync(normalized.path)) {
-      return { ok: false, error: 'Local path does not exist.' };
+      return desktopLocalResourceResponseSchema.parse({ ok: false, error: 'Local path does not exist.' });
     }
 
     const error = await shell.openPath(normalized.path);
-    return error ? { ok: false, error } : { ok: true };
+    return desktopLocalResourceResponseSchema.parse(error ? { ok: false, error } : { ok: true });
   });
 
-  ipcMain.handle('dialog:save-json', async (_event, filename: string, payload: string) => {
+  ipcMain.handle('dialog:save-json', async (_event, input: unknown) => {
+    const { filename, payload } = desktopSaveFileRequestSchema.parse(input);
     const result = await dialog.showSaveDialog({
       defaultPath: filename,
       filters: [{ name: 'JSON', extensions: ['json'] }],
     });
 
     if (result.canceled || !result.filePath) {
-      return;
+      return desktopVoidResponseSchema.parse(undefined);
     }
 
     await fsPromises.writeFile(result.filePath, payload, 'utf8');
+    return desktopVoidResponseSchema.parse(undefined);
   });
 
-  ipcMain.handle('dialog:save-text', async (_event, filename: string, payload: string) => {
+  ipcMain.handle('dialog:save-text', async (_event, input: unknown) => {
+    const { filename, payload } = desktopSaveFileRequestSchema.parse(input);
     const extension = path.extname(filename).replace(/^\./, '') || 'txt';
     const result = await dialog.showSaveDialog({
       defaultPath: filename,
@@ -371,10 +403,11 @@ function registerIpcHandlers() {
     });
 
     if (result.canceled || !result.filePath) {
-      return;
+      return desktopVoidResponseSchema.parse(undefined);
     }
 
     await fsPromises.writeFile(result.filePath, payload, 'utf8');
+    return desktopVoidResponseSchema.parse(undefined);
   });
 }
 
