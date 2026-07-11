@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cardo logo candidates — monogram / hub / wordmark</title>
+    <style>
+      :root {
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+        --bg: #f4f5f7;
+        --card: #fff;
+        --text: #111827;
+        --muted: #6b7280;
+        --line: #e5e7eb;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 32px 24px 80px;
+        background: var(--bg);
+        color: var(--text);
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+        letter-spacing: -0.03em;
+      }
+      .lead {
+        margin: 0 0 32px;
+        max-width: 760px;
+        color: var(--muted);
+        line-height: 1.55;
+        font-size: 15px;
+      }
+      section {
+        margin-bottom: 48px;
+      }
+      h2 {
+        margin: 0 0 6px;
+        font-size: 18px;
+      }
+      .desc {
+        margin: 0 0 16px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
+      }
+      .grid.wm {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      figure {
+        margin: 0;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--card);
+      }
+      figure img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: 10px;
+        background: repeating-conic-gradient(#eee 0% 25%, #fafafa 0% 50%) 50% / 14px 14px;
+      }
+      figcaption {
+        margin-top: 8px;
+        font-size: 11px;
+        color: var(--muted);
+        word-break: break-all;
+      }
+      .wm-row {
+        display: grid;
+        grid-template-columns: 100px 1fr 1.4fr;
+        gap: 12px;
+        align-items: start;
+      }
+      .wm-row h3 {
+        grid-column: 1 / -1;
+        margin: 0 0 4px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .wm-card {
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #fff;
+      }
+      .wm-card .label {
+        margin-bottom: 6px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .wm-card img {
+        width: 100%;
+        height: auto;
+        display: block;
+        border-radius: 8px;
+        background: repeating-conic-gradient(#eee 0% 25%, #fafafa 0% 50%) 50% / 12px 12px;
+      }
+      code {
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Cardo logo candidates</h1>
+    <p class="lead">
+      仅保留三类：Monogram（字母 C）20 个 · Hub（枢纽）20 个 · Wordmark 字标 10 套。 每套字标含
+      <code>logo.svg</code>（占位 mark）· <code>wordmark.svg</code>（纯字）·
+      <code>lockup.svg</code>（logo + 字标）。选定后回复例如：
+      <code>logo: monogram/m02-c-dot</code> 与 <code>type: wordmark/w01-classic-sans</code>。
+    </p>
+
+    <section>
+      <h2>Monogram · 字母 C（20）</h2>
+      <p class="desc">适合 app / 扩展小图标。路径：<code>monogram/*.svg</code></p>
+      <div class="grid" id="monogram"></div>
+    </section>
+
+    <section>
+      <h2>Hub · 枢纽（20）</h2>
+      <p class="desc">多 client / Runtime 汇聚感。路径：<code>hub/*.svg</code></p>
+      <div class="grid" id="hub"></div>
+    </section>
+
+    <section>
+      <h2>Wordmark · 字标（10 套 × 3 文件）</h2>
+      <p class="desc">
+        每套三件：logo 占位 · 纯字标 · logo+字标。定稿时会把占位 logo 换成你选中的 monogram/hub。
+      </p>
+      <div class="grid wm" id="wordmark"></div>
+    </section>
+
+    <script>
+      const monogram = [
+        'm01-open-c','m02-c-dot','m03-c-thick','m04-c-thin','m05-c-square',
+        'm06-c-bar','m07-double-c','m08-c-nodes','m09-stencil','m10-c-gap',
+        'm11-c-offset','m12-c-cut','m13-c-bracket','m14-c-heavy','m15-c-outline',
+        'm16-c-spine','m17-c-soft','m18-c-ring','m19-c-corner','m20-c-minimal',
+      ];
+      const hub = [
+        'u01-radial','u02-orbit','u03-grid','u04-crossroad','u05-hex',
+        'u06-flow','u07-ring-nodes','u08-triad','u09-pulse','u10-compass',
+        'u11-constellation','u12-port','u13-diamond','u14-lanes','u15-core-square',
+        'u16-mesh','u17-signal','u18-atom','u19-bridge','u20-minimal-dot',
+      ];
+      const wordmark = [
+        'w01-classic-sans','w02-tight-black','w03-wide-caps','w04-mono','w05-serif',
+        'w06-light-weight','w07-italic-serif','w08-with-tagline','w09-inverted-bar','w10-dot-accent',
+      ];
+
+      function fillMarks(id, folder, names) {
+        const root = document.getElementById(id);
+        for (const name of names) {
+          const fig = document.createElement('figure');
+          const img = document.createElement('img');
+          img.src = `${folder}/${name}.svg`;
+          img.alt = name;
+          const cap = document.createElement('figcaption');
+          cap.textContent = `${folder}/${name}`;
+          fig.append(img, cap);
+          root.append(fig);
+        }
+      }
+
+      fillMarks('monogram', 'monogram', monogram);
+      fillMarks('hub', 'hub', hub);
+
+      const wmRoot = document.getElementById('wordmark');
+      for (const id of wordmark) {
+        const block = document.createElement('div');
+        block.className = 'wm-row';
+        block.innerHTML = `
+          <h3>${id}</h3>
+          <div class="wm-card"><div class="label">logo.svg</div><img src="wordmark/${id}/logo.svg" alt="logo"/></div>
+          <div class="wm-card"><div class="label">wordmark.svg</div><img src="wordmark/${id}/wordmark.svg" alt="wordmark"/></div>
+          <div class="wm-card"><div class="label">lockup.svg（logo + 字标）</div><img src="wordmark/${id}/lockup.svg" alt="lockup"/></div>
+        `;
+        wmRoot.append(block);
+      }
+    </script>
+  </body>
+</html>
