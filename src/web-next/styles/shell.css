@@ -9,11 +9,10 @@
     color 320ms ease,
     background-color 320ms ease;
   /*
-   * Text selection policy (SoT for product UI):
-   * - Default chrome: no selection, no caret, default cursor.
-   * - Content labels / editing fields opt in below.
-   * user-select is not inherited; with auto under a none ancestor the used
-   * value is none, so a root none is enough without a universal * override.
+   * Text selection policy (SoT):
+   * - Default: nothing selectable (tabs, box titles, buttons, chrome).
+   * - Opt-in: settings labels + real content bodies + editing fields only.
+   * - Interactive controls always force-none (even if nested near opt-in text).
    */
   cursor: default;
   caret-color: transparent;
@@ -22,18 +21,22 @@
 }
 
 /*
- * Opt-in: product content labels only (circle-select / I-beam).
- * Clipboard body keeps cursor:copy from items.css — select only, no text cursor.
+ * Opt-in A — Settings / about descriptive copy (labels, not controls).
  */
 .cardo-app :where(
-  .cardo-text-label,
-  .cardo-box-title,
-  .cardo-tab-label,
-  .cardo-item-main strong,
-  .cardo-item-title-placeholder,
-  .cardo-item-secondary,
-  .cardo-item-subtitle-link,
-  .cardo-system-page-empty-label
+  .cardo-settings-heading h2,
+  .cardo-settings-heading p,
+  .cardo-settings-subheading,
+  .cardo-settings-subheading span,
+  .cardo-settings-subheading small,
+  .cardo-settings-card-copy,
+  .cardo-settings-card-copy span,
+  .cardo-settings-card-copy small,
+  .cardo-about-card > span,
+  .cardo-about-card small,
+  .cardo-about-details dt,
+  .cardo-about-details dd,
+  .cardo-text-label
 ) {
   cursor: text;
   caret-color: auto;
@@ -41,13 +44,21 @@
   -webkit-user-select: text;
 }
 
-.cardo-app :where(.cardo-clipboard-body) {
+/*
+ * Opt-in B — Canvas content bodies users may copy (not chrome titles).
+ */
+.cardo-app :where(
+  .cardo-clipboard-body,
+  .cardo-item-secondary,
+  .cardo-item-subtitle-link,
+  .cardo-system-page-empty-label
+) {
   caret-color: auto;
   user-select: text;
   -webkit-user-select: text;
 }
 
-/* Editing fields (rename, search, settings values). */
+/* Editing fields only (rename inputs, search, settings values). */
 .cardo-app :where(input, textarea, [contenteditable='true']) {
   cursor: text;
   caret-color: auto;
@@ -56,14 +67,21 @@
 }
 
 /*
- * Explicit chrome force-none: controls and chrome never take I-beam / selection,
- * even when nested near opt-in labels (e.g. tab button wrapping .cardo-tab-label).
+ * Force-none on interactive chrome. !important so opt-in labels nested inside
+ * buttons (tab label, box title in header) cannot become selectable.
  */
 .cardo-app :where(
   button,
   [role='button'],
   a.cardo-toolbar-button,
   .cardo-top-bar,
+  .cardo-tabs,
+  .cardo-tab-pill,
+  .cardo-tab-label,
+  .cardo-box-header,
+  .cardo-box-title,
+  .cardo-box-title-group,
+  .cardo-temporary-box-header,
   .cardo-bottom-shell,
   .cardo-bottom-toolbar,
   .cardo-history-controls,
@@ -73,26 +91,43 @@
   .cardo-create-menu-button,
   .cardo-settings-header,
   .cardo-settings-nav,
-  .cardo-settings-card-static,
+  .cardo-settings-nav button,
+  .cardo-theme-pack-card,
+  .cardo-theme-pack-card-copy,
+  .cardo-layout-card,
+  .cardo-layout-card-copy,
+  .cardo-data-actions > button,
+  .cardo-segmented-control,
   .cardo-desktop-titlebar,
   .cardo-desktop-window-controls,
   .cardo-item-actions,
   .cardo-item-drag-handle,
   .cardo-item-glyph,
+  .cardo-item-main strong,
+  .cardo-item-title-placeholder,
   .cardo-box-delete,
   .cardo-box-footer,
   .cardo-ui-menu-content,
   .cardo-ui-select-content,
   .cardo-ui-select-item,
+  .cardo-ui-select-trigger,
   .cardo-ui-tooltip-content,
   .cardo-global-search-result
 ) {
-  caret-color: transparent;
-  user-select: none;
-  -webkit-user-select: none;
+  caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
 }
 
-.cardo-app :where(button, [role='button'], a.cardo-toolbar-button, .cardo-menu-row, .cardo-create-menu-button) {
+.cardo-app :where(
+  button,
+  [role='button'],
+  a.cardo-toolbar-button,
+  .cardo-menu-row,
+  .cardo-create-menu-button,
+  .cardo-theme-pack-card,
+  .cardo-layout-card
+) {
   cursor: pointer;
 }
 
