@@ -118,6 +118,18 @@ async function applyChangeSet(
       .where(inArray(pages.id, pageIds));
   }
 
+  const placementItemIds = changes.flatMap((change) => {
+    if (change.table !== 'box_items') return [];
+    const current = direction === 'undo' ? change.after : change.before;
+    return current ? [requireStringKey(change.key, 'itemId')] : [];
+  });
+  if (placementItemIds.length) {
+    await transaction
+      .update(boxItems)
+      .set({ sortOrder: sql`${boxItems.sortOrder} + 100000` })
+      .where(inArray(boxItems.itemId, placementItemIds));
+  }
+
   for (const change of changes) {
     const current = direction === 'undo' ? change.after : change.before;
     const target = direction === 'undo' ? change.before : change.after;

@@ -10,6 +10,7 @@ import { historyEntries, operationLog } from '../database/schema';
 import type { DatabaseCommandResult } from './commandTypes';
 import { executePageCommand, type PageCommand } from './pageCommandHandlers';
 import { executeBoxCommand, type BoxCommand } from './boxCommandHandlers';
+import { executeItemCommand, type ItemCommand } from './itemCommandHandlers';
 
 export async function executeDatabaseCommand(
   database: KhaosDatabase,
@@ -22,7 +23,8 @@ export async function executeDatabaseCommand(
     command.type.startsWith('collection.') ||
     command.type.startsWith('canvas.') ||
     command.type === 'system.constrainFrames';
-  if (!isPageCommand && !isBoxCommand) {
+  const isItemCommand = command.type.startsWith('item.') || command.type === 'bookmark.setFavicon';
+  if (!isPageCommand && !isBoxCommand && !isItemCommand) {
     throw new Error(`Database handler for ${command.type} is not implemented.`);
   }
 
@@ -33,7 +35,9 @@ export async function executeDatabaseCommand(
   return await database.transaction(async (transaction) => {
     const mutation = isPageCommand
       ? await executePageCommand(transaction, command as PageCommand)
-      : await executeBoxCommand(transaction, command as BoxCommand);
+      : isBoxCommand
+        ? await executeBoxCommand(transaction, command as BoxCommand)
+        : await executeItemCommand(transaction, command as ItemCommand);
     if (!mutation.changes.length) return mutation.result ?? {};
 
     await transaction.insert(operationLog).values({
