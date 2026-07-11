@@ -168,24 +168,35 @@ function commitBoxDragRelease(
     ) ?? dragSession.latestFrame;
 
   const releasedOnTab = Boolean(tabPageId) && ui.boxDragOverTopBar;
-  const preferredCenter = releasedOnTab
-    ? getCanvasViewportCenter(pageCanvas.camera, canvas.viewportSize)
-    : {
+
+  // Normal canvas drag: keep the pointer frame (overlap allowed). Only clamp to world.
+  // Cross-page tab release: auto-place in the viewport, avoiding other boxes when possible.
+  // Off-screen non-tab drop: pull back into the viewport without mutual exclusion.
+  let landingFrame: BoxFrame;
+  if (releasedOnTab) {
+    const occupiedFrames = workspace.projection.boxes
+      .filter((box) => box.pageId === destinationPageId && box.id !== draggedBoxId)
+      .map((box) => box.frame);
+    landingFrame = findViewportAdaptiveFrame({
+      size: { width: pointerFrame.width, height: pointerFrame.height },
+      preferredCenter: getCanvasViewportCenter(pageCanvas.camera, canvas.viewportSize),
+      viewportBounds,
+      canvasBounds,
+      occupiedFrames,
+    });
+  } else if (isFrameInViewport(pointerFrame, viewportBounds)) {
+    landingFrame = constrainBoxFrameToCanvas(pointerFrame, canvasBounds);
+  } else {
+    landingFrame = findViewportAdaptiveFrame({
+      size: { width: pointerFrame.width, height: pointerFrame.height },
+      preferredCenter: {
         x: pointerFrame.x + pointerFrame.width / 2,
         y: pointerFrame.y + pointerFrame.height / 2,
-      };
-
-  // Prefer the pointer frame when it is still inside the viewport. Tab release
-  // (or off-screen drop) recenters into the visible area. Overlap is allowed.
-  const landingFrame =
-    !releasedOnTab && isFrameInViewport(pointerFrame, viewportBounds)
-      ? constrainBoxFrameToCanvas(pointerFrame, canvasBounds)
-      : findViewportAdaptiveFrame({
-          size: { width: pointerFrame.width, height: pointerFrame.height },
-          preferredCenter,
-          viewportBounds,
-          canvasBounds,
-        });
+      },
+      viewportBounds,
+      canvasBounds,
+    });
+  }
 
   ui.setPendingBoxLanding(draggedBoxId, landingFrame);
 

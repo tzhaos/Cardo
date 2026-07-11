@@ -46,7 +46,7 @@ test('findPageLandingFrame centers a box on an empty page', () => {
   assert.deepEqual(frame, { x: 460, y: 300, width: 280, height: 200 });
 });
 
-test('findPageLandingFrame allows overlap when preferred center is occupied', () => {
+test('findPageLandingFrame without avoidOverlap allows center even if occupied', () => {
   const projection = createProjection();
   projection.boxes.push({
     id: 'occupied',
@@ -72,6 +72,36 @@ test('findPageLandingFrame allows overlap when preferred center is occupied', ()
     createCanvasWorldBounds({ width: 1200, height: 800 }),
   );
 
-  // No mutual exclusion: still lands centered on preferred point.
   assert.deepEqual(frame, { x: 460, y: 300, width: 280, height: 200 });
+});
+
+test('findPageLandingFrame with avoidOverlap seeks a free slot when center is occupied', () => {
+  const projection = createProjection();
+  projection.boxes.push({
+    id: 'occupied',
+    pageId: 'target',
+    kind: 'normal',
+    title: 'Occupied',
+    frame: { x: 440, y: 280, width: 320, height: 240 },
+    items: [],
+    viewMode: 'list',
+    detailMode: 'detailed',
+    isLocked: false,
+    icon: 'box',
+    accent: '#f97316',
+    createdAt: '',
+    updatedAt: '',
+  });
+
+  const frame = findPageLandingFrame(
+    projection,
+    'moving',
+    'target',
+    { x: 600, y: 400 },
+    createCanvasWorldBounds({ width: 1200, height: 800 }),
+    { avoidOverlap: true },
+  );
+
+  assert.ok(frame);
+  assert.notDeepEqual(frame, { x: 460, y: 300, width: 280, height: 200 });
 });
