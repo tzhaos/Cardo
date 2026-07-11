@@ -1,12 +1,18 @@
 import type { StateStorage } from 'zustand/middleware';
 import { getAppPorts } from '../../core/runtime/appPorts';
 import { createDatabaseClient, type KhaosDatabase } from '../../core/database/createDatabaseClient';
+import { executeDatabaseCommand } from '../../core/application/executeDatabaseCommand';
+import type { WorkspaceCommand } from '../../core/contracts/workspaceCommands';
 
 let database: KhaosDatabase | null = null;
 
 export function getKhaosDatabase() {
   database ??= createDatabaseClient(getAppPorts().database);
   return database;
+}
+
+export function dispatchDatabaseCommand(command: WorkspaceCommand) {
+  return executeDatabaseCommand(getKhaosDatabase(), command);
 }
 
 /**

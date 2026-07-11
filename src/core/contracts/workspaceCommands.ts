@@ -74,6 +74,7 @@ const commandSchemas = [
   z.object({ type: z.literal('page.delete'), pageId: entityIdSchema }).strict(),
   z.object({ type: z.literal('page.reorder'), orderedPageIds: idListSchema }).strict(),
   z.object({ type: z.literal('page.setDefault'), pageId: entityIdSchema }).strict(),
+  z.object({ type: z.literal('page.open'), pageId: entityIdSchema }).strict(),
   z
     .object({
       type: z.literal('box.create'),
@@ -268,6 +269,7 @@ export interface WorkspaceCommandDefinition {
 
 const nonUndoableCommandTypes = new Set<WorkspaceCommandType>([
   'bookmark.setFavicon',
+  'page.open',
   'system.constrainFrames',
 ]);
 
