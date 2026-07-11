@@ -6,6 +6,11 @@
  * ensureHostPlatformReady connects RuntimeClient before any workspace I/O.
  */
 
+import {
+  renderCardoErrorScreen,
+  type CardoErrorSurface,
+} from '../ui/cardo/error-screen';
+
 export type StartWebNextAppOptions = {
   /** Extension surface uses its own guide UI on failure (PR5). */
   surface?: 'web' | 'extension' | 'desktop';
@@ -19,6 +24,7 @@ export function startWebNextApp(options: StartWebNextAppOptions = {}) {
     import('./stores/preferencesStore'),
     import('./stores/workspaceStore'),
     import('../platform/hostPlatform'),
+    import('../ui/cardo/error-boundary'),
   ])
     .then(
       async ([
@@ -27,7 +33,10 @@ export function startWebNextApp(options: StartWebNextAppOptions = {}) {
         { usePreferencesStore },
         { useWorkspaceStore },
         { ensureHostPlatformReady, initializeWorkspace },
+        { CardoErrorBoundary },
       ]) => {
+        const surface = resolveSurface(options.surface);
+
         try {
           await ensureHostPlatformReady();
         } catch (error) {
@@ -36,10 +45,7 @@ export function startWebNextApp(options: StartWebNextAppOptions = {}) {
             options.onBootstrapError(error);
             return;
           }
-          renderBootstrapError(
-            error instanceof Error ? error.message : 'Failed to connect to Cardo Runtime.',
-            options.surface,
-          );
+          renderCardoErrorScreen({ error, surface });
           return;
         }
 
@@ -50,17 +56,18 @@ export function startWebNextApp(options: StartWebNextAppOptions = {}) {
           });
           await useWorkspaceStore.initialize();
           await usePreferencesStore.initialize();
-          renderWebNextRoot(<WebNextApp />);
+          renderWebNextRoot(
+            <CardoErrorBoundary surface={surface}>
+              <WebNextApp />
+            </CardoErrorBoundary>,
+          );
         } catch (error) {
           console.error('workspace bootstrap failed', error);
           if (options.onBootstrapError) {
             options.onBootstrapError(error);
             return;
           }
-          renderBootstrapError(
-            error instanceof Error ? error.message : 'Failed to initialize workspace.',
-            options.surface,
-          );
+          renderCardoErrorScreen({ error, surface });
         }
       },
     )
@@ -71,42 +78,20 @@ export function startWebNextApp(options: StartWebNextAppOptions = {}) {
         options.onBootstrapError(error);
         return;
       }
-      renderBootstrapError(
-        error instanceof Error ? error.message : 'Failed to load Cardo UI modules.',
-        options.surface,
-      );
+      renderCardoErrorScreen({
+        error,
+        surface: resolveSurface(options.surface),
+      });
     });
 }
 
-function renderBootstrapError(message: string, surface?: StartWebNextAppOptions['surface']) {
-  const root = document.getElementById('root');
-  if (!root) return;
-  root.innerHTML = '';
-  const panel = document.createElement('div');
-  panel.style.cssText =
-    'font-family:system-ui,sans-serif;max-width:32rem;margin:4rem auto;padding:1.5rem;line-height:1.5;color:#111;';
-  const title = document.createElement('h1');
-  title.textContent = 'Cardo';
-  title.style.cssText = 'font-size:1.25rem;margin:0 0 0.75rem;font-weight:600;';
-  const body = document.createElement('p');
-  body.textContent = message;
-  body.style.margin = '0 0 0.75rem';
-  const hint = document.createElement('p');
-  const isDesktop =
-    surface === 'desktop' ||
-    (typeof window !== 'undefined' &&
-      (Boolean(window.cardoDesktop) || window.__CARDO_RUNTIME_MISSING__ === true));
-  if (surface === 'extension') {
-    hint.textContent =
-      'Start Cardo Desktop or `cardo serve` / `cardo open`, run `npm run native-host:install` if needed, then Retry or reload this page.';
-  } else if (isDesktop) {
-    hint.textContent =
-      'Desktop needs a healthy Cardo Runtime with /app UI. Restart Desktop or run `cardo serve` after `npm run desktop:build` / `npm run cardo:build`.';
-  } else {
-    hint.textContent =
-      'Run `cardo open` again for a fresh one-time code. Prefer `cardo open` over pasting long-lived tokens into the URL.';
+function resolveSurface(surface?: StartWebNextAppOptions['surface']): CardoErrorSurface {
+  if (surface) return surface;
+  if (
+    typeof window !== 'undefined' &&
+    (Boolean(window.cardoDesktop) || window.__CARDO_RUNTIME_MISSING__ === true)
+  ) {
+    return 'desktop';
   }
-  hint.style.cssText = 'margin:0;color:#555;font-size:0.9rem;';
-  panel.append(title, body, hint);
-  root.append(panel);
+  return 'web';
 }
