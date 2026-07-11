@@ -2,12 +2,6 @@ import type { AppPorts } from '../ports/AppPorts';
 
 function createDefaultAppPorts(): AppPorts {
   return {
-    browserBookmarks: {
-      isSupported: () => false,
-      requestTree: async () => {
-        throw new Error('Browser bookmarks port is not configured.');
-      },
-    },
     database: {
       execute: async () => {
         throw new Error('Database port is not configured.');
@@ -21,37 +15,14 @@ function createDefaultAppPorts(): AppPorts {
       downloadJson: () => {},
       downloadText: () => {},
     },
-    fileImport: {
-      readText: async () => {
-        throw new Error('File import port is not configured.');
-      },
-    },
     tabs: {
       openUrl: () => {},
-    },
-    runtimeDocument: {
-      setDocumentTitle: () => {},
-      setTheme: () => {},
-      addWindowListener: () => {},
-      removeWindowListener: () => {},
-      getViewport: () => ({ width: 1280, height: 720 }),
     },
     localResource: {
       requestOpen: () => ({
         status: 'failed',
         errorMessage: 'Local resource port is not configured.',
       }),
-    },
-    webDav: {
-      testConnection: async () => {
-        throw new Error('WebDAV port is not configured.');
-      },
-      upload: async () => {
-        throw new Error('WebDAV port is not configured.');
-      },
-      download: async () => {
-        throw new Error('WebDAV port is not configured.');
-      },
     },
     websiteIcons: {
       resolve: async () => null,

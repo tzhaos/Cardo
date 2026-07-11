@@ -4,13 +4,11 @@ import { createExtensionPorts } from './createExtensionPorts';
 
 test('createExtensionPorts returns a full port bundle', () => {
   const ports = createExtensionPorts();
-  assert.equal(typeof ports.browserBookmarks?.isSupported, 'function');
-  assert.ok(ports.workspaceStorage?.getItem);
+  assert.ok(ports.database?.execute);
   assert.ok(ports.clipboard?.readText);
   assert.ok(ports.fileExport?.downloadJson);
   assert.ok(ports.fileExport?.downloadText);
-  assert.ok(ports.fileImport?.readText);
   assert.ok(ports.tabs?.openUrl);
-  assert.ok(ports.runtimeDocument?.setTheme);
   assert.ok(ports.localResource?.requestOpen);
+  assert.ok(ports.websiteIcons?.resolve);
 });

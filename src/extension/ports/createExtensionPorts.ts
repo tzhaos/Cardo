@@ -1,12 +1,8 @@
 import type { AppPorts } from '../../core/ports/AppPorts';
-import { browserBookmarksPort } from '../bookmarks/browserBookmarksPort';
 import { browserClipboardPort } from '../clipboard/browserClipboardPort';
 import { browserFileExportPort } from '../files/browserFileExportPort';
-import { browserFileImportPort } from '../files/browserFileImportPort';
 import { nativeMessagingLocalResourcePort } from '../local-resource/nativeMessagingLocalResourcePort';
 import { browserTabsPort } from '../navigation/browserTabsPort';
-import { browserRuntimeDocumentPort } from '../runtime/browserRuntimeDocumentPort';
-import { extensionWebDavPort } from '../sync/extensionWebDavPort';
 import { browserWebsiteIconPort } from '../website-icons/browserWebsiteIconPort';
 import { extensionDatabasePort } from '../database/extensionDatabasePort';
 
@@ -15,15 +11,11 @@ import { extensionDatabasePort } from '../database/extensionDatabasePort';
  */
 export function createExtensionPorts(): AppPorts {
   return {
-    browserBookmarks: browserBookmarksPort,
     database: extensionDatabasePort,
     clipboard: browserClipboardPort,
     fileExport: browserFileExportPort,
-    fileImport: browserFileImportPort,
     tabs: browserTabsPort,
-    runtimeDocument: browserRuntimeDocumentPort,
     localResource: nativeMessagingLocalResourcePort,
-    webDav: extensionWebDavPort,
     websiteIcons: browserWebsiteIconPort,
   };
 }
