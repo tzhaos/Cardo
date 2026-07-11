@@ -38,8 +38,8 @@ test('clamps existing page cameras when the viewport changes', () => {
   actions.setViewportSize({ width: 600, height: 400 });
 
   assert.deepEqual(getPageCanvasState(useCanvasStore.getState(), 'page-a').camera, {
-    panX: 600,
-    panY: 400,
+    panX: 360,
+    panY: 240,
     zoom: 1,
   });
 });
