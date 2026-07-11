@@ -3,23 +3,26 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   build: {
-    outDir: path.resolve(__dirname, '../artifacts/native-host'),
+    outDir: path.resolve(__dirname, '../artifacts/cli'),
     emptyOutDir: true,
-    ssr: path.resolve(__dirname, '../src/native-host/main.ts'),
+    ssr: path.resolve(__dirname, '../src/cli/main.ts'),
     target: 'node22',
     rollupOptions: {
       external: [
         'node:child_process',
         'node:crypto',
         'node:fs',
+        'node:http',
+        'node:net',
         'node:os',
         'node:path',
+        'node:sqlite',
         'node:url',
         /^node:/,
       ],
       output: {
-        format: 'cjs',
-        entryFileNames: 'host.cjs',
+        format: 'es',
+        entryFileNames: 'cardo.js',
       },
     },
   },

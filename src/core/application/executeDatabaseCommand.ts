@@ -3,18 +3,32 @@ import {
   getWorkspaceCommandDefinition,
   parseWorkspaceCommand,
 } from '../contracts/workspaceCommands';
-import { historyChangeSetSchema } from '../contracts/history';
+import { historyChangeSetSchema, type HistoryChangeSet } from '../contracts/history';
 import type { KhaosDatabase } from '../database/createDatabaseClient';
-import { bumpRevision } from '../database/revision';
+import { bumpRevision, getRevision } from '../database/revision';
 import { eq } from 'drizzle-orm';
 import { historyEntries, operationLog } from '../database/schema';
 import type { DatabaseCommandResult } from './commandTypes';
 import { getDatabaseCommandHandler } from './databaseCommandRegistry';
 
+/** Full command execution meta for Runtime invalidation / SSE (PR2). */
+export interface DatabaseCommandExecution {
+  result: DatabaseCommandResult;
+  changes: HistoryChangeSet;
+  revision: number;
+  /** True when the txn wrote changes and bumped revision. */
+  mutated: boolean;
+}
+
+/**
+ * Execute a workspace command in a single transaction (handler + op log + history + revision).
+ * Returns result plus change set and post-txn revision so Runtime can derive scopes / fan out events.
+ * Local hostPlatform should use `.result` only.
+ */
 export async function executeDatabaseCommand(
   database: KhaosDatabase,
   input: WorkspaceCommand,
-): Promise<DatabaseCommandResult> {
+): Promise<DatabaseCommandExecution> {
   const command = parseWorkspaceCommand(input);
   const definition = getWorkspaceCommandDefinition(command.type);
   const handler = getDatabaseCommandHandler(command.type);
@@ -23,7 +37,13 @@ export async function executeDatabaseCommand(
 
   return await database.transaction(async (transaction) => {
     const mutation = await handler(transaction, command);
-    if (!mutation.changes.length) return mutation.result ?? {};
+    const result = mutation.result ?? {};
+    if (!mutation.changes.length) {
+      const revision = await getRevision(transaction);
+      return { result, changes: [], revision, mutated: false };
+    }
+
+    const changes = historyChangeSetSchema.parse(mutation.changes);
 
     await transaction.insert(operationLog).values({
       id: crypto.randomUUID(),
@@ -41,7 +61,7 @@ export async function executeDatabaseCommand(
         id: crypto.randomUUID(),
         transactionId,
         commandType: command.type,
-        changes: historyChangeSetSchema.parse(mutation.changes),
+        changes,
         state: 'applied',
         createdAt: timestamp,
         updatedAt: timestamp,
@@ -49,8 +69,8 @@ export async function executeDatabaseCommand(
     }
 
     // Successful mutating txn with changes: revision++ (never in history change set).
-    await bumpRevision(transaction);
+    const revision = await bumpRevision(transaction);
 
-    return mutation.result ?? {};
+    return { result, changes, revision, mutated: true };
   });
 }

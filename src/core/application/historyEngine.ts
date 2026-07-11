@@ -5,7 +5,7 @@ import {
   type HistoryRowChange,
 } from '../contracts/history';
 import type { KhaosDatabase } from '../database/createDatabaseClient';
-import { bumpRevision } from '../database/revision';
+import { bumpRevision, getRevision } from '../database/revision';
 import {
   appState,
   appStateSelectSchema,
@@ -26,7 +26,16 @@ import {
 } from '../database/schema';
 import type { DatabaseTransaction } from './commandTypes';
 
-export async function undoDatabaseCommand(database: KhaosDatabase) {
+/** History undo/redo meta for Runtime history.ok + SSE (PR2). */
+export interface HistoryCommandExecution {
+  applied: boolean;
+  changes: HistoryChangeSet;
+  revision: number;
+}
+
+export async function undoDatabaseCommand(
+  database: KhaosDatabase,
+): Promise<HistoryCommandExecution> {
   return database.transaction(async (transaction) => {
     const entry = await transaction
       .select()
@@ -35,7 +44,13 @@ export async function undoDatabaseCommand(database: KhaosDatabase) {
       .orderBy(desc(historyEntries.createdAt))
       .limit(1)
       .get();
-    if (!entry) return false;
+    if (!entry) {
+      return {
+        applied: false,
+        changes: [],
+        revision: await getRevision(transaction),
+      };
+    }
 
     const changes = historyChangeSetSchema.parse(entry.changes);
     await applyChangeSet(transaction, [...changes].reverse(), 'undo');
@@ -54,12 +69,14 @@ export async function undoDatabaseCommand(database: KhaosDatabase) {
       createdAt: timestamp,
     });
     // Successful undo is a mutation: revision++ (never restore an older revision value).
-    await bumpRevision(transaction);
-    return true;
+    const revision = await bumpRevision(transaction);
+    return { applied: true, changes, revision };
   });
 }
 
-export async function redoDatabaseCommand(database: KhaosDatabase) {
+export async function redoDatabaseCommand(
+  database: KhaosDatabase,
+): Promise<HistoryCommandExecution> {
   return database.transaction(async (transaction) => {
     const entry = await transaction
       .select()
@@ -68,7 +85,13 @@ export async function redoDatabaseCommand(database: KhaosDatabase) {
       .orderBy(desc(historyEntries.updatedAt))
       .limit(1)
       .get();
-    if (!entry) return false;
+    if (!entry) {
+      return {
+        applied: false,
+        changes: [],
+        revision: await getRevision(transaction),
+      };
+    }
 
     const changes = historyChangeSetSchema.parse(entry.changes);
     await applyChangeSet(transaction, changes, 'redo');
@@ -87,8 +110,8 @@ export async function redoDatabaseCommand(database: KhaosDatabase) {
       createdAt: timestamp,
     });
     // Successful redo is a mutation: revision++.
-    await bumpRevision(transaction);
-    return true;
+    const revision = await bumpRevision(transaction);
+    return { applied: true, changes, revision };
   });
 }
 

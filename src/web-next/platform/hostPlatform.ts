@@ -43,15 +43,24 @@ export function initializeWorkspace(initialPreferences: InitialWorkspacePreferen
 }
 
 export function dispatchDatabaseCommand(command: WorkspaceCommand) {
-  return runDatabaseTask(() => executeDatabaseCommand(getKhaosDatabase(), command));
+  return runDatabaseTask(async () => {
+    const execution = await executeDatabaseCommand(getKhaosDatabase(), command);
+    return execution.result;
+  });
 }
 
 export function undoDatabaseHistory() {
-  return runDatabaseTask(() => undoDatabaseCommand(getKhaosDatabase()));
+  return runDatabaseTask(async () => {
+    const execution = await undoDatabaseCommand(getKhaosDatabase());
+    return execution.applied;
+  });
 }
 
 export function redoDatabaseHistory() {
-  return runDatabaseTask(() => redoDatabaseCommand(getKhaosDatabase()));
+  return runDatabaseTask(async () => {
+    const execution = await redoDatabaseCommand(getKhaosDatabase());
+    return execution.applied;
+  });
 }
 
 export function queryDatabaseHistoryState() {

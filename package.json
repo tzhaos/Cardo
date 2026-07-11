@@ -6,6 +6,9 @@
   "description": "A spatial workspace for your browser",
   "license": "MIT",
   "type": "module",
+  "bin": {
+    "cardo": "./artifacts/cli/cardo.js"
+  },
   "scripts": {
     "dev": "vite build --watch --config vite/extension.config.ts",
     "build": "vite build --config vite/extension.config.ts",
@@ -14,6 +17,8 @@
     "desktop:write-package": "tsx scripts/write-desktop-app-package.ts",
     "desktop:package": "npm run desktop:build && npm run desktop:write-package && electron-builder --win",
     "desktop:package:debug": "set \"KHAOSBOX_DEBUG_PACKAGE=1\"&& set \"KHAOSBOX_DESKTOP_PRODUCT_NAME=KhaosBox Debug\"&& npm run desktop:build && npm run desktop:write-package && electron-builder --win",
+    "cardo:build": "vite build --config vite/cli.config.ts",
+    "cardo": "node artifacts/cli/cardo.js",
     "native-host:build": "vite build --config vite/native-host.config.ts && tsx scripts/package-native-host.ts",
     "native-host:install": "npm run native-host:build && tsx scripts/install-native-host.ts",
     "native-host:uninstall": "tsx scripts/uninstall-native-host.ts",

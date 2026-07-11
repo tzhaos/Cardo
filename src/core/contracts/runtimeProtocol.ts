@@ -1,10 +1,8 @@
 /**
  * Cardo Runtime wire protocol (Zod SoT).
  *
- * PR1 covers multi-client mutation/query/history/export/capability/event shells.
- * Deferred to PR2 (HTTP Runtime host): auth.bootstrap, auth.exchange, shutdown,
- * diagnostics health/status payloads. Do not invent ad-hoc JSON for those — add
- * Zod here when implementing the HTTP surface.
+ * PR1: multi-client mutation/query/history/export/capability/event shells.
+ * PR2: auth.bootstrap / exchange, health, diagnostics, shutdown, session.bye.
  */
 import { z } from 'zod';
 import { entityIdSchema, workspaceProjectionSchema } from './workspace';
@@ -350,6 +348,105 @@ export const openLocalResourceOkSchema = z
   })
   .strict();
 
+// --- auth (PR2; processToken = discovery token) ---
+
+export const authBootstrapRequestSchema = z
+  .object({
+    type: z.literal('auth.bootstrap'),
+  })
+  .strict();
+
+export const authBootstrapOkSchema = z
+  .object({
+    type: z.literal('auth.bootstrap.ok'),
+    oneTimeCode: z.string().min(16),
+    expiresInMs: z.number().int().positive(),
+  })
+  .strict();
+
+export const authExchangeRequestSchema = z
+  .object({
+    type: z.literal('auth.exchange'),
+    oneTimeCode: z.string().min(1),
+  })
+  .strict();
+
+export const authExchangeOkSchema = z
+  .object({
+    type: z.literal('auth.exchange.ok'),
+    token: z.string().min(32),
+  })
+  .strict();
+
+// --- health (unauthenticated minimal) / diagnostics / shutdown / session ---
+
+export const healthOkSchema = z
+  .object({
+    ok: z.literal(true),
+    pid: z.number().int().positive(),
+    port: z.number().int().positive(),
+    startedBy: z.enum(['cli', 'desktop']),
+    lifetimeMode: z.enum(['foreground', 'auto']),
+  })
+  .strict();
+
+export const diagnosticsOkSchema = z
+  .object({
+    type: z.literal('diagnostics.ok'),
+    revision: revisionSchema,
+    schemaVersion: z.number().int().positive(),
+    dbPath: z.string().min(1),
+    pid: z.number().int().positive(),
+    startedBy: z.enum(['cli', 'desktop']),
+    lifetimeMode: z.enum(['foreground', 'auto']),
+    baseUrl: z.string().min(1),
+    authEnabled: z.literal(true),
+    clientCount: z.number().int().nonnegative(),
+    clients: z.array(
+      z
+        .object({
+          id: clientIdSchema,
+          kind: z.enum(['web', 'extension', 'desktop', 'cli-probe']),
+          connectedAt: z.string().min(1),
+          lastSeenAt: z.string().min(1),
+          streaming: z.boolean(),
+        })
+        .strict(),
+    ),
+    queueDepth: z.number().int().nonnegative(),
+    lastMutationAt: z.string().nullable(),
+    uptimeMs: z.number().int().nonnegative(),
+    corsRejectedCount: z.number().int().nonnegative(),
+    authFailCount: z.number().int().nonnegative(),
+    graceActive: z.boolean(),
+  })
+  .strict();
+
+export const shutdownRequestSchema = z
+  .object({
+    type: z.literal('shutdown'),
+  })
+  .strict();
+
+export const shutdownOkSchema = z
+  .object({
+    type: z.literal('shutdown.ok'),
+  })
+  .strict();
+
+export const sessionByeRequestSchema = z
+  .object({
+    type: z.literal('session.bye'),
+    clientId: clientIdSchema,
+  })
+  .strict();
+
+export const sessionByeOkSchema = z
+  .object({
+    type: z.literal('session.bye.ok'),
+  })
+  .strict();
+
 // --- error shape ---
 
 export const runtimeErrorSchema = z
@@ -382,4 +479,10 @@ export type WorkspaceExportOk = z.infer<typeof workspaceExportOkSchema>;
 export type WorkspaceExportOperationLogOk = z.infer<typeof workspaceExportOperationLogOkSchema>;
 export type OpenLocalResourceRequest = z.infer<typeof openLocalResourceRequestSchema>;
 export type OpenLocalResourceOk = z.infer<typeof openLocalResourceOkSchema>;
+export type AuthBootstrapOk = z.infer<typeof authBootstrapOkSchema>;
+export type AuthExchangeOk = z.infer<typeof authExchangeOkSchema>;
+export type HealthOk = z.infer<typeof healthOkSchema>;
+export type DiagnosticsOk = z.infer<typeof diagnosticsOkSchema>;
+export type ShutdownOk = z.infer<typeof shutdownOkSchema>;
+export type SessionByeOk = z.infer<typeof sessionByeOkSchema>;
 export type RuntimeError = z.infer<typeof runtimeErrorSchema>;
