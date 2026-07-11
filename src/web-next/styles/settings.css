@@ -1085,6 +1085,307 @@
   box-shadow: 0 0 0 1px var(--cardo-blue);
 }
 
+/* ── GitHub Settings (Primer) shell — only when theme is github ─────────────── */
+/*
+ * Reference: github.com/settings — pure white canvas, ActionList side nav with
+ * accent left rail, form controls with border.default, no Mica / no glass.
+ */
+
+[data-cardo-theme='github'] .cardo-independent-menu.cardo-settings-window,
+[data-cardo-theme='github'] .cardo-settings-window {
+  width: min(980px, calc(100vw - 40px));
+  height: min(700px, calc(100vh - 40px));
+  border: 1px solid var(--cardo-border);
+  border-radius: 6px;
+  background: var(--cardo-canvas);
+  box-shadow: 0 8px 24px rgba(140, 149, 159, 0.2);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+[data-cardo-theme='github'] .cardo-settings-header {
+  min-height: 48px;
+  border-bottom: 1px solid var(--cardo-border);
+  padding: 0 16px;
+  background: var(--cardo-canvas);
+}
+
+[data-cardo-theme='github'] .cardo-settings-header > div {
+  gap: 8px;
+  color: var(--cardo-text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+[data-cardo-theme='github'] .cardo-settings-header button {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+}
+
+[data-cardo-theme='github'] .cardo-settings-layout {
+  grid-template-columns: 256px minmax(0, 1fr);
+}
+
+[data-cardo-theme='github'] .cardo-settings-nav {
+  gap: 1px;
+  border-right: 1px solid var(--cardo-border);
+  padding: 16px 12px;
+  background: var(--cardo-canvas);
+}
+
+[data-cardo-theme='github'] .cardo-settings-nav button {
+  min-height: 32px;
+  gap: 8px;
+  border-radius: 6px;
+  padding: 6px 8px 6px 10px;
+  color: var(--cardo-text);
+  font-size: 14px;
+  font-weight: 400;
+}
+
+[data-cardo-theme='github'] .cardo-settings-nav button:hover {
+  background: var(--cardo-hover);
+}
+
+[data-cardo-theme='github'] .cardo-settings-nav-indicator {
+  border-radius: 6px;
+  /* Primer ActionList selected: subtle gray wash */
+  background: var(--cardo-panel-bottom);
+  box-shadow: none;
+}
+
+/* Left accent rail — same signature as github.com/settings */
+[data-cardo-theme='github'] .cardo-settings-nav [data-state='active']::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 0;
+  z-index: 2;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--cardo-blue);
+}
+
+[data-cardo-theme='github'] .cardo-settings-nav [data-state='active'] {
+  color: var(--cardo-text) !important;
+  font-weight: 600;
+}
+
+[data-cardo-theme='github'] .cardo-settings-nav .cardo-icon-frame {
+  color: var(--cardo-secondary-text);
+  width: 16px;
+  height: 16px;
+}
+
+[data-cardo-theme='github'] .cardo-settings-nav [data-state='active'] .cardo-icon-frame {
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='github'] .cardo-settings-content {
+  padding: 24px 32px 40px;
+  background: var(--cardo-canvas);
+}
+
+[data-cardo-theme='github'] .cardo-settings-heading {
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--cardo-border);
+}
+
+[data-cardo-theme='github'] .cardo-settings-heading h2 {
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.25;
+}
+
+[data-cardo-theme='github'] .cardo-settings-heading p {
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--cardo-secondary-text);
+}
+
+[data-cardo-theme='github'] .cardo-settings-subheading {
+  margin: 24px 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Primer form-style rows: open white, border.default, not elevated Mica cards */
+[data-cardo-theme='github'] .cardo-settings-list-group {
+  gap: 16px;
+  overflow: visible;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+[data-cardo-theme='github'] .cardo-settings-list-group .cardo-settings-card {
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  min-height: 0;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 8px;
+}
+
+[data-cardo-theme='github'] .cardo-settings-list-group .cardo-settings-card + .cardo-settings-card {
+  border-top: none;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--cardo-border);
+}
+
+[data-cardo-theme='github'] .cardo-settings-list-group .cardo-settings-card:hover {
+  background: transparent;
+}
+
+[data-cardo-theme='github'] .cardo-settings-card-copy {
+  width: 100%;
+}
+
+[data-cardo-theme='github'] .cardo-settings-card-copy > span:last-child {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+[data-cardo-theme='github'] .cardo-settings-card-copy small {
+  font-size: 12px;
+  color: var(--cardo-secondary-text);
+}
+
+[data-cardo-theme='github'] .cardo-settings-content > .cardo-settings-card,
+[data-cardo-theme='github'] .cardo-settings-content > .cardo-about-card {
+  border: 1px solid var(--cardo-border);
+  border-radius: 6px;
+  background: var(--cardo-panel);
+  box-shadow: none;
+  padding: 16px;
+}
+
+[data-cardo-theme='github'] .cardo-about-details {
+  border: 1px solid var(--cardo-border);
+  border-radius: 6px;
+  background: var(--cardo-panel);
+  box-shadow: none;
+}
+
+[data-cardo-theme='github'] .cardo-about-details div {
+  min-height: 48px;
+}
+
+[data-cardo-theme='github'] .cardo-about-details dt {
+  color: var(--cardo-secondary-text);
+  font-size: 14px;
+}
+
+[data-cardo-theme='github'] .cardo-about-details dd {
+  font-size: 14px;
+  color: var(--cardo-blue);
+  font-weight: 400;
+}
+
+/* Primer inputs / selects */
+[data-cardo-theme='github'] .cardo-segmented-control {
+  border: 1px solid var(--cardo-border);
+  border-radius: 6px;
+  padding: 0;
+  background: var(--cardo-panel-bottom);
+  gap: 0;
+}
+
+[data-cardo-theme='github'] .cardo-segmented-control button {
+  min-width: 64px;
+  height: 32px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+[data-cardo-theme='github'] .cardo-segment-indicator {
+  border: 1px solid var(--cardo-border);
+  border-radius: 6px;
+  background: var(--cardo-panel);
+  box-shadow: none;
+}
+
+[data-cardo-theme='github'] .cardo-theme-pack-grid {
+  gap: 8px;
+}
+
+[data-cardo-theme='github'] .cardo-theme-pack-card {
+  border: 1px solid var(--cardo-border);
+  border-radius: 6px;
+  background: var(--cardo-panel);
+  box-shadow: none;
+  padding: 8px;
+}
+
+[data-cardo-theme='github'] .cardo-theme-pack-card:hover {
+  background: var(--cardo-panel-bottom);
+}
+
+[data-cardo-theme='github'] .cardo-theme-pack-card-selected {
+  border-color: var(--cardo-blue);
+  box-shadow: 0 0 0 1px var(--cardo-blue);
+  background: var(--cardo-panel);
+}
+
+[data-cardo-theme='github'] .cardo-theme-pack-preview {
+  border: 1px solid var(--cardo-border);
+  border-radius: 6px;
+  height: 64px;
+}
+
+[data-cardo-theme='github'] .cardo-data-actions > button {
+  border: 1px solid var(--cardo-border);
+  border-radius: 6px;
+  background: var(--cardo-panel);
+  box-shadow: none;
+}
+
+[data-cardo-theme='github'] .cardo-data-actions > button:hover {
+  background: var(--cardo-panel-bottom);
+  border-color: var(--cardo-secondary-text);
+}
+
+[data-cardo-theme='github'] .cardo-custom-search-template {
+  margin-top: 16px;
+  border: 1px solid var(--cardo-border);
+  border-radius: 6px;
+  padding: 16px;
+  background: var(--cardo-panel);
+  box-shadow: none;
+}
+
+[data-cardo-theme='github'] .cardo-custom-search-template input {
+  height: 32px;
+  border: 1px solid var(--cardo-border);
+  border-radius: 6px;
+  background: var(--cardo-input);
+  font-size: 14px;
+}
+
+[data-cardo-theme='github'] .cardo-custom-search-template input:focus {
+  border-color: var(--cardo-blue);
+  box-shadow: 0 0 0 3px var(--cardo-selection-ring);
+  outline: none;
+}
+
+/* Select trigger (Primer control) */
+[data-cardo-theme='github'] .cardo-settings-content [data-slot='select-trigger'],
+[data-cardo-theme='github'] .cardo-settings-content button[role='combobox'] {
+  border: 1px solid var(--cardo-border);
+  border-radius: 6px;
+  background: var(--cardo-input);
+  min-height: 32px;
+  font-size: 14px;
+  box-shadow: none;
+}
+
 .cardo-language-en,
 .cardo-language-zh,
 .cardo-theme-sun,
