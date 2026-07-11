@@ -89,8 +89,8 @@ export function distributePageBoxes(
       axis === 'horizontal' ? first.frame.x - second.frame.x : first.frame.y - second.frame.y,
     );
   if (movableBoxes.length < 3) return {};
-  const start = axis === 'horizontal' ? movableBoxes[0]!.frame.x : movableBoxes[0]!.frame.y;
-  const last = movableBoxes.at(-1)!;
+  const start = axis === 'horizontal' ? movableBoxes[0].frame.x : movableBoxes[0].frame.y;
+  const last = movableBoxes[movableBoxes.length - 1];
   const end =
     axis === 'horizontal' ? last.frame.x + last.frame.width : last.frame.y + last.frame.height;
   const totalSize = movableBoxes.reduce(
@@ -216,7 +216,7 @@ function getBoxContentCategory(box: WorkspaceBox) {
   const counts = new Map<string, number>();
   box.items.forEach((item) => counts.set(item.type, (counts.get(item.type) ?? 0) + 1));
   const sorted = [...counts.entries()].sort((first, second) => second[1] - first[1]);
-  return sorted.length > 1 && sorted[0]![1] === sorted[1]![1] ? 'mixed' : sorted[0]![0];
+  return sorted.length > 1 && sorted[0][1] === sorted[1][1] ? 'mixed' : sorted[0][0];
 }
 
 function frameIntersectsBounds(frame: BoxFrame, bounds: CanvasWorldBounds) {

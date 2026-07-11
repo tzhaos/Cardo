@@ -34,12 +34,13 @@ export function TabPill({
     onCommit: onRename,
     ignoreOutsidePointer: isTopBarTarget,
   });
+  const startRenaming = rename.start;
 
   useEffect(() => {
     if (!renameRequested || systemPage) return;
-    rename.start();
+    startRenaming();
     onRenameRequestHandled?.();
-  }, [onRenameRequestHandled, rename.start, renameRequested, systemPage]);
+  }, [onRenameRequestHandled, renameRequested, startRenaming, systemPage]);
 
   return (
     <motion.div

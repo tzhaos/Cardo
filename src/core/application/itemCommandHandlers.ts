@@ -384,7 +384,7 @@ async function rewritePlacements(
   for (const [sortOrder, itemId] of orderedItemIds.entries()) {
     const before = existingById.get(itemId);
     const after = {
-      boxId: boxId!,
+      boxId,
       itemId,
       sortOrder,
       isPinned: pinState.get(itemId) ?? false,

@@ -243,7 +243,7 @@ async function deletePage(transaction: DatabaseTransaction, pageId: string) {
     activePageId:
       stateBefore.activePageId === pageId ? COLLECTION_PAGE_ID : stateBefore.activePageId,
     defaultPageId:
-      stateBefore.defaultPageId === pageId ? remainingPages[0]!.id : stateBefore.defaultPageId,
+      stateBefore.defaultPageId === pageId ? remainingPages[0].id : stateBefore.defaultPageId,
   };
   await transaction
     .update(appState)

@@ -71,10 +71,11 @@ export function CollectionPage() {
   const entries = projection.collectionBoxIds
     .map((boxId) => {
       const box = boxesById.get(boxId);
-      if (!box || isRecycleBinPageId(box.pageId)) return null;
+      const view = projection.collectionViews[boxId];
+      if (!box || !view || isRecycleBinPageId(box.pageId)) return null;
       return {
         box,
-        view: projection.collectionViews[boxId]!,
+        view,
       };
     })
     .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))

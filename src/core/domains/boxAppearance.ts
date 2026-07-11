@@ -19,6 +19,6 @@ export function chooseAvailableBoxAccent(usedAccents: Iterable<string>) {
   const used = new Set([...usedAccents].map((accent) => accent.toLowerCase()));
   const available = BOX_ACCENT_PRESETS.filter((accent) => !used.has(accent));
   return available.length
-    ? available[Math.floor(Math.random() * available.length)]!
+    ? available[Math.floor(Math.random() * available.length)]
     : DEFAULT_BOX_ACCENT;
 }

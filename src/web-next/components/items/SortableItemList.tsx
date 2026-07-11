@@ -197,7 +197,7 @@ function resolveCrossBoxDrop(sourceBoxId: string, point: { x: number; y: number 
   );
   let targetIndex = entries.length;
   for (let index = 0; index < entries.length; index += 1) {
-    const rect = entries[index]!.getBoundingClientRect();
+    const rect = entries[index].getBoundingClientRect();
     if (point.y < rect.top || (point.y <= rect.bottom && point.x < rect.left + rect.width / 2)) {
       targetIndex = index;
       break;
