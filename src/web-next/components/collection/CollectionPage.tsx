@@ -149,9 +149,7 @@ export function CollectionPage() {
                 {
                   id: 'detail-mode',
                   label: t(
-                    view.detailMode === 'detailed'
-                      ? 'box.switchToCompact'
-                      : 'box.switchToDetailed',
+                    view.detailMode === 'detailed' ? 'box.switchToCompact' : 'box.switchToDetailed',
                   ),
                   icon:
                     view.detailMode === 'detailed' ? (

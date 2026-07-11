@@ -11,6 +11,12 @@ import {
 } from '../database/schema';
 import { DATABASE_SCHEMA_VERSION } from '../database/version';
 import type { DatabaseCommandMutation, DatabaseTransaction } from './commandTypes';
+import { rowChange } from './historyChanges';
+import {
+  historyRowChangeSchema,
+  type HistoryRowChange,
+  type HistoryTable,
+} from '../contracts/history';
 
 export type WorkspaceImportCommand = Extract<WorkspaceCommand, { type: 'workspace.import' }>;
 
@@ -196,27 +202,31 @@ function buildImportChanges(
 }
 
 function diffRows<T extends Record<string, unknown>>(
-  table: DatabaseCommandMutation['changes'][number]['table'],
+  table: HistoryTable,
   beforeRows: T[],
   afterRows: T[],
   keyOf: (row: T) => Record<string, string | number>,
-) {
+): HistoryRowChange[] {
   const serializeKey = (key: Record<string, string | number>) => JSON.stringify(key);
-  const beforeByKey = new Map(beforeRows.map((row) => [serializeKey(keyOf(row)), row]));
-  const afterByKey = new Map(afterRows.map((row) => [serializeKey(keyOf(row)), row]));
-  return [...new Set([...beforeByKey.keys(), ...afterByKey.keys()])].flatMap((key) => {
-    const before = beforeByKey.get(key) ?? null;
-    const after = afterByKey.get(key) ?? null;
-    if (before && after && JSON.stringify(before) === JSON.stringify(after)) return [];
-    return [rowChange(table, keyOf(before ?? after!), before, after)];
-  });
-}
+  const beforeByKey = new Map(beforeRows.map((row) => [serializeKey(keyOf(row)), row] as const));
+  const afterByKey = new Map(afterRows.map((row) => [serializeKey(keyOf(row)), row] as const));
+  const changes: HistoryRowChange[] = [];
 
-function rowChange(
-  table: DatabaseCommandMutation['changes'][number]['table'],
-  key: Record<string, string | number>,
-  before: Record<string, unknown> | null,
-  after: Record<string, unknown> | null,
-) {
-  return { table, key, before, after };
+  for (const serializedKey of new Set([...beforeByKey.keys(), ...afterByKey.keys()])) {
+    const before = beforeByKey.get(serializedKey) ?? null;
+    const after = afterByKey.get(serializedKey) ?? null;
+    if (before && after && JSON.stringify(before) === JSON.stringify(after)) continue;
+    const row = before ?? after;
+    if (!row) continue;
+    changes.push(
+      historyRowChangeSchema.parse({
+        table,
+        key: keyOf(row),
+        before,
+        after,
+      }),
+    );
+  }
+
+  return changes;
 }

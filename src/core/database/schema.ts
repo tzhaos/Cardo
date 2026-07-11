@@ -8,7 +8,8 @@ import {
   uniqueIndex,
 } from 'drizzle-orm/sqlite-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
-import type { HistoryChangeSet, ItemMetadata } from '../contracts/workspace';
+import type { HistoryChangeSet } from '../contracts/history';
+import type { ItemMetadata } from '../contracts/workspace';
 import {
   workspaceBoxDetailModes,
   workspaceBoxIcons,

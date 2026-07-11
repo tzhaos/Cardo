@@ -1,5 +1,9 @@
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
-import { historyChangeSetSchema, type HistoryChangeSet } from '../contracts/workspace';
+import {
+  historyChangeSetSchema,
+  type HistoryChangeSet,
+  type HistoryRowChange,
+} from '../contracts/history';
 import type { KhaosDatabase } from '../database/createDatabaseClient';
 import {
   appState,
@@ -106,11 +110,11 @@ async function applyChangeSet(
   changes: HistoryChangeSet,
   direction: 'undo' | 'redo',
 ) {
-  const pageIds = changes.flatMap((change) =>
-    change.table === 'pages' && (direction === 'undo' ? change.after : change.before)
-      ? [requireStringKey(change.key, 'id')]
-      : [],
-  );
+  const pageIds = changes.flatMap((change) => {
+    if (change.table !== 'pages') return [];
+    const current = direction === 'undo' ? change.after : change.before;
+    return current ? [change.key.id] : [];
+  });
   if (pageIds.length) {
     await transaction
       .update(pages)
@@ -121,7 +125,7 @@ async function applyChangeSet(
   const placementItemIds = changes.flatMap((change) => {
     if (change.table !== 'box_items') return [];
     const current = direction === 'undo' ? change.after : change.before;
-    return current ? [requireStringKey(change.key, 'itemId')] : [];
+    return current ? [change.key.itemId] : [];
   });
   if (placementItemIds.length) {
     await transaction
@@ -131,51 +135,49 @@ async function applyChangeSet(
   }
 
   for (const change of changes) {
-    const current = direction === 'undo' ? change.after : change.before;
-    const target = direction === 'undo' ? change.before : change.after;
-    await applyRowChange(transaction, change.table, change.key, current, target);
+    await applyRowChange(transaction, change, direction);
   }
 }
 
 async function applyRowChange(
   transaction: DatabaseTransaction,
-  table: HistoryChangeSet[number]['table'],
-  key: Record<string, string | number>,
-  current: Record<string, unknown> | null,
-  target: Record<string, unknown> | null,
+  change: HistoryRowChange,
+  direction: 'undo' | 'redo',
 ) {
-  switch (table) {
+  const current = direction === 'undo' ? change.after : change.before;
+  const target = direction === 'undo' ? change.before : change.after;
+
+  switch (change.table) {
     case 'app_state': {
-      const id = requireNumberKey(key, 'id');
+      const id = change.key.id;
       if (!target) return void (await transaction.delete(appState).where(eq(appState.id, id)));
       const row = appStateSelectSchema.parse(target);
       if (!current) return void (await transaction.insert(appState).values(row));
       return void (await transaction.update(appState).set(row).where(eq(appState.id, id)));
     }
     case 'pages': {
-      const id = requireStringKey(key, 'id');
+      const id = change.key.id;
       if (!target) return void (await transaction.delete(pages).where(eq(pages.id, id)));
       const row = pageSelectSchema.parse(target);
       if (!current) return void (await transaction.insert(pages).values(row));
       return void (await transaction.update(pages).set(row).where(eq(pages.id, id)));
     }
     case 'boxes': {
-      const id = requireStringKey(key, 'id');
+      const id = change.key.id;
       if (!target) return void (await transaction.delete(boxes).where(eq(boxes.id, id)));
       const row = boxSelectSchemaStrict.parse(target);
       if (!current) return void (await transaction.insert(boxes).values(row));
       return void (await transaction.update(boxes).set(row).where(eq(boxes.id, id)));
     }
     case 'items': {
-      const id = requireStringKey(key, 'id');
+      const id = change.key.id;
       if (!target) return void (await transaction.delete(items).where(eq(items.id, id)));
       const row = itemSelectSchema.parse(target);
       if (!current) return void (await transaction.insert(items).values(row));
       return void (await transaction.update(items).set(row).where(eq(items.id, id)));
     }
     case 'box_items': {
-      const boxId = requireStringKey(key, 'boxId');
-      const itemId = requireStringKey(key, 'itemId');
+      const { boxId, itemId } = change.key;
       const predicate = and(eq(boxItems.boxId, boxId), eq(boxItems.itemId, itemId));
       if (!target) return void (await transaction.delete(boxItems).where(predicate));
       const row = boxItemSelectSchema.parse(target);
@@ -183,7 +185,7 @@ async function applyRowChange(
       return void (await transaction.update(boxItems).set(row).where(predicate));
     }
     case 'collection_box_views': {
-      const boxId = requireStringKey(key, 'boxId');
+      const boxId = change.key.boxId;
       if (!target) {
         return void (await transaction
           .delete(collectionBoxViews)
@@ -197,7 +199,7 @@ async function applyRowChange(
         .where(eq(collectionBoxViews.boxId, boxId)));
     }
     case 'preferences': {
-      const id = requireNumberKey(key, 'id');
+      const id = change.key.id;
       if (!target)
         return void (await transaction.delete(preferences).where(eq(preferences.id, id)));
       const row = preferencesSelectSchema.parse(target);
@@ -205,16 +207,4 @@ async function applyRowChange(
       return void (await transaction.update(preferences).set(row).where(eq(preferences.id, id)));
     }
   }
-}
-
-function requireStringKey(key: Record<string, string | number>, field: string) {
-  const value = key[field];
-  if (typeof value !== 'string') throw new Error(`History key ${field} must be a string.`);
-  return value;
-}
-
-function requireNumberKey(key: Record<string, string | number>, field: string) {
-  const value = key[field];
-  if (typeof value !== 'number') throw new Error(`History key ${field} must be a number.`);
-  return value;
 }

@@ -1,5 +1,5 @@
 import type { KhaosDatabase } from '../database/createDatabaseClient';
-import type { HistoryChangeSet } from '../contracts/workspace';
+import type { HistoryChangeSet } from '../contracts/history';
 
 export type DatabaseTransaction = Parameters<Parameters<KhaosDatabase['transaction']>[0]>[0];
 

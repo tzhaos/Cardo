@@ -12,6 +12,7 @@ import {
   pages,
 } from '../database/schema';
 import type { DatabaseCommandMutation, DatabaseTransaction } from './commandTypes';
+import { rowChange } from './historyChanges';
 import { chooseAvailableBoxAccent, DEFAULT_BOX_ICON } from '../domains/boxAppearance';
 
 type BoxCommandType =
@@ -486,15 +487,6 @@ function rowsEqual(
 
 function clamp(value: number, minimum: number, maximum: number) {
   return Math.min(maximum, Math.max(minimum, value));
-}
-
-function rowChange(
-  table: DatabaseCommandMutation['changes'][number]['table'],
-  key: Record<string, string | number>,
-  before: Record<string, unknown> | null,
-  after: Record<string, unknown> | null,
-) {
-  return { table, key, before, after };
 }
 
 function noMutation(): DatabaseCommandMutation {

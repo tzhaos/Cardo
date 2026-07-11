@@ -79,25 +79,6 @@ export const itemMetadataSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('clipboard') }).strict(),
 ]);
 
-export const historyRowChangeSchema = z
-  .object({
-    table: z.enum([
-      'app_state',
-      'pages',
-      'boxes',
-      'items',
-      'box_items',
-      'collection_box_views',
-      'preferences',
-    ]),
-    key: z.record(z.string(), z.union([z.string(), z.number()])),
-    before: z.record(z.string(), z.unknown()).nullable(),
-    after: z.record(z.string(), z.unknown()).nullable(),
-  })
-  .strict();
-
-export const historyChangeSetSchema = z.array(historyRowChangeSchema).min(1);
-
 export const workspacePageSchema = z
   .object({
     id: entityIdSchema,
@@ -155,7 +136,6 @@ export type WorkspaceBoxKind = z.infer<typeof workspaceBoxKindSchema>;
 export type WorkspaceBoxIcon = z.infer<typeof workspaceBoxIconSchema>;
 export type BoxFrame = z.infer<typeof boxFrameSchema>;
 export type ItemMetadata = z.infer<typeof itemMetadataSchema>;
-export type HistoryChangeSet = z.infer<typeof historyChangeSetSchema>;
 export type WorkspacePage = z.infer<typeof workspacePageSchema>;
 export type WorkspaceBox = z.infer<typeof workspaceBoxSchema>;
 export type CollectionBoxView = z.infer<typeof collectionBoxViewSchema>;

@@ -3,7 +3,7 @@ import {
   getWorkspaceCommandDefinition,
   parseWorkspaceCommand,
 } from '../contracts/workspaceCommands';
-import { historyChangeSetSchema } from '../contracts/workspace';
+import { historyChangeSetSchema } from '../contracts/history';
 import type { KhaosDatabase } from '../database/createDatabaseClient';
 import { eq } from 'drizzle-orm';
 import { historyEntries, operationLog } from '../database/schema';

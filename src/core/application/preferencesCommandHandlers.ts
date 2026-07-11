@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm';
 import type { WorkspaceCommand } from '../contracts/workspaceCommands';
 import { PREFERENCES_ID, preferences } from '../database/schema';
 import type { DatabaseCommandMutation, DatabaseTransaction } from './commandTypes';
+import { rowChange } from './historyChanges';
 
 type PreferencesCommandType =
   | 'preferences.setLocale'
@@ -34,14 +35,7 @@ export async function executePreferencesCommand(
   }
   await transaction.update(preferences).set(patch).where(eq(preferences.id, PREFERENCES_ID));
   return {
-    changes: [
-      {
-        table: 'preferences',
-        key: { id: PREFERENCES_ID },
-        before,
-        after,
-      },
-    ],
+    changes: [rowChange('preferences', { id: PREFERENCES_ID }, before, after)],
   };
 }
 

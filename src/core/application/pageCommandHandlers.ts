@@ -3,6 +3,7 @@ import type { WorkspaceCommand } from '../contracts/workspaceCommands';
 import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID } from '../contracts/systemPages';
 import { APP_STATE_ID, appState, boxes, collectionBoxViews, pages } from '../database/schema';
 import type { DatabaseCommandMutation, DatabaseTransaction } from './commandTypes';
+import { rowChange } from './historyChanges';
 
 export type PageCommand = Extract<WorkspaceCommand, { type: `page.${string}` }>;
 
@@ -290,15 +291,6 @@ async function requireAppState(transaction: DatabaseTransaction) {
     .get();
   if (!state) throw new Error('KhaosBox app state is not initialized.');
   return state;
-}
-
-function rowChange(
-  table: DatabaseCommandMutation['changes'][number]['table'],
-  key: Record<string, string | number>,
-  before: Record<string, unknown> | null,
-  after: Record<string, unknown> | null,
-) {
-  return { table, key, before, after };
 }
 
 function noMutation(): DatabaseCommandMutation {
