@@ -1,8 +1,8 @@
-# KhaosBox 全面重构目标
+# Cardo 全面重构目标
 
 ## 最终目标
 
-KhaosBox 采用一套明确且不可绕过的应用架构：
+Cardo 采用一套明确且不可绕过的应用架构：
 
 ```text
 UI / IPC
@@ -14,7 +14,7 @@ UI / IPC
   -> React view model
 ```
 
-通用 UI 以进入仓库的 shadcn/ui 源码为基础二次开发，保留 Radix 的焦点、键盘、Portal、锚定和可访问性能力，视觉、尺寸和动效完全由 KhaosBox Design System 定义。画布、拖拽、Resize、Box、Item 和 Page Tab 继续使用产品专用结构，不套用通用 Card 或 Tabs 外观。
+通用 UI 以进入仓库的 shadcn/ui 源码为基础二次开发，保留 Radix 的焦点、键盘、Portal、锚定和可访问性能力，视觉、尺寸和动效完全由 Cardo Design System 定义。画布、拖拽、Resize、Box、Item 和 Page Tab 继续使用产品专用结构，不套用通用 Card 或 Tabs 外观。
 
 重构完成后：
 
@@ -125,7 +125,7 @@ UI / IPC
 
 ```text
 ui/primitives  shadcn/Radix 源码二次开发
-ui/khaos       KhaosBox 产品级组件
+ui/khaos       Cardo 产品级组件（目录名 ui/khaos 为产品 UI kit 路径，可后续视觉 PR 再改）
 components     Page、Box、Item、Canvas 等业务组件
 ```
 
@@ -206,7 +206,7 @@ components     Page、Box、Item、Canvas 等业务组件
 - [x] 插件消息全部经过 Zod Contract。
 - [x] 导入导出使用严格独立格式。
 
-### 8. KhaosBox Design System
+### 8. Cardo Design System
 
 - [x] 建立 token、cn、Portal 和 z-index 契约。
 - [x] 二次开发 Button、IconButton、Tooltip。

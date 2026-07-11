@@ -2,11 +2,11 @@
 
 | Field | Value |
 | --- | --- |
-| Status | Product identity rename complete for code SoT |
+| Status | Complete — Path SoT cardo only; no previous-path relocate |
 | Related | `docs/architecture/local-runtime-multi-client.md` |
 | Scope | 产品标识、包名、Native Host、路径 SoT、Extension 入口 |
 
-本清单记录 Cardo 命名与标识的既定决策与完成状态。禁止为旧产品名、旧 env 前缀、旧 preload 全局名、旧 transfer format、旧 system page id 做双读或 shim。
+本清单记录 Cardo 命名与标识的既定决策与完成状态。禁止为旧产品名、旧 env 前缀、旧 preload 全局名、旧 transfer format、旧 system page id、旧磁盘路径做双读、shim 或 previous-install relocate。
 
 ## 1. 命名硬决策（已定）
 
@@ -51,8 +51,8 @@
 
 1. 权威路径：`resolveCardoDataPaths()` → `%APPDATA%/cardo/cardo.sqlite`（及 darwin/linux 等价路径）。
 2. Desktop：`app.setName('cardo')` 后与 resolver 一致。
-3. 若 SoT 库不存在且上一代默认目录中存在数据库文件，首次打开一次性 move 到 SoT；之后只打开新路径。
-4. `CARDO_DATA_DIR` 覆盖数据目录时不做跨目录 relocate。
+3. 仅使用 SoT 路径；无 previous-install 目录扫描、无跨路径 move/rename 库文件。
+4. `CARDO_DATA_DIR` 可覆盖数据目录；仍只打开该目录下的 `cardo.sqlite`。
 5. 开发用 drizzle：`./artifacts/development/cardo.sqlite`。
 
 ## 5. Schema
@@ -71,4 +71,4 @@
 1. 不为旧包名、旧 NM host 名、旧 preload 全局名、旧 env 前缀、旧 transfer format 做双读。
 2. 不自动双向合并任何第二本地库与 Runtime。
 3. 不把完整 Workspace Snapshot 当同步协议。
-4. 历史 roadmap 文档标题可不强制全文改写。
+4. 不做 previous-install 磁盘路径 relocate（Path SoT 仅 `cardo` / `cardo.sqlite`）。

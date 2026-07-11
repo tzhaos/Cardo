@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="logo-title logo-desc">
-  <title id="logo-title">KhaosBox mark</title>
-  <desc id="logo-desc">A package icon inside a rounded square tile for KhaosBox.</desc>
+  <title id="logo-title">Cardo mark</title>
+  <desc id="logo-desc">A package icon inside a rounded square tile for Cardo.</desc>
 
   <rect x="8" y="8" width="80" height="80" rx="24" fill="#171C24"/>
   <rect x="8.75" y="8.75" width="78.5" height="78.5" rx="23.25" fill="none" stroke="#FFFFFF" stroke-opacity=".14" stroke-width="1.5"/>

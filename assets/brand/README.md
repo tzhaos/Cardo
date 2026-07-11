@@ -1,4 +1,4 @@
-# KhaosBox Logo System
+# Cardo Logo System
 
 ## Direction
 
@@ -8,10 +8,12 @@ This logo system follows the exact visual language of the in-app brand badge:
 - a package/box line icon
 - a clean product wordmark
 
-It fits KhaosBox because the product is literally a personal box-like workspace for collecting,
+It fits Cardo because the product is a personal box-like workspace for collecting,
 staging, and reopening links, notes, and small launch surfaces.
 
 ## Files
+
+Filenames below may still use a historical asset prefix; the brand identity is Cardo.
 
 - `khaosbox-mark.svg`
   Primary tile symbol

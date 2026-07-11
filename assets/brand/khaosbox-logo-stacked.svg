@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 196" role="img" aria-labelledby="logo-title logo-desc">
-  <title id="logo-title">KhaosBox stacked logo</title>
-  <desc id="logo-desc">A vertical KhaosBox logo with the package-tile symbol over the wordmark.</desc>
+  <title id="logo-title">Cardo stacked logo</title>
+  <desc id="logo-desc">A vertical Cardo logo with the package-tile symbol over the wordmark.</desc>
 
   <g transform="translate(72 10)">
     <rect x="8" y="8" width="80" height="80" rx="24" fill="#171C24"/>
@@ -23,6 +23,6 @@
     font-weight="700"
     letter-spacing="-1.1"
   >
-    KhaosBox
+    Cardo
   </text>
 </svg>

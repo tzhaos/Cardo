@@ -1,6 +1,6 @@
 /**
  * Extension guide UI when Runtime / Native Host is unavailable (design §6.4 / PR7).
- * Never opens OPFS as a silent second writer.
+ * Guide only: start Cardo Runtime and ensure the native host is installed.
  */
 
 export type RuntimeGuideKind =
@@ -20,8 +20,6 @@ type GuideCopy = {
   stepsTitle: string;
   defaultSteps: readonly string[];
   stepsByKind: Partial<Record<RuntimeGuideKind, readonly string[]>>;
-  opfsNoteTitle: string;
-  opfsNote: string;
   installTitle: string;
   installCommands: readonly string[];
   retry: string;
@@ -63,9 +61,6 @@ const COPY: Record<'en' | 'zh', GuideCopy> = {
         'Click Retry to re-discover and reconnect.',
       ],
     },
-    opfsNoteTitle: 'About older extension-only data',
-    opfsNote:
-      'Workspace data that lived only in the previous extension OPFS store is not merged automatically. Export JSON from an older build, then use Settings → Import workspace in any Cardo client connected to Runtime.',
     installTitle: 'Useful commands',
     installCommands: [
       'cardo serve     # foreground Runtime',
@@ -115,9 +110,6 @@ const COPY: Record<'en' | 'zh', GuideCopy> = {
         '点击「重试」以重新发现并连接。',
       ],
     },
-    opfsNoteTitle: '关于旧版扩展本地数据',
-    opfsNote:
-      '仅保存在旧版扩展 OPFS 中的工作区数据不会自动合并。请用旧版导出 JSON，再在任意已连接 Runtime 的 Cardo 客户端中通过「设置 → 导入工作区」导入。',
     installTitle: '常用命令',
     installCommands: [
       'cardo serve     # 前台 Runtime',
@@ -218,14 +210,6 @@ export function renderRuntimeGuide(error: unknown, onRetry: () => void): void {
   installPre.style.cssText =
     'margin:0 0 1.25rem;padding:0.75rem 0.9rem;border-radius:8px;background:#f0f0f0;color:#222;font:0.82rem/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow-x:auto;';
 
-  const opfsTitle = document.createElement('p');
-  opfsTitle.textContent = copy.opfsNoteTitle;
-  opfsTitle.style.cssText = 'margin:0 0 0.35rem;font-weight:600;';
-
-  const opfsNote = document.createElement('p');
-  opfsNote.textContent = copy.opfsNote;
-  opfsNote.style.cssText = 'margin:0 0 1.25rem;color:#555;font-size:0.92rem;';
-
   const actions = document.createElement('div');
   actions.style.cssText = 'display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;';
 
@@ -248,8 +232,6 @@ export function renderRuntimeGuide(error: unknown, onRetry: () => void): void {
     list,
     installTitle,
     installPre,
-    opfsTitle,
-    opfsNote,
     actions,
   ];
 

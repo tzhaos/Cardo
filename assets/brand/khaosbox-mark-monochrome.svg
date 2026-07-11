@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="logo-title logo-desc">
-  <title id="logo-title">KhaosBox monochrome mark</title>
-  <desc id="logo-desc">A one-color package tile mark for KhaosBox.</desc>
+  <title id="logo-title">Cardo monochrome mark</title>
+  <desc id="logo-desc">A one-color package tile mark for Cardo.</desc>
 
   <g fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
     <rect x="8" y="8" width="80" height="80" rx="24"/>

@@ -1006,7 +1006,7 @@ graceActive: boolean
 | Extension 主入口形态 | 独立扩展页（工具栏打开）；newtab 非 v1 主入口（§6.4、HD26） |
 | Runtime / Desktop embed 生命周期 | 零 client + grace 才可自动停；非 Desktop 一退就停（§6.6.1、HD27） |
 | npm 包名 | 先占 `cardo`；冲突则 `@cardo/cli` 等；bin 仍为 `cardo`（HD1） |
-| 数据路径 | Path SoT：cardo / cardo.sqlite only；无 previous-install relocate（§2.1、HD10） |
+| 数据路径 | Path SoT：`cardo` / `cardo.sqlite` only；无 previous-install relocate（§2.1、HD10） |
 
 此前已关闭：serve/open 进程模型；动态端口；Desktop HTTP 对称；activity 不 +revision；SSE fetch stream；NM 瘦 host；history.ok；core migrator；bootstrap Bearer processToken。
 

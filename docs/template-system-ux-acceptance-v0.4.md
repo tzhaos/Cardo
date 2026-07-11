@@ -1,4 +1,4 @@
-# KhaosBox v0.4 模板体系 UX 验收清单
+# Cardo v0.4 模板体系 UX 验收清单
 
 ## 目标
 

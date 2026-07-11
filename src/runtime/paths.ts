@@ -1,9 +1,11 @@
 /**
  * Shared Cardo path resolver (CLI + Desktop embed/attach).
  *
- * Path SoT:
+ * Path SoT only:
  *   directory segment: `cardo`
  *   database file: `cardo.sqlite`
+ *
+ * No previous-install relocate. Only the SoT paths above are used.
  *
  * Desktop Main must call `app.setName(CARDO_USER_DATA_DIR_NAME)` before any
  * `app.getPath('userData')` so Electron userData matches this resolver.
@@ -15,9 +17,6 @@
  *   linux:  ${XDG_CONFIG_HOME:-~/.config}/cardo
  *
  * Override with CARDO_DATA_DIR (absolute directory).
- *
- * If the SoT database is missing and a previous install database is present
- * under the default location, it is moved into the SoT path once on first open.
  */
 
 import fs from 'node:fs';
@@ -34,10 +33,6 @@ export const CARDO_LOG_FILENAME = 'runtime.log';
  * Path SoT is package-aligned `cardo` (not productName display casing).
  */
 export const CARDO_USER_DATA_DIR_NAME = 'cardo';
-
-/** Previous default data-dir segment names that may still hold a database file. */
-const PREVIOUS_USER_DATA_DIR_NAMES = ['khaosbox', 'KhaosBox'] as const;
-const PREVIOUS_DB_FILENAME = 'khaosbox.sqlite';
 
 export interface CardoDataPaths {
   dataDir: string;
@@ -81,61 +76,15 @@ export function resolveDefaultDataDir(): string {
   return joinUserDataDir(CARDO_USER_DATA_DIR_NAME);
 }
 
-function moveSqliteBundle(fromDbPath: string, toDbPath: string): void {
-  fs.mkdirSync(path.dirname(toDbPath), { recursive: true });
-  for (const suffix of ['', '-wal', '-shm'] as const) {
-    const from = `${fromDbPath}${suffix}`;
-    const to = `${toDbPath}${suffix}`;
-    if (!fs.existsSync(from)) continue;
-    try {
-      fs.renameSync(from, to);
-    } catch {
-      fs.copyFileSync(from, to);
-      fs.unlinkSync(from);
-    }
-  }
-}
-
-/**
- * One-way relocate of a previous default install DB into the Cardo SoT path.
- * Only runs when resolving the default data dir (no CARDO_DATA_DIR / explicit dir).
- * After `cardo.sqlite` exists, previous paths are never consulted again.
- */
-function relocatePreviousDatabaseIfNeeded(paths: CardoDataPaths): void {
-  if (fs.existsSync(paths.dbPath)) return;
-
-  for (const segment of PREVIOUS_USER_DATA_DIR_NAMES) {
-    const previousDir = joinUserDataDir(segment);
-    if (path.resolve(previousDir) === path.resolve(paths.dataDir)) continue;
-    const previousDb = path.join(previousDir, PREVIOUS_DB_FILENAME);
-    if (!fs.existsSync(previousDb)) continue;
-    moveSqliteBundle(previousDb, paths.dbPath);
-    return;
-  }
-
-  // Same directory already named cardo but still holding the previous filename.
-  const sameDirPrevious = path.join(paths.dataDir, PREVIOUS_DB_FILENAME);
-  if (fs.existsSync(sameDirPrevious) && sameDirPrevious !== paths.dbPath) {
-    moveSqliteBundle(sameDirPrevious, paths.dbPath);
-  }
-}
-
 export function resolveCardoDataPaths(dataDir?: string): CardoDataPaths {
-  const usingDefaultDir = !dataDir?.trim() && !process.env.CARDO_DATA_DIR?.trim();
   const resolvedDir = path.resolve(dataDir?.trim() || resolveDefaultDataDir());
-  const paths: CardoDataPaths = {
+  return {
     dataDir: resolvedDir,
     dbPath: path.join(resolvedDir, CARDO_DB_FILENAME),
     lockPath: path.join(resolvedDir, CARDO_LOCK_FILENAME),
     discoveryPath: path.join(resolvedDir, CARDO_DISCOVERY_FILENAME),
     logPath: path.join(resolvedDir, CARDO_LOG_FILENAME),
   };
-
-  if (usingDefaultDir) {
-    relocatePreviousDatabaseIfNeeded(paths);
-  }
-
-  return paths;
 }
 
 export function ensureDataDir(dataDir: string): void {
