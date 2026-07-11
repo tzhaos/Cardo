@@ -6,7 +6,7 @@ import { defineConfig } from 'vite';
 import {
   EXTENSION_LOCALE_CODES,
   EXTENSION_LOCALE_MESSAGES,
-} from '../src/core/domains/i18n/model/messages';
+} from './extension-locales';
 
 const EXTENSION_OUT_DIR = path.resolve(__dirname, '../artifacts/extension/unpacked');
 const PACKAGE_JSON = JSON.parse(
