@@ -2521,8 +2521,12 @@ body.wbn-independent-menu-dragging .wbn-independent-menu {
 }
 
 .wbn-settings-nav button:hover,
-.wbn-settings-nav-active {
+.wbn-settings-nav [data-state='active'] {
   color: var(--wbn-text) !important;
+}
+
+.wbn-ui-tabs-content:focus-visible {
+  outline: none;
 }
 
 .wbn-settings-nav-indicator {

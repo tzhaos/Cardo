@@ -42,6 +42,7 @@ import {
 import { Input } from '../../ui/primitives/input';
 import { Button } from '../../ui/primitives/button';
 import { ToggleGroup, ToggleGroupItem } from '../../ui/primitives/toggle-group';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/primitives/tabs';
 
 type SettingsSection = 'general' | 'appearance' | 'data' | 'about';
 
@@ -85,14 +86,16 @@ export function SettingsPanel({
           <X size={16} />
         </IconButton>
       </header>
-      <div className="wbn-settings-layout">
-        <nav className="wbn-settings-nav" aria-label={t('settings.sections')}>
+      <Tabs
+        className="wbn-settings-layout"
+        value={section}
+        onValueChange={(value) => setSection(value as SettingsSection)}
+      >
+        <TabsList className="wbn-settings-nav" aria-label={t('settings.sections')}>
           {sections.map(({ id, icon: Icon, label }) => (
-            <button
-              className={section === id ? 'wbn-settings-nav-active' : ''}
+            <TabsTrigger
               key={id}
-              type="button"
-              onClick={() => setSection(id)}
+              value={id}
             >
               {section === id ? (
                 <motion.span
@@ -105,10 +108,13 @@ export function SettingsPanel({
                 <Icon size={16} />
               </IconFrame>
               <span>{label}</span>
-            </button>
+            </TabsTrigger>
           ))}
-        </nav>
-        <div className="wbn-settings-content wbn-custom-scrollbar">
+        </TabsList>
+        <TabsContent
+          className="wbn-settings-content wbn-custom-scrollbar"
+          value={section}
+        >
           <AnimatePresence mode="wait" initial={false}>
             <motion.section
               key={section}
@@ -141,8 +147,8 @@ export function SettingsPanel({
               {section === 'about' ? <AboutSettings /> : null}
             </motion.section>
           </AnimatePresence>
-        </div>
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
