@@ -3,86 +3,86 @@
   "version": 1,
   "pack": {
     "id": "classic",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "name": {
-      "en": "Classic",
-      "zh": "经典"
+      "en": "Glass",
+      "zh": "玻璃"
     },
     "description": {
-      "en": "Soft glass chrome.",
-      "zh": "柔和玻璃壳层。"
+      "en": "Soft floating translucent layers.",
+      "zh": "柔和浮动半透明层。"
     },
     "tokens": {
       "colors": {
         "light": {
-          "canvas": "#f0f0f2",
-          "surface": "rgba(255, 255, 255, 0.82)",
-          "surfaceStrong": "rgba(255, 255, 255, 0.94)",
-          "panel": "#ffffff",
-          "panelBottom": "#f7f7f8",
-          "panelContent": "rgba(255, 255, 255, 0.52)",
-          "panelChrome": "rgba(255, 255, 255, 0.42)",
-          "border": "rgba(0, 0, 0, 0.05)",
-          "borderSubtle": "#f3f4f6",
-          "divider": "rgba(229, 231, 235, 0.95)",
-          "text": "#111827",
-          "softText": "#374151",
-          "secondaryText": "#6b7280",
-          "muted": "#9ca3af",
-          "hover": "rgba(0, 0, 0, 0.05)",
-          "active": "rgba(0, 0, 0, 0.05)",
-          "input": "#ffffff",
-          "itemHover": "#ffffff",
-          "glyph": "#f9fafb",
-          "neutralButton": "#e5e7eb",
-          "neutralButtonHover": "#d1d5db",
-          "createBackground": "#111827",
+          "canvas": "#eef1f8",
+          "surface": "rgba(255, 255, 255, 0.72)",
+          "surfaceStrong": "rgba(255, 255, 255, 0.88)",
+          "panel": "rgba(255, 255, 255, 0.78)",
+          "panelBottom": "rgba(252, 252, 255, 0.9)",
+          "panelContent": "rgba(255, 255, 255, 0.92)",
+          "panelChrome": "rgba(255, 255, 255, 0.55)",
+          "border": "rgba(255, 255, 255, 0.55)",
+          "borderSubtle": "rgba(148, 163, 184, 0.16)",
+          "divider": "rgba(148, 163, 184, 0.22)",
+          "text": "#1e293b",
+          "softText": "#334155",
+          "secondaryText": "#64748b",
+          "muted": "#94a3b8",
+          "hover": "rgba(148, 163, 184, 0.12)",
+          "active": "rgba(99, 102, 241, 0.12)",
+          "input": "rgba(255, 255, 255, 0.95)",
+          "itemHover": "rgba(255, 255, 255, 0.98)",
+          "glyph": "rgba(241, 245, 249, 0.95)",
+          "neutralButton": "rgba(241, 245, 249, 0.9)",
+          "neutralButtonHover": "rgba(226, 232, 240, 0.95)",
+          "createBackground": "#3b82f6",
           "createText": "#ffffff",
-          "scrollbar": "rgba(0, 0, 0, 0.15)",
-          "scrollbarHover": "rgba(0, 0, 0, 0.25)",
-          "selectionRing": "rgba(59, 130, 246, 0.18)",
-          "settingsChrome": "#f0f0f2",
-          "settingsHover": "#e8e8ec",
+          "scrollbar": "rgba(100, 116, 139, 0.28)",
+          "scrollbarHover": "rgba(100, 116, 139, 0.42)",
+          "selectionRing": "rgba(59, 130, 246, 0.22)",
+          "settingsChrome": "#f4f6fb",
+          "settingsHover": "#e8eefc",
           "blue": "#3b82f6",
           "orange": "#f97316",
-          "purple": "#a855f7",
+          "purple": "#8b5cf6",
           "emerald": "#10b981",
           "red": "#ef4444"
         },
         "dark": {
-          "canvas": "#1a1a1b",
-          "surface": "rgba(42, 42, 43, 0.86)",
-          "surfaceStrong": "rgba(42, 42, 43, 0.96)",
-          "panel": "#2a2a2b",
-          "panelBottom": "#222223",
-          "panelContent": "rgba(0, 0, 0, 0.2)",
-          "panelChrome": "rgba(0, 0, 0, 0.18)",
-          "border": "rgba(255, 255, 255, 0.06)",
-          "borderSubtle": "rgba(255, 255, 255, 0.07)",
-          "divider": "rgba(255, 255, 255, 0.1)",
-          "text": "#f3f4f6",
-          "softText": "#d1d5db",
-          "secondaryText": "#9ca3af",
-          "muted": "#6b7280",
-          "hover": "rgba(255, 255, 255, 0.06)",
-          "active": "rgba(255, 255, 255, 0.1)",
-          "input": "#202021",
-          "itemHover": "#303032",
-          "glyph": "#242426",
-          "neutralButton": "#3f3f42",
-          "neutralButtonHover": "#4b4b4f",
-          "createBackground": "#f3f4f6",
-          "createText": "#171719",
-          "scrollbar": "rgba(255, 255, 255, 0.15)",
-          "scrollbarHover": "rgba(255, 255, 255, 0.25)",
-          "selectionRing": "rgba(96, 165, 250, 0.34)",
-          "settingsChrome": "#1a1a1b",
-          "settingsHover": "#2a2a2b",
-          "blue": "#3b82f6",
-          "orange": "#f97316",
-          "purple": "#a855f7",
-          "emerald": "#10b981",
-          "red": "#ef4444"
+          "canvas": "#0b0c14",
+          "surface": "rgba(30, 32, 48, 0.78)",
+          "surfaceStrong": "rgba(36, 38, 56, 0.92)",
+          "panel": "rgba(28, 30, 46, 0.82)",
+          "panelBottom": "rgba(22, 24, 38, 0.9)",
+          "panelContent": "rgba(36, 38, 56, 0.88)",
+          "panelChrome": "rgba(40, 42, 62, 0.65)",
+          "border": "rgba(129, 140, 248, 0.12)",
+          "borderSubtle": "rgba(148, 163, 184, 0.1)",
+          "divider": "rgba(148, 163, 184, 0.12)",
+          "text": "#e8eaf2",
+          "softText": "#c7cad8",
+          "secondaryText": "#9aa0b4",
+          "muted": "#6b7289",
+          "hover": "rgba(129, 140, 248, 0.1)",
+          "active": "rgba(129, 140, 248, 0.18)",
+          "input": "rgba(24, 26, 40, 0.95)",
+          "itemHover": "rgba(40, 42, 62, 0.95)",
+          "glyph": "rgba(40, 42, 62, 0.95)",
+          "neutralButton": "rgba(40, 42, 62, 0.95)",
+          "neutralButtonHover": "rgba(52, 55, 78, 0.98)",
+          "createBackground": "#6366f1",
+          "createText": "#ffffff",
+          "scrollbar": "rgba(148, 163, 184, 0.22)",
+          "scrollbarHover": "rgba(148, 163, 184, 0.36)",
+          "selectionRing": "rgba(129, 140, 248, 0.32)",
+          "settingsChrome": "#141522",
+          "settingsHover": "#2a2d48",
+          "blue": "#818cf8",
+          "orange": "#fb923c",
+          "purple": "#a78bfa",
+          "emerald": "#34d399",
+          "red": "#f87171"
         }
       },
       "fonts": {
@@ -92,11 +92,11 @@
         "lineHeightBase": "1.45"
       },
       "radii": {
-        "xs": "4px",
-        "sm": "6px",
-        "md": "10px",
-        "lg": "12px",
-        "xl": "16px",
+        "xs": "8px",
+        "sm": "10px",
+        "md": "14px",
+        "lg": "18px",
+        "xl": "22px",
         "pill": "999px"
       },
       "space": {
@@ -111,24 +111,24 @@
       },
       "elevation": {
         "light": {
-          "shadow": "0 1px 1px rgba(0,0,0,.02), 0 2px 2px rgba(0,0,0,.02), 0 4px 4px rgba(0,0,0,.02), 0 8px 8px rgba(0,0,0,.02), 0 16px 16px rgba(0,0,0,.02)",
-          "shadowHover": "0 2px 2px rgba(0,0,0,.03), 0 4px 4px rgba(0,0,0,.03), 0 8px 8px rgba(0,0,0,.03), 0 16px 16px rgba(0,0,0,.03), 0 32px 32px rgba(0,0,0,.03), 0 64px 64px rgba(0,0,0,.03)",
-          "insetShadow": "inset 0 1px 2px rgba(0, 0, 0, 0.05)"
+          "shadow": "0 2px 8px rgba(15, 23, 42, 0.04), 0 12px 40px rgba(15, 23, 42, 0.08)",
+          "shadowHover": "0 4px 12px rgba(15, 23, 42, 0.06), 0 20px 48px rgba(15, 23, 42, 0.1)",
+          "insetShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.75)"
         },
         "dark": {
-          "shadow": "0 1px 1px rgba(0,0,0,.1), 0 2px 2px rgba(0,0,0,.1), 0 4px 4px rgba(0,0,0,.1), 0 8px 8px rgba(0,0,0,.1), 0 16px 16px rgba(0,0,0,.1), inset 0 1px 0 rgba(255,255,255,.05)",
-          "shadowHover": "0 2px 2px rgba(0,0,0,.15), 0 4px 4px rgba(0,0,0,.15), 0 8px 8px rgba(0,0,0,.15), 0 16px 16px rgba(0,0,0,.15), 0 32px 32px rgba(0,0,0,.15), 0 64px 64px rgba(0,0,0,.15), inset 0 1px 0 rgba(255,255,255,.05)",
-          "insetShadow": "inset 0 1px 2px rgba(0, 0, 0, 0.28)"
+          "shadow": "0 0 0 1px rgba(129, 140, 248, 0.06), 0 8px 32px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.35)",
+          "shadowHover": "0 0 0 1px rgba(129, 140, 248, 0.1), 0 12px 40px rgba(0, 0, 0, 0.55)",
+          "insetShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.06)"
         }
       },
       "motion": {
-        "durationFast": "120ms",
-        "durationNormal": "160ms",
-        "easing": "ease"
+        "durationFast": "140ms",
+        "durationNormal": "200ms",
+        "easing": "cubic-bezier(0.22, 1, 0.36, 1)"
       },
       "chrome": {
-        "blur": "18px",
-        "topbarOffset": "12px",
+        "blur": "28px",
+        "topbarOffset": "16px",
         "material": "glass"
       }
     },
@@ -141,16 +141,16 @@
           "zh": "壳层表面"
         },
         "description": {
-          "en": "Glass matches the current product chrome. Solid is an optional alternate.",
-          "zh": "玻璃为当前产品默认壳层；实心为可选变体。"
+          "en": "Glass is the official look. Solid reduces translucency.",
+          "zh": "玻璃为官方外观；实心降低半透明。"
         },
         "default": "glass",
         "choices": [
           {
             "id": "glass",
             "label": {
-              "en": "Glass (official)",
-              "zh": "玻璃（官方）"
+              "en": "Glass",
+              "zh": "玻璃"
             }
           },
           {
@@ -164,75 +164,21 @@
                 "light": {
                   "surface": "rgba(255, 255, 255, 0.98)",
                   "surfaceStrong": "#ffffff",
-                  "panelContent": "rgba(255, 255, 255, 0.88)",
-                  "panelChrome": "rgba(255, 255, 255, 0.94)"
+                  "panel": "#ffffff",
+                  "panelContent": "#ffffff",
+                  "panelChrome": "#f8fafc"
                 },
                 "dark": {
-                  "surface": "rgba(42, 42, 43, 0.98)",
-                  "surfaceStrong": "#2a2a2b",
-                  "panelContent": "rgba(28, 28, 29, 0.92)",
-                  "panelChrome": "rgba(34, 34, 35, 0.96)"
+                  "surface": "rgba(30, 32, 48, 0.98)",
+                  "surfaceStrong": "#1e2030",
+                  "panel": "#1e2030",
+                  "panelContent": "#24263a",
+                  "panelChrome": "#2a2d42"
                 }
               },
               "chrome": {
                 "blur": "0px",
                 "material": "solid"
-              }
-            }
-          }
-        ]
-      },
-      {
-        "id": "corners",
-        "type": "select",
-        "label": {
-          "en": "Corners",
-          "zh": "圆角"
-        },
-        "description": {
-          "en": "Default matches the official radius scale used by the product shell.",
-          "zh": "默认与当前产品圆角尺度一致。"
-        },
-        "default": "default",
-        "choices": [
-          {
-            "id": "default",
-            "label": {
-              "en": "Default (official)",
-              "zh": "默认（官方）"
-            }
-          },
-          {
-            "id": "soft",
-            "label": {
-              "en": "Soft",
-              "zh": "柔和"
-            },
-            "tokens": {
-              "radii": {
-                "xs": "6px",
-                "sm": "8px",
-                "md": "12px",
-                "lg": "16px",
-                "xl": "20px",
-                "pill": "999px"
-              }
-            }
-          },
-          {
-            "id": "sharp",
-            "label": {
-              "en": "Sharp",
-              "zh": "硬朗"
-            },
-            "tokens": {
-              "radii": {
-                "xs": "2px",
-                "sm": "3px",
-                "md": "5px",
-                "lg": "7px",
-                "xl": "10px",
-                "pill": "999px"
               }
             }
           }

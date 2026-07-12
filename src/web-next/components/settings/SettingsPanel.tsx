@@ -95,9 +95,12 @@ export function SettingsPanel({
   const themeId = usePreferencesStore((state) => state.themeId);
   const isFluent = themeId === 'fluent';
   const isApple = themeId === 'apple';
-  /** Soft static nav pill — avoid Motion layoutId under themed text shells. */
+  /** Static nav pill under glass/OS shells — avoids layoutId soft text. */
   const useStaticNavIndicator =
-    themeId === 'fluent' || themeId === 'material' || themeId === 'apple';
+    themeId === 'classic' ||
+    themeId === 'fluent' ||
+    themeId === 'material' ||
+    themeId === 'apple';
   const { t, locale: i18nLocale } = useI18n();
   const sections = [
     {

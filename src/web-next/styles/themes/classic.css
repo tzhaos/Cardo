@@ -1,20 +1,214 @@
 /**
- * Classic Theme Pack recipes — soft glass product chrome.
+ * Glass theme recipes (pack id: classic).
+ * Light = Ethereal Aura · Dark = Dark Glass — one dialect, colorMode switches.
  * Tokens: themes/builtin/classic/theme.cardo-theme.json
- * Scoped under [data-cardo-theme="classic"].
  */
 
+/* Soft ethereal field — light mode washes purple-blue; dark stays deep slate */
+[data-cardo-theme='classic'] .cardo-app {
+  background-color: var(--cardo-canvas);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 20% 10%, color-mix(in srgb, var(--cardo-purple) 10%, transparent), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 85% 20%, color-mix(in srgb, var(--cardo-blue) 12%, transparent), transparent 50%),
+    radial-gradient(ellipse 60% 45% at 50% 90%, color-mix(in srgb, var(--cardo-blue) 8%, transparent), transparent 55%);
+}
+
+[data-color-mode='dark'][data-cardo-theme='classic'] .cardo-app {
+  background-image:
+    radial-gradient(ellipse 70% 55% at 15% 15%, color-mix(in srgb, var(--cardo-purple) 14%, transparent), transparent 50%),
+    radial-gradient(ellipse 60% 45% at 90% 25%, color-mix(in srgb, var(--cardo-blue) 10%, transparent), transparent 48%);
+}
+
+[data-cardo-theme='classic'] .cardo-canvas-boundary {
+  background-image: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* Floating frosted pill top bar */
+[data-cardo-theme='classic'] .cardo-top-bar {
+  border: 1px solid var(--cardo-border);
+  background: var(--cardo-surface) !important;
+  box-shadow: var(--cardo-shadow) !important;
+  backdrop-filter: blur(var(--cardo-chrome-blur)) !important;
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur)) !important;
+}
+
+[data-cardo-theme='classic'] .cardo-active-tab-indicator {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cardo-panel) 88%, transparent);
+  box-shadow: var(--cardo-inset-shadow), 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+[data-color-mode='dark'][data-cardo-theme='classic'] .cardo-active-tab-indicator {
+  background: color-mix(in srgb, var(--cardo-blue) 28%, var(--cardo-panel));
+  box-shadow: none;
+}
+
+[data-cardo-theme='classic'] .cardo-history-controls {
+  border: 1px solid var(--cardo-border);
+  border-radius: 999px;
+  background: var(--cardo-surface);
+  backdrop-filter: blur(var(--cardo-chrome-blur));
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur));
+  box-shadow: var(--cardo-shadow);
+}
+
+/* Frosted floating cards */
 [data-cardo-theme='classic'] .cardo-box,
 [data-cardo-theme='classic'] .cardo-collection-box {
   border: 1px solid var(--cardo-border);
   --cardo-box-radius: var(--cardo-radius-xl);
   border-radius: var(--cardo-box-radius);
-  background-image: linear-gradient(to bottom, var(--cardo-panel), var(--cardo-panel-bottom));
+  background-color: var(--cardo-panel);
+  background-image: none;
   box-shadow: var(--cardo-shadow);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 [data-cardo-theme='classic'] .cardo-box-header,
 [data-cardo-theme='classic'] .cardo-collection-box-header {
-  border-bottom: 1px solid var(--cardo-border-subtle);
-  background: var(--cardo-panel-chrome);
+  border-bottom: 0;
+  background: transparent;
+}
+
+[data-cardo-theme='classic'] .cardo-box-footer {
+  border-top: 0;
+  background: transparent;
+}
+
+/* Ghost / soft CTA — not heavy filled bar in light; slate in dark */
+[data-cardo-theme='classic'] .cardo-box-footer button,
+[data-cardo-theme='classic'] .cardo-box-footer .cardo-ui-button-default {
+  border: 0 !important;
+  border-radius: var(--cardo-radius-lg) !important;
+  background: transparent !important;
+  color: var(--cardo-secondary-text) !important;
+  font-weight: 500;
+  box-shadow: none !important;
+}
+
+[data-cardo-theme='classic'] .cardo-box-footer button:hover {
+  background: var(--cardo-hover) !important;
+  color: var(--cardo-text) !important;
+  filter: none;
+}
+
+[data-color-mode='dark'][data-cardo-theme='classic'] .cardo-box-footer button,
+[data-color-mode='dark'][data-cardo-theme='classic'] .cardo-box-footer .cardo-ui-button-default {
+  background: var(--cardo-neutral-button) !important;
+  color: var(--cardo-soft-text) !important;
+}
+
+/* Frosted settings shell */
+[data-cardo-theme='classic'] .cardo-independent-menu.cardo-settings-window,
+[data-cardo-theme='classic'] .cardo-settings-window {
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-xl);
+  background: var(--cardo-surface-strong);
+  box-shadow: var(--cardo-shadow-hover);
+  backdrop-filter: blur(var(--cardo-chrome-blur));
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur));
+}
+
+[data-cardo-theme='classic'] .cardo-settings-panel {
+  background: transparent;
+}
+
+[data-cardo-theme='classic'] .cardo-settings-header {
+  border-bottom: 1px solid var(--cardo-border);
+  background: color-mix(in srgb, var(--cardo-surface-strong) 70%, transparent);
+}
+
+[data-cardo-theme='classic'] .cardo-settings-nav {
+  border-right: 1px solid var(--cardo-border);
+  background: transparent;
+}
+
+[data-cardo-theme='classic'] .cardo-settings-nav button {
+  border-radius: 999px;
+  min-height: 36px;
+}
+
+[data-cardo-theme='classic'] .cardo-settings-nav-indicator {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cardo-panel) 90%, transparent);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+[data-color-mode='dark'][data-cardo-theme='classic'] .cardo-settings-nav-indicator {
+  background: var(--cardo-settings-hover);
+  box-shadow: none;
+}
+
+[data-cardo-theme='classic'] .cardo-settings-content {
+  background: transparent;
+}
+
+[data-cardo-theme='classic'] .cardo-settings-card,
+[data-cardo-theme='classic'] .cardo-settings-list-group,
+[data-cardo-theme='classic'] .cardo-theme-pack-card,
+[data-cardo-theme='classic'] .cardo-about-card {
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-lg);
+  background: color-mix(in srgb, var(--cardo-panel-content) 88%, transparent);
+  box-shadow: none;
+}
+
+[data-cardo-theme='classic'] .cardo-settings-list-group {
+  gap: 10px;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+[data-cardo-theme='classic'] .cardo-settings-list-group .cardo-settings-card {
+  border-radius: var(--cardo-radius-lg);
+}
+
+[data-cardo-theme='classic'] .cardo-segmented-control {
+  border: 0;
+  border-radius: var(--cardo-radius-md);
+  background: var(--cardo-neutral-button);
+}
+
+[data-cardo-theme='classic'] .cardo-segment-indicator-active {
+  border-color: transparent;
+  background: var(--cardo-panel);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+/* Bottom frosted dock */
+[data-cardo-theme='classic'] .cardo-bottom-toolbar {
+  border: 1px solid var(--cardo-border) !important;
+  border-radius: 999px !important;
+  background: var(--cardo-surface) !important;
+  box-shadow: var(--cardo-shadow) !important;
+  backdrop-filter: blur(var(--cardo-chrome-blur)) !important;
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur)) !important;
+}
+
+[data-cardo-theme='classic'] .cardo-bottom-toolbar .cardo-toolbar-create {
+  background: var(--cardo-create-background) !important;
+  color: var(--cardo-create-text) !important;
+  border-radius: 999px !important;
+}
+
+[data-cardo-theme='classic'] .cardo-search-pill,
+[data-cardo-theme='classic'] .cardo-canvas-tools {
+  border: 1px solid var(--cardo-border);
+  background: var(--cardo-surface);
+  backdrop-filter: blur(var(--cardo-chrome-blur));
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur));
+  box-shadow: var(--cardo-shadow);
+}
+
+[data-cardo-theme='classic'] .cardo-floating-menu,
+[data-cardo-theme='classic'] .cardo-ui-select-content {
+  border: 1px solid var(--cardo-border);
+  background: var(--cardo-surface-strong);
+  backdrop-filter: blur(var(--cardo-chrome-blur));
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur));
+  box-shadow: var(--cardo-shadow-hover);
 }

@@ -24,7 +24,7 @@ src/web-next/styles/themes/<id>…             ← 该包结构方言 recipe
 
 | id | 名称 | material | 语言 |
 | --- | --- | --- | --- |
-| `classic` | Classic（默认） | glass | 玻璃壳、居中胶囊顶栏 |
+| `classic` | Glass（默认） | glass | 柔和浮动半透明层（浅色 Ethereal / 深色 Dark Glass） |
 | `fluent` | Windows Fluent | solid | Microsoft Windows 11 设计风格 |
 | `material` | Material | solid | Google AI Studio 设计风格 |
 | `apple` | Apple | glass | Apple SwiftUI 设计风格 |
