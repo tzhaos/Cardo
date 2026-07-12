@@ -188,7 +188,6 @@
 [data-cardo-theme='material'] .cardo-theme-pack-card,
 [data-cardo-theme='material'] .cardo-about-card,
 [data-cardo-theme='material'] .cardo-custom-search-template,
-[data-cardo-theme='material'] .cardo-data-actions > button,
 [data-cardo-theme='material'] .cardo-theme-look-card {
   overflow: hidden;
   border: 1px solid var(--cardo-border) !important;
@@ -374,11 +373,6 @@
 
 [data-cardo-theme='material'] .cardo-settings-secondary-button:hover {
   background: var(--cardo-hover);
-}
-
-[data-cardo-theme='material'] .cardo-data-actions > button {
-  border-radius: 12px;
-  padding: 12px 14px;
 }
 
 [data-cardo-theme='material'] .cardo-ui-button-default:not(.cardo-box-icon):not(.cardo-resize-handle) {

@@ -284,34 +284,64 @@ function DataSettings() {
   return (
     <>
       <SettingsHeading title={t('settings.data')} description={t('settings.dataDescription')} />
-      <div className="cardo-data-actions">
-        <Button variant="card" onClick={() => void exportWorkspaceData()}>
-          <IconFrame>
-            <ThemeIcon name="download" size={18} />
-          </IconFrame>
-          <span>
-            {t('settings.exportData')}
-            <small>{t('settings.exportDataDescription')}</small>
-          </span>
-        </Button>
-        <Button variant="card" onClick={() => inputRef.current?.click()}>
-          <IconFrame>
-            <ThemeIcon name="upload" size={18} />
-          </IconFrame>
-          <span>
-            {t('settings.importData')}
-            <small>{t('settings.importDataDescription')}</small>
-          </span>
-        </Button>
-        <Button variant="card" onClick={() => void exportOperationLog()}>
-          <IconFrame>
-            <ThemeIcon name="fileDown" size={18} />
-          </IconFrame>
-          <span>
-            {t('settings.exportLog')}
-            <small>{t('settings.exportLogDescription')}</small>
-          </span>
-        </Button>
+      <div className="cardo-settings-list-group">
+        <div className="cardo-settings-card">
+          <div className="cardo-settings-card-copy">
+            <IconFrame>
+              <ThemeIcon name="download" size={16} />
+            </IconFrame>
+            <span>
+              {t('settings.exportData')}
+              <small>{t('settings.exportDataDescription')}</small>
+            </span>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            className="cardo-settings-secondary-button"
+            onClick={() => void exportWorkspaceData()}
+          >
+            {t('settings.exportDataAction')}
+          </Button>
+        </div>
+        <div className="cardo-settings-card">
+          <div className="cardo-settings-card-copy">
+            <IconFrame>
+              <ThemeIcon name="upload" size={16} />
+            </IconFrame>
+            <span>
+              {t('settings.importData')}
+              <small>{t('settings.importDataDescription')}</small>
+            </span>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            className="cardo-settings-secondary-button"
+            onClick={() => inputRef.current?.click()}
+          >
+            {t('settings.importDataAction')}
+          </Button>
+        </div>
+        <div className="cardo-settings-card">
+          <div className="cardo-settings-card-copy">
+            <IconFrame>
+              <ThemeIcon name="fileDown" size={16} />
+            </IconFrame>
+            <span>
+              {t('settings.exportLog')}
+              <small>{t('settings.exportLogDescription')}</small>
+            </span>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            className="cardo-settings-secondary-button"
+            onClick={() => void exportOperationLog()}
+          >
+            {t('settings.exportLogAction')}
+          </Button>
+        </div>
       </div>
       <Input
         className="cardo-data-file-input"

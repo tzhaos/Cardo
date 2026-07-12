@@ -250,8 +250,7 @@
 [data-cardo-theme='fluent'] .cardo-settings-search-results,
 [data-cardo-theme='fluent'] .cardo-theme-pack-card,
 [data-cardo-theme='fluent'] .cardo-about-card,
-[data-cardo-theme='fluent'] .cardo-custom-search-template,
-[data-cardo-theme='fluent'] .cardo-data-actions > button {
+[data-cardo-theme='fluent'] .cardo-custom-search-template {
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--cardo-border) 90%, transparent);
   border-radius: 8px;
@@ -303,8 +302,7 @@
 }
 
 [data-cardo-theme='fluent'] .cardo-theme-pack-card,
-[data-cardo-theme='fluent'] .cardo-custom-search-template,
-[data-cardo-theme='fluent'] .cardo-data-actions > button {
+[data-cardo-theme='fluent'] .cardo-custom-search-template {
   gap: 10px;
 }
 
@@ -357,7 +355,6 @@
 [data-cardo-theme='fluent'] .cardo-settings-group .cardo-settings-disclosure:hover,
 [data-cardo-theme='fluent'] .cardo-theme-color-row:hover,
 [data-cardo-theme='fluent'] .cardo-settings-search-result:hover,
-[data-cardo-theme='fluent'] .cardo-data-actions > button:hover,
 [data-cardo-theme='fluent'] .cardo-theme-pack-card:hover {
   background: var(--cardo-settings-hover) !important;
   border-color: transparent !important;
@@ -379,7 +376,6 @@
 
 [data-cardo-theme='fluent'] .cardo-theme-pack-card,
 [data-cardo-theme='fluent'] .cardo-theme-look-card,
-[data-cardo-theme='fluent'] .cardo-data-actions > button,
 [data-cardo-theme='fluent'] .cardo-about-card {
   border: 1px solid color-mix(in srgb, var(--cardo-border) 90%, transparent) !important;
   border-radius: 8px !important;

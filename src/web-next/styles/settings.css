@@ -318,7 +318,6 @@
   .cardo-about-details,
   .cardo-settings-disclosure,
   .cardo-settings-group,
-  .cardo-data-actions > button,
   .cardo-data-import-confirm,
   .cardo-settings-search-result
 ) {
@@ -340,7 +339,6 @@
     .cardo-theme-pack-card,
     .cardo-theme-look-card,
     .cardo-settings-disclosure:not(.cardo-settings-group-header),
-    .cardo-data-actions > button,
     .cardo-settings-search-result
   ):hover {
   border-color: var(--cardo-settings-item-border-hover);
@@ -1025,40 +1023,6 @@
 
 .cardo-settings-disclosure-chevron-open {
   transform: rotate(90deg);
-}
-
-.cardo-data-actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.cardo-data-actions > button {
-  display: flex;
-  min-height: 94px;
-  align-items: flex-start;
-  gap: 11px;
-  padding: 14px;
-  color: var(--cardo-secondary-text);
-  text-align: left;
-  /* surface paint: shared token group under .cardo-settings-content */
-}
-
-.cardo-data-actions > button > span:last-child {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 5px;
-  color: var(--cardo-soft-text);
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.cardo-data-actions small {
-  color: var(--cardo-muted);
-  font-size: 11px;
-  font-weight: 400;
-  line-height: 16px;
 }
 
 .cardo-data-file-input {

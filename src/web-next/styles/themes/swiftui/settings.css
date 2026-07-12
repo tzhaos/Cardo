@@ -223,7 +223,6 @@
 [data-cardo-theme='swiftui'] .cardo-theme-pack-card,
 [data-cardo-theme='swiftui'] .cardo-about-card,
 [data-cardo-theme='swiftui'] .cardo-custom-search-template,
-[data-cardo-theme='swiftui'] .cardo-data-actions > button,
 [data-cardo-theme='swiftui'] .cardo-theme-look-card {
   border: 0 !important;
   border-radius: 10px !important;
