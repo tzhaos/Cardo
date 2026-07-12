@@ -6,3 +6,7 @@ coverage/
 *.crx
 *.pem
 .env*
+
+# Local agent / tool workspace (not product source)
+.orca/
+mcps/
