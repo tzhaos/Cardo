@@ -176,14 +176,39 @@
   filter: none;
 }
 
-[data-cardo-theme='swiftui'] button.cardo-box-icon {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px !important;
-  border: 0;
-  background: var(--cardo-blue);
-  color: #ffffff;
-  box-shadow: none;
+/*
+ * Beat base `button.cardo-box-icon { background: transparent !important }`
+ * and `color: var(--box-accent)` so the badge stays SF-blue, not washed accent.
+ */
+[data-cardo-theme='swiftui'] button.cardo-box-icon,
+[data-cardo-theme='swiftui'] button.cardo-box-icon.cardo-icon-frame {
+  width: 26px !important;
+  height: 26px !important;
+  border: 0 !important;
+  border-radius: 7px !important;
+  padding: 0 !important;
+  background: color-mix(in srgb, var(--cardo-blue) 14%, var(--cardo-panel)) !important;
+  color: var(--cardo-blue) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+[data-cardo-theme='swiftui'] button.cardo-box-icon:hover,
+[data-cardo-theme='swiftui'] button.cardo-box-icon.cardo-icon-frame:hover {
+  background: color-mix(in srgb, var(--cardo-blue) 22%, var(--cardo-panel)) !important;
+  color: var(--cardo-blue) !important;
+  transform: none !important;
+}
+
+[data-cardo-theme='swiftui'] button.cardo-box-icon:disabled {
+  opacity: 0.45;
+}
+
+[data-cardo-theme='swiftui'] button.cardo-box-icon svg {
+  width: 14px;
+  height: 14px;
+  color: inherit;
+  stroke: currentColor;
 }
 
 [data-cardo-theme='swiftui'] .cardo-box-title,
