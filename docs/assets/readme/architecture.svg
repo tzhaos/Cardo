@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 520" fill="none" role="img" aria-label="Cardo multi-client architecture">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="960" y2="520" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F1218"/>
+      <stop offset="1" stop-color="#171B24"/>
+    </linearGradient>
+    <linearGradient id="rt" x1="280" y1="180" x2="680" y2="340" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2A3140"/>
+      <stop offset="1" stop-color="#1C2230"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect width="960" height="520" rx="24" fill="url(#bg)"/>
+  <text x="48" y="48" fill="#E5E7EB" font-family="Inter,Segoe UI,system-ui,sans-serif" font-size="20" font-weight="600">Cardo Runtime · multi-client topology</text>
+  <text x="48" y="74" fill="#9CA3AF" font-family="Inter,Segoe UI,system-ui,sans-serif" font-size="13">One authoritative SQLite writer · symmetric clients · revision + invalidation</text>
+
+  <!-- Clients row -->
+  <g font-family="Inter,Segoe UI,system-ui,sans-serif">
+    <g filter="url(#soft)">
+      <rect x="48" y="112" width="190" height="88" rx="16" fill="#1F2937" stroke="#374151"/>
+      <text x="68" y="148" fill="#F3F4F6" font-size="16" font-weight="600">CLI</text>
+      <text x="68" y="172" fill="#9CA3AF" font-size="12">serve · open · status · stop</text>
+    </g>
+    <g filter="url(#soft)">
+      <rect x="272" y="112" width="190" height="88" rx="16" fill="#1F2937" stroke="#374151"/>
+      <text x="292" y="148" fill="#F3F4F6" font-size="16" font-weight="600">Web UI</text>
+      <text x="292" y="172" fill="#9CA3AF" font-size="12">Runtime-hosted /app/</text>
+    </g>
+    <g filter="url(#soft)">
+      <rect x="496" y="112" width="190" height="88" rx="16" fill="#1F2937" stroke="#374151"/>
+      <text x="516" y="148" fill="#F3F4F6" font-size="16" font-weight="600">Extension</text>
+      <text x="516" y="172" fill="#9CA3AF" font-size="12">MV3 · Native Messaging</text>
+    </g>
+    <g filter="url(#soft)">
+      <rect x="720" y="112" width="190" height="88" rx="16" fill="#1F2937" stroke="#374151"/>
+      <text x="740" y="148" fill="#F3F4F6" font-size="16" font-weight="600">Desktop</text>
+      <text x="740" y="172" fill="#9CA3AF" font-size="12">attach-first · embed-if-missing</text>
+    </g>
+  </g>
+
+  <!-- Connectors -->
+  <g stroke="#6B7280" stroke-width="1.5" stroke-dasharray="4 4">
+    <path d="M143 200 V240 H480 V268"/>
+    <path d="M367 200 V240 H480 V268"/>
+    <path d="M591 200 V240 H480 V268"/>
+    <path d="M815 200 V240 H480 V268"/>
+  </g>
+
+  <!-- Runtime -->
+  <g filter="url(#soft)" font-family="Inter,Segoe UI,system-ui,sans-serif">
+    <rect x="220" y="268" width="520" height="140" rx="20" fill="url(#rt)" stroke="#4B5563"/>
+    <text x="248" y="308" fill="#F9FAFB" font-size="18" font-weight="600">Cardo Runtime</text>
+    <text x="248" y="334" fill="#D1D5DB" font-size="13">sole SQLite owner · Command / Query / History · Zod protocol</text>
+    <g>
+      <rect x="248" y="352" width="120" height="32" rx="8" fill="#111827" stroke="#374151"/>
+      <text x="266" y="373" fill="#E5E7EB" font-size="12">HTTP + stream</text>
+      <rect x="380" y="352" width="120" height="32" rx="8" fill="#111827" stroke="#374151"/>
+      <text x="402" y="373" fill="#E5E7EB" font-size="12">revision fanout</text>
+      <rect x="512" y="352" width="120" height="32" rx="8" fill="#111827" stroke="#374151"/>
+      <text x="538" y="373" fill="#E5E7EB" font-size="12">capabilities</text>
+    </g>
+  </g>
+
+  <!-- DB -->
+  <g filter="url(#soft)" font-family="Inter,Segoe UI,system-ui,sans-serif">
+    <path d="M420 430 C420 416 540 416 540 430 L540 470 C540 484 420 484 420 470 Z" fill="#1C1C1E" stroke="#6E6E73"/>
+    <ellipse cx="480" cy="430" rx="60" ry="14" fill="#2A2A2E" stroke="#6E6E73"/>
+    <text x="448" y="462" fill="#E5E7EB" font-size="13" font-weight="600">cardo.sqlite</text>
+  </g>
+
+  <line x1="480" y1="408" x2="480" y2="416" stroke="#6B7280" stroke-width="1.5"/>
+</svg>
