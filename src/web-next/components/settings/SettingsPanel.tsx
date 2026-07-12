@@ -1053,7 +1053,10 @@ function DesktopUpdatePanel() {
             <small>v{state.currentVersion}</small>
           )}
         </div>
-        <div className="cardo-settings-card-actions" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <div
+          className="cardo-settings-card-actions"
+          style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}
+        >
           <Button
             type="button"
             disabled={busy || state.phase === 'checking' || state.phase === 'downloading'}
@@ -1071,12 +1074,20 @@ function DesktopUpdatePanel() {
             </Button>
           ) : null}
           {state.phase === 'downloading' ? (
-            <Button type="button" disabled={busy} onClick={() => void run(() => bridge.cancelUpdateDownload())}>
+            <Button
+              type="button"
+              disabled={busy}
+              onClick={() => void run(() => bridge.cancelUpdateDownload())}
+            >
               {t('settings.updateCancel')}
             </Button>
           ) : null}
           {state.phase === 'readyToInstall' ? (
-            <Button type="button" disabled={busy} onClick={() => void run(() => bridge.installUpdate())}>
+            <Button
+              type="button"
+              disabled={busy}
+              onClick={() => void run(() => bridge.installUpdate())}
+            >
               {t('settings.updateInstall')}
             </Button>
           ) : null}
