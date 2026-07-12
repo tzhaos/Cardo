@@ -33,7 +33,10 @@ export function BottomToolbar() {
   const setSearchQuery = useUiStore((state) => state.setSearchQuery);
   const searchEngine = usePreferencesStore((state) => state.searchEngine);
   const customSearchTemplate = usePreferencesStore((state) => state.customSearchTemplate);
-  const isFluent = usePreferencesStore((state) => state.themeId === 'fluent');
+  const themeId = usePreferencesStore((state) => state.themeId);
+  const isFluent = themeId === 'fluent';
+  /** Match theme dock chip size so search pill is not larger than settings/create. */
+  const toolbarChipSize = themeId === 'swiftui' || themeId === 'fluent' ? 36 : 40;
   const settingsOpen = useIndependentMenuStore((state) => state.menus.settings.open);
   const toggleIndependentMenu = useIndependentMenuStore((state) => state.toggleMenu);
   const [isSearchActive, setIsSearchActive] = useState(false);
@@ -108,7 +111,10 @@ export function BottomToolbar() {
         {globalSearchEnabled ? (
           <motion.div
             className={`cardo-search-pill${isSearchActive ? ' cardo-search-pill-active' : ''}`}
-            animate={{ width: isSearchActive ? 360 : 40 }}
+            animate={{
+              width: isSearchActive ? (isFluent ? 280 : 360) : toolbarChipSize,
+            }}
+            style={{ height: toolbarChipSize }}
           >
             <IconButton
               className="cardo-search-local-trigger"

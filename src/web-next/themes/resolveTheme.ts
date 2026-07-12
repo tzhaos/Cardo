@@ -70,7 +70,7 @@ export function resolveEffectiveThemeTokens(input: {
 
   const userModeOverrides = input.colorOverrides?.[pack.id]?.[colorMode];
   if (userModeOverrides) {
-    colors = { ...colors, ...stripUndefined(userModeOverrides) };
+    colors = applyUserColorOverrides(colors, userModeOverrides);
   }
 
   const elevation =
@@ -132,6 +132,49 @@ function stripUndefined<T extends Record<string, unknown>>(value: T): Partial<T>
     }
   }
   return result;
+}
+
+/**
+ * Merge user color looks onto the pack palette and derive companion tokens so a
+ * look always changes chrome (accent wash, selection, soft text) visibly.
+ */
+function applyUserColorOverrides(
+  base: ColorTokenMap,
+  overrides: Partial<ColorTokenMap>,
+): ColorTokenMap {
+  const patch = stripUndefined(overrides as Record<string, unknown>) as Partial<ColorTokenMap>;
+  const next: ColorTokenMap = { ...base, ...patch };
+
+  if (patch.blue) {
+    // Accent-linked chrome that looks never set explicitly.
+    next.active = `color-mix(in srgb, ${patch.blue} 18%, transparent)`;
+    next.selectionRing = patch.blue;
+    next.itemHover = `color-mix(in srgb, ${patch.blue} 10%, ${next.panel})`;
+    if (!patch.createBackground) {
+      next.createBackground = patch.blue;
+    }
+  }
+  if (patch.text) {
+    next.softText = `color-mix(in srgb, ${patch.text} 82%, ${next.canvas})`;
+    next.secondaryText = `color-mix(in srgb, ${patch.text} 68%, ${next.canvas})`;
+    next.muted = `color-mix(in srgb, ${patch.text} 52%, ${next.canvas})`;
+  }
+  if (patch.canvas && !patch.hover) {
+    next.hover = `color-mix(in srgb, ${patch.canvas} 88%, ${patch.text ?? next.text})`;
+  }
+  if (patch.panel) {
+    next.panelBottom = patch.panel;
+    next.panelContent = patch.panel;
+    next.panelChrome = patch.settingsChrome ?? patch.panel;
+  }
+  if (patch.surface) {
+    next.surfaceStrong = patch.surface;
+  }
+  if (patch.settingsHover) {
+    next.neutralButtonHover = patch.settingsHover;
+  }
+
+  return next;
 }
 
 export function getDefaultOptionValues(options: ThemeOptionDef[] | undefined): ThemeOptionValues {

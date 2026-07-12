@@ -222,16 +222,17 @@
   font-weight: 600;
 }
 
-/* Dock-like bottom toolbar */
+/* Dock-like bottom toolbar — equal 36px chips, glyphs centered */
 [data-cardo-theme='swiftui'] .cardo-bottom-shell {
   bottom: 18px;
 }
 
 [data-cardo-theme='swiftui'] .cardo-bottom-toolbar {
-  gap: 4px;
+  gap: 2px;
   border: 0 !important;
   border-radius: 18px !important;
-  padding: 5px !important;
+  padding: 4px !important;
+  align-items: center !important;
   background: color-mix(in srgb, var(--cardo-panel) 82%, transparent) !important;
   box-shadow: var(--cardo-shadow) !important;
   backdrop-filter: blur(var(--cardo-chrome-blur)) !important;
@@ -242,15 +243,29 @@
   display: none;
 }
 
-[data-cardo-theme='swiftui'] .cardo-bottom-toolbar button {
-  width: 36px;
-  height: 36px;
+[data-cardo-theme='swiftui'] .cardo-bottom-toolbar button,
+[data-cardo-theme='swiftui'] .cardo-search-pill {
+  box-sizing: border-box !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  padding: 0 !important;
+  margin: 0 !important;
   border: 0 !important;
   border-radius: 12px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 0 !important;
+  transform: none !important;
+}
+
+[data-cardo-theme='swiftui'] .cardo-bottom-toolbar button {
   background: transparent !important;
   box-shadow: none !important;
   color: var(--cardo-secondary-text);
-  transform: none !important;
 }
 
 [data-cardo-theme='swiftui'] .cardo-bottom-toolbar button:hover {
@@ -275,6 +290,45 @@
 [data-cardo-theme='swiftui'] .cardo-bottom-toolbar .cardo-toolbar-create:hover {
   filter: brightness(1.06);
   background: var(--cardo-blue) !important;
+}
+
+[data-cardo-theme='swiftui'] .cardo-bottom-toolbar button > .cardo-icon-frame,
+[data-cardo-theme='swiftui'] .cardo-search-pill > .cardo-icon-button {
+  display: inline-flex !important;
+  width: 100% !important;
+  height: 100% !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 0 !important;
+}
+
+[data-cardo-theme='swiftui'] .cardo-bottom-toolbar button svg,
+[data-cardo-theme='swiftui'] .cardo-search-pill button svg {
+  display: block !important;
+  width: 18px !important;
+  height: 18px !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+}
+
+[data-cardo-theme='swiftui'] .cardo-search-pill {
+  position: relative;
+  overflow: hidden;
+  background: var(--cardo-hover) !important;
+  flex: 0 0 auto !important;
+}
+
+[data-cardo-theme='swiftui'] .cardo-search-pill-active {
+  width: auto !important;
+  min-width: 200px !important;
+  max-width: min(360px, 70vw) !important;
+  max-height: 36px !important;
+}
+
+[data-cardo-theme='swiftui'] .cardo-search-pill .cardo-search-local-trigger,
+[data-cardo-theme='swiftui'] .cardo-search-pill .cardo-search-web-trigger {
+  width: 36px !important;
+  height: 36px !important;
 }
 
 /*

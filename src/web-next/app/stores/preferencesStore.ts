@@ -41,6 +41,7 @@ import {
 } from '../../../core/contracts/themePack';
 import type { WebNextLocale } from '../../i18n/messages';
 import {
+  applyWebNextTheme,
   hasRegisteredThemePack,
   mergeUserThemePacks,
   OFFICIAL_DEFAULT_THEME_ID,
@@ -386,11 +387,27 @@ export async function applyPreferencesInvalidationScopes(
  * Validate + fire theme color overrides. Always goes through fireCommand so
  * applyOptimisticCommand patches themeColorOverrides before Runtime ack
  * (looks, single-token edits, and restore paths share this).
+ * Also writes CSS vars on document immediately — look clicks must paint before
+ * the next React layout effect (and even if Runtime ack is slow).
  */
 function commitThemeColorOverrides(next: ThemeColorOverrides) {
+  const parsed = themeColorOverridesSchema.parse(next);
   fireCommand({
     type: 'preferences.setThemeColorOverrides',
-    themeColorOverrides: themeColorOverridesSchema.parse(next),
+    themeColorOverrides: parsed,
+  });
+  paintDocumentTheme(parsed);
+}
+
+/** Synchronous CSS-var write from current prefs + optional override snapshot. */
+function paintDocumentTheme(colorOverrides?: ThemeColorOverrides) {
+  if (typeof document === 'undefined') return;
+  applyWebNextTheme(document.documentElement, state.themeId, state.colorMode, {
+    fontFamily: state.fontFamily,
+    fontScale: state.fontScale,
+    density: state.density,
+    colorOverrides: colorOverrides ?? state.themeColorOverrides,
+    optionValues: state.themeOptionValues,
   });
 }
 

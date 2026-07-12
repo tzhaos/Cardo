@@ -503,7 +503,9 @@ function AppearanceSettings({
   );
 
   const applyLook = (look: ThemeLookPreset) => {
-    applyThemeColorLook(themeId || OFFICIAL_DEFAULT_THEME_ID, look.colors);
+    const id = themeId || OFFICIAL_DEFAULT_THEME_ID;
+    // Absolute replace for this theme's light+dark maps (default look clears overrides).
+    applyThemeColorLook(id, look.colors);
   };
 
   return (
