@@ -27,9 +27,6 @@ export async function getRevision(db: RevisionDb): Promise<number> {
 export async function bumpRevision(db: RevisionDb): Promise<number> {
   const current = await getRevision(db);
   const next = current + 1;
-  await db
-    .update(runtimeMeta)
-    .set({ revision: next })
-    .where(eq(runtimeMeta.id, RUNTIME_META_ID));
+  await db.update(runtimeMeta).set({ revision: next }).where(eq(runtimeMeta.id, RUNTIME_META_ID));
   return next;
 }

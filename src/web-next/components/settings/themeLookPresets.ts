@@ -242,10 +242,7 @@ export function matchThemeLookId(
   const looks = getThemeLookPresets(themeId);
   for (const look of looks) {
     if (look.id === 'default') continue;
-    if (
-      mapsEqual(look.colors.light, light ?? {}) &&
-      mapsEqual(look.colors.dark, dark ?? {})
-    ) {
+    if (mapsEqual(look.colors.light, light ?? {}) && mapsEqual(look.colors.dark, dark ?? {})) {
       return look.id;
     }
   }

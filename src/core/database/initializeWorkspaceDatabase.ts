@@ -1,7 +1,16 @@
 import { eq } from 'drizzle-orm';
 import type { CardoDatabase } from './createDatabaseClient';
 import { bumpRevision } from './revision';
-import { APP_STATE_ID, PREFERENCES_ID, appState, boxItems, boxes, items, pages, preferences } from './schema';
+import {
+  APP_STATE_ID,
+  PREFERENCES_ID,
+  appState,
+  boxItems,
+  boxes,
+  items,
+  pages,
+  preferences,
+} from './schema';
 import { DATABASE_SCHEMA_VERSION } from './version';
 import {
   DEFAULT_DENSITY,

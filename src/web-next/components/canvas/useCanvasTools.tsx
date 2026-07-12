@@ -26,7 +26,11 @@ export function useCanvasTools() {
       {
         id: 'toggle-canvas-lock',
         label: t(isLocked ? 'canvas.unlockViewport' : 'canvas.lockViewport'),
-        icon: isLocked ? <ThemeIcon name="lock" size={16} /> : <ThemeIcon name="unlock" size={16} />,
+        icon: isLocked ? (
+          <ThemeIcon name="lock" size={16} />
+        ) : (
+          <ThemeIcon name="unlock" size={16} />
+        ),
         onSelect: () => toggleLocked(activePageId),
       },
     ],

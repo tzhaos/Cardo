@@ -42,8 +42,7 @@ function createWebRuntimePorts(): AppPorts {
           if (!blob.size || blob.size > 256 * 1024) return null;
           return await new Promise<string | null>((resolve) => {
             const reader = new FileReader();
-            reader.onload = () =>
-              resolve(typeof reader.result === 'string' ? reader.result : null);
+            reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : null);
             reader.onerror = () => resolve(null);
             reader.readAsDataURL(blob);
           });
@@ -56,8 +55,7 @@ function createWebRuntimePorts(): AppPorts {
 }
 
 // Desktop Electron shell: preload injects cardoDesktop + __CARDO_RUNTIME__.
-const useDesktopPorts =
-  typeof window !== 'undefined' && Boolean(window.cardoDesktop);
+const useDesktopPorts = typeof window !== 'undefined' && Boolean(window.cardoDesktop);
 
 configureAppPorts(useDesktopPorts ? createDesktopPorts() : createWebRuntimePorts());
 startWebNextApp();

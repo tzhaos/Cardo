@@ -21,10 +21,10 @@ export { OFFICIAL_DEFAULT_THEME_ID };
 export const BUILT_IN_THEME_IDS = OFFICIAL_BUILT_IN_THEME_IDS;
 
 // Eager JSON modules from repo themes/builtin/{id}/theme.cardo-theme.json
-const builtinThemeModules = import.meta.glob(
-  '../../../themes/builtin/*/theme.cardo-theme.json',
-  { eager: true, import: 'default' },
-) as Record<string, unknown>;
+const builtinThemeModules = import.meta.glob('../../../themes/builtin/*/theme.cardo-theme.json', {
+  eager: true,
+  import: 'default',
+}) as Record<string, unknown>;
 
 function loadBuiltInThemePacks(): ThemePack[] {
   const byId = new Map<string, ThemePack>();
@@ -71,7 +71,5 @@ function loadBuiltInThemePacks(): ThemePack[] {
 export const BUILT_IN_THEME_PACKS: ThemePack[] = loadBuiltInThemePacks();
 
 if (!BUILT_IN_THEME_PACKS.some((pack) => pack.id === OFFICIAL_DEFAULT_THEME_ID)) {
-  throw new Error(
-    'Default theme "' + OFFICIAL_DEFAULT_THEME_ID + '" is not among built-in packs.',
-  );
+  throw new Error('Default theme "' + OFFICIAL_DEFAULT_THEME_ID + '" is not among built-in packs.');
 }

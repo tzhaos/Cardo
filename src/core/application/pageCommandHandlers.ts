@@ -32,8 +32,7 @@ async function createPage(transaction: DatabaseTransaction, title: string) {
   const timestamp = new Date().toISOString();
   const pageId = `page-${crypto.randomUUID()}`;
   const allPages = await selectAllPages(transaction);
-  const nextSortOrder =
-    allPages.reduce((max, page) => Math.max(max, page.sortOrder), -1) + 1;
+  const nextSortOrder = allPages.reduce((max, page) => Math.max(max, page.sortOrder), -1) + 1;
   const stateBefore = await requireAppState(transaction);
   const page = {
     id: pageId,
@@ -228,7 +227,9 @@ async function deletePage(transaction: DatabaseTransaction, pageId: string) {
     activePageId:
       stateBefore.activePageId === pageId ? COLLECTION_PAGE_ID : stateBefore.activePageId,
     defaultPageId:
-      stateBefore.defaultPageId === pageId ? remainingNormalPages[0]!.id : stateBefore.defaultPageId,
+      stateBefore.defaultPageId === pageId
+        ? remainingNormalPages[0]!.id
+        : stateBefore.defaultPageId,
   };
   await transaction
     .update(appState)

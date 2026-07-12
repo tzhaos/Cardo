@@ -409,10 +409,7 @@ export class RuntimeClient {
       const scopes = response.scopes ?? [];
       if (scopes.length > 0) {
         // Gap vs last applied → full catch-up rather than applying intermediate scopes.
-        if (
-          this.lastAppliedRevision > 0 &&
-          revision > this.lastAppliedRevision + 1
-        ) {
+        if (this.lastAppliedRevision > 0 && revision > this.lastAppliedRevision + 1) {
           await this.fullCatchUpUnlocked();
         } else {
           await this.onApplyScopes(scopes);
@@ -450,10 +447,7 @@ export class RuntimeClient {
         // Equal watermark after reconnect with lagging apply — heal without clamping.
         // Fresh connect (lastAppliedRevision === 0) leaves hydration to ensureInitialized
         // + store.initialize so we do not query empty preferences before seed.
-        if (
-          this.lastAppliedRevision > 0 &&
-          this.lastAppliedRevision < event.revision
-        ) {
+        if (this.lastAppliedRevision > 0 && this.lastAppliedRevision < event.revision) {
           await this.fullCatchUpUnlocked();
           this.markApplied(event.revision);
         }

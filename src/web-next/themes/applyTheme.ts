@@ -48,8 +48,7 @@ export function applyTheme(root: HTMLElement, options: ApplyThemeOptions): Theme
 
   const chromeBlur = resolved.chrome.blur ?? '18px';
   const chromeMaterial =
-    resolved.chrome.material ??
-    (isZeroCssLength(chromeBlur) ? 'solid' : 'glass');
+    resolved.chrome.material ?? (isZeroCssLength(chromeBlur) ? 'solid' : 'glass');
 
   root.dataset.cardoTheme = pack.id;
   root.dataset.theme = pack.id;

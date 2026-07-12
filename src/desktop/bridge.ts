@@ -1,4 +1,7 @@
-import type { DesktopLocalResourceResponse, DesktopRuntimeConfig } from '../core/contracts/desktopIpc';
+import type {
+  DesktopLocalResourceResponse,
+  DesktopRuntimeConfig,
+} from '../core/contracts/desktopIpc';
 
 export interface DesktopBridge {
   minimizeWindow(): Promise<void>;

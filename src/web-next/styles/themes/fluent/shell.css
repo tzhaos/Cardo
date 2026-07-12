@@ -107,7 +107,9 @@
   box-shadow: none !important;
 }
 
-[data-cardo-theme='fluent'] .cardo-tab-pill-system.cardo-tab-pill-active .cardo-active-tab-indicator {
+[data-cardo-theme='fluent']
+  .cardo-tab-pill-system.cardo-tab-pill-active
+  .cardo-active-tab-indicator {
   inset: auto 8px 0 8px;
 }
 
@@ -405,4 +407,3 @@
 [data-cardo-theme='fluent'] .cardo-collection-resize span {
   display: none;
 }
-

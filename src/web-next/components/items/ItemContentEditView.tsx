@@ -72,7 +72,11 @@ export function ItemContentEditView({
         <Button variant="ghost" onClick={onCancel}>
           {t('common.cancel')}
         </Button>
-        <Button className="cardo-item-edit-save" type="submit" disabled={normalizedContent === null}>
+        <Button
+          className="cardo-item-edit-save"
+          type="submit"
+          disabled={normalizedContent === null}
+        >
           {t('common.save')}
         </Button>
       </span>

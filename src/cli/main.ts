@@ -104,9 +104,7 @@ async function cmdServe(args: string[]): Promise<void> {
     const err = error as Error & { code?: string; existing?: { baseUrl: string; pid: number } };
     if (err.code === 'runtime_already_running' && err.existing) {
       const endpoint = err.existing.baseUrl ?? '(starting)';
-      process.stderr.write(
-        `Runtime already running at ${endpoint} (pid ${err.existing.pid}).\n`,
-      );
+      process.stderr.write(`Runtime already running at ${endpoint} (pid ${err.existing.pid}).\n`);
       process.exitCode = 1;
       return;
     }
@@ -123,7 +121,9 @@ async function cmdServe(args: string[]): Promise<void> {
       `  lifetimeMode: ${started.lifetimeMode}\n` +
       `  dbPath: ${started.dbPath}\n` +
       `  discovery: ${started.discoveryPath}\n` +
-      (serveStaticDir ? `  staticUI: ${serveStaticDir}\n` : `  staticUI: (not found; run web-runtime:build)\n`),
+      (serveStaticDir
+        ? `  staticUI: ${serveStaticDir}\n`
+        : `  staticUI: (not found; run web-runtime:build)\n`),
   );
 
   let shuttingDown = false;
@@ -285,9 +285,7 @@ async function cmdOpen(): Promise<void> {
         windowsHide: true,
       });
       child.unref();
-      process.stdout.write(
-        `Spawned detached Runtime (pid ${child.pid}); waiting for health...\n`,
-      );
+      process.stdout.write(`Spawned detached Runtime (pid ${child.pid}); waiting for health...\n`);
     } finally {
       try {
         fs.closeSync(logFd);
@@ -298,9 +296,7 @@ async function cmdOpen(): Promise<void> {
 
     const ready = await waitForRuntime(paths.discoveryPath, 15_000);
     if (!ready) {
-      process.stderr.write(
-        `Runtime did not become healthy in time. See log: ${paths.logPath}\n`,
-      );
+      process.stderr.write(`Runtime did not become healthy in time. See log: ${paths.logPath}\n`);
       process.exitCode = 1;
       return;
     }
@@ -412,8 +408,6 @@ async function waitForRuntime(
 }
 
 void main().catch((error: unknown) => {
-  process.stderr.write(
-    `cardo fatal: ${error instanceof Error ? error.message : String(error)}\n`,
-  );
+  process.stderr.write(`cardo fatal: ${error instanceof Error ? error.message : String(error)}\n`);
   process.exitCode = 1;
 });

@@ -167,7 +167,9 @@ function discoverCardoExtensionIdsFromPreferences() {
         if (
           /^[a-p]{32}$/.test(extensionId) &&
           (pathLooksLikeCardoExtension(extension.path) ||
-            JSON.stringify(extension.manifest ?? {}).toLowerCase().includes('cardo'))
+            JSON.stringify(extension.manifest ?? {})
+              .toLowerCase()
+              .includes('cardo'))
         ) {
           extensionIds.add(extensionId);
         }

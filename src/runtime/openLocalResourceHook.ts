@@ -5,9 +5,7 @@
 
 import fs from 'node:fs';
 import { spawn, spawnSync } from 'node:child_process';
-import {
-  normalizeLocalResourcePath,
-} from '../core/services/localResourcePath';
+import { normalizeLocalResourcePath } from '../core/services/localResourcePath';
 
 export async function defaultOpenLocalResource(resourcePath: string): Promise<boolean> {
   const normalized = normalizeLocalResourcePath(resourcePath);

@@ -259,9 +259,7 @@ async function refreshProjection() {
  * Apply server-derived InvalidationScopes (design §6.9.2).
  * Used by RuntimeClient initiator path and remote SSE (via hostPlatform).
  */
-export async function applyWorkspaceInvalidationScopes(
-  scopes: InvalidationScope[],
-): Promise<void> {
+export async function applyWorkspaceInvalidationScopes(scopes: InvalidationScope[]): Promise<void> {
   if (!scopes.length) return;
 
   const hasProjection = scopes.some((scope) => scope.type === 'projection');
@@ -293,10 +291,7 @@ export async function applyWorkspaceInvalidationScopes(
         break;
       }
       case 'pageTabsAndState': {
-        const [pages, workspaceState] = await Promise.all([
-          queryPageTabs(),
-          queryWorkspaceState(),
-        ]);
+        const [pages, workspaceState] = await Promise.all([queryPageTabs(), queryWorkspaceState()]);
         nextProjection = structurallyShare(nextProjection, {
           ...nextProjection,
           ...workspaceState,

@@ -1,7 +1,15 @@
-import { themePackSchema, type ColorTokenMap, type ThemePack } from '../../core/contracts/themePack';
+import {
+  themePackSchema,
+  type ColorTokenMap,
+  type ThemePack,
+} from '../../core/contracts/themePack';
 import type { ColorMode } from '../../core/contracts/preferences';
 import { applyTheme, type ApplyThemeOptions } from './applyTheme';
-import { BUILT_IN_THEME_IDS, BUILT_IN_THEME_PACKS, OFFICIAL_DEFAULT_THEME_ID } from './builtInPacks';
+import {
+  BUILT_IN_THEME_IDS,
+  BUILT_IN_THEME_PACKS,
+  OFFICIAL_DEFAULT_THEME_ID,
+} from './builtInPacks';
 
 export type WebNextColorMode = ColorMode;
 
@@ -69,10 +77,7 @@ export function syncImportedThemePacks(packs: ThemePack[]) {
 }
 
 /** Merge preference imports with file-scanned packs (imports win on id clash). */
-export function mergeUserThemePacks(
-  imported: ThemePack[],
-  fromDisk: ThemePack[],
-): ThemePack[] {
+export function mergeUserThemePacks(imported: ThemePack[], fromDisk: ThemePack[]): ThemePack[] {
   const byId = new Map<string, ThemePack>();
   for (const pack of fromDisk) {
     if (BUILT_IN_THEME_IDS.has(pack.id)) continue;

@@ -254,11 +254,7 @@
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--cardo-border) 90%, transparent);
   border-radius: 8px;
-  background: color-mix(
-    in srgb,
-    var(--cardo-settings-hover) 55%,
-    var(--cardo-settings-chrome)
-  );
+  background: color-mix(in srgb, var(--cardo-settings-hover) 55%, var(--cardo-settings-chrome));
   box-shadow: none;
 }
 
@@ -634,9 +630,9 @@
 }
 
 /* Only explicit primary CTAs — do not paint every default Button (box icon, etc.) */
-[data-cardo-theme='fluent'] .cardo-ui-button-default:not(.cardo-box-icon):not(.cardo-resize-handle) {
+[data-cardo-theme='fluent']
+  .cardo-ui-button-default:not(.cardo-box-icon):not(.cardo-resize-handle) {
   border-radius: 4px;
   background: var(--cardo-blue);
   color: #ffffff;
 }
-

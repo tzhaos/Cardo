@@ -53,10 +53,7 @@ export function BottomToolbar() {
     const canvas = useCanvasStore.getState();
     const camera = canvas.pages[activePageId]?.camera ?? { panX: 0, panY: 0 };
     const viewportSize = canvas.viewportSize;
-    const center = getCanvasViewportCenter(
-      { panX: camera.panX, panY: camera.panY },
-      viewportSize,
-    );
+    const center = getCanvasViewportCenter({ panX: camera.panX, panY: camera.panY }, viewportSize);
     const frame = constrainBoxFrameToCanvas(
       createBoxFrameCenteredAt(center),
       createCanvasWorldBounds(viewportSize),
@@ -156,10 +153,7 @@ export function BottomToolbar() {
           <>
             <div className="cardo-toolbar-divider" />
             <IconButton
-              className={[
-                'cardo-toolbar-create',
-                isFluent ? 'cardo-toolbar-create-labeled' : '',
-              ]
+              className={['cardo-toolbar-create', isFluent ? 'cardo-toolbar-create-labeled' : '']
                 .filter(Boolean)
                 .join(' ')}
               onClick={handleAdd}

@@ -95,11 +95,15 @@ async function handleRequest(
     if (cors.rejected) {
       ctx.metrics.corsRejectedCount += 1;
       applyCors(res, null);
-      sendJson(res, 403, runtimeErrorSchema.parse({
-        ok: false,
-        code: 'cors_rejected',
-        message: 'Origin is not allowed.',
-      }));
+      sendJson(
+        res,
+        403,
+        runtimeErrorSchema.parse({
+          ok: false,
+          code: 'cors_rejected',
+          message: 'Origin is not allowed.',
+        }),
+      );
       return;
     }
     applyCors(res, cors.allowOrigin);
@@ -259,7 +263,10 @@ async function handleAuthenticated(
       sendJson(
         res,
         400,
-        errorBody('invalid_payload', detail ? `Invalid command payload. ${detail}` : 'Invalid command payload.'),
+        errorBody(
+          'invalid_payload',
+          detail ? `Invalid command payload. ${detail}` : 'Invalid command payload.',
+        ),
       );
       return;
     }
@@ -753,10 +760,7 @@ function applyCors(res: ServerResponse, allowOrigin: string | null): void {
   if (!allowOrigin) return;
   res.setHeader('Access-Control-Allow-Origin', allowOrigin);
   res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Cardo-Client-Id');
-  res.setHeader(
-    'Access-Control-Allow-Methods',
-    'GET, POST, OPTIONS',
-  );
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Vary', 'Origin');
   // Allow extension pages (and optional COEP clients) to read Runtime responses (design §6.4.2).
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');

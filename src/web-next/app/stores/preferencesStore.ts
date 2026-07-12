@@ -12,10 +12,7 @@ import {
   DEFAULT_FONT_FAMILY_ID,
   DEFAULT_FONT_SCALE,
 } from '../../../core/contracts/preferences';
-import type {
-  FeatureFlagOverrides,
-  FeatureId,
-} from '../../../core/contracts/featureCatalog';
+import type { FeatureFlagOverrides, FeatureId } from '../../../core/contracts/featureCatalog';
 import {
   featureFlagOverridesSchema,
   normalizeFeatureFlagOverrides,

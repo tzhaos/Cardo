@@ -11,8 +11,7 @@ export function RuntimeConnectionBanner() {
 
   if (status === 'connected') return null;
 
-  const message =
-    status === 'reconnecting' ? t('runtime.reconnecting') : t('runtime.disconnected');
+  const message = status === 'reconnecting' ? t('runtime.reconnecting') : t('runtime.disconnected');
 
   return (
     <div

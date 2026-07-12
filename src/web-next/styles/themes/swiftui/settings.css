@@ -174,7 +174,10 @@
   filter: none !important;
 }
 
-[data-cardo-theme='swiftui'] .cardo-settings-nav [data-state='active'] .cardo-settings-nav-mono-icon,
+[data-cardo-theme='swiftui']
+  .cardo-settings-nav
+  [data-state='active']
+  .cardo-settings-nav-mono-icon,
 [data-cardo-theme='swiftui'] .cardo-settings-nav [data-state='active'] .cardo-settings-nav-icon {
   color: #ffffff;
 }
@@ -254,7 +257,10 @@
   box-shadow: none !important;
 }
 
-[data-cardo-theme='swiftui'] .cardo-settings-list-group .cardo-settings-card + .cardo-settings-card {
+[data-cardo-theme='swiftui']
+  .cardo-settings-list-group
+  .cardo-settings-card
+  + .cardo-settings-card {
   border-top: 1px solid var(--cardo-border) !important;
 }
 
@@ -393,7 +399,10 @@
   background: transparent;
 }
 
-[data-cardo-theme='swiftui'] .cardo-theme-color-list .cardo-theme-color-row + .cardo-theme-color-row {
+[data-cardo-theme='swiftui']
+  .cardo-theme-color-list
+  .cardo-theme-color-row
+  + .cardo-theme-color-row {
   border-top: 1px solid var(--cardo-border);
 }
 
@@ -418,7 +427,8 @@
   text-transform: uppercase;
 }
 
-[data-cardo-theme='swiftui'] .cardo-ui-button-default:not(.cardo-box-icon):not(.cardo-resize-handle) {
+[data-cardo-theme='swiftui']
+  .cardo-ui-button-default:not(.cardo-box-icon):not(.cardo-resize-handle) {
   border-radius: 8px;
   background: var(--cardo-blue);
   color: #ffffff;

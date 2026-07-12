@@ -16,9 +16,18 @@ export interface PreferencesColumnEnsureAdapter {
 }
 
 const REQUIRED_PREFERENCE_COLUMNS: ReadonlyArray<{ name: string; ddl: string }> = [
-  { name: 'font_family', ddl: `ALTER TABLE preferences ADD COLUMN font_family text NOT NULL DEFAULT 'default'` },
-  { name: 'font_scale', ddl: `ALTER TABLE preferences ADD COLUMN font_scale text NOT NULL DEFAULT 'md'` },
-  { name: 'density', ddl: `ALTER TABLE preferences ADD COLUMN density text NOT NULL DEFAULT 'comfortable'` },
+  {
+    name: 'font_family',
+    ddl: `ALTER TABLE preferences ADD COLUMN font_family text NOT NULL DEFAULT 'default'`,
+  },
+  {
+    name: 'font_scale',
+    ddl: `ALTER TABLE preferences ADD COLUMN font_scale text NOT NULL DEFAULT 'md'`,
+  },
+  {
+    name: 'density',
+    ddl: `ALTER TABLE preferences ADD COLUMN density text NOT NULL DEFAULT 'comfortable'`,
+  },
   {
     name: 'theme_color_overrides',
     ddl: `ALTER TABLE preferences ADD COLUMN theme_color_overrides text NOT NULL DEFAULT '{}'`,
@@ -39,7 +48,10 @@ const REQUIRED_PREFERENCE_COLUMNS: ReadonlyArray<{ name: string; ddl: string }> 
     name: 'layout_profile_id',
     ddl: `ALTER TABLE preferences ADD COLUMN layout_profile_id text NOT NULL DEFAULT 'classic'`,
   },
-  { name: 'css_snippet', ddl: `ALTER TABLE preferences ADD COLUMN css_snippet text NOT NULL DEFAULT ''` },
+  {
+    name: 'css_snippet',
+    ddl: `ALTER TABLE preferences ADD COLUMN css_snippet text NOT NULL DEFAULT ''`,
+  },
   {
     name: 'css_snippet_enabled',
     ddl: `ALTER TABLE preferences ADD COLUMN css_snippet_enabled integer NOT NULL DEFAULT 0`,

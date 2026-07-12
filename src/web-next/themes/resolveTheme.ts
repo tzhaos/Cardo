@@ -57,7 +57,9 @@ export function resolveEffectiveThemeTokens(input: {
   };
   let radii: RadiusTokenMap = { ...(pack.tokens.radii ?? DEFAULT_RADIUS_TOKENS) };
   let motion: MotionTokenMap = { ...(pack.tokens.motion ?? DEFAULT_MOTION_TOKENS) };
-  let chrome: ChromeTokenMap = { ...(pack.tokens.chrome ?? { blur: '18px', topbarOffset: '12px' }) };
+  let chrome: ChromeTokenMap = {
+    ...(pack.tokens.chrome ?? { blur: '18px', topbarOffset: '12px' }),
+  };
 
   const optionPatches = collectOptionPatches(pack.options ?? [], input.optionValues ?? {});
   for (const patch of optionPatches) {

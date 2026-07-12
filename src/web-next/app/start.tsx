@@ -6,10 +6,7 @@
  * ensureHostPlatformReady connects RuntimeClient before any workspace I/O.
  */
 
-import {
-  renderCardoErrorScreen,
-  type CardoErrorSurface,
-} from '../ui/cardo/error-screen';
+import { renderCardoErrorScreen, type CardoErrorSurface } from '../ui/cardo/error-screen';
 
 export type StartWebNextAppOptions = {
   /** Extension surface uses its own guide UI on failure (PR5). */

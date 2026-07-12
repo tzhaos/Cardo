@@ -9,21 +9,12 @@ import type { AddressInfo } from 'node:net';
 import { RuntimeAuth } from './auth';
 import { ClientRegistry } from './clients';
 import { CommandQueue } from './commandQueue';
-import {
-  buildRuntimeHostConfig,
-  type RuntimeHostConfig,
-  type StartRuntimeOptions,
-} from './config';
+import { buildRuntimeHostConfig, type RuntimeHostConfig, type StartRuntimeOptions } from './config';
 import { openRuntimeDatabase, type RuntimeDatabaseHandle } from './database';
 import { removeDiscoveryFile, writeDiscoveryFile } from './discovery';
 import { EventHub } from './events';
 import { createRuntimeHttpServer, type RuntimeHttpContext } from './httpServer';
-import {
-  removeLockFile,
-  tryAcquireExclusiveLock,
-  updateLockFile,
-  type RuntimeLock,
-} from './lock';
+import { removeLockFile, tryAcquireExclusiveLock, updateLockFile, type RuntimeLock } from './lock';
 import { CARDO_THEMES_DIRNAME, ensureDataDir, ensureThemesDir } from './paths';
 import { getRevision } from '../core/database/revision';
 import { DATABASE_SCHEMA_VERSION } from '../core/database/version';

@@ -10,7 +10,12 @@ import { LocalResourceAddView } from './LocalResourceAddView';
 const ITEM_TYPES: Array<{
   type: WorkspaceItemType;
   icon: ThemeIconName;
-  label: 'itemType.file' | 'itemType.shortcut' | 'itemType.folder' | 'itemType.bookmark' | 'itemType.clipboard';
+  label:
+    | 'itemType.file'
+    | 'itemType.shortcut'
+    | 'itemType.folder'
+    | 'itemType.bookmark'
+    | 'itemType.clipboard';
 }> = [
   { type: 'file', icon: 'document', label: 'itemType.file' },
   { type: 'shortcut', icon: 'apps', label: 'itemType.shortcut' },

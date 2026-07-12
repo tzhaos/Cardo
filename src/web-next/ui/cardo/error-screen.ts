@@ -82,7 +82,10 @@ export function classifyCardoError(
             'If it still fails, check %APPDATA%\\cardo\\runtime.log and ensure discovery schemaVersion is 9.',
           ],
       hints: zh
-        ? ['不要混用主仓库与 ui-system 工作区的旧 Runtime 产物。', '升级后首次启动会自动迁移 preferences 列。']
+        ? [
+            '不要混用主仓库与 ui-system 工作区的旧 Runtime 产物。',
+            '升级后首次启动会自动迁移 preferences 列。',
+          ]
         : [
             'Do not mix an older Runtime from another checkout with this UI build.',
             'The first launch after upgrade migrates preferences columns automatically.',

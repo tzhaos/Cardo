@@ -70,7 +70,10 @@ const COPY: Record<'en' | 'zh', GuideCopy> = {
         '请打开 Cardo 桌面应用，或在终端启动 Cardo。',
         '确认 Cardo 已运行后，点击「重试」。',
       ],
-      native_messaging_failed: ['请重新安装 Cardo，然后完全退出并重新打开浏览器。', '点击「重试」。'],
+      native_messaging_failed: [
+        '请重新安装 Cardo，然后完全退出并重新打开浏览器。',
+        '点击「重试」。',
+      ],
       connect_failed: ['请确认本机 Cardo 仍在运行。', '点击「重试」。'],
     },
     retry: '重试',
@@ -92,7 +95,9 @@ export function classifyRuntimeGuideError(error: unknown): {
   if (error && typeof error === 'object' && 'code' in error) {
     const code = String((error as { code?: string }).code ?? '');
     const message =
-      error instanceof Error ? error.message : String((error as { message?: string }).message ?? '');
+      error instanceof Error
+        ? error.message
+        : String((error as { message?: string }).message ?? '');
     if (code === 'native_host_missing') {
       return { kind: 'native_host_missing', detail: message };
     }

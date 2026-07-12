@@ -1,7 +1,4 @@
-import {
-  validateCssSnippet,
-  wrapCssSnippetForRoot,
-} from '../../../core/contracts/cssSnippet';
+import { validateCssSnippet, wrapCssSnippetForRoot } from '../../../core/contracts/cssSnippet';
 import { getThemePack } from '../../themes/themeRegistry';
 
 const STYLE_ELEMENT_ID = 'cardo-user-css-snippet';

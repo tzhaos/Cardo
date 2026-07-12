@@ -44,8 +44,7 @@ export const FONT_FAMILY_STACKS = {
     "'Inter Variable', Inter, 'Noto Sans SC', 'Microsoft YaHei UI', 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans CJK SC', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   'system-ui':
     "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei UI', 'Microsoft YaHei', 'PingFang SC', sans-serif",
-  serif:
-    "Georgia, 'Times New Roman', 'Songti SC', 'SimSun', 'Noto Serif SC', ui-serif, serif",
+  serif: "Georgia, 'Times New Roman', 'Songti SC', 'SimSun', 'Noto Serif SC', ui-serif, serif",
 } as const satisfies Record<FontFamilyId, string>;
 
 export const DEFAULT_FONT_FAMILY_ID: FontFamilyId = 'default';

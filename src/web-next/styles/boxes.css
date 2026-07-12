@@ -615,20 +615,8 @@ button.cardo-box-icon:focus-visible {
   width: 12px;
   height: 12px;
   background:
-    linear-gradient(
-      135deg,
-      transparent 42%,
-      currentColor 42%,
-      currentColor 50%,
-      transparent 50%
-    ),
-    linear-gradient(
-      135deg,
-      transparent 68%,
-      currentColor 68%,
-      currentColor 76%,
-      transparent 76%
-    );
+    linear-gradient(135deg, transparent 42%, currentColor 42%, currentColor 50%, transparent 50%),
+    linear-gradient(135deg, transparent 68%, currentColor 68%, currentColor 76%, transparent 76%);
 }
 
 .cardo-box:hover .cardo-resize-handle {

@@ -65,21 +65,21 @@ npm install
 
 ## 开发脚本
 
-| 命令                            | 说明                                          |
-| ------------------------------- | --------------------------------------------- |
-| `npm run dev`                   | 持续构建扩展到 `artifacts/extension/unpacked` |
-| `npm run build`                 | 构建浏览器扩展                                |
-| `npm run cardo:build`           | 构建 CLI 与 Runtime 托管 Web UI               |
-| `npm run cardo -- open`         | 确保 Runtime 并打开 Web UI                    |
-| `npm run cardo -- serve`        | 前台 Cardo Runtime                            |
+| 命令                            | 说明                                             |
+| ------------------------------- | ------------------------------------------------ |
+| `npm run dev`                   | 持续构建扩展到 `artifacts/extension/unpacked`    |
+| `npm run build`                 | 构建浏览器扩展                                   |
+| `npm run cardo:build`           | 构建 CLI 与 Runtime 托管 Web UI                  |
+| `npm run cardo -- open`         | 确保 Runtime 并打开 Web UI                       |
+| `npm run cardo -- serve`        | 前台 Cardo Runtime                               |
 | `npm run desktop:build`         | 构建 web-runtime、Electron renderer/main/preload |
-| `npm run desktop:start`         | 构建并启动 Electron 桌面端                    |
-| `npm run native-host:build`     | 构建 Native Messaging Host exe                |
-| `npm run native-host:install`   | 为 Chrome 和 Edge 注册 host                   |
-| `npm run native-host:uninstall` | 取消注册 Native Messaging Host                |
-| `npm run test:ts`               | 运行 TypeScript 测试                          |
-| `npm run check`                 | 运行 TypeScript、架构检查、ESLint 和测试      |
-| `npm run clean`                 | 删除生成产物                                  |
+| `npm run desktop:start`         | 构建并启动 Electron 桌面端                       |
+| `npm run native-host:build`     | 构建 Native Messaging Host exe                   |
+| `npm run native-host:install`   | 为 Chrome 和 Edge 注册 host                      |
+| `npm run native-host:uninstall` | 取消注册 Native Messaging Host                   |
+| `npm run test:ts`               | 运行 TypeScript 测试                             |
+| `npm run check`                 | 运行 TypeScript、架构检查、ESLint 和测试         |
+| `npm run clean`                 | 删除生成产物                                     |
 
 ## 浏览器扩展
 

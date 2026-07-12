@@ -541,7 +541,7 @@ if (!singleInstanceLock) {
     })
     .catch(async (error: unknown) => {
       console.error(error);
-      const detail = error instanceof Error ? error.stack ?? error.message : String(error);
+      const detail = error instanceof Error ? (error.stack ?? error.message) : String(error);
       const message =
         error instanceof Error ? error.message : 'Desktop failed before the UI could load.';
       dialog.showErrorBox(

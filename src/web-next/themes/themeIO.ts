@@ -10,11 +10,7 @@ import {
 } from '../../core/contracts/themePackIO';
 import { getThemePack, registerThemePack, unregisterImportedThemePack } from './themeRegistry';
 
-export {
-  createThemePackDocument,
-  parseThemePackDocumentText,
-  serializeThemePackDocument,
-};
+export { createThemePackDocument, parseThemePackDocumentText, serializeThemePackDocument };
 
 export async function parseThemePackImportFile(file: File): Promise<ThemePack> {
   if (file.size > MAX_THEME_PACK_JSON_BYTES) {
@@ -29,9 +25,7 @@ export async function parseThemePackImportFile(file: File): Promise<ThemePack> {
  */
 export function importThemePackIntoRegistry(pack: ThemePack): ThemePack {
   if (OFFICIAL_BUILT_IN_THEME_IDS.has(pack.id)) {
-    throw new Error(
-      `Cannot overwrite official theme pack "${pack.id}". Choose a different id.`,
-    );
+    throw new Error(`Cannot overwrite official theme pack "${pack.id}". Choose a different id.`);
   }
   registerThemePack(pack);
   return pack;

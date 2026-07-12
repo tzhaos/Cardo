@@ -63,7 +63,8 @@
   color: #ffffff;
 }
 
-[data-cardo-theme='swiftui'] .cardo-ui-select-item[data-state='checked']:not([data-highlighted])
+[data-cardo-theme='swiftui']
+  .cardo-ui-select-item[data-state='checked']:not([data-highlighted])
   .cardo-ui-select-check {
   color: var(--cardo-blue);
 }
@@ -114,7 +115,9 @@
   color: var(--cardo-red) !important;
 }
 
-[data-cardo-theme='swiftui'] .cardo-menu-row-danger:not(:hover):not([data-highlighted]) .cardo-menu-icon {
+[data-cardo-theme='swiftui']
+  .cardo-menu-row-danger:not(:hover):not([data-highlighted])
+  .cardo-menu-icon {
   color: var(--cardo-red);
 }
 

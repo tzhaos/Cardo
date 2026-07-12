@@ -39,7 +39,11 @@ export function SettingsNavIcon({ id }: { id: SettingsSectionId }) {
     const Icon = FLUENT_COLOR_NAV[id];
     return (
       <span className={`cardo-settings-nav-icon cardo-settings-nav-icon-${id}`} aria-hidden="true">
-        <Icon className="cardo-settings-nav-glyph" fontSize={20} style={{ width: 20, height: 20 }} />
+        <Icon
+          className="cardo-settings-nav-glyph"
+          fontSize={20}
+          style={{ width: 20, height: 20 }}
+        />
       </span>
     );
   }

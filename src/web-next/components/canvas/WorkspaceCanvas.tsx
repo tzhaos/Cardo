@@ -225,9 +225,7 @@ function PageBoxes({
   const allBoxes = useWorkspaceStore((state) => state.projection.boxes);
   const boxes = useMemo(
     () =>
-      allBoxes.filter(
-        (box) => box.pageId === pageId && (!excludeBoxId || box.id !== excludeBoxId),
-      ),
+      allBoxes.filter((box) => box.pageId === pageId && (!excludeBoxId || box.id !== excludeBoxId)),
     [allBoxes, excludeBoxId, pageId],
   );
 
@@ -240,7 +238,7 @@ function DraggedBoxLayer() {
   const draggedBoxId = useUiStore((state) => state.draggedBoxId);
   const box = useWorkspaceStore((state) =>
     draggedBoxId
-      ? state.projection.boxes.find((entry) => entry.id === draggedBoxId) ?? null
+      ? (state.projection.boxes.find((entry) => entry.id === draggedBoxId) ?? null)
       : null,
   );
   if (!box) return null;
@@ -281,10 +279,7 @@ function CanvasBoundaryFeedback({ pageId }: { pageId: string }) {
       edges.left?.classList.toggle('is-active', canShow && Math.abs(panX - limits.maxX) < 0.5);
       edges.right?.classList.toggle('is-active', canShow && Math.abs(panX - limits.minX) < 0.5);
       edges.top?.classList.toggle('is-active', canShow && Math.abs(panY - limits.maxY) < 0.5);
-      edges.bottom?.classList.toggle(
-        'is-active',
-        canShow && Math.abs(panY - limits.minY) < 0.5,
-      );
+      edges.bottom?.classList.toggle('is-active', canShow && Math.abs(panY - limits.minY) < 0.5);
     };
 
     apply();

@@ -1,10 +1,6 @@
 import { z } from 'zod';
 import { MAX_CSS_SNIPPET_CHARS, validateCssSnippet } from './cssSnippet';
-import {
-  layoutProfileIds,
-  layoutProfileIdSchema,
-  type LayoutProfileId,
-} from './layoutProfile';
+import { layoutProfileIds, layoutProfileIdSchema, type LayoutProfileId } from './layoutProfile';
 import { colorModeSchema } from './preferences';
 
 export { layoutProfileIds, layoutProfileIdSchema, type LayoutProfileId };

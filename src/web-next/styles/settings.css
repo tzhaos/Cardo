@@ -291,7 +291,11 @@
   --cardo-settings-item-bg: var(--cardo-panel-content);
   --cardo-settings-item-bg-hover: var(--cardo-hover);
   --cardo-settings-item-border: var(--cardo-border);
-  --cardo-settings-item-border-hover: color-mix(in srgb, var(--cardo-blue) 25%, var(--cardo-border));
+  --cardo-settings-item-border-hover: color-mix(
+    in srgb,
+    var(--cardo-blue) 25%,
+    var(--cardo-border)
+  );
   --cardo-settings-item-shadow: none;
   --cardo-settings-item-shadow-hover: none;
   --cardo-settings-item-radius: var(--cardo-radius-xl);
@@ -310,17 +314,18 @@
  * .cardo-settings-content — not individual component classes — so one change
  * paints language rows, data import/export buttons, about cards, looks, packs.
  */
-.cardo-settings-content :is(
-  .cardo-settings-card,
-  .cardo-theme-pack-card,
-  .cardo-theme-look-card,
-  .cardo-about-card,
-  .cardo-about-details,
-  .cardo-settings-disclosure,
-  .cardo-settings-group,
-  .cardo-data-import-confirm,
-  .cardo-settings-search-result
-) {
+.cardo-settings-content
+  :is(
+    .cardo-settings-card,
+    .cardo-theme-pack-card,
+    .cardo-theme-look-card,
+    .cardo-about-card,
+    .cardo-about-details,
+    .cardo-settings-disclosure,
+    .cardo-settings-group,
+    .cardo-data-import-confirm,
+    .cardo-settings-search-result
+  ) {
   border: 1px solid var(--cardo-settings-item-border);
   border-radius: var(--cardo-settings-item-radius);
   background: var(--cardo-settings-item-bg);
@@ -508,7 +513,10 @@
   box-shadow: none;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 140ms ease, background 140ms ease, border-color 140ms ease;
+  transition:
+    opacity 140ms ease,
+    background 140ms ease,
+    border-color 140ms ease;
 }
 
 .cardo-segment-indicator-active {

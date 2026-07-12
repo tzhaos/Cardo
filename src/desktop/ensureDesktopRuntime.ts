@@ -15,11 +15,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DATABASE_SCHEMA_VERSION } from '../core/database/version';
-import {
-  probeRuntimeHealth,
-  readDiscoveryFile,
-  resolveCardoDataPaths,
-} from '../runtime/index';
+import { probeRuntimeHealth, readDiscoveryFile, resolveCardoDataPaths } from '../runtime/index';
 
 export interface DesktopRuntimeConnection {
   baseUrl: string;
@@ -104,9 +100,7 @@ export async function ensureDesktopRuntime(options: {
  * Attach only when Runtime is healthy, schema-compatible with this Desktop, and serves /app UI.
  * Stale CLI/Desktop Runtimes from older builds are not attachable (prevents prefs Zod / blank UI).
  */
-async function tryAttachExisting(
-  discoveryPath: string,
-): Promise<DesktopRuntimeConnection | null> {
+async function tryAttachExisting(discoveryPath: string): Promise<DesktopRuntimeConnection | null> {
   const discovery = readDiscoveryFile(discoveryPath);
   if (!discovery?.baseUrl || !discovery.token) {
     return null;

@@ -36,7 +36,8 @@ export class RuntimeAuth {
   private bootstrapCodes = new Map<string, number>();
 
   constructor(processToken?: string) {
-    this.processToken = processToken && processToken.length >= 32 ? processToken : generateProcessToken();
+    this.processToken =
+      processToken && processToken.length >= 32 ? processToken : generateProcessToken();
   }
 
   getProcessToken(): string {

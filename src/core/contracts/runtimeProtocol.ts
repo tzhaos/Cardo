@@ -177,9 +177,7 @@ export const queryWorkspaceStateRequestSchema = z
   .object({ type: z.literal('query.workspaceState') })
   .strict();
 
-export const queryPageTabsRequestSchema = z
-  .object({ type: z.literal('query.pageTabs') })
-  .strict();
+export const queryPageTabsRequestSchema = z.object({ type: z.literal('query.pageTabs') }).strict();
 
 export const queryPageBoxesRequestSchema = z
   .object({

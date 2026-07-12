@@ -38,7 +38,11 @@ export async function discoverRuntimeViaNativeMessaging(): Promise<RuntimeDiscov
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     // Chrome reports missing host as lastError — guide install native host.
-    if (/not found|specified native messaging host|host not found|Access to the|nativemessaging/i.test(message)) {
+    if (
+      /not found|specified native messaging host|host not found|Access to the|nativemessaging/i.test(
+        message,
+      )
+    ) {
       throw new RuntimeDiscoverError(
         'native_host_missing',
         message || 'Native messaging host is not installed.',

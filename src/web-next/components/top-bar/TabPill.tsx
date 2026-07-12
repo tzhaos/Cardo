@@ -94,9 +94,7 @@ export function TabPill({
         </AnimatePresence>
         <span className="cardo-tab-label">
           {icon ? <span className="cardo-tab-label-icon">{icon}</span> : null}
-          {!icon || !systemPage ? (
-            <span className="cardo-tab-label-text">{page.title}</span>
-          ) : null}
+          {!icon || !systemPage ? <span className="cardo-tab-label-text">{page.title}</span> : null}
         </span>
       </Button>
       {rename.renaming ? (

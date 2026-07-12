@@ -238,7 +238,8 @@ export async function tryAcquireExclusiveLock(options: {
     return {
       ok: false,
       reason: 'io_error',
-      message: error instanceof Error ? error.message : 'Failed to acquire lock after stale cleanup.',
+      message:
+        error instanceof Error ? error.message : 'Failed to acquire lock after stale cleanup.',
     };
   }
 }

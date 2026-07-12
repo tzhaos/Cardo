@@ -7,15 +7,35 @@
 [data-cardo-theme='glass'] .cardo-app {
   background-color: var(--cardo-canvas);
   background-image:
-    radial-gradient(ellipse 80% 60% at 20% 10%, color-mix(in srgb, var(--cardo-purple) 10%, transparent), transparent 55%),
-    radial-gradient(ellipse 70% 50% at 85% 20%, color-mix(in srgb, var(--cardo-blue) 12%, transparent), transparent 50%),
-    radial-gradient(ellipse 60% 45% at 50% 90%, color-mix(in srgb, var(--cardo-blue) 8%, transparent), transparent 55%);
+    radial-gradient(
+      ellipse 80% 60% at 20% 10%,
+      color-mix(in srgb, var(--cardo-purple) 10%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 70% 50% at 85% 20%,
+      color-mix(in srgb, var(--cardo-blue) 12%, transparent),
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 60% 45% at 50% 90%,
+      color-mix(in srgb, var(--cardo-blue) 8%, transparent),
+      transparent 55%
+    );
 }
 
 [data-color-mode='dark'][data-cardo-theme='glass'] .cardo-app {
   background-image:
-    radial-gradient(ellipse 70% 55% at 15% 15%, color-mix(in srgb, var(--cardo-purple) 14%, transparent), transparent 50%),
-    radial-gradient(ellipse 60% 45% at 90% 25%, color-mix(in srgb, var(--cardo-blue) 10%, transparent), transparent 48%);
+    radial-gradient(
+      ellipse 70% 55% at 15% 15%,
+      color-mix(in srgb, var(--cardo-purple) 14%, transparent),
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 60% 45% at 90% 25%,
+      color-mix(in srgb, var(--cardo-blue) 10%, transparent),
+      transparent 48%
+    );
 }
 
 [data-cardo-theme='glass'] .cardo-canvas-boundary {
@@ -44,7 +64,9 @@
 [data-cardo-theme='glass'] .cardo-active-tab-indicator {
   border-radius: 999px;
   background: color-mix(in srgb, var(--cardo-panel) 88%, transparent);
-  box-shadow: var(--cardo-inset-shadow), 0 1px 2px rgba(15, 23, 42, 0.06);
+  box-shadow:
+    var(--cardo-inset-shadow),
+    0 1px 2px rgba(15, 23, 42, 0.06);
 }
 
 [data-color-mode='dark'][data-cardo-theme='glass'] .cardo-active-tab-indicator {
@@ -187,7 +209,11 @@
 }
 
 [data-color-mode='dark'][data-cardo-theme='glass'] .cardo-settings-nav-indicator {
-  background: color-mix(in srgb, var(--cardo-blue) 22%, color-mix(in srgb, #ffffff 8%, transparent));
+  background: color-mix(
+    in srgb,
+    var(--cardo-blue) 22%,
+    color-mix(in srgb, #ffffff 8%, transparent)
+  );
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.08) inset,
     0 4px 16px color-mix(in srgb, var(--cardo-blue) 18%, transparent);
@@ -217,12 +243,10 @@
   --cardo-settings-item-inset: 0 1px 0 rgba(255, 255, 255, 0.78) inset;
   --cardo-settings-item-shadow:
     0 0 0 0.5px color-mix(in srgb, var(--cardo-border) 55%, transparent),
-    0 10px 28px rgba(15, 23, 42, 0.08),
-    0 2px 8px rgba(15, 23, 42, 0.04);
+    0 10px 28px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04);
   --cardo-settings-item-shadow-hover:
     0 0 0 0.5px color-mix(in srgb, var(--cardo-blue) 18%, var(--cardo-border)),
-    0 14px 36px rgba(15, 23, 42, 0.1),
-    0 4px 12px rgba(15, 23, 42, 0.05);
+    0 14px 36px rgba(15, 23, 42, 0.1), 0 4px 12px rgba(15, 23, 42, 0.05);
 }
 
 /* Selected pack/look: light = soft white wash; dark = accent glass (never solid light gray). */
@@ -261,9 +285,7 @@
   --cardo-settings-item-border: color-mix(in srgb, #ffffff 14%, transparent);
   --cardo-settings-item-border-hover: color-mix(in srgb, var(--cardo-blue) 35%, transparent);
   --cardo-settings-item-inset: 0 1px 0 rgba(255, 255, 255, 0.06) inset;
-  --cardo-settings-item-shadow:
-    0 12px 32px rgba(0, 0, 0, 0.35),
-    0 2px 8px rgba(0, 0, 0, 0.25);
+  --cardo-settings-item-shadow: 0 12px 32px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.25);
   --cardo-settings-item-shadow-hover:
     0 16px 40px rgba(0, 0, 0, 0.42),
     0 4px 12px color-mix(in srgb, var(--cardo-blue) 12%, transparent);

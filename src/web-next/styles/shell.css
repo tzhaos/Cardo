@@ -23,22 +23,23 @@
 /*
  * Opt-in A — Settings / about descriptive copy (labels, not controls).
  */
-.cardo-app :where(
-  .cardo-settings-heading h2,
-  .cardo-settings-heading p,
-  .cardo-settings-subheading,
-  .cardo-settings-subheading span,
-  .cardo-settings-subheading small,
-  .cardo-settings-card-copy,
-  .cardo-settings-card-copy span,
-  .cardo-settings-card-copy small,
-  .cardo-about-copy,
-  .cardo-about-name,
-  .cardo-about-edition,
-  .cardo-about-details dt,
-  .cardo-about-details dd,
-  .cardo-text-label
-) {
+.cardo-app
+  :where(
+    .cardo-settings-heading h2,
+    .cardo-settings-heading p,
+    .cardo-settings-subheading,
+    .cardo-settings-subheading span,
+    .cardo-settings-subheading small,
+    .cardo-settings-card-copy,
+    .cardo-settings-card-copy span,
+    .cardo-settings-card-copy small,
+    .cardo-about-copy,
+    .cardo-about-name,
+    .cardo-about-edition,
+    .cardo-about-details dt,
+    .cardo-about-details dd,
+    .cardo-text-label
+  ) {
   cursor: text;
   caret-color: auto;
   user-select: text;
@@ -48,12 +49,13 @@
 /*
  * Opt-in B — Canvas content bodies users may copy (not chrome titles).
  */
-.cardo-app :where(
-  .cardo-clipboard-body,
-  .cardo-item-secondary,
-  .cardo-item-subtitle-link,
-  .cardo-system-page-empty-label
-) {
+.cardo-app
+  :where(
+    .cardo-clipboard-body,
+    .cardo-item-secondary,
+    .cardo-item-subtitle-link,
+    .cardo-system-page-empty-label
+  ) {
   caret-color: auto;
   user-select: text;
   -webkit-user-select: text;
@@ -71,64 +73,65 @@
  * Force-none on interactive chrome. !important so opt-in labels nested inside
  * buttons (tab label, box title in header) cannot become selectable.
  */
-.cardo-app :where(
-  button,
-  [role='button'],
-  a.cardo-toolbar-button,
-  .cardo-top-bar,
-  .cardo-tabs,
-  .cardo-tab-pill,
-  .cardo-tab-label,
-  .cardo-box-header,
-  .cardo-box-title,
-  .cardo-box-title-group,
-  .cardo-temporary-box-header,
-  .cardo-bottom-shell,
-  .cardo-bottom-toolbar,
-  .cardo-history-controls,
-  .cardo-canvas-tools,
-  .cardo-floating-menu,
-  .cardo-menu-row,
-  .cardo-create-menu-button,
-  .cardo-settings-header,
-  .cardo-settings-nav,
-  .cardo-settings-nav button,
-  .cardo-theme-pack-card,
-  .cardo-theme-pack-card-copy,
-  .cardo-layout-card,
-  .cardo-layout-card-copy,
-
-  .cardo-segmented-control,
-  .cardo-desktop-titlebar,
-  .cardo-desktop-window-controls,
-  .cardo-item-actions,
-  .cardo-item-drag-handle,
-  .cardo-item-glyph,
-  .cardo-item-main strong,
-  .cardo-item-title-placeholder,
-  .cardo-box-delete,
-  .cardo-box-footer,
-  .cardo-ui-menu-content,
-  .cardo-ui-select-content,
-  .cardo-ui-select-item,
-  .cardo-ui-select-trigger,
-  .cardo-ui-tooltip-content,
-  .cardo-global-search-result
-) {
+.cardo-app
+  :where(
+    button,
+    [role='button'],
+    a.cardo-toolbar-button,
+    .cardo-top-bar,
+    .cardo-tabs,
+    .cardo-tab-pill,
+    .cardo-tab-label,
+    .cardo-box-header,
+    .cardo-box-title,
+    .cardo-box-title-group,
+    .cardo-temporary-box-header,
+    .cardo-bottom-shell,
+    .cardo-bottom-toolbar,
+    .cardo-history-controls,
+    .cardo-canvas-tools,
+    .cardo-floating-menu,
+    .cardo-menu-row,
+    .cardo-create-menu-button,
+    .cardo-settings-header,
+    .cardo-settings-nav,
+    .cardo-settings-nav button,
+    .cardo-theme-pack-card,
+    .cardo-theme-pack-card-copy,
+    .cardo-layout-card,
+    .cardo-layout-card-copy,
+    .cardo-segmented-control,
+    .cardo-desktop-titlebar,
+    .cardo-desktop-window-controls,
+    .cardo-item-actions,
+    .cardo-item-drag-handle,
+    .cardo-item-glyph,
+    .cardo-item-main strong,
+    .cardo-item-title-placeholder,
+    .cardo-box-delete,
+    .cardo-box-footer,
+    .cardo-ui-menu-content,
+    .cardo-ui-select-content,
+    .cardo-ui-select-item,
+    .cardo-ui-select-trigger,
+    .cardo-ui-tooltip-content,
+    .cardo-global-search-result
+  ) {
   caret-color: transparent !important;
   user-select: none !important;
   -webkit-user-select: none !important;
 }
 
-.cardo-app :where(
-  button,
-  [role='button'],
-  a.cardo-toolbar-button,
-  .cardo-menu-row,
-  .cardo-create-menu-button,
-  .cardo-theme-pack-card,
-  .cardo-layout-card
-) {
+.cardo-app
+  :where(
+    button,
+    [role='button'],
+    a.cardo-toolbar-button,
+    .cardo-menu-row,
+    .cardo-create-menu-button,
+    .cardo-theme-pack-card,
+    .cardo-layout-card
+  ) {
   cursor: pointer;
 }
 

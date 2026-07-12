@@ -20,16 +20,15 @@ const MATCHERS = [
 
 function listWindowsProcesses(): Array<{ pid: number; commandLine: string }> {
   const ps = [
-    "Get-CimInstance Win32_Process |",
+    'Get-CimInstance Win32_Process |',
     "Where-Object { $_.Name -match '^(node|electron|cardo)' } |",
-    "Select-Object ProcessId, CommandLine |",
-    "ConvertTo-Json -Compress",
+    'Select-Object ProcessId, CommandLine |',
+    'ConvertTo-Json -Compress',
   ].join(' ');
-  const raw = execFileSync(
-    'powershell.exe',
-    ['-NoProfile', '-NonInteractive', '-Command', ps],
-    { encoding: 'utf8', windowsHide: true },
-  ).trim();
+  const raw = execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', ps], {
+    encoding: 'utf8',
+    windowsHide: true,
+  }).trim();
   if (!raw) return [];
   const parsed = JSON.parse(raw) as
     | { ProcessId: number; CommandLine?: string | null }

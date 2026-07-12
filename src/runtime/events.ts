@@ -29,11 +29,7 @@ export class EventHub {
     return false;
   }
 
-  subscribe(options: {
-    clientId: string;
-    response: ServerResponse;
-    onClose: () => void;
-  }): string {
+  subscribe(options: { clientId: string; response: ServerResponse; onClose: () => void }): string {
     const id = crypto.randomUUID();
     const { clientId, response, onClose } = options;
 
