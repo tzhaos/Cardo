@@ -202,38 +202,74 @@
   display: none;
 }
 
-/* Grouped inset list — white rounded stack */
+/*
+ * iOS Preferences: one white inset group, rows separated by hairline.
+ * Must beat .cardo-settings-content :is(.cardo-settings-card) shared paint.
+ */
 [data-cardo-theme='swiftui'] .cardo-settings-list-group,
-[data-cardo-theme='swiftui'] .cardo-theme-color-list,
-[data-cardo-theme='swiftui'] .cardo-settings-search-results {
+[data-cardo-theme='swiftui'] .cardo-settings-group,
+[data-cardo-theme='swiftui'] .cardo-settings-search-results,
+[data-cardo-theme='swiftui'] .cardo-about-details {
   gap: 0;
   overflow: hidden;
-  border: 0;
-  border-radius: 10px;
-  background: var(--cardo-panel);
-  box-shadow: none;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: var(--cardo-panel) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 [data-cardo-theme='swiftui'] .cardo-theme-pack-card,
 [data-cardo-theme='swiftui'] .cardo-about-card,
 [data-cardo-theme='swiftui'] .cardo-custom-search-template,
-[data-cardo-theme='swiftui'] .cardo-data-actions > button {
-  border: 0;
-  border-radius: 10px;
-  background: var(--cardo-panel);
-  box-shadow: none;
+[data-cardo-theme='swiftui'] .cardo-data-actions > button,
+[data-cardo-theme='swiftui'] .cardo-theme-look-card {
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: var(--cardo-panel) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
-[data-cardo-theme='swiftui'] .cardo-settings-card {
-  border: 0;
-  border-radius: 0;
+[data-cardo-theme='swiftui'] .cardo-settings-list-group .cardo-settings-card,
+[data-cardo-theme='swiftui'] .cardo-settings-group .cardo-settings-card,
+[data-cardo-theme='swiftui'] .cardo-settings-group .cardo-settings-disclosure,
+[data-cardo-theme='swiftui'] .cardo-settings-group .cardo-theme-color-row {
+  border: 0 !important;
+  border-radius: 0 !important;
   padding: 11px 14px;
-  background: transparent;
   min-height: 44px;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+[data-cardo-theme='swiftui'] .cardo-settings-list-group .cardo-settings-card:hover,
+[data-cardo-theme='swiftui'] .cardo-settings-group .cardo-settings-card:hover,
+[data-cardo-theme='swiftui'] .cardo-settings-group .cardo-settings-disclosure:hover {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
 }
 
 [data-cardo-theme='swiftui'] .cardo-settings-list-group .cardo-settings-card + .cardo-settings-card {
+  border-top: 1px solid var(--cardo-border) !important;
+}
+
+[data-cardo-theme='swiftui'] .cardo-settings-group-body {
   border-top: 1px solid var(--cardo-border);
+}
+
+[data-cardo-theme='swiftui'] .cardo-settings-group .cardo-theme-color-list {
+  gap: 0;
+  margin: 0;
+}
+
+[data-cardo-theme='swiftui'] .cardo-settings-group .cardo-theme-color-row + .cardo-theme-color-row {
+  border-top: 1px solid var(--cardo-border) !important;
 }
 
 [data-cardo-theme='swiftui'] .cardo-settings-card-copy > span:last-child {
@@ -249,32 +285,65 @@
   font-weight: 400;
 }
 
-/* Segmented control */
+/* iOS segmented: gray track, elevated white pill for active */
 [data-cardo-theme='swiftui'] .cardo-segmented-control {
   border: 0;
   border-radius: 8px;
   padding: 2px;
   background: var(--cardo-neutral-button);
   gap: 0;
+  box-shadow: none;
 }
 
 [data-cardo-theme='swiftui'] .cardo-segmented-control button {
   border-radius: 6px;
-  min-height: 24px;
+  min-height: 26px;
+  min-width: 48px;
   font-size: 12px;
   font-weight: 500;
   color: var(--cardo-text);
+  background: transparent;
+}
+
+[data-cardo-theme='swiftui'] .cardo-segmented-control [data-state='on'] {
+  color: var(--cardo-text);
+  font-weight: 600;
 }
 
 [data-cardo-theme='swiftui'] .cardo-segment-indicator {
   border-radius: 6px;
   box-shadow: none;
+  border-color: transparent;
 }
 
 [data-cardo-theme='swiftui'] .cardo-segment-indicator-active {
   border-color: transparent;
   background: var(--cardo-panel);
-  box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.12);
+  box-shadow:
+    0 0.5px 0 rgba(0, 0, 0, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.12);
+  opacity: 1;
+}
+
+/* Pop-up button in form rows */
+[data-cardo-theme='swiftui'] .cardo-settings-card .cardo-ui-select-trigger {
+  min-height: 28px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--cardo-neutral-button);
+  box-shadow: none;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='swiftui'] .cardo-settings-card .cardo-ui-select-trigger:hover {
+  background: var(--cardo-neutral-button-hover);
+}
+
+[data-cardo-theme='swiftui'] .cardo-settings-card .cardo-ui-select-trigger[data-state='open'] {
+  background: var(--cardo-panel);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cardo-blue) 28%, transparent);
 }
 
 [data-cardo-theme='swiftui'] .cardo-theme-pack-grid {

@@ -317,25 +317,80 @@
   margin-top: 12px;
 }
 
-[data-cardo-theme='fluent'] .cardo-settings-list-group .cardo-settings-card {
+/* WinUI list: group owns surface; rows are transparent with dividers */
+[data-cardo-theme='fluent'] .cardo-settings-list-group,
+[data-cardo-theme='fluent'] .cardo-settings-group,
+[data-cardo-theme='fluent'] .cardo-about-details {
+  border: 1px solid color-mix(in srgb, var(--cardo-border) 90%, transparent) !important;
+  border-radius: 8px !important;
+  background: color-mix(
+    in srgb,
+    var(--cardo-settings-hover) 55%,
+    var(--cardo-settings-chrome)
+  ) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-list-group .cardo-settings-card,
+[data-cardo-theme='fluent'] .cardo-settings-group .cardo-settings-card,
+[data-cardo-theme='fluent'] .cardo-settings-group .cardo-settings-disclosure,
+[data-cardo-theme='fluent'] .cardo-settings-group .cardo-theme-color-row {
   min-height: 60px;
-  border: 0;
-  border-radius: 0;
+  border: 0 !important;
+  border-radius: 0 !important;
   padding: 12px 16px;
-  background: transparent;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   gap: 16px;
 }
 
 [data-cardo-theme='fluent'] .cardo-settings-list-group .cardo-settings-card + .cardo-settings-card {
-  border-top: 1px solid color-mix(in srgb, var(--cardo-divider) 90%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--cardo-divider) 90%, transparent) !important;
 }
 
 [data-cardo-theme='fluent'] .cardo-settings-list-group .cardo-settings-card:hover,
+[data-cardo-theme='fluent'] .cardo-settings-group .cardo-settings-card:hover,
+[data-cardo-theme='fluent'] .cardo-settings-group .cardo-settings-disclosure:hover,
 [data-cardo-theme='fluent'] .cardo-theme-color-row:hover,
 [data-cardo-theme='fluent'] .cardo-settings-search-result:hover,
 [data-cardo-theme='fluent'] .cardo-data-actions > button:hover,
 [data-cardo-theme='fluent'] .cardo-theme-pack-card:hover {
-  background: var(--cardo-settings-hover);
+  background: var(--cardo-settings-hover) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-group-body {
+  border-top: 1px solid color-mix(in srgb, var(--cardo-divider) 90%, transparent);
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-group .cardo-theme-color-list {
+  gap: 0;
+  margin: 0;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-group .cardo-theme-color-row + .cardo-theme-color-row {
+  border-top: 1px solid color-mix(in srgb, var(--cardo-divider) 90%, transparent) !important;
+}
+
+[data-cardo-theme='fluent'] .cardo-theme-pack-card,
+[data-cardo-theme='fluent'] .cardo-theme-look-card,
+[data-cardo-theme='fluent'] .cardo-data-actions > button,
+[data-cardo-theme='fluent'] .cardo-about-card {
+  border: 1px solid color-mix(in srgb, var(--cardo-border) 90%, transparent) !important;
+  border-radius: 8px !important;
+  background: color-mix(
+    in srgb,
+    var(--cardo-settings-hover) 55%,
+    var(--cardo-settings-chrome)
+  ) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 [data-cardo-theme='fluent'] .cardo-settings-card-copy {

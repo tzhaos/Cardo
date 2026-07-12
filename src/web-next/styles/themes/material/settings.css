@@ -170,39 +170,79 @@
   line-height: 1.45;
 }
 
+/* Studio: group is the surface; rows are hairline-split inside */
 [data-cardo-theme='material'] .cardo-settings-list-group,
-[data-cardo-theme='material'] .cardo-theme-color-list,
-[data-cardo-theme='material'] .cardo-settings-search-results {
+[data-cardo-theme='material'] .cardo-settings-group,
+[data-cardo-theme='material'] .cardo-settings-search-results,
+[data-cardo-theme='material'] .cardo-about-details {
   gap: 0;
   overflow: hidden;
-  border: 1px solid var(--cardo-border);
-  border-radius: 16px;
-  background: var(--cardo-panel);
-  box-shadow: none;
+  border: 1px solid var(--cardo-border) !important;
+  border-radius: 16px !important;
+  background: var(--cardo-panel) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 [data-cardo-theme='material'] .cardo-theme-pack-card,
 [data-cardo-theme='material'] .cardo-about-card,
 [data-cardo-theme='material'] .cardo-custom-search-template,
-[data-cardo-theme='material'] .cardo-data-actions > button {
+[data-cardo-theme='material'] .cardo-data-actions > button,
+[data-cardo-theme='material'] .cardo-theme-look-card {
   overflow: hidden;
-  border: 1px solid var(--cardo-border);
-  border-radius: 16px;
-  background: var(--cardo-panel);
-  box-shadow: none;
+  border: 1px solid var(--cardo-border) !important;
+  border-radius: 16px !important;
+  background: var(--cardo-panel) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
-/* Rows stack inside one outlined group — Studio list feel */
-[data-cardo-theme='material'] .cardo-settings-card {
-  border: 0;
-  border-radius: 0;
+[data-cardo-theme='material'] .cardo-settings-list-group .cardo-settings-card,
+[data-cardo-theme='material'] .cardo-settings-group .cardo-settings-card,
+[data-cardo-theme='material'] .cardo-settings-group .cardo-settings-disclosure,
+[data-cardo-theme='material'] .cardo-settings-group .cardo-theme-color-row {
+  border: 0 !important;
+  border-radius: 0 !important;
   padding: 14px 16px;
-  background: transparent;
-  box-shadow: none;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+[data-cardo-theme='material'] .cardo-settings-list-group .cardo-settings-card:hover,
+[data-cardo-theme='material'] .cardo-settings-group .cardo-settings-card:hover,
+[data-cardo-theme='material'] .cardo-settings-group .cardo-settings-disclosure:hover {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
 }
 
 [data-cardo-theme='material'] .cardo-settings-list-group .cardo-settings-card + .cardo-settings-card {
+  border-top: 1px solid var(--cardo-border) !important;
+}
+
+[data-cardo-theme='material'] .cardo-settings-group-body {
   border-top: 1px solid var(--cardo-border);
+}
+
+[data-cardo-theme='material'] .cardo-settings-group .cardo-theme-color-list {
+  gap: 0;
+  margin: 0;
+}
+
+[data-cardo-theme='material'] .cardo-settings-group .cardo-theme-color-row + .cardo-theme-color-row {
+  border-top: 1px solid var(--cardo-border) !important;
+}
+
+[data-cardo-theme='material'] .cardo-settings-card .cardo-ui-select-trigger {
+  min-height: 36px;
+  border: 1px solid var(--cardo-border);
+  border-radius: 999px;
+  background: var(--cardo-panel);
+  box-shadow: none;
 }
 
 [data-cardo-theme='material'] .cardo-settings-card-copy > span:last-child {
