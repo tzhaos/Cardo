@@ -11,7 +11,7 @@
   min-height: 54px;
   flex: 0 0 auto;
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
   border-bottom: 1px solid var(--cardo-border);
   padding: 0 14px 0 18px;
   cursor: grab;
@@ -19,15 +19,169 @@
   user-select: none;
 }
 
+.cardo-settings-header-title {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 9px;
+}
+
+/* Empty middle band stays draggable (not interactive). */
+.cardo-settings-header-drag-space {
+  min-width: 12px;
+  flex: 1 1 auto;
+  align-self: stretch;
+}
+
+.cardo-settings-header-actions {
+  display: flex;
+  min-width: 0;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Base (Classic): compact pill. Fluent overrides to Win11 SearchBox. */
+.cardo-settings-search {
+  position: relative;
+  display: flex;
+  width: min(280px, 42vw);
+  height: 34px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-pill);
+  padding: 0 14px 0 12px;
+  background: var(--cardo-hover);
+  color: var(--cardo-muted);
+  cursor: text;
+  transition:
+    border-color var(--cardo-duration-normal) var(--cardo-easing),
+    background var(--cardo-duration-normal) var(--cardo-easing),
+    box-shadow var(--cardo-duration-normal) var(--cardo-easing);
+}
+
+.cardo-settings-search-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  color: var(--cardo-muted);
+  line-height: 0;
+  pointer-events: none;
+}
+
+.cardo-settings-nav-mono-icon {
+  color: var(--cardo-secondary-text);
+}
+
+.cardo-settings-search input {
+  min-width: 0;
+  flex: 1;
+  height: 100%;
+  border: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--cardo-text);
+  font-size: 14px;
+  outline: none;
+}
+
+.cardo-settings-search input::placeholder {
+  color: var(--cardo-muted);
+  opacity: 1;
+}
+
+.cardo-settings-search-clear {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  padding: 0;
+  background: transparent;
+  color: var(--cardo-muted);
+  cursor: pointer;
+}
+
+.cardo-settings-search-clear:hover {
+  background: color-mix(in srgb, var(--cardo-text) 8%, transparent);
+  color: var(--cardo-text);
+}
+
+.cardo-settings-search-results {
+  display: flex;
+  flex-direction: column;
+}
+
+.cardo-settings-search-result {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 0;
+  border-bottom: 1px solid var(--cardo-border);
+  padding: 12px 14px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cardo-settings-search-result:hover {
+  background: var(--cardo-hover);
+}
+
+.cardo-settings-search-result-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cardo-settings-search-result-copy strong {
+  color: var(--cardo-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cardo-settings-search-result-copy small {
+  color: var(--cardo-muted);
+  font-size: 12px;
+}
+
+.cardo-settings-search-result-copy em {
+  color: var(--cardo-secondary-text);
+  font-size: 11px;
+  font-style: normal;
+}
+
+.cardo-settings-search-empty {
+  margin: 0;
+  padding: 24px 12px;
+  color: var(--cardo-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.cardo-settings-tab-content {
+  min-width: 0;
+}
+
 .cardo-settings-header:active,
 .cardo-independent-menu-dragging {
   cursor: grabbing;
 }
 
-.cardo-settings-header > div {
-  display: flex;
-  align-items: center;
-  gap: 9px;
+.cardo-settings-header-title {
   color: var(--cardo-soft-text);
   font-size: 14px;
   font-weight: 600;
@@ -92,6 +246,27 @@
 .cardo-settings-nav button > *:not(.cardo-settings-nav-indicator) {
   position: relative;
   z-index: 1;
+}
+
+/* Multi-color Fluent nav glyphs */
+.cardo-settings-nav-icon {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  /* Isolate from indicator layout animation — never use filter (causes hover blur) */
+  contain: layout style;
+}
+
+.cardo-settings-nav-glyph {
+  display: block;
+  width: 20px;
+  height: 20px;
+  overflow: visible;
+  shape-rendering: geometricPrecision;
 }
 
 .cardo-settings-nav button:hover,
@@ -165,7 +340,7 @@
 .cardo-settings-card-copy small,
 .cardo-settings-subheading small,
 .cardo-theme-card-copy small,
-.cardo-about-card small {
+.cardo-about-edition {
   color: var(--cardo-muted);
   font-size: 11px;
   font-weight: 400;
@@ -215,12 +390,20 @@
 .cardo-segment-indicator {
   position: absolute;
   inset: 0;
-  border: 1px solid var(--cardo-border);
+  border: 1px solid transparent;
   border-radius: var(--cardo-radius-md);
-  background: var(--cardo-surface-strong);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  background: transparent;
+  box-shadow: none;
+  opacity: 0;
   pointer-events: none;
-  transform-origin: center;
+  transition: opacity 140ms ease, background 140ms ease, border-color 140ms ease;
+}
+
+.cardo-segment-indicator-active {
+  border-color: var(--cardo-border);
+  background: var(--cardo-surface-strong);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  opacity: 1;
 }
 
 .cardo-settings-subheading {
@@ -339,7 +522,202 @@
   margin-top: 2px;
 }
 
-/* Theme packs: pick a designed look — preview block + name, not cramped 2-col rows. */
+/* Theme color overrides + curated presets */
+.cardo-theme-color-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.cardo-theme-color-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-lg);
+  padding: 12px;
+  background: var(--cardo-panel-content);
+}
+
+.cardo-theme-color-row-main {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cardo-theme-color-label {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  color: var(--cardo-soft-text);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.cardo-theme-color-swatch {
+  display: block;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  border: 1px solid var(--cardo-border);
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.cardo-theme-color-controls {
+  display: inline-flex;
+  min-width: 0;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.cardo-theme-color-picker {
+  width: 36px;
+  height: 32px;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-sm);
+  background: transparent;
+  cursor: pointer;
+}
+
+.cardo-theme-color-picker::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.cardo-theme-color-picker::-webkit-color-swatch {
+  border: 0;
+  border-radius: 4px;
+}
+
+.cardo-theme-color-text {
+  width: min(168px, 36vw);
+  height: 32px;
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-md);
+  padding: 0 8px;
+  background: var(--cardo-input);
+  color: var(--cardo-text);
+  font-size: 12px;
+  font-family: var(--cardo-font-mono);
+}
+
+.cardo-theme-color-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 2px 0;
+}
+
+/*
+ * Nested fill chip — selection ring is a solid border on the outer button
+ * (no box-shadow). Avoids overflow-clip haze and soft anti-aliased glows.
+ */
+.cardo-theme-color-preset {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  transition: border-color 80ms linear;
+}
+
+.cardo-theme-color-preset-fill {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 999px;
+  box-shadow: none;
+}
+
+.cardo-theme-color-preset:hover {
+  border-color: rgba(0, 0, 0, 0.22);
+}
+
+.cardo-theme-color-preset:hover .cardo-theme-color-preset-fill {
+  border-color: rgba(0, 0, 0, 0.28);
+}
+
+.cardo-theme-color-preset:focus-visible {
+  border-color: var(--cardo-blue);
+  outline: none;
+}
+
+.cardo-theme-color-preset-active {
+  border-color: var(--cardo-blue);
+}
+
+.cardo-theme-color-preset-active .cardo-theme-color-preset-fill {
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+.cardo-theme-color-reset-card {
+  margin-top: 4px;
+}
+
+/* Settings row secondary action — outline command, not bare ghost text */
+.cardo-settings-secondary-button {
+  display: inline-flex;
+  min-height: 32px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-md);
+  padding: 0 12px;
+  background: var(--cardo-panel);
+  color: var(--cardo-soft-text);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    color var(--cardo-duration-normal) var(--cardo-easing),
+    background var(--cardo-duration-normal) var(--cardo-easing),
+    border-color var(--cardo-duration-normal) var(--cardo-easing),
+    box-shadow var(--cardo-duration-normal) var(--cardo-easing);
+}
+
+.cardo-settings-secondary-button:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--cardo-blue) 28%, var(--cardo-border));
+  background: var(--cardo-hover);
+  color: var(--cardo-text);
+}
+
+.cardo-settings-secondary-button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--cardo-blue) 45%, transparent);
+  outline-offset: 2px;
+}
+
+.cardo-settings-secondary-button:disabled {
+  border-color: var(--cardo-border);
+  background: var(--cardo-hover);
+  color: var(--cardo-muted);
+  cursor: default;
+  opacity: 1;
+}
+
+.cardo-theme-color-reset-card .cardo-settings-secondary-button:disabled {
+  opacity: 1;
+}
+
+/* Legacy theme pack card styles (unused; keep layout utilities harmless). */
 .cardo-theme-pack-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
@@ -718,13 +1096,29 @@
   -webkit-user-drag: none;
 }
 
-.cardo-about-card > span:last-child {
+.cardo-about-copy {
   display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
   flex-direction: column;
+  justify-content: center;
   gap: 4px;
+}
+
+.cardo-about-name {
+  display: block;
   color: var(--cardo-text);
   font-size: 17px;
   font-weight: 600;
+  line-height: 1.25;
+}
+
+.cardo-about-edition {
+  display: block;
+  color: var(--cardo-muted);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.4;
 }
 
 .cardo-about-details {
@@ -768,14 +1162,65 @@
   transform-origin: center;
 }
 
-.cardo-language-state-icon,
+/*
+ * Dual-glyph color-mode state icon.
+ * Primary = top-left solid; secondary = bottom-right muted.
+ * Snap roles — only opacity/color animate (no font-size / position tween blur).
+ */
 .cardo-theme-state-icon {
   position: relative;
   display: block;
   width: 32px;
-  height: 24px;
+  height: 28px;
   flex: 0 0 auto;
-  color: currentColor;
+  color: var(--cardo-text);
+}
+
+.cardo-state-glyph {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+  transform: none;
+  filter: none;
+  transition: opacity 140ms ease, color 140ms ease;
+}
+
+/* Color mode: light primary */
+.cardo-state-icon-light .cardo-theme-sun {
+  top: 0;
+  left: 0;
+  opacity: 1;
+  color: var(--cardo-text);
+  z-index: 2;
+}
+
+.cardo-state-icon-light .cardo-theme-moon {
+  top: 12px;
+  left: 14px;
+  opacity: 0.4;
+  color: var(--cardo-muted);
+  z-index: 1;
+}
+
+/* Color mode: dark primary */
+.cardo-state-icon-dark .cardo-theme-moon {
+  top: 0;
+  left: 0;
+  opacity: 1;
+  color: var(--cardo-text);
+  z-index: 2;
+}
+
+.cardo-state-icon-dark .cardo-theme-sun {
+  top: 12px;
+  left: 14px;
+  opacity: 0.4;
+  color: var(--cardo-muted);
+  z-index: 1;
 }
 
 /* Shared list grouping (Fluent uses this heavily; other themes keep simple stack). */
@@ -787,637 +1232,6 @@
 
 .cardo-settings-list-group-spaced {
   margin-top: 16px;
-}
-
-/* ── Windows 11 Settings (WinUI3 Fluent) shell — only when theme is windows ─── */
-/*
- * Reference: Settings app — mica side nav, left selection rail, large page title,
- * white elevated list cards, hairline row dividers, 8px control radius.
- */
-
-[data-cardo-theme='windows'] .cardo-independent-menu.cardo-settings-window,
-[data-cardo-theme='windows'] .cardo-settings-window {
-  width: min(960px, calc(100vw - 40px));
-  height: min(680px, calc(100vh - 40px));
-  border: 1px solid color-mix(in srgb, var(--cardo-border) 80%, transparent);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--cardo-canvas) 88%, var(--cardo-surface-strong));
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.04),
-    0 16px 48px rgba(0, 0, 0, 0.12);
-  backdrop-filter: blur(var(--cardo-chrome-blur)) saturate(130%);
-  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur)) saturate(130%);
-}
-
-[data-cardo-theme='windows'] .cardo-settings-header {
-  min-height: 48px;
-  border-bottom: none;
-  padding: 0 12px 0 16px;
-  background: transparent;
-}
-
-[data-cardo-theme='windows'] .cardo-settings-header > div {
-  gap: 10px;
-  color: var(--cardo-text);
-  font-size: 13px;
-  font-weight: 600;
-}
-
-[data-cardo-theme='windows'] .cardo-settings-header button {
-  width: 36px;
-  height: 32px;
-  border-radius: 4px;
-}
-
-[data-cardo-theme='windows'] .cardo-settings-layout {
-  grid-template-columns: 248px minmax(0, 1fr);
-  gap: 0;
-}
-
-[data-cardo-theme='windows'] .cardo-settings-nav {
-  gap: 2px;
-  border-right: none;
-  padding: 8px 12px 16px;
-  background: transparent;
-}
-
-[data-cardo-theme='windows'] .cardo-settings-nav button {
-  min-height: 40px;
-  gap: 12px;
-  border-radius: 4px;
-  padding: 0 12px 0 14px;
-  color: var(--cardo-text);
-  font-size: 14px;
-  font-weight: 400;
-}
-
-[data-cardo-theme='windows'] .cardo-settings-nav button:hover {
-  background: color-mix(in srgb, var(--cardo-text) 4%, transparent);
-}
-
-[data-cardo-theme='windows'] .cardo-settings-nav-indicator {
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--cardo-text) 6%, transparent);
-  box-shadow: none;
-}
-
-/* Left selection rail — Win11 Settings signature */
-[data-cardo-theme='windows'] .cardo-settings-nav [data-state='active']::before {
-  content: '';
-  position: absolute;
-  top: 10px;
-  bottom: 10px;
-  left: 0;
-  z-index: 2;
-  width: 3px;
-  border-radius: 2px;
-  background: var(--cardo-blue);
-}
-
-[data-cardo-theme='windows'] .cardo-settings-nav [data-state='active'] {
-  color: var(--cardo-text) !important;
-  font-weight: 600;
-}
-
-/* Multi-color nav icons (Fluent Settings uses accent-tinted glyphs) */
-[data-cardo-theme='windows'] .cardo-settings-nav button:nth-child(1) .cardo-icon-frame {
-  color: #0078d4;
-}
-[data-cardo-theme='windows'] .cardo-settings-nav button:nth-child(2) .cardo-icon-frame {
-  color: #8764b8;
-}
-[data-cardo-theme='windows'] .cardo-settings-nav button:nth-child(3) .cardo-icon-frame {
-  color: #038387;
-}
-[data-cardo-theme='windows'] .cardo-settings-nav button:nth-child(4) .cardo-icon-frame {
-  color: #ca5010;
-}
-
-[data-cardo-theme='windows'][data-color-mode='dark'] .cardo-settings-nav button:nth-child(1) .cardo-icon-frame {
-  color: #60cdff;
-}
-[data-cardo-theme='windows'][data-color-mode='dark'] .cardo-settings-nav button:nth-child(2) .cardo-icon-frame {
-  color: #b6a0ff;
-}
-[data-cardo-theme='windows'][data-color-mode='dark'] .cardo-settings-nav button:nth-child(3) .cardo-icon-frame {
-  color: #30e1e1;
-}
-[data-cardo-theme='windows'][data-color-mode='dark'] .cardo-settings-nav button:nth-child(4) .cardo-icon-frame {
-  color: #ff8c00;
-}
-
-[data-cardo-theme='windows'] .cardo-settings-content {
-  padding: 12px 28px 28px 20px;
-  background: transparent;
-}
-
-[data-cardo-theme='windows'] .cardo-settings-heading {
-  margin-bottom: 20px;
-}
-
-[data-cardo-theme='windows'] .cardo-settings-heading h2 {
-  font-size: 28px;
-  font-weight: 600;
-  letter-spacing: 0;
-  line-height: 1.2;
-}
-
-[data-cardo-theme='windows'] .cardo-settings-heading p {
-  margin-top: 6px;
-  font-size: 13px;
-  line-height: 1.45;
-}
-
-[data-cardo-theme='windows'] .cardo-settings-subheading {
-  margin: 20px 0 8px;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-[data-cardo-theme='windows'] .cardo-settings-subheading small {
-  font-size: 12px;
-}
-
-/* Grouped SettingsCard / Expander-like list */
-[data-cardo-theme='windows'] .cardo-settings-list-group {
-  gap: 0;
-  overflow: hidden;
-  border-radius: 8px;
-  background: var(--cardo-surface-strong);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--cardo-border) 70%, transparent),
-    0 2px 4px rgba(0, 0, 0, 0.04);
-}
-
-[data-cardo-theme='windows'] .cardo-settings-list-group .cardo-settings-card {
-  border: none;
-  border-radius: 0;
-  padding: 14px 16px;
-  background: transparent;
-  min-height: 56px;
-}
-
-[data-cardo-theme='windows'] .cardo-settings-list-group .cardo-settings-card + .cardo-settings-card {
-  border-top: 1px solid color-mix(in srgb, var(--cardo-divider) 85%, transparent);
-}
-
-[data-cardo-theme='windows'] .cardo-settings-list-group .cardo-settings-card:hover {
-  background: color-mix(in srgb, var(--cardo-text) 3%, transparent);
-}
-
-[data-cardo-theme='windows'] .cardo-settings-card-copy > span:last-child {
-  font-size: 14px;
-  font-weight: 400;
-}
-
-[data-cardo-theme='windows'] .cardo-settings-card-copy small {
-  font-size: 12px;
-}
-
-/* Standalone cards (when not in a list group) */
-[data-cardo-theme='windows'] .cardo-settings-content > .cardo-settings-card,
-[data-cardo-theme='windows'] .cardo-settings-content > .cardo-about-card {
-  border: none;
-  border-radius: 8px;
-  background: var(--cardo-surface-strong);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--cardo-border) 70%, transparent),
-    0 2px 4px rgba(0, 0, 0, 0.04);
-}
-
-[data-cardo-theme='windows'] .cardo-about-details {
-  border: none;
-  border-radius: 8px;
-  background: var(--cardo-surface-strong);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--cardo-border) 70%, transparent),
-    0 2px 4px rgba(0, 0, 0, 0.04);
-}
-
-[data-cardo-theme='windows'] .cardo-about-details div {
-  min-height: 52px;
-  padding: 0 16px;
-}
-
-[data-cardo-theme='windows'] .cardo-about-details dt,
-[data-cardo-theme='windows'] .cardo-about-details dd {
-  font-size: 13px;
-}
-
-/* Segmented control → WinUI-like pill track */
-[data-cardo-theme='windows'] .cardo-segmented-control {
-  gap: 0;
-  border: 1px solid color-mix(in srgb, var(--cardo-border) 80%, transparent);
-  border-radius: 4px;
-  padding: 2px;
-  background: color-mix(in srgb, var(--cardo-text) 4%, transparent);
-}
-
-[data-cardo-theme='windows'] .cardo-segmented-control button {
-  min-width: 56px;
-  height: 28px;
-  border-radius: 3px;
-  font-size: 12px;
-}
-
-[data-cardo-theme='windows'] .cardo-segment-indicator {
-  border: none;
-  border-radius: 3px;
-  background: var(--cardo-surface-strong);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--cardo-border) 60%, transparent),
-    0 1px 2px rgba(0, 0, 0, 0.06);
-}
-
-/* Theme pack tiles */
-[data-cardo-theme='windows'] .cardo-theme-pack-grid {
-  gap: 10px;
-}
-
-[data-cardo-theme='windows'] .cardo-theme-pack-card {
-  border: 1px solid color-mix(in srgb, var(--cardo-border) 80%, transparent);
-  border-radius: 8px;
-  background: var(--cardo-surface-strong);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-}
-
-[data-cardo-theme='windows'] .cardo-theme-pack-card-selected {
-  border-color: var(--cardo-blue);
-  box-shadow: 0 0 0 1px var(--cardo-blue);
-}
-
-[data-cardo-theme='windows'] .cardo-theme-pack-preview {
-  border-radius: 4px;
-  height: 72px;
-}
-
-[data-cardo-theme='windows'] .cardo-data-actions {
-  gap: 10px;
-}
-
-[data-cardo-theme='windows'] .cardo-data-actions > button {
-  border: none;
-  border-radius: 8px;
-  background: var(--cardo-surface-strong);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--cardo-border) 70%, transparent),
-    0 2px 4px rgba(0, 0, 0, 0.04);
-}
-
-[data-cardo-theme='windows'] .cardo-custom-search-template {
-  margin-top: 12px;
-  border-radius: 8px;
-  padding: 14px 16px;
-  background: var(--cardo-surface-strong);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--cardo-border) 70%, transparent),
-    0 2px 4px rgba(0, 0, 0, 0.04);
-}
-
-[data-cardo-theme='windows'] .cardo-custom-search-template input {
-  height: 32px;
-  border-radius: 4px;
-  border-color: color-mix(in srgb, var(--cardo-border) 90%, transparent);
-}
-
-[data-cardo-theme='windows'] .cardo-custom-search-template input:focus {
-  border-color: var(--cardo-blue);
-  box-shadow: 0 0 0 1px var(--cardo-blue);
-}
-
-/* ── GitHub Settings (Primer) shell — only when theme is github ─────────────── */
-/*
- * Reference: github.com/settings — pure white canvas, ActionList side nav with
- * accent left rail, form controls with border.default, no Mica / no glass.
- */
-
-[data-cardo-theme='github'] .cardo-independent-menu.cardo-settings-window,
-[data-cardo-theme='github'] .cardo-settings-window {
-  width: min(980px, calc(100vw - 40px));
-  height: min(700px, calc(100vh - 40px));
-  border: 1px solid var(--cardo-border);
-  border-radius: 6px;
-  background: var(--cardo-canvas);
-  box-shadow: 0 8px 24px rgba(140, 149, 159, 0.2);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
-
-[data-cardo-theme='github'] .cardo-settings-header {
-  min-height: 48px;
-  border-bottom: 1px solid var(--cardo-border);
-  padding: 0 16px;
-  background: var(--cardo-canvas);
-}
-
-[data-cardo-theme='github'] .cardo-settings-header > div {
-  gap: 8px;
-  color: var(--cardo-text);
-  font-size: 14px;
-  font-weight: 600;
-}
-
-[data-cardo-theme='github'] .cardo-settings-header button {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-}
-
-[data-cardo-theme='github'] .cardo-settings-layout {
-  grid-template-columns: 256px minmax(0, 1fr);
-}
-
-[data-cardo-theme='github'] .cardo-settings-nav {
-  gap: 1px;
-  border-right: 1px solid var(--cardo-border);
-  padding: 16px 12px;
-  background: var(--cardo-canvas);
-}
-
-[data-cardo-theme='github'] .cardo-settings-nav button {
-  min-height: 32px;
-  gap: 8px;
-  border-radius: 6px;
-  padding: 6px 8px 6px 10px;
-  color: var(--cardo-text);
-  font-size: 14px;
-  font-weight: 400;
-}
-
-[data-cardo-theme='github'] .cardo-settings-nav button:hover {
-  background: var(--cardo-hover);
-}
-
-[data-cardo-theme='github'] .cardo-settings-nav-indicator {
-  border-radius: 6px;
-  /* Primer ActionList selected: subtle gray wash */
-  background: var(--cardo-panel-bottom);
-  box-shadow: none;
-}
-
-/* Left accent rail — same signature as github.com/settings */
-[data-cardo-theme='github'] .cardo-settings-nav [data-state='active']::before {
-  content: '';
-  position: absolute;
-  top: 6px;
-  bottom: 6px;
-  left: 0;
-  z-index: 2;
-  width: 2px;
-  border-radius: 1px;
-  background: var(--cardo-blue);
-}
-
-[data-cardo-theme='github'] .cardo-settings-nav [data-state='active'] {
-  color: var(--cardo-text) !important;
-  font-weight: 600;
-}
-
-[data-cardo-theme='github'] .cardo-settings-nav .cardo-icon-frame {
-  color: var(--cardo-secondary-text);
-  width: 16px;
-  height: 16px;
-}
-
-[data-cardo-theme='github'] .cardo-settings-nav [data-state='active'] .cardo-icon-frame {
-  color: var(--cardo-text);
-}
-
-[data-cardo-theme='github'] .cardo-settings-content {
-  padding: 24px 32px 40px;
-  background: var(--cardo-canvas);
-}
-
-[data-cardo-theme='github'] .cardo-settings-heading {
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--cardo-border);
-}
-
-[data-cardo-theme='github'] .cardo-settings-heading h2 {
-  font-size: 24px;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: 1.25;
-}
-
-[data-cardo-theme='github'] .cardo-settings-heading p {
-  margin-top: 4px;
-  font-size: 14px;
-  color: var(--cardo-secondary-text);
-}
-
-[data-cardo-theme='github'] .cardo-settings-subheading {
-  margin: 24px 0 8px;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-/* Primer form-style rows: open white, border.default, not elevated Mica cards */
-[data-cardo-theme='github'] .cardo-settings-list-group {
-  gap: 16px;
-  overflow: visible;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-[data-cardo-theme='github'] .cardo-settings-list-group .cardo-settings-card {
-  border: none;
-  border-radius: 0;
-  padding: 0;
-  background: transparent;
-  min-height: 0;
-  align-items: flex-start;
-  flex-direction: column;
-  gap: 8px;
-}
-
-[data-cardo-theme='github'] .cardo-settings-list-group .cardo-settings-card + .cardo-settings-card {
-  border-top: none;
-  margin-top: 8px;
-  padding-top: 16px;
-  border-top: 1px solid var(--cardo-border);
-}
-
-[data-cardo-theme='github'] .cardo-settings-list-group .cardo-settings-card:hover {
-  background: transparent;
-}
-
-[data-cardo-theme='github'] .cardo-settings-card-copy {
-  width: 100%;
-}
-
-[data-cardo-theme='github'] .cardo-settings-card-copy > span:last-child {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-[data-cardo-theme='github'] .cardo-settings-card-copy small {
-  font-size: 12px;
-  color: var(--cardo-secondary-text);
-}
-
-[data-cardo-theme='github'] .cardo-settings-content > .cardo-settings-card,
-[data-cardo-theme='github'] .cardo-settings-content > .cardo-about-card {
-  border: 1px solid var(--cardo-border);
-  border-radius: 6px;
-  background: var(--cardo-panel);
-  box-shadow: none;
-  padding: 16px;
-}
-
-[data-cardo-theme='github'] .cardo-about-details {
-  border: 1px solid var(--cardo-border);
-  border-radius: 6px;
-  background: var(--cardo-panel);
-  box-shadow: none;
-}
-
-[data-cardo-theme='github'] .cardo-about-details div {
-  min-height: 48px;
-}
-
-[data-cardo-theme='github'] .cardo-about-details dt {
-  color: var(--cardo-secondary-text);
-  font-size: 14px;
-}
-
-[data-cardo-theme='github'] .cardo-about-details dd {
-  font-size: 14px;
-  color: var(--cardo-blue);
-  font-weight: 400;
-}
-
-/* Primer inputs / selects */
-[data-cardo-theme='github'] .cardo-segmented-control {
-  border: 1px solid var(--cardo-border);
-  border-radius: 6px;
-  padding: 0;
-  background: var(--cardo-panel-bottom);
-  gap: 0;
-}
-
-[data-cardo-theme='github'] .cardo-segmented-control button {
-  min-width: 64px;
-  height: 32px;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-[data-cardo-theme='github'] .cardo-segment-indicator {
-  border: 1px solid var(--cardo-border);
-  border-radius: 6px;
-  background: var(--cardo-panel);
-  box-shadow: none;
-}
-
-[data-cardo-theme='github'] .cardo-theme-pack-grid {
-  gap: 8px;
-}
-
-[data-cardo-theme='github'] .cardo-theme-pack-card {
-  border: 1px solid var(--cardo-border);
-  border-radius: 6px;
-  background: var(--cardo-panel);
-  box-shadow: none;
-  padding: 8px;
-}
-
-[data-cardo-theme='github'] .cardo-theme-pack-card:hover {
-  background: var(--cardo-panel-bottom);
-}
-
-[data-cardo-theme='github'] .cardo-theme-pack-card-selected {
-  border-color: var(--cardo-blue);
-  box-shadow: 0 0 0 1px var(--cardo-blue);
-  background: var(--cardo-panel);
-}
-
-[data-cardo-theme='github'] .cardo-theme-pack-preview {
-  border: 1px solid var(--cardo-border);
-  border-radius: 6px;
-  height: 64px;
-}
-
-[data-cardo-theme='github'] .cardo-data-actions > button {
-  border: 1px solid var(--cardo-border);
-  border-radius: 6px;
-  background: var(--cardo-panel);
-  box-shadow: none;
-}
-
-[data-cardo-theme='github'] .cardo-data-actions > button:hover {
-  background: var(--cardo-panel-bottom);
-  border-color: var(--cardo-secondary-text);
-}
-
-[data-cardo-theme='github'] .cardo-custom-search-template {
-  margin-top: 16px;
-  border: 1px solid var(--cardo-border);
-  border-radius: 6px;
-  padding: 16px;
-  background: var(--cardo-panel);
-  box-shadow: none;
-}
-
-[data-cardo-theme='github'] .cardo-custom-search-template input {
-  height: 32px;
-  border: 1px solid var(--cardo-border);
-  border-radius: 6px;
-  background: var(--cardo-input);
-  font-size: 14px;
-}
-
-[data-cardo-theme='github'] .cardo-custom-search-template input:focus {
-  border-color: var(--cardo-blue);
-  box-shadow: 0 0 0 3px var(--cardo-selection-ring);
-  outline: none;
-}
-
-/* Select trigger (Primer control) */
-[data-cardo-theme='github'] .cardo-settings-content [data-slot='select-trigger'],
-[data-cardo-theme='github'] .cardo-settings-content button[role='combobox'] {
-  border: 1px solid var(--cardo-border);
-  border-radius: 6px;
-  background: var(--cardo-input);
-  min-height: 32px;
-  font-size: 14px;
-  box-shadow: none;
-}
-
-.cardo-language-en,
-.cardo-language-zh,
-.cardo-theme-sun,
-.cardo-theme-moon {
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: inline-flex;
-  height: 16px;
-  align-items: center;
-  justify-content: center;
-  transform-origin: center;
-}
-
-.cardo-language-en {
-  width: 18px;
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.cardo-language-zh {
-  width: 16px;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.cardo-theme-sun {
-  width: 16px;
-}
-
-.cardo-theme-moon {
-  width: 16px;
 }
 
 @media (max-width: 600px) {

@@ -1,0 +1,12 @@
+/**
+ * Shared material transitions used by every Theme Pack recipe.
+ */
+
+.cardo-box,
+.cardo-collection-box {
+  transition:
+    box-shadow var(--cardo-duration-normal) var(--cardo-easing),
+    border-color var(--cardo-duration-normal) var(--cardo-easing),
+    background var(--cardo-duration-normal) var(--cardo-easing),
+    border-radius var(--cardo-duration-normal) var(--cardo-easing);
+}

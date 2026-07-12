@@ -7,19 +7,27 @@ export interface IndependentMenuPosition {
   y: number;
 }
 
+export interface IndependentMenuSize {
+  width: number;
+  height: number;
+}
+
 interface IndependentMenuEntry {
   open: boolean;
   position: IndependentMenuPosition;
+  size: IndependentMenuSize;
 }
 
 interface IndependentMenuStore {
   menus: Record<IndependentMenuId, IndependentMenuEntry>;
   closeMenu: (menuId: IndependentMenuId) => void;
   moveMenu: (menuId: IndependentMenuId, position: IndependentMenuPosition) => void;
+  resizeMenu: (menuId: IndependentMenuId, size: IndependentMenuSize) => void;
   toggleMenu: (menuId: IndependentMenuId) => void;
 }
 
-const SETTINGS_DEFAULT_SIZE = { width: 860, height: 620 };
+export const SETTINGS_DEFAULT_SIZE = { width: 860, height: 620 };
+export const SETTINGS_MIN_SIZE = { width: 560, height: 400 };
 
 export const useIndependentMenuStore = create<IndependentMenuStore>()((set) => ({
   menus: createDefaultMenus(),
@@ -37,6 +45,13 @@ export const useIndependentMenuStore = create<IndependentMenuStore>()((set) => (
         [menuId]: { ...state.menus[menuId], position },
       },
     })),
+  resizeMenu: (menuId, size) =>
+    set((state) => ({
+      menus: {
+        ...state.menus,
+        [menuId]: { ...state.menus[menuId], size },
+      },
+    })),
   toggleMenu: (menuId) =>
     set((state) => ({
       menus: {
@@ -48,7 +63,11 @@ export const useIndependentMenuStore = create<IndependentMenuStore>()((set) => (
 
 function createDefaultMenus(): IndependentMenuStore['menus'] {
   return {
-    settings: { open: false, position: getInitialMenuPosition(SETTINGS_DEFAULT_SIZE) },
+    settings: {
+      open: false,
+      position: getInitialMenuPosition(SETTINGS_DEFAULT_SIZE),
+      size: { ...SETTINGS_DEFAULT_SIZE },
+    },
   };
 }
 
@@ -61,9 +80,25 @@ export function clampIndependentMenuPosition(
   const maximumX = Math.max(margin, viewport.width - size.width - margin);
   const maximumY = Math.max(margin, viewport.height - size.height - margin);
 
+  // Integer CSS pixels — fractional left/top rasterizes the whole shell soft.
   return {
-    x: Math.min(Math.max(position.x, margin), maximumX),
-    y: Math.min(Math.max(position.y, margin), maximumY),
+    x: Math.round(Math.min(Math.max(position.x, margin), maximumX)),
+    y: Math.round(Math.min(Math.max(position.y, margin), maximumY)),
+  };
+}
+
+export function clampIndependentMenuSize(
+  size: IndependentMenuSize,
+  position: IndependentMenuPosition,
+  viewport: { width: number; height: number },
+  minSize: IndependentMenuSize = SETTINGS_MIN_SIZE,
+  margin = 12,
+): IndependentMenuSize {
+  const maxWidth = Math.max(minSize.width, viewport.width - position.x - margin);
+  const maxHeight = Math.max(minSize.height, viewport.height - position.y - margin);
+  return {
+    width: Math.min(Math.max(Math.round(size.width), minSize.width), maxWidth),
+    height: Math.min(Math.max(Math.round(size.height), minSize.height), maxHeight),
   };
 }
 

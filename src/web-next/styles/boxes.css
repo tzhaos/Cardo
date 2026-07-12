@@ -4,9 +4,16 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  /*
+   * --cardo-box-radius is the product surface radius step for boxes.
+   * Theme packs scale all radius tokens; theme-recipes may retarget this step
+   * (e.g. github → lg, one → md). Motion must use the same variable so inline
+   * animate styles cannot pin Classic xl forever.
+   */
+  --cardo-box-radius: var(--cardo-radius-xl);
   /* Material treatment comes from theme-recipes.css; these are safe fallbacks. */
   border: 1px solid var(--cardo-border);
-  border-radius: var(--cardo-radius-xl);
+  border-radius: var(--cardo-box-radius);
   background-color: var(--cardo-panel);
   background-image: linear-gradient(to bottom, var(--cardo-panel), var(--cardo-panel-bottom));
   box-shadow: var(--cardo-shadow);
@@ -14,7 +21,8 @@
   transition:
     box-shadow var(--cardo-duration-normal) var(--cardo-easing),
     border-color var(--cardo-duration-normal) var(--cardo-easing),
-    background var(--cardo-duration-normal) var(--cardo-easing);
+    background var(--cardo-duration-normal) var(--cardo-easing),
+    border-radius var(--cardo-duration-normal) var(--cardo-easing);
 }
 
 .cardo-box:hover {
@@ -194,10 +202,11 @@
 }
 
 button.cardo-box-icon {
-  border: 0;
-  border-radius: var(--cardo-radius-sm);
-  padding: 0;
-  background: transparent;
+  border: 0 !important;
+  border-radius: var(--cardo-radius-sm) !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
   cursor: pointer;
   transition:
     background 140ms ease,
@@ -205,7 +214,7 @@ button.cardo-box-icon {
 }
 
 button.cardo-box-icon:hover {
-  background: color-mix(in srgb, var(--box-accent) 10%, transparent);
+  background: color-mix(in srgb, var(--box-accent) 10%, transparent) !important;
   transform: scale(1.08);
 }
 
@@ -575,26 +584,47 @@ button.cardo-box-icon:focus-visible {
   color: var(--cardo-soft-text);
 }
 
+/* Corner grip — not a primary CTA button (ghost only). */
 .cardo-resize-handle {
   position: absolute;
-  right: 4px;
-  bottom: 4px;
+  right: 2px;
+  bottom: 2px;
   display: flex;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   align-items: center;
   justify-content: center;
-  border: 0;
-  background: transparent;
-  color: color-mix(in srgb, var(--box-accent) 58%, var(--cardo-muted));
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: color-mix(in srgb, var(--box-accent) 55%, var(--cardo-muted));
   cursor: se-resize;
   opacity: 0;
   transition: opacity var(--cardo-duration-normal) var(--cardo-easing);
 }
 
-.cardo-resize-handle svg {
-  width: 18px;
-  height: 18px;
+/* Classic: dual diagonal lines */
+.cardo-resize-grip {
+  display: block;
+  width: 12px;
+  height: 12px;
+  background:
+    linear-gradient(
+      135deg,
+      transparent 42%,
+      currentColor 42%,
+      currentColor 50%,
+      transparent 50%
+    ),
+    linear-gradient(
+      135deg,
+      transparent 68%,
+      currentColor 68%,
+      currentColor 76%,
+      transparent 76%
+    );
 }
 
 .cardo-box:hover .cardo-resize-handle {

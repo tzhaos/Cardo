@@ -5,6 +5,7 @@ import { AnimatePresence, motion, Reorder } from 'motion/react';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useStagedOrder } from '../../app/motion/useStagedOrder';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
+import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import { isCollectionPageId, isRecycleBinPageId, isSystemPageId } from '../../domain/workspace';
 import { registerTopBarElement } from '../../app/interactionElementRegistry';
 import { useI18n } from '../../i18n/useI18n';
@@ -13,13 +14,19 @@ import { RecycleBinTab } from './RecycleBinTab';
 import { TabDeleteConfirmView } from './TabDeleteConfirmView';
 import { SortablePageTab } from './SortablePageTab';
 import { MotionButton } from '../../ui/primitives/motion-button';
+import { IconButton } from '../../ui/cardo/icon-button';
 import { useContextMenu } from '../../ui/cardo/context-menu';
 import { useFeatureEnabled } from '../../shell/FeatureGate';
+import { useCanvasTools } from '../canvas/useCanvasTools';
 
 export function TopBar() {
   const showCollection = useFeatureEnabled('workspace.collection');
   const showRecycleBin = useFeatureEnabled('workspace.recycleBin');
   const multiPage = useFeatureEnabled('workspace.multiPage');
+  const showCanvasTools = useFeatureEnabled('chrome.canvasTools');
+  const themeId = usePreferencesStore((state) => state.themeId);
+  const isFluent = themeId === 'fluent';
+  const { isLocked, items: canvasToolItems } = useCanvasTools();
   const persistedPageRows = useWorkspaceStore((state) => state.projection.pages);
   const activePageId = useWorkspaceStore((state) => state.projection.activePageId);
   const defaultPageId = useWorkspaceStore((state) => state.projection.defaultPageId);
@@ -154,6 +161,59 @@ export function TopBar() {
     ]);
   };
 
+  const collectionTab =
+    showCollection && collectionPage ? (
+      <CollectionTab
+        active={collectionPage.id === activePageId}
+        highlighted={boxDropPageId === collectionPage.id}
+        page={collectionPage}
+        released={boxDropRelease?.pageId === collectionPage.id}
+        onActivate={() => {
+          useUiStore.getState().selectBox(null);
+          setActivePage(collectionPage.id);
+        }}
+        onContextMenu={(event) => openPageMenu(event)}
+      />
+    ) : null;
+
+  const recycleTab =
+    showRecycleBin && recycleBinPage ? (
+      <RecycleBinTab
+        active={recycleBinPage.id === activePageId}
+        highlighted={boxDropPageId === recycleBinPage.id}
+        page={recycleBinPage}
+        released={boxDropRelease?.pageId === recycleBinPage.id}
+        onActivate={() => setActivePage(recycleBinPage.id)}
+        onContextMenu={(event) => openPageMenu(event)}
+      />
+    ) : null;
+
+  const pageTabs = (
+    <AnimatePresence mode="popLayout">
+      {visiblePages.map((page) => (
+        <SortablePageTab
+          active={page.id === activePageId}
+          className={[
+            boxDropPageId === page.id ? 'cardo-box-drop-target' : '',
+            boxDropRelease?.pageId === page.id ? 'cardo-box-drop-released' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          key={page.id}
+          page={page}
+          renameRequested={renamePageId === page.id}
+          onActivate={() => setActivePage(page.id)}
+          onContextMenu={(event) => openPageMenu(event, page)}
+          onRename={(title) => renamePage(page.id, title)}
+          onRenameRequestHandled={() => setRenamePageId(null)}
+          onReorderStart={multiPage ? startReordering : () => undefined}
+          onReorderEnd={multiPage ? finishReordering : () => undefined}
+          reorderable={multiPage}
+        />
+      ))}
+    </AnimatePresence>
+  );
+
   return (
     <header className={topBarClassName} data-top-bar ref={registerTopBarElement}>
       <motion.div
@@ -170,75 +230,60 @@ export function TopBar() {
         }}
         aria-hidden={Boolean(pageToDelete)}
       >
-        <Reorder.Group
-          as="nav"
-          axis="x"
-          className="cardo-tabs"
-          values={pageIds}
-          onReorder={updateOrder}
-          aria-label={t('page.workspacePages')}
-        >
-          {showCollection && collectionPage ? (
-            <CollectionTab
-              active={collectionPage.id === activePageId}
-              highlighted={boxDropPageId === collectionPage.id}
-              page={collectionPage}
-              released={boxDropRelease?.pageId === collectionPage.id}
-              onActivate={() => {
-                useUiStore.getState().selectBox(null);
-                setActivePage(collectionPage.id);
-              }}
-              onContextMenu={(event) => openPageMenu(event)}
-            />
+        <div className="cardo-top-leading" aria-hidden="true" />
+        <div className="cardo-top-center">
+          <Reorder.Group
+            as="nav"
+            axis="x"
+            className="cardo-tabs"
+            values={pageIds}
+            onReorder={updateOrder}
+            aria-label={t('page.workspacePages')}
+          >
+            {/* Collection | pages | Recycle — same adjacency as Classic under every theme. */}
+            {collectionTab}
+            {pageTabs}
+            {recycleTab}
+          </Reorder.Group>
+          {multiPage ? (
+            <motion.div className="cardo-top-actions" layout="position">
+              <MotionButton
+                variant="icon"
+                className="cardo-icon-button"
+                type="button"
+                onClick={openNewPage}
+                aria-label={t('page.add')}
+                whileTap={{ scale: 0.9 }}
+              >
+                <Plus size={18} />
+              </MotionButton>
+            </motion.div>
           ) : null}
-          <AnimatePresence mode="popLayout">
-            {visiblePages.map((page) => (
-              <SortablePageTab
-                active={page.id === activePageId}
-                className={[
-                  boxDropPageId === page.id ? 'cardo-box-drop-target' : '',
-                  boxDropRelease?.pageId === page.id ? 'cardo-box-drop-released' : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-                key={page.id}
-                page={page}
-                renameRequested={renamePageId === page.id}
-                onActivate={() => setActivePage(page.id)}
-                onContextMenu={(event) => openPageMenu(event, page)}
-                onRename={(title) => renamePage(page.id, title)}
-                onRenameRequestHandled={() => setRenamePageId(null)}
-                onReorderStart={multiPage ? startReordering : () => undefined}
-                onReorderEnd={multiPage ? finishReordering : () => undefined}
-                reorderable={multiPage}
-              />
-            ))}
-          </AnimatePresence>
-          {showRecycleBin && recycleBinPage ? (
-            <RecycleBinTab
-              active={recycleBinPage.id === activePageId}
-              highlighted={boxDropPageId === recycleBinPage.id}
-              page={recycleBinPage}
-              released={boxDropRelease?.pageId === recycleBinPage.id}
-              onActivate={() => setActivePage(recycleBinPage.id)}
-              onContextMenu={(event) => openPageMenu(event)}
-            />
-          ) : null}
-        </Reorder.Group>
-        {multiPage ? (
-          <motion.div className="cardo-top-actions" layout="position">
-            <MotionButton
-              variant="icon"
-              className="cardo-icon-button"
-              type="button"
-              onClick={openNewPage}
-              aria-label={t('page.add')}
-              whileTap={{ scale: 0.9 }}
-            >
-              <Plus size={18} />
-            </MotionButton>
-          </motion.div>
-        ) : null}
+        </div>
+        <div className="cardo-top-trailing">
+          {isFluent && showCanvasTools
+            ? canvasToolItems.map((item) => (
+                <IconButton
+                  key={item.id}
+                  className={[
+                    'cardo-top-tool-button',
+                    item.id === 'toggle-canvas-lock' && isLocked
+                      ? 'cardo-canvas-tools-button-active'
+                      : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  disabled={item.disabled}
+                  aria-label={item.label}
+                  aria-pressed={item.id === 'toggle-canvas-lock' ? isLocked : undefined}
+                  title={item.label}
+                  onClick={() => item.onSelect?.()}
+                >
+                  {item.icon}
+                </IconButton>
+              ))
+            : null}
+        </div>
       </motion.div>
       <AnimatePresence>
         {pageToDelete ? (

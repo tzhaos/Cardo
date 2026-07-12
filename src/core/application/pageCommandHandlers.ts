@@ -31,23 +31,18 @@ async function createPage(transaction: DatabaseTransaction, title: string) {
   const nextTitle = title.trim() || 'Untitled';
   const timestamp = new Date().toISOString();
   const pageId = `page-${crypto.randomUUID()}`;
-  const normalPages = await selectNormalPages(transaction);
-  const recyclePage = await selectPage(transaction, RECYCLE_BIN_PAGE_ID);
+  const allPages = await selectAllPages(transaction);
+  const nextSortOrder =
+    allPages.reduce((max, page) => Math.max(max, page.sortOrder), -1) + 1;
   const stateBefore = await requireAppState(transaction);
   const page = {
     id: pageId,
     title: nextTitle,
-    sortOrder: normalPages.length,
+    sortOrder: nextSortOrder,
     createdAt: timestamp,
     updatedAt: timestamp,
   };
 
-  if (recyclePage) {
-    await transaction
-      .update(pages)
-      .set({ sortOrder: normalPages.length + 1, updatedAt: timestamp })
-      .where(eq(pages.id, RECYCLE_BIN_PAGE_ID));
-  }
   await transaction.insert(pages).values(page);
   const stateAfter = { ...stateBefore, activePageId: pageId };
   await transaction
@@ -60,15 +55,6 @@ async function createPage(transaction: DatabaseTransaction, title: string) {
     changes: [
       rowChange('pages', { id: pageId }, null, page),
       rowChange('app_state', { id: APP_STATE_ID }, stateBefore, stateAfter),
-      ...(recyclePage
-        ? [
-            rowChange('pages', { id: recyclePage.id }, recyclePage, {
-              ...recyclePage,
-              sortOrder: normalPages.length + 1,
-              updatedAt: timestamp,
-            }),
-          ]
-        : []),
     ],
   } satisfies DatabaseCommandMutation;
 }
@@ -118,46 +104,51 @@ async function openPage(
 }
 
 async function reorderPages(transaction: DatabaseTransaction, orderedPageIds: string[]) {
-  const normalPages = await selectNormalPages(transaction);
-  const currentIds = normalPages.map((page) => page.id);
+  const allPages = await selectAllPages(transaction);
+  const currentIds = allPages.map((page) => page.id);
+  const orderedSet = new Set(orderedPageIds);
+
+  // Visible tab strip may omit feature-disabled system pages; include missing ones
+  // after the reordered list, preserving their prior relative order.
   if (
-    orderedPageIds.length !== currentIds.length ||
-    new Set(orderedPageIds).size !== orderedPageIds.length ||
+    orderedPageIds.length === 0 ||
+    orderedSet.size !== orderedPageIds.length ||
     orderedPageIds.some((pageId) => !currentIds.includes(pageId))
   ) {
-    throw new Error('Page reorder must contain every normal page exactly once.');
+    throw new Error('Page reorder contains unknown or duplicate page ids.');
   }
-  if (currentIds.every((pageId, index) => pageId === orderedPageIds[index])) {
+
+  const normalIds = currentIds.filter(
+    (pageId) => pageId !== COLLECTION_PAGE_ID && pageId !== RECYCLE_BIN_PAGE_ID,
+  );
+  if (normalIds.some((pageId) => !orderedSet.has(pageId))) {
+    throw new Error('Page reorder must include every workspace page.');
+  }
+
+  const missingIds = currentIds.filter((pageId) => !orderedSet.has(pageId));
+  const finalOrder = [...orderedPageIds, ...missingIds];
+  if (currentIds.every((pageId, index) => pageId === finalOrder[index])) {
     return noMutation();
   }
 
   const timestamp = new Date().toISOString();
-  const pageById = new Map(normalPages.map((page) => [page.id, page]));
-  const recyclePage = await selectPage(transaction, RECYCLE_BIN_PAGE_ID);
+  const pageById = new Map(allPages.map((page) => [page.id, page]));
   const changes: DatabaseCommandMutation['changes'] = [];
 
   await transaction
     .update(pages)
     .set({ sortOrder: sql`${pages.sortOrder} + 10000` })
-    .where(inArray(pages.id, orderedPageIds));
+    .where(inArray(pages.id, finalOrder));
 
-  for (const [sortOrder, pageId] of orderedPageIds.entries()) {
+  for (const [sortOrder, pageId] of finalOrder.entries()) {
     const before = pageById.get(pageId)!;
+    if (before.sortOrder === sortOrder) continue;
     const after = { ...before, sortOrder, updatedAt: timestamp };
     await transaction
       .update(pages)
       .set({ sortOrder, updatedAt: timestamp })
       .where(eq(pages.id, pageId));
     changes.push(rowChange('pages', { id: pageId }, before, after));
-  }
-
-  if (recyclePage && recyclePage.sortOrder !== normalPages.length) {
-    const after = { ...recyclePage, sortOrder: normalPages.length, updatedAt: timestamp };
-    await transaction
-      .update(pages)
-      .set({ sortOrder: after.sortOrder, updatedAt: timestamp })
-      .where(eq(pages.id, recyclePage.id));
-    changes.push(rowChange('pages', { id: recyclePage.id }, recyclePage, after));
   }
 
   return { changes };
@@ -169,8 +160,9 @@ async function deletePage(transaction: DatabaseTransaction, pageId: string) {
   if (normalPages.length <= 1) throw new Error('The final normal page cannot be deleted.');
   const page = normalPages.find((candidate) => candidate.id === pageId);
   if (!page) throw new Error(`Page ${pageId} does not exist.`);
-  const remainingPages = normalPages.filter((candidate) => candidate.id !== pageId);
-  const recyclePage = await requirePage(transaction, RECYCLE_BIN_PAGE_ID);
+  const remainingNormalPages = normalPages.filter((candidate) => candidate.id !== pageId);
+  const allPages = await selectAllPages(transaction);
+  const remainingPages = allPages.filter((candidate) => candidate.id !== pageId);
   const stateBefore = await requireAppState(transaction);
   const movedBoxes = await transaction.select().from(boxes).where(eq(boxes.pageId, pageId)).all();
   const movedBoxIds = movedBoxes.map((box) => box.id);
@@ -212,10 +204,11 @@ async function deletePage(transaction: DatabaseTransaction, pageId: string) {
   await transaction.delete(pages).where(eq(pages.id, pageId));
   changes.push(rowChange('pages', { id: pageId }, page, null));
 
+  // Compact remaining pages (including system tabs) while keeping relative order.
   await transaction
     .update(pages)
     .set({ sortOrder: sql`${pages.sortOrder} + 10000` })
-    .where(notInArray(pages.id, [COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID, pageId]));
+    .where(notInArray(pages.id, [pageId]));
 
   for (const [sortOrder, currentPage] of remainingPages.entries()) {
     const after = { ...currentPage, sortOrder, updatedAt: timestamp };
@@ -228,23 +221,12 @@ async function deletePage(transaction: DatabaseTransaction, pageId: string) {
     }
   }
 
-  const recycleAfter = {
-    ...recyclePage,
-    sortOrder: remainingPages.length,
-    updatedAt: timestamp,
-  };
-  await transaction
-    .update(pages)
-    .set({ sortOrder: recycleAfter.sortOrder, updatedAt: timestamp })
-    .where(eq(pages.id, RECYCLE_BIN_PAGE_ID));
-  changes.push(rowChange('pages', { id: RECYCLE_BIN_PAGE_ID }, recyclePage, recycleAfter));
-
   const stateAfter = {
     ...stateBefore,
     activePageId:
       stateBefore.activePageId === pageId ? COLLECTION_PAGE_ID : stateBefore.activePageId,
     defaultPageId:
-      stateBefore.defaultPageId === pageId ? remainingPages[0].id : stateBefore.defaultPageId,
+      stateBefore.defaultPageId === pageId ? remainingNormalPages[0]!.id : stateBefore.defaultPageId,
   };
   await transaction
     .update(appState)
@@ -271,6 +253,10 @@ async function selectNormalPages(transaction: DatabaseTransaction) {
     .where(notInArray(pages.id, [COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID]))
     .orderBy(asc(pages.sortOrder))
     .all();
+}
+
+async function selectAllPages(transaction: DatabaseTransaction) {
+  return await transaction.select().from(pages).orderBy(asc(pages.sortOrder)).all();
 }
 
 async function selectPage(transaction: DatabaseTransaction, pageId: string) {

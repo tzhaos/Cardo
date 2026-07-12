@@ -28,20 +28,31 @@ export function GlobalSearchPanel({ query }: { query: string }) {
   const { t } = useI18n();
 
   useEffect(() => setSelectedIndex(0), [query]);
+  // Debounce Runtime search: every keystroke without delay floods SQLite + the client task queue.
   useEffect(() => {
     let active = true;
-    void queryGlobalSearch(query)
-      .then((nextResults) => {
-        if (active) setResults(nextResults);
-      })
-      .catch((error: unknown) => {
-        if (active) {
-          console.error('Global search failed', error);
-          setResults([]);
-        }
-      });
+    const trimmed = query.trim();
+    if (!trimmed) {
+      setResults([]);
+      return () => {
+        active = false;
+      };
+    }
+    const timer = window.setTimeout(() => {
+      void queryGlobalSearch(trimmed)
+        .then((nextResults) => {
+          if (active) setResults(nextResults);
+        })
+        .catch((error: unknown) => {
+          if (active) {
+            console.error('Global search failed', error);
+            setResults([]);
+          }
+        });
+    }, 200);
     return () => {
       active = false;
+      window.clearTimeout(timer);
     };
   }, [query]);
   useEffect(
@@ -103,7 +114,7 @@ export function GlobalSearchPanel({ query }: { query: string }) {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  });
+  }, [results.length]);
 
   return (
     <div className="cardo-global-search-panel-wrap">

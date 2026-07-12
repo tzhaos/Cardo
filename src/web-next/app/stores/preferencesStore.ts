@@ -122,7 +122,7 @@ const actions = {
     key: OverridableColorKey,
     value: string | null,
   ) => {
-    const themeId = state.themeId;
+    const themeId = state.themeId || OFFICIAL_DEFAULT_THEME_ID;
     const next: ThemeColorOverrides = structuredClone(state.themeColorOverrides);
     const themeBucket = { ...(next[themeId] ?? {}) };
     const modeBucket = { ...(themeBucket[colorMode] ?? {}) };
@@ -146,7 +146,7 @@ const actions = {
       themeColorOverrides: themeColorOverridesSchema.parse(next),
     });
   },
-  resetThemeColorOverrides: (themeId = state.themeId) => {
+  resetThemeColorOverrides: (themeId = state.themeId || OFFICIAL_DEFAULT_THEME_ID) => {
     const next: ThemeColorOverrides = { ...state.themeColorOverrides };
     delete next[themeId];
     fireCommand({
@@ -306,7 +306,7 @@ async function refreshPreferences() {
     diskPacks = [];
   }
 
-  // Official packs stay code-defined; rehydrate imports + local files.
+  // Official packs stay code-defined; rehydrate imports + local files (cannot replace official ids).
   syncImportedThemePacks(mergeUserThemePacks(importedThemePacks, diskPacks));
 
   const themeId = hasRegisteredThemePack(preferences.themeId)

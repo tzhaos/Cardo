@@ -2,12 +2,15 @@ import { useMemo, useRef, useState } from 'react';
 import type { PointerEventHandler, ReactNode } from 'react';
 import {
   Check,
+  ChevronRight,
   CircleHelp,
   Database,
   Download,
   FileDown,
   Moon,
   Palette,
+  RotateCcw,
+  Search,
   Settings,
   SlidersHorizontal,
   Sun,
@@ -18,9 +21,15 @@ import cardoMarkUrl from '../../../../assets/brand/cardo-mark.svg';
 import { AnimatePresence, motion } from 'motion/react';
 import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import { useI18n } from '../../i18n/useI18n';
-import { getRegisteredWebNextThemes } from '../../themes/themeRegistry';
 import type { WebNextColorMode } from '../../themes/themeRegistry';
-import { ColorModeStateIcon, LanguageStateIcon } from './StateIcons';
+import {
+  getRegisteredWebNextThemes,
+  getThemePack,
+  OFFICIAL_DEFAULT_THEME_ID,
+} from '../../themes/themeRegistry';
+import { resolveEffectiveThemeTokens } from '../../themes/resolveTheme';
+import { ColorModeStateIcon } from './StateIcons';
+import { SettingsNavIcon } from './SettingsNavIcons';
 import { IconButton, IconFrame } from '../../ui/cardo/icon-button';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import type { WorkspaceProjection } from '../../domain/workspace';
@@ -37,6 +46,18 @@ import {
   webSearchEngineIdSchema,
 } from '../../../core/contracts/preferences';
 import {
+  overridableColorKeys,
+  type OverridableColorKey,
+} from '../../../core/contracts/themePack';
+import {
+  COLOR_OVERRIDE_PRESETS,
+  isColorPresetActive,
+} from './colorPresets';
+import {
+  matchSettingsSearchEntries,
+  type SettingsSectionId,
+} from './settingsSearchCatalog';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -49,13 +70,10 @@ import { MotionButton } from '../../ui/primitives/motion-button';
 import { ToggleGroup, ToggleGroupItem } from '../../ui/primitives/toggle-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/primitives/tabs';
 
-type SettingsSection = 'general' | 'appearance' | 'data' | 'about';
+type SettingsSection = SettingsSectionId;
 
 /**
- * Product settings shell: language, search, theme pack, light/dark, backup.
- * Advanced theme/layout/feature editors may exist as preferences + catalog keys
- * but are not mounted here until product UI explicitly exposes them.
- * User-facing copy must describe current controls only — never roadmap promises.
+ * Product settings: language, search, Classic/Fluent theme, light/dark, color overrides, backup.
  */
 export function SettingsPanel({
   onClose,
@@ -65,95 +83,186 @@ export function SettingsPanel({
   onHeaderPointerDown?: PointerEventHandler<HTMLElement>;
 }) {
   const [section, setSection] = useState<SettingsSection>('general');
+  const [settingsQuery, setSettingsQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const colorMode = usePreferencesStore((state) => state.colorMode);
   const locale = usePreferencesStore((state) => state.locale);
   const setColorMode = usePreferencesStore((state) => state.setColorMode);
   const setLocale = usePreferencesStore((state) => state.setLocale);
-  const setThemeId = usePreferencesStore((state) => state.setThemeId);
-  const themeId = usePreferencesStore((state) => state.themeId);
-  const importedThemePacks = usePreferencesStore((state) => state.importedThemePacks);
   const searchEngine = usePreferencesStore((state) => state.searchEngine);
   const customSearchTemplate = usePreferencesStore((state) => state.customSearchTemplate);
   const setSearchEngine = usePreferencesStore((state) => state.setSearchEngine);
   const setCustomSearchTemplate = usePreferencesStore((state) => state.setCustomSearchTemplate);
-  const { t } = useI18n();
-  const themes = useMemo(() => getRegisteredWebNextThemes(), [importedThemePacks]);
+  const themeId = usePreferencesStore((state) => state.themeId);
+  const isFluent = themeId === 'fluent';
+  const { t, locale: i18nLocale } = useI18n();
   const sections = [
-    { id: 'general' as const, icon: SlidersHorizontal, label: t('settings.general') },
-    { id: 'appearance' as const, icon: Palette, label: t('settings.appearance') },
-    { id: 'data' as const, icon: Database, label: t('settings.data') },
-    { id: 'about' as const, icon: CircleHelp, label: t('settings.about') },
+    {
+      id: 'general' as const,
+      label: t('settings.general'),
+      monoIcon: <SlidersHorizontal size={16} />,
+    },
+    {
+      id: 'appearance' as const,
+      label: t('settings.appearance'),
+      monoIcon: <Palette size={16} />,
+    },
+    {
+      id: 'data' as const,
+      label: t('settings.data'),
+      monoIcon: <Database size={16} />,
+    },
+    {
+      id: 'about' as const,
+      label: t('settings.about'),
+      monoIcon: <CircleHelp size={16} />,
+    },
   ];
+  const sectionLabel = (id: SettingsSection) =>
+    sections.find((entry) => entry.id === id)?.label ?? id;
+  const isSearching = settingsQuery.trim().length > 0;
+  const searchResults = useMemo(
+    () => matchSettingsSearchEntries(settingsQuery, i18nLocale, t),
+    [i18nLocale, settingsQuery, t],
+  );
+
+  const openSearchResult = (nextSection: SettingsSection) => {
+    setSection(nextSection);
+    setSettingsQuery('');
+  };
 
   return (
     <div className="cardo-settings-panel" role="dialog" aria-label={t('settings.title')}>
       <header className="cardo-settings-header" onPointerDown={onHeaderPointerDown}>
-        <div>
+        <div className="cardo-settings-header-title">
           <IconFrame>
             <Settings size={17} />
           </IconFrame>
           <span>{t('settings.title')}</span>
         </div>
-        <IconButton data-no-menu-drag onClick={onClose} aria-label={t('common.close')}>
-          <X size={16} />
-        </IconButton>
+        <div className="cardo-settings-header-drag-space" aria-hidden="true" />
+        <div className="cardo-settings-header-actions">
+          <label className="cardo-settings-search" data-no-menu-drag>
+            <span className="cardo-settings-search-icon" aria-hidden>
+              <Search size={16} strokeWidth={2} />
+            </span>
+            <Input
+              ref={searchInputRef}
+              value={settingsQuery}
+              onChange={(event) => setSettingsQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape' && settingsQuery) {
+                  event.stopPropagation();
+                  setSettingsQuery('');
+                }
+              }}
+              placeholder={t('settings.searchPlaceholder')}
+              aria-label={t('settings.search')}
+              data-no-menu-drag
+            />
+            {settingsQuery ? (
+              <button
+                type="button"
+                className="cardo-settings-search-clear"
+                data-no-menu-drag
+                aria-label={t('common.close')}
+                onClick={() => setSettingsQuery('')}
+              >
+                <X size={14} />
+              </button>
+            ) : null}
+          </label>
+          <IconButton data-no-menu-drag onClick={onClose} aria-label={t('common.close')}>
+            <X size={16} />
+          </IconButton>
+        </div>
       </header>
       <Tabs
         className="cardo-settings-layout"
         value={section}
-        onValueChange={(value) => setSection(value as SettingsSection)}
+        onValueChange={(value) => {
+          setSection(value as SettingsSection);
+          setSettingsQuery('');
+        }}
       >
         <TabsList className="cardo-settings-nav" aria-label={t('settings.sections')}>
-          {sections.map(({ id, icon: Icon, label }) => (
+          {sections.map(({ id, label, monoIcon }) => (
             <TabsTrigger key={id} value={id}>
-              {section === id ? (
-                <motion.span
-                  className="cardo-settings-nav-indicator"
-                  layoutId="settings-nav-indicator"
-                  transition={{ type: 'spring', bounce: 0.12, duration: 0.42 }}
-                />
+              {/* Classic: shared layoutId pill. Fluent: pure CSS indicator — avoids hover blur. */}
+              {section === id && !isSearching ? (
+                isFluent ? (
+                  <span className="cardo-settings-nav-indicator" aria-hidden />
+                ) : (
+                  <motion.span
+                    className="cardo-settings-nav-indicator"
+                    layoutId="settings-nav-indicator"
+                    transition={{ type: 'spring', bounce: 0.12, duration: 0.42 }}
+                  />
+                )
               ) : null}
-              <IconFrame>
-                <Icon size={16} />
-              </IconFrame>
+              {isFluent ? (
+                <SettingsNavIcon id={id} />
+              ) : (
+                <IconFrame className="cardo-settings-nav-mono-icon">{monoIcon}</IconFrame>
+              )}
               <span>{label}</span>
             </TabsTrigger>
           ))}
         </TabsList>
-        <TabsContent className="cardo-settings-content cardo-custom-scrollbar" value={section}>
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.section
-              key={section}
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -8 }}
-              transition={{ duration: 0.16 }}
-            >
-              {section === 'general' ? (
-                <GeneralSettings
-                  locale={locale}
-                  setLocale={setLocale}
-                  searchEngine={searchEngine}
-                  customSearchTemplate={customSearchTemplate}
-                  setSearchEngine={setSearchEngine}
-                  setCustomSearchTemplate={setCustomSearchTemplate}
-                />
-              ) : null}
-              {section === 'appearance' ? (
-                <AppearanceSettings
-                  colorMode={colorMode}
-                  locale={locale}
-                  setColorMode={setColorMode}
-                  setThemeId={setThemeId}
-                  themeId={themeId}
-                  themes={themes}
-                />
-              ) : null}
-              {section === 'data' ? <DataSettings /> : null}
-              {section === 'about' ? <AboutSettings /> : null}
-            </motion.section>
-          </AnimatePresence>
-        </TabsContent>
+        <div className="cardo-settings-content cardo-custom-scrollbar">
+          {isSearching ? (
+            <div className="cardo-settings-search-results" role="listbox" aria-label={t('settings.search')}>
+              {searchResults.length === 0 ? (
+                <p className="cardo-settings-search-empty">{t('settings.searchNoResults')}</p>
+              ) : (
+                searchResults.map((entry) => (
+                  <button
+                    key={entry.id}
+                    type="button"
+                    className="cardo-settings-search-result"
+                    role="option"
+                    onClick={() => openSearchResult(entry.section)}
+                  >
+                    <span className="cardo-settings-search-result-copy">
+                      <strong>{t(entry.titleKey)}</strong>
+                      {entry.descriptionKey ? <small>{t(entry.descriptionKey)}</small> : null}
+                      <em>{t('settings.searchInSection', { section: sectionLabel(entry.section) })}</em>
+                    </span>
+                    <ChevronRight size={16} aria-hidden />
+                  </button>
+                ))
+              )}
+            </div>
+          ) : (
+            <TabsContent className="cardo-settings-tab-content" value={section}>
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.section
+                  key={section}
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -8 }}
+                  transition={{ duration: 0.16 }}
+                >
+                  {section === 'general' ? (
+                    <GeneralSettings
+                      locale={locale}
+                      setLocale={setLocale}
+                      searchEngine={searchEngine}
+                      customSearchTemplate={customSearchTemplate}
+                      setSearchEngine={setSearchEngine}
+                      setCustomSearchTemplate={setCustomSearchTemplate}
+                    />
+                  ) : null}
+                  {section === 'appearance' ? (
+                    <AppearanceSettings colorMode={colorMode} setColorMode={setColorMode} />
+                  ) : null}
+                  {section === 'data' ? <DataSettings /> : null}
+                  {section === 'about' ? <AboutSettings /> : null}
+                </motion.section>
+              </AnimatePresence>
+            </TabsContent>
+          )}
+        </div>
       </Tabs>
     </div>
   );
@@ -288,7 +397,6 @@ function GeneralSettings({
       <div className="cardo-settings-list-group">
         <div className="cardo-settings-card">
           <div className="cardo-settings-card-copy">
-            <LanguageStateIcon locale={locale} />
             <span>
               {t('settings.language')}
               <small>{t('settings.languageDescription')}</small>
@@ -348,22 +456,49 @@ function GeneralSettings({
   );
 }
 
+const COLOR_OVERRIDE_LABEL_KEYS = {
+  canvas: 'settings.colorOverride.canvas',
+  panel: 'settings.colorOverride.panel',
+  surface: 'settings.colorOverride.surface',
+  text: 'settings.colorOverride.text',
+  blue: 'settings.colorOverride.blue',
+  createBackground: 'settings.colorOverride.createBackground',
+  settingsChrome: 'settings.colorOverride.settingsChrome',
+  settingsHover: 'settings.colorOverride.settingsHover',
+} as const satisfies Record<OverridableColorKey, string>;
+
 function AppearanceSettings({
   colorMode,
-  locale,
   setColorMode,
-  setThemeId,
-  themeId,
-  themes,
 }: {
   colorMode: WebNextColorMode;
-  locale: 'en' | 'zh';
   setColorMode: (colorMode: WebNextColorMode) => void;
-  setThemeId: (themeId: string) => void;
-  themeId: string;
-  themes: ReturnType<typeof getRegisteredWebNextThemes>;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const themeId = usePreferencesStore((state) => state.themeId);
+  const setThemeId = usePreferencesStore((state) => state.setThemeId);
+  const themeColorOverrides = usePreferencesStore((state) => state.themeColorOverrides);
+  const setThemeColorOverride = usePreferencesStore((state) => state.setThemeColorOverride);
+  const resetThemeColorOverrides = usePreferencesStore((state) => state.resetThemeColorOverrides);
+  const themes = useMemo(() => getRegisteredWebNextThemes(), []);
+
+  const pack = useMemo(() => getThemePack(themeId || OFFICIAL_DEFAULT_THEME_ID), [themeId]);
+  const effectiveColors = useMemo(
+    () =>
+      resolveEffectiveThemeTokens({
+        pack,
+        colorMode,
+        colorOverrides: themeColorOverrides,
+      }).colors,
+    [pack, colorMode, themeColorOverrides],
+  );
+  const modeOverrides = themeColorOverrides[themeId]?.[colorMode] ?? {};
+  const themeBucket = themeColorOverrides[themeId];
+  const hasAnyOverrides = Boolean(
+    themeBucket &&
+      (Object.keys(themeBucket.light ?? {}).length > 0 ||
+        Object.keys(themeBucket.dark ?? {}).length > 0),
+  );
 
   return (
     <>
@@ -371,6 +506,7 @@ function AppearanceSettings({
         title={t('settings.appearance')}
         description={t('settings.appearanceDescription')}
       />
+
       <div className="cardo-settings-subheading">
         <span>{t('settings.theme')}</span>
         <small>{t('settings.themeDescription')}</small>
@@ -395,7 +531,6 @@ function AppearanceSettings({
                     : 'cardo-theme-pack-card'
                 }
                 type="button"
-                whileTap={{ scale: 0.99 }}
               >
                 <span className="cardo-theme-pack-preview" aria-hidden="true">
                   <span style={{ background: theme.palettes.light.canvas }} />
@@ -404,12 +539,12 @@ function AppearanceSettings({
                 </span>
                 <span className="cardo-theme-pack-card-copy">
                   <span>
-                    {theme.name[locale]}
+                    {theme.name[locale === 'zh' ? 'zh' : 'en']}
                     {theme.official ? (
                       <em className="cardo-theme-official-badge">{t('settings.themeOfficial')}</em>
                     ) : null}
                   </span>
-                  <small>{theme.description[locale]}</small>
+                  <small>{theme.description[locale === 'zh' ? 'zh' : 'en']}</small>
                 </span>
                 {selected ? (
                   <IconFrame className="cardo-theme-check">
@@ -448,8 +583,130 @@ function AppearanceSettings({
           </ToggleGroup>
         </div>
       </div>
+
+      <div className="cardo-settings-subheading">
+        <span>{t('settings.colorOverrides')}</span>
+        <small>{t('settings.colorOverridesDescription')}</small>
+      </div>
+      <div className="cardo-theme-color-list">
+        {overridableColorKeys.map((key) => {
+          const current = String(effectiveColors[key] ?? '');
+          const pickerValue = cssColorToHexInput(current);
+          const presets = COLOR_OVERRIDE_PRESETS[key][colorMode];
+          const label = t(COLOR_OVERRIDE_LABEL_KEYS[key] as Parameters<typeof t>[0]);
+          return (
+            <div className="cardo-theme-color-row" key={key}>
+              <div className="cardo-theme-color-row-main">
+                <span className="cardo-theme-color-label">
+                  <i
+                    className="cardo-theme-color-swatch"
+                    style={{ background: current }}
+                    aria-hidden
+                  />
+                  {label}
+                </span>
+                <span className="cardo-theme-color-controls">
+                  <input
+                    className="cardo-theme-color-picker"
+                    type="color"
+                    value={pickerValue}
+                    aria-label={label}
+                    title={t('settings.colorOverride.custom')}
+                    onChange={(event) =>
+                      setThemeColorOverride(colorMode, key, event.target.value)
+                    }
+                  />
+                  <Input
+                    className="cardo-theme-color-text"
+                    value={modeOverrides[key] ?? ''}
+                    placeholder={current}
+                    spellCheck={false}
+                    aria-label={t('settings.colorOverride.customValue', { label })}
+                    onChange={(event) => {
+                      const next = event.target.value.trim();
+                      setThemeColorOverride(colorMode, key, next.length ? next : null);
+                    }}
+                  />
+                </span>
+              </div>
+              <div
+                className="cardo-theme-color-presets"
+                role="group"
+                aria-label={t('settings.colorOverride.presets', { label })}
+              >
+                {presets.map((preset) => {
+                  const active = isColorPresetActive(current, preset.value);
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      className={[
+                        'cardo-theme-color-preset',
+                        active ? 'cardo-theme-color-preset-active' : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
+                      aria-label={`${label}: ${preset.id}`}
+                      aria-pressed={active}
+                      title={preset.value}
+                      onClick={() => setThemeColorOverride(colorMode, key, preset.value)}
+                    >
+                      <span
+                        className="cardo-theme-color-preset-fill"
+                        style={{ background: preset.value }}
+                        aria-hidden
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="cardo-settings-list-group cardo-settings-list-group-spaced">
+        <div className="cardo-settings-card cardo-theme-color-reset-card">
+          <div className="cardo-settings-card-copy">
+            <IconFrame>
+              <RotateCcw size={16} />
+            </IconFrame>
+            <span>
+              {t('settings.resetColorOverrides')}
+              <small>{t('settings.resetColorOverridesDescription')}</small>
+            </span>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            className="cardo-settings-secondary-button"
+            disabled={!hasAnyOverrides}
+            onClick={() => resetThemeColorOverrides()}
+          >
+            {t('settings.resetColorOverridesAction')}
+          </Button>
+        </div>
+      </div>
     </>
   );
+}
+
+/** Best-effort #rrggbb for native color inputs; falls back to accent blue. */
+function cssColorToHexInput(value: string): string {
+  const trimmed = value.trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(trimmed)) return trimmed.toLowerCase();
+  if (/^#[0-9a-fA-F]{3}$/.test(trimmed)) {
+    const [, a, b, c] = trimmed;
+    return `#${a}${a}${b}${b}${c}${c}`.toLowerCase();
+  }
+  const rgb = trimmed.match(
+    /^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})(?:\s*,\s*[\d.]+\s*)?\)$/i,
+  );
+  if (rgb) {
+    const hex = (n: string) => Number(n).toString(16).padStart(2, '0');
+    return `#${hex(rgb[1]!)}${hex(rgb[2]!)}${hex(rgb[3]!)}`;
+  }
+  return '#3b82f6';
 }
 
 function AboutSettings() {
@@ -467,10 +724,10 @@ function AboutSettings() {
           height={48}
           draggable={false}
         />
-        <span>
-          Cardo
-          <small>{t('settings.webNextEdition')}</small>
-        </span>
+        <div className="cardo-about-copy">
+          <span className="cardo-about-name">Cardo</span>
+          <small className="cardo-about-edition">{t('settings.webNextEdition')}</small>
+        </div>
       </div>
       <dl className="cardo-about-details">
         <div>
@@ -502,11 +759,15 @@ function SegmentButton({
 }) {
   return (
     <ToggleGroupItem value={value}>
-      <motion.span
-        className="cardo-segment-indicator"
-        initial={false}
-        animate={{ opacity: active ? 1 : 0, scale: active ? 1 : 0.94 }}
-        transition={{ type: 'spring', stiffness: 420, damping: 32, mass: 0.55 }}
+      {/* Static indicator — no Motion scale (blurred text under Fluent) */}
+      <span
+        className={[
+          'cardo-segment-indicator',
+          active ? 'cardo-segment-indicator-active' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        aria-hidden
       />
       <span>{children}</span>
     </ToggleGroupItem>

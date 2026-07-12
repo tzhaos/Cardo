@@ -32,8 +32,9 @@
   .cardo-settings-card-copy,
   .cardo-settings-card-copy span,
   .cardo-settings-card-copy small,
-  .cardo-about-card > span,
-  .cardo-about-card small,
+  .cardo-about-copy,
+  .cardo-about-name,
+  .cardo-about-edition,
   .cardo-about-details dt,
   .cardo-about-details dd,
   .cardo-text-label
@@ -336,11 +337,50 @@
   background: var(--cardo-surface-strong);
   box-shadow: var(--cardo-shadow-hover);
   backdrop-filter: blur(18px);
+  /* Position via left/top (not transform) so shell text stays pixel-crisp. */
+  transform: none;
 }
 
-body.cardo-independent-menu-dragging .cardo-independent-menu {
+body.cardo-independent-menu-dragging .cardo-independent-menu,
+body.cardo-independent-menu-resizing .cardo-independent-menu {
   backdrop-filter: none;
-  will-change: transform;
+  will-change: left, top, width, height;
+}
+
+body.cardo-independent-menu-resizing {
+  cursor: se-resize;
+  user-select: none;
+}
+
+.cardo-settings-resize-handle {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: 0;
+  width: 18px;
+  height: 18px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: se-resize;
+  touch-action: none;
+}
+
+.cardo-settings-resize-handle::after {
+  content: '';
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  width: 8px;
+  height: 8px;
+  border-right: 1.5px solid var(--cardo-muted);
+  border-bottom: 1.5px solid var(--cardo-muted);
+  opacity: 0.7;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-resize-handle::after {
+  /* Fluent: no decorative grip — hit target only */
+  display: none;
 }
 
 @media (max-width: 760px) {

@@ -13,6 +13,8 @@ interface TabPillProps {
   active: boolean;
   icon?: ReactNode;
   systemPage?: boolean;
+  /** Show title next to icon (Fluent underline tabs need width). */
+  showLabel?: boolean;
   renameRequested?: boolean;
   onActivate: () => void;
   onRename: (title: string) => void;
@@ -24,6 +26,7 @@ export function TabPill({
   active,
   icon,
   systemPage = false,
+  showLabel = false,
   renameRequested = false,
   onActivate,
   onRename,
@@ -54,13 +57,21 @@ export function TabPill({
           ? { type: 'tween', duration: 0 }
           : { type: 'spring', stiffness: 500, damping: 40, mass: 0.68 },
       }}
-      className={`cardo-tab-pill${active ? ' cardo-tab-pill-active' : ''}${rename.renaming ? ' cardo-tab-pill-renaming' : ''}${systemPage ? ' cardo-tab-pill-system' : ''}`}
+      className={[
+        'cardo-tab-pill',
+        active ? 'cardo-tab-pill-active' : '',
+        rename.renaming ? 'cardo-tab-pill-renaming' : '',
+        systemPage ? 'cardo-tab-pill-system' : '',
+        systemPage && showLabel ? 'cardo-tab-pill-system-labeled' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
     >
       <Button
         variant="ghost"
         type="button"
         aria-current={active ? 'page' : undefined}
-        title={systemPage ? page.title : undefined}
+        title={systemPage && !showLabel ? page.title : undefined}
         aria-label={page.title}
         onClick={onActivate}
         onDoubleClick={(event) => {
@@ -84,7 +95,12 @@ export function TabPill({
             />
           ) : null}
         </AnimatePresence>
-        <span className="cardo-tab-label">{icon ?? page.title}</span>
+        <span className="cardo-tab-label">
+          {icon ? <span className="cardo-tab-label-icon">{icon}</span> : null}
+          {!icon || !systemPage || showLabel ? (
+            <span className="cardo-tab-label-text">{page.title}</span>
+          ) : null}
+        </span>
       </Button>
       {rename.renaming ? (
         <div className="cardo-tab-rename-layer" onContextMenu={rename.onContextMenu}>

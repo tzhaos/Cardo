@@ -40,10 +40,17 @@ import {
 import { useContextMenu } from '../../ui/cardo/context-menu';
 import { useI18n } from '../../i18n/useI18n';
 import { useFeatureEnabled } from '../../shell/FeatureGate';
+import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import { BoxAppearanceView } from './BoxAppearancePopover';
 import { Input } from '../../ui/primitives/input';
 import { Button } from '../../ui/primitives/button';
 import { MotionButton } from '../../ui/primitives/motion-button';
+
+/** Motion borderRadius must be numeric; keep Classic soft vs Fluent restrained. */
+const BOX_CORNER_RADIUS = {
+  classic: { idle: 16, compact: 24 },
+  fluent: { idle: 6, compact: 8 },
+} as const;
 
 interface BaseBoxFrameProps {
   box: WorkspaceBox;
@@ -60,8 +67,11 @@ interface BoxDeleteMotion {
   y: number;
   scale: number;
   opacity: number;
-  /** CSS length or theme token (never hardcode 16/24 — packs control box radius). */
-  borderRadius: string;
+  /**
+   * Pixel radius for Motion interpolation (numbers only — CSS vars are unreliable
+   * in animate.borderRadius and pill radii become circles at compact cross-page scale).
+   */
+  borderRadius: number;
   permanent: boolean;
 }
 
@@ -87,13 +97,20 @@ export function BaseBoxFrame({
   const updateBoxDragFrame = useUiStore((state) => state.updateBoxDragFrame);
   const endBoxDrag = useUiStore((state) => state.endBoxDrag);
   const clearPendingBoxLanding = useUiStore((state) => state.clearPendingBoxLanding);
-  const draggedBoxId = useUiStore((state) => state.draggedBoxId);
-  const boxDragSession = useUiStore((state) => state.boxDragSession);
+  // Per-box booleans avoid all boxes re-rendering when another box's drag session updates.
+  const isDraggingThisBox = useUiStore((state) => state.draggedBoxId === box.id);
+  const boxDragSession = useUiStore((state) =>
+    state.draggedBoxId === box.id ? state.boxDragSession : null,
+  );
   const pendingBoxLanding = useUiStore((state) =>
     state.pendingBoxLanding?.boxId === box.id ? state.pendingBoxLanding : null,
   );
-  const boxDragOverTopBar = useUiStore((state) => state.boxDragOverTopBar);
-  const boxDropPageId = useUiStore((state) => state.boxDropPageId);
+  const boxDragOverTopBar = useUiStore((state) =>
+    state.draggedBoxId === box.id ? state.boxDragOverTopBar : false,
+  );
+  const boxDropPageId = useUiStore((state) =>
+    state.draggedBoxId === box.id ? state.boxDropPageId : null,
+  );
   const selectedBoxId = useUiStore((state) => state.selectedBoxId);
   const highlightedBoxId = useUiStore((state) => state.highlightedBoxId);
   const selectBox = useUiStore((state) => state.selectBox);
@@ -195,9 +212,9 @@ export function BaseBoxFrame({
   );
 
   useLayoutEffect(() => {
-    if (draggedBoxId !== box.id || !boxDragSession || pointerSessionRef.current) return;
+    if (!isDraggingThisBox || !boxDragSession || pointerSessionRef.current) return;
     attachDragPointerSession(boxDragSession);
-  }, [attachDragPointerSession, box.id, box.pageId, boxDragSession, draggedBoxId]);
+  }, [attachDragPointerSession, box.id, box.pageId, boxDragSession, isDraggingThisBox]);
 
   const beginDrag = (event: ReactPointerEvent<HTMLElement>) => {
     if (box.isLocked) {
@@ -277,10 +294,11 @@ export function BaseBoxFrame({
     pointerSessionRef.current = session;
   };
 
-  const dragging = draggedBoxId === box.id;
+  const dragging = isDraggingThisBox;
   const draggingOverTopBar = dragging && boxDragOverTopBar;
   const draggingOverTab = draggingOverTopBar && boxDropPageId !== null;
-  const compactScale = Math.max(0.22, Math.min(0.46, 136 / box.frame.width, 86 / box.frame.height));
+  // Mini-card footprint while over page tabs (~160×100 target), not a circle.
+  const compactScale = Math.max(0.28, Math.min(0.5, 160 / box.frame.width, 100 / box.frame.height));
   const isInRecycleBin = isRecycleBinPageId(box.pageId);
   const isCollected = useWorkspaceStore((state) =>
     state.projection.collectionBoxIds.includes(box.id),
@@ -288,6 +306,11 @@ export function BaseBoxFrame({
   const isTemporary = box.kind === 'temporary';
   const viewMode = isTemporary ? 'list' : box.viewMode;
   const detailMode = isTemporary ? 'detailed' : box.detailMode;
+  const themeId = usePreferencesStore((state) => state.themeId);
+  const cornerRadiusSteps =
+    themeId === 'fluent' ? BOX_CORNER_RADIUS.fluent : BOX_CORNER_RADIUS.classic;
+  // Classic: soft 16/24. Fluent: restrained 6/8 (matches --cardo-box-radius).
+  const boxCornerRadius = draggingOverTopBar ? cornerRadiusSteps.compact : cornerRadiusSteps.idle;
   const visualScale = draggingOverTopBar
     ? compactScale * (draggingOverTab ? 0.9 : 1)
     : dragging
@@ -406,7 +429,7 @@ export function BaseBoxFrame({
         y: 8,
         scale: 0.82,
         opacity: 0,
-        borderRadius: 'var(--cardo-radius-xl)',
+        borderRadius: cornerRadiusSteps.idle,
         permanent: true,
       });
       return;
@@ -427,7 +450,7 @@ export function BaseBoxFrame({
         : 8,
       scale: compactScale * 0.9,
       opacity: targetRect ? 0.18 : 0,
-      borderRadius: 'var(--cardo-radius-pill)',
+      borderRadius: cornerRadiusSteps.compact,
       permanent: false,
     });
   };
@@ -458,10 +481,8 @@ export function BaseBoxFrame({
         y: deleteMotion?.y ?? (dragging && !draggingOverTopBar ? -7 : 0),
         scale: deleteMotion?.scale ?? visualScale,
         opacity: deleteMotion?.opacity ?? (draggingOverTopBar ? 0.94 : dragging ? 0.97 : 1),
-        // Theme packs own radius tokens; hardcoded px here used to force Classic 16px forever.
-        borderRadius:
-          deleteMotion?.borderRadius ??
-          (draggingOverTopBar ? 'var(--cardo-radius-pill)' : 'var(--cardo-radius-xl)'),
+        // Numbers only for Motion. Cross-page uses 24px (mini card), never pill/circle.
+        borderRadius: deleteMotion?.borderRadius ?? boxCornerRadius,
       }}
       transition={
         deleteMotion
@@ -585,6 +606,7 @@ export function BaseBoxFrame({
         <header className="cardo-box-header" onPointerDown={beginDrag}>
           <div className="cardo-box-title-group">
             <Button
+              variant="ghost"
               className="cardo-box-icon cardo-icon-frame"
               type="button"
               data-no-drag
@@ -743,22 +765,14 @@ export function BaseBoxFrame({
       ) : null}
       {!isTemporary ? (
         <Button
+          variant="ghost"
           className="cardo-resize-handle"
           type="button"
           disabled={box.isLocked}
           aria-label={t('box.resize', { title: box.title })}
           onPointerDown={beginResize}
         >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path
-              d="M21 15 15 21M21 8 8 21"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-            />
-          </svg>
+          <span className="cardo-resize-grip" aria-hidden="true" />
         </Button>
       ) : null}
     </motion.article>

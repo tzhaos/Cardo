@@ -1,0 +1,20 @@
+/**
+ * Classic Theme Pack recipes — soft glass product chrome.
+ * Tokens: themes/builtin/classic/theme.cardo-theme.json
+ * Scoped under [data-cardo-theme="classic"].
+ */
+
+[data-cardo-theme='classic'] .cardo-box,
+[data-cardo-theme='classic'] .cardo-collection-box {
+  border: 1px solid var(--cardo-border);
+  --cardo-box-radius: var(--cardo-radius-xl);
+  border-radius: var(--cardo-box-radius);
+  background-image: linear-gradient(to bottom, var(--cardo-panel), var(--cardo-panel-bottom));
+  box-shadow: var(--cardo-shadow);
+}
+
+[data-cardo-theme='classic'] .cardo-box-header,
+[data-cardo-theme='classic'] .cardo-collection-box-header {
+  border-bottom: 1px solid var(--cardo-border-subtle);
+  background: var(--cardo-panel-chrome);
+}

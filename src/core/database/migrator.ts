@@ -1,11 +1,11 @@
 /**
  * Platform-agnostic N→N+1 schema migrator.
  *
- * No electron / node:fs / http imports — usable from Desktop Main, Extension Worker,
- * and Cardo Runtime (PR2) via adapter callbacks.
+ * No electron / node:fs / http imports — Runtime opens SQLite via adapter callbacks
+ * (see openRuntimeDatabase). Clients never run this path.
  *
- * Wild versions historically only 0 (empty) and 3 (current baseline). Versions 1 and 2
- * have no migration scripts and fail hard. After PR1, CURRENT is 4 (runtime_meta).
+ * Wild versions: 0 (empty) and 3 (baseline). Versions 1 and 2 have no migration
+ * scripts and fail hard. Forward steps 4…DATABASE_SCHEMA_VERSION (currently 9).
  */
 
 import baselineMigrationSql from '../../../drizzle/0000_crazy_obadiah_stane.sql?raw';

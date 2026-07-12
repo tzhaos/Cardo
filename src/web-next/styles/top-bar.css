@@ -37,6 +37,22 @@
   gap: 2px;
 }
 
+.cardo-top-leading {
+  display: none;
+}
+
+.cardo-top-center {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+}
+
+.cardo-top-trailing {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
 .cardo-tabs {
   display: flex;
   align-items: center;
@@ -78,8 +94,10 @@
     transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+/* No idle tab hover chrome — selection uses the active indicator only. */
 .cardo-tab-pill:not(.cardo-tab-pill-active) button:hover {
-  color: var(--cardo-soft-text);
+  color: var(--cardo-secondary-text);
+  background: transparent;
 }
 
 .cardo-active-tab-indicator {
@@ -96,6 +114,24 @@
 
 .cardo-tab-label {
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cardo-tab-label-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.cardo-tab-label-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cardo-tab-pill input {
@@ -136,8 +172,15 @@
     transform var(--cardo-duration-fast) var(--cardo-easing);
 }
 
+/* Icon chrome: no hover fill (themes stay neutral). Keep focus-visible for a11y. */
 .cardo-top-actions button:hover,
 .cardo-bottom-toolbar button:hover {
+  background: transparent;
+  color: var(--cardo-secondary-text);
+}
+
+.cardo-top-actions button:focus-visible,
+.cardo-bottom-toolbar button:focus-visible {
   background: var(--cardo-hover);
   color: var(--cardo-text);
 }
@@ -193,34 +236,35 @@
   color: var(--cardo-red) !important;
 }
 
-.cardo-top-bar-drop-mode {
-  border-color: color-mix(in srgb, var(--cardo-blue) 12%, var(--cardo-border));
-  box-shadow: var(--cardo-shadow);
-  transition:
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    background 180ms ease;
-}
-
+/*
+ * Cross-page drop: no dedicated hover chrome.
+ * Preview still switches activePageId (sliding indicator moves) for placement truth;
+ * bar/tab do not add drag-over fill, rings, or glow (theme-agnostic).
+ */
+.cardo-top-bar-drop-mode,
 .cardo-top-bar-drag-over {
-  border-color: color-mix(in srgb, var(--cardo-blue) 32%, var(--cardo-border));
-  background: color-mix(in srgb, var(--cardo-surface) 94%, var(--cardo-blue));
-  box-shadow:
-    var(--cardo-shadow-hover),
-    0 0 0 5px color-mix(in srgb, var(--cardo-blue) 8%, transparent);
-  backdrop-filter: none;
+  border-color: var(--cardo-border);
+  background: var(--cardo-surface);
+  box-shadow: var(--cardo-shadow);
+  backdrop-filter: blur(12px);
 }
 
-.cardo-box-drop-target .cardo-tab-pill {
+.cardo-box-drop-target .cardo-tab-pill,
+.cardo-box-drop-target .cardo-tab-pill > button,
+.cardo-box-drop-target .cardo-tab-pill-system,
+.cardo-box-drop-target .cardo-tab-pill-system > button {
   background: transparent;
   box-shadow: none;
+  transform: none;
+  font-weight: inherit;
 }
 
 .cardo-box-drop-target .cardo-tab-pill > button {
-  background: transparent;
-  box-shadow: none;
-  /* Avoid scale fight with active-tab indicator geometry during cross-page drag. */
-  transform: none;
+  color: inherit;
+}
+
+.cardo-box-drop-target .cardo-tab-pill-active > button {
+  color: var(--cardo-text);
 }
 
 .cardo-tab-pill {

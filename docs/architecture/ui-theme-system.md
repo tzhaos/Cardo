@@ -4,8 +4,9 @@
 | --- | --- |
 | Status | Design draft |
 | Date | 2026-07-12 |
-| Related | `AGENTS.md` UI 架构, `src/web-next/themes/themeRegistry.ts`, `src/web-next/styles/tokens.css` |
+| Related | `AGENTS.md` UI 架构, `src/web-next/themes/themeRegistry.ts`, `src/web-next/styles/tokens.css`, `themes/README.md` |
 | Goal | 支持风格迥异的前端主题：配色/字体自定义、功能开关组合、样式可扩展 |
+| Recipes | 按包拆分：`src/web-next/styles/themes/<id>.css`（见 §4.4） |
 
 ## 1. 可行性结论（先说清楚）
 
@@ -45,7 +46,7 @@ Cardo v2: Layout Profile + 主题市场导入
 1. `src/web-next/themes/themeRegistry.ts`：内置 classic / ocean / orchid；light+dark palette；`applyWebNextTheme` 把约 30 个颜色 token 写到 root CSS variables。
 2. preferences：`colorMode`、`themeId` 经 Command 持久化。
 3. Settings UI 可切换模式与主题卡。
-4. `ui/primitives` + `ui/khaos`：Radix 行为 + 产品壳。
+4. `ui/primitives` + `ui/cardo`：Radix 行为 + 产品壳。
 5. CSS 分层：`tokens.css`、`shell`、`boxes`、`items`、`top-bar` 等。
 
 ### 2.2 缺口
@@ -128,6 +129,20 @@ ThemePack {
 ```
 
 Zod 落在 `src/core/contracts/themePack.ts`（跨 client 导入时与 preferences 同边界）。应用只在 Renderer；Runtime 只存 preferences 中的序列化选择结果。
+
+### 4.4 按包拆分的 recipe CSS
+
+Token 放在 `themes/builtin/<id>/theme.cardo-theme.json`。当 tokens 不足以表达结构/材质差异时，使用 per-pack recipe，禁止把所有主题选择器堆进单一巨石文件。
+
+```text
+src/web-next/styles/themes/
+  index.css      ← app/styles.css 导入
+  shared.css     ← 各包共用 transition 等
+  classic.css    ← [data-cardo-theme='classic']
+  fluent.css     ← [data-cardo-theme='fluent']
+```
+
+新增官方主题时：登记 `OFFICIAL_BUILT_IN_THEME_IDS` → 加 JSON 包 → 加 `styles/themes/<id>.css` 并在 `index.css` 中 import。
 
 ### 4.3 用户自定义
 
@@ -218,6 +233,9 @@ effective = basePack.tokens
 | 模块 | 职责 |
 | --- | --- |
 | `src/core/contracts/themePack.ts` | Zod Theme Pack / options / feature flags |
+| `themes/builtin/<id>/theme.cardo-theme.json` | 官方包 tokens（与用户包同格式） |
+| `src/web-next/styles/themes/<id>.css` | 官方包结构/材质 recipe（按 id 拆分） |
+| `src/web-next/styles/themes/index.css` | recipe 聚合入口 |
 | `src/core/contracts/preferences.ts` | 扩展 preferences 字段 |
 | `src/web-next/themes/*` | 替换扩展现有 registry：load、merge、apply |
 | `src/web-next/shell/FeatureGate.tsx` | 功能开关 |

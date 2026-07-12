@@ -29,11 +29,16 @@ export function SortableItemList<TItem extends BoxItem>({
     .map((itemId) => itemsById.get(itemId))
     .filter((item): item is TItem => Boolean(item));
   const layoutDependency = `${viewMode}:${orderedIds.join(':')}`;
+  const isGrid = viewMode === 'grid';
   return (
     <Reorder.Group
       as="div"
+      /*
+       * Motion Reorder only supports a single axis (defaults to y). Grid still
+       * reorders document order; drop hit-testing uses 2D tile centers when isGrid.
+       */
       axis="y"
-      className={`cardo-item-list${viewMode === 'grid' ? ' cardo-item-list-grid' : ''}`}
+      className={`cardo-item-list${isGrid ? ' cardo-item-list-grid' : ''}`}
       values={orderedIds}
       onReorder={updateOrder}
       onCopy={(event) => {
@@ -52,10 +57,11 @@ export function SortableItemList<TItem extends BoxItem>({
           <SortableItemEntry
             itemId={item.id}
             key={item.id}
+            isGrid={isGrid}
             onReorderEnd={finishReordering}
             onReorderStart={startReordering}
             onCrossBoxDrop={(point) => {
-              const drop = resolveCrossBoxDrop(boxId, point);
+              const drop = resolveCrossBoxDrop(boxId, point, isGrid);
               if (!drop) return false;
               cancelReordering();
               moveItemBetweenBoxes(boxId, drop.targetBoxId, item.id, drop.targetIndex);
@@ -74,6 +80,7 @@ export function SortableItemList<TItem extends BoxItem>({
 function SortableItemEntry({
   itemId,
   children,
+  isGrid,
   onReorderEnd,
   onReorderStart,
   onCrossBoxDrop,
@@ -81,6 +88,7 @@ function SortableItemEntry({
 }: {
   itemId: string;
   children: ReactNode;
+  isGrid: boolean;
   onReorderEnd: () => void;
   onReorderStart: () => void;
   onCrossBoxDrop: (point: { x: number; y: number }) => boolean;
@@ -186,7 +194,11 @@ function SortableItemEntry({
   );
 }
 
-function resolveCrossBoxDrop(sourceBoxId: string, point: { x: number; y: number }) {
+function resolveCrossBoxDrop(
+  sourceBoxId: string,
+  point: { x: number; y: number },
+  isGrid: boolean,
+) {
   const target = document.elementFromPoint(point.x, point.y);
   const targetBox = target?.closest<HTMLElement>('[data-box-id]');
   const targetBoxId = targetBox?.dataset.boxId;
@@ -198,7 +210,18 @@ function resolveCrossBoxDrop(sourceBoxId: string, point: { x: number; y: number 
   let targetIndex = entries.length;
   for (let index = 0; index < entries.length; index += 1) {
     const rect = entries[index].getBoundingClientRect();
-    if (point.y < rect.top || (point.y <= rect.bottom && point.x < rect.left + rect.width / 2)) {
+    if (isGrid) {
+      // 2D tile hit: insert before the first cell whose center is past the pointer.
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      if (point.y < centerY - rect.height / 4 || (point.y <= rect.bottom && point.x < centerX)) {
+        targetIndex = index;
+        break;
+      }
+    } else if (
+      point.y < rect.top ||
+      (point.y <= rect.bottom && point.x < rect.left + rect.width / 2)
+    ) {
       targetIndex = index;
       break;
     }

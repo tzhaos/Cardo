@@ -223,24 +223,57 @@ function PageBoxes({
   ));
 }
 
+/**
+ * Edge hit feedback during pan. Applies is-active via DOM only so pointer-rate
+ * pan updates do not re-render React chrome.
+ */
 function CanvasBoundaryFeedback({ pageId }: { pageId: string }) {
-  const panX = useCanvasStore((state) => state.pages[pageId]?.camera.panX ?? 0);
-  const panY = useCanvasStore((state) => state.pages[pageId]?.camera.panY ?? 0);
-  const viewportSize = useCanvasStore((state) => state.viewportSize);
+  const rootRef = useRef<HTMLDivElement>(null);
   const isPanning = useCanvasStore((state) => state.interactionMode === 'panning');
-  const limits = useMemo(() => getCanvasPanLimits(viewportSize), [viewportSize]);
-  const canShow = isPanning && viewportSize.width > 0 && viewportSize.height > 0;
-  const atLeft = canShow && Math.abs(panX - limits.maxX) < 0.5;
-  const atRight = canShow && Math.abs(panX - limits.minX) < 0.5;
-  const atTop = canShow && Math.abs(panY - limits.maxY) < 0.5;
-  const atBottom = canShow && Math.abs(panY - limits.minY) < 0.5;
+
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+
+    const edges = {
+      left: root.querySelector('.cardo-canvas-edge-left'),
+      right: root.querySelector('.cardo-canvas-edge-right'),
+      top: root.querySelector('.cardo-canvas-edge-top'),
+      bottom: root.querySelector('.cardo-canvas-edge-bottom'),
+    };
+
+    const apply = () => {
+      const canvas = useCanvasStore.getState();
+      const viewportSize = canvas.viewportSize;
+      const panX = canvas.pages[pageId]?.camera.panX ?? 0;
+      const panY = canvas.pages[pageId]?.camera.panY ?? 0;
+      const panning = canvas.interactionMode === 'panning';
+      const canShow = panning && viewportSize.width > 0 && viewportSize.height > 0;
+      const limits = getCanvasPanLimits(viewportSize);
+      edges.left?.classList.toggle('is-active', canShow && Math.abs(panX - limits.maxX) < 0.5);
+      edges.right?.classList.toggle('is-active', canShow && Math.abs(panX - limits.minX) < 0.5);
+      edges.top?.classList.toggle('is-active', canShow && Math.abs(panY - limits.maxY) < 0.5);
+      edges.bottom?.classList.toggle(
+        'is-active',
+        canShow && Math.abs(panY - limits.minY) < 0.5,
+      );
+    };
+
+    apply();
+    return useCanvasStore.subscribe(apply);
+  }, [pageId]);
 
   return (
-    <div className="cardo-canvas-edge-feedback" aria-hidden="true">
-      <span className={`cardo-canvas-edge cardo-canvas-edge-left${atLeft ? ' is-active' : ''}`} />
-      <span className={`cardo-canvas-edge cardo-canvas-edge-right${atRight ? ' is-active' : ''}`} />
-      <span className={`cardo-canvas-edge cardo-canvas-edge-top${atTop ? ' is-active' : ''}`} />
-      <span className={`cardo-canvas-edge cardo-canvas-edge-bottom${atBottom ? ' is-active' : ''}`} />
+    <div
+      ref={rootRef}
+      className="cardo-canvas-edge-feedback"
+      aria-hidden="true"
+      data-panning={isPanning ? 'true' : undefined}
+    >
+      <span className="cardo-canvas-edge cardo-canvas-edge-left" />
+      <span className="cardo-canvas-edge cardo-canvas-edge-right" />
+      <span className="cardo-canvas-edge cardo-canvas-edge-top" />
+      <span className="cardo-canvas-edge cardo-canvas-edge-bottom" />
     </div>
   );
 }

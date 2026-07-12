@@ -401,15 +401,27 @@ export async function writeClipboardText(text: string) {
   await getAppPorts().clipboard.writeText(text);
 }
 
+/** In-flight / resolved favicon fetches. Bounded so long sessions cannot grow without limit. */
 const websiteIconRequests = new Map<string, Promise<string | null>>();
+const WEBSITE_ICON_CACHE_MAX = 200;
 
 export function resolveWebsiteIcon(url: string) {
   const cached = websiteIconRequests.get(url);
-  if (cached) return cached;
+  if (cached) {
+    // Refresh LRU order.
+    websiteIconRequests.delete(url);
+    websiteIconRequests.set(url, cached);
+    return cached;
+  }
   const request = getAppPorts()
     .websiteIcons.resolve(url)
     .catch(() => null);
   websiteIconRequests.set(url, request);
+  while (websiteIconRequests.size > WEBSITE_ICON_CACHE_MAX) {
+    const oldest = websiteIconRequests.keys().next().value;
+    if (oldest === undefined) break;
+    websiteIconRequests.delete(oldest);
+  }
   return request;
 }
 

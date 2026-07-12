@@ -37,8 +37,9 @@
   min-width: 0;
   flex-direction: column;
   overflow: hidden;
+  --cardo-box-radius: var(--cardo-radius-xl);
   border: 1px dashed color-mix(in srgb, var(--box-accent) 38%, var(--cardo-border));
-  border-radius: var(--cardo-radius-xl);
+  border-radius: var(--cardo-box-radius);
   background-image: linear-gradient(
     to bottom,
     color-mix(in srgb, var(--cardo-panel) 95%, var(--box-accent)),

@@ -1,0 +1,12 @@
+/**
+ * Theme Pack recipes index.
+ * One CSS recipe file per official pack id under styles/themes/.
+ * Loaded after component CSS so recipes can override product defaults.
+ *
+ * Pack tokens live in themes/builtin/<id>/theme.cardo-theme.json
+ * (see docs/architecture/ui-theme-system.md and themes/README.md).
+ */
+
+@import './shared.css';
+@import './classic.css';
+@import './fluent.css';

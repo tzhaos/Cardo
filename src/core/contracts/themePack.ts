@@ -51,6 +51,10 @@ export const colorTokenMapSchema = z
     scrollbar: z.string().min(1),
     scrollbarHover: z.string().min(1),
     selectionRing: z.string().min(1),
+    /** Settings window chrome (e.g. Fluent mica #F0F3F9). */
+    settingsChrome: z.string().min(1),
+    /** Settings list / nav hover fill (e.g. Fluent #E8EEF3). */
+    settingsHover: z.string().min(1),
     blue: z.string().min(1).optional(),
     orange: z.string().min(1).optional(),
     purple: z.string().min(1).optional(),
@@ -69,6 +73,8 @@ export const overridableColorKeys = [
   'text',
   'blue',
   'createBackground',
+  'settingsChrome',
+  'settingsHover',
 ] as const;
 
 export type OverridableColorKey = (typeof overridableColorKeys)[number];
@@ -81,6 +87,8 @@ export const overridableColorMapSchema = z
     text: z.string().min(1).optional(),
     blue: z.string().min(1).optional(),
     createBackground: z.string().min(1).optional(),
+    settingsChrome: z.string().min(1).optional(),
+    settingsHover: z.string().min(1).optional(),
   })
   .strict();
 
@@ -297,19 +305,11 @@ export const THEME_PACK_ENTRY_FILENAME = 'theme.cardo-theme.json';
 /** Flat-file extension for single-file packs under the themes drop folder. */
 export const THEME_FILE_EXTENSION = '.cardo-theme.json';
 
-/** Official built-in Theme Pack ids — frozen, never overwritten by disk/import. */
-export const OFFICIAL_BUILT_IN_THEME_IDS: ReadonlySet<string> = new Set([
-  'classic',
-  'github',
-  'one',
-  'nord',
-  'solarized',
-  'paper',
-  'graphite',
-  'material',
-  'apple',
-  'windows',
-]);
+/**
+ * Official built-in Theme Pack ids — frozen, never overwritten by disk/import.
+ * Classic = product default; Fluent = Win11 Mica language from product prototype.
+ */
+export const OFFICIAL_BUILT_IN_THEME_IDS: ReadonlySet<string> = new Set(['classic', 'fluent']);
 
 /** CSS custom property names written by the Theme Runtime. */
 export const colorCssVariableNames = {
@@ -339,6 +339,8 @@ export const colorCssVariableNames = {
   scrollbar: '--cardo-scrollbar',
   scrollbarHover: '--cardo-scrollbar-hover',
   selectionRing: '--cardo-selection-ring',
+  settingsChrome: '--cardo-settings-chrome',
+  settingsHover: '--cardo-settings-hover',
   blue: '--cardo-blue',
   orange: '--cardo-orange',
   purple: '--cardo-purple',

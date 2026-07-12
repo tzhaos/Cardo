@@ -25,13 +25,12 @@ export function BottomToolbar() {
   const globalSearchEnabled = useFeatureEnabled('chrome.globalSearch');
   const createBox = useWorkspaceStore((state) => state.createBox);
   const activePageId = useWorkspaceStore((state) => state.projection.activePageId);
-  const panX = useCanvasStore((state) => state.pages[activePageId]?.camera.panX ?? 0);
-  const panY = useCanvasStore((state) => state.pages[activePageId]?.camera.panY ?? 0);
-  const viewportSize = useCanvasStore((state) => state.viewportSize);
+  // Do not subscribe to panX/panY — pan is pointer-rate; read camera only when creating a box.
   const searchQuery = useUiStore((state) => state.searchQuery);
   const setSearchQuery = useUiStore((state) => state.setSearchQuery);
   const searchEngine = usePreferencesStore((state) => state.searchEngine);
   const customSearchTemplate = usePreferencesStore((state) => state.customSearchTemplate);
+  const isFluent = usePreferencesStore((state) => state.themeId === 'fluent');
   const settingsOpen = useIndependentMenuStore((state) => state.menus.settings.open);
   const toggleIndependentMenu = useIndependentMenuStore((state) => state.toggleMenu);
   const [isSearchActive, setIsSearchActive] = useState(false);
@@ -45,7 +44,13 @@ export function BottomToolbar() {
   }, [isSearchActive]);
 
   const handleAdd = () => {
-    const center = getCanvasViewportCenter({ panX, panY }, viewportSize);
+    const canvas = useCanvasStore.getState();
+    const camera = canvas.pages[activePageId]?.camera ?? { panX: 0, panY: 0 };
+    const viewportSize = canvas.viewportSize;
+    const center = getCanvasViewportCenter(
+      { panX: camera.panX, panY: camera.panY },
+      viewportSize,
+    );
     const frame = constrainBoxFrameToCanvas(
       createBoxFrameCenteredAt(center),
       createCanvasWorldBounds(viewportSize),
@@ -142,14 +147,20 @@ export function BottomToolbar() {
           <>
             <div className="cardo-toolbar-divider" />
             <IconButton
-              className="cardo-toolbar-create"
+              className={[
+                'cardo-toolbar-create',
+                isFluent ? 'cardo-toolbar-create-labeled' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
               onClick={handleAdd}
               aria-label={t('toolbar.newBox')}
               title={t('toolbar.newBox')}
             >
               <motion.span className="cardo-icon-frame" whileTap={{ scale: 0.82, rotate: 90 }}>
-                <Plus size={20} />
+                <Plus size={isFluent ? 16 : 20} />
               </motion.span>
+              {isFluent ? <span className="cardo-toolbar-create-label">{t('toolbar.new')}</span> : null}
             </IconButton>
           </>
         ) : null}

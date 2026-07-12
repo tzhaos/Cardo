@@ -5,6 +5,7 @@ import type { MouseEventHandler } from 'react';
 import { registerPageDropElement } from '../../app/interactionElementRegistry';
 import { useUiStore } from '../../app/stores/uiStore';
 import type { WorkspacePage } from '../../domain/workspace';
+import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import { useI18n } from '../../i18n/useI18n';
 import { TabPill } from './TabPill';
 
@@ -26,6 +27,7 @@ export function CollectionTab({
   onContextMenu,
 }: CollectionTabProps) {
   const { t } = useI18n();
+  const isFluent = usePreferencesStore((state) => state.themeId === 'fluent');
   const boxDragActive = useUiStore((state) => Boolean(state.draggedBoxId));
   const registerDropElement = useCallback(
     (element: HTMLDivElement | null) => registerPageDropElement(page.id, element),
@@ -54,6 +56,7 @@ export function CollectionTab({
         active={active}
         icon={<Star size={16} />}
         page={{ ...page, title: t('page.collection') }}
+        showLabel={isFluent}
         systemPage
         onActivate={onActivate}
         onRename={() => undefined}

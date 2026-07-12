@@ -136,12 +136,26 @@ export const useUiStore = create<UiStore>((set) => ({
       pendingBoxLanding: null,
       selectedBoxId: session.boxId,
     }),
+  /**
+   * Pointer-rate frame while dragging. Mutate latestFrame in place and return the
+   * same state root so Zustand does not notify React subscribers. Visual position
+   * is owned by motion values; React only needs begin/rebase/end session identity.
+   */
   updateBoxDragFrame: (frame) =>
-    set((state) =>
-      state.boxDragSession
-        ? { boxDragSession: { ...state.boxDragSession, latestFrame: frame } }
-        : state,
-    ),
+    set((state) => {
+      if (!state.boxDragSession) return state;
+      const prev = state.boxDragSession.latestFrame;
+      if (
+        prev.x === frame.x &&
+        prev.y === frame.y &&
+        prev.width === frame.width &&
+        prev.height === frame.height
+      ) {
+        return state;
+      }
+      state.boxDragSession.latestFrame = frame;
+      return state;
+    }),
   rebaseBoxDragSession: (frame, clientX, clientY) =>
     set((state) =>
       state.boxDragSession
