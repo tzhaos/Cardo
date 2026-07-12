@@ -253,42 +253,75 @@ export function TopBar() {
         className="cardo-top-inner"
         layout="position"
         initial={false}
-        animate={{ opacity: pageToDelete ? 0 : 1, x: pageToDelete ? -6 : 0 }}
         transition={{
-          opacity: { duration: 0.12, delay: pageToDelete ? 0 : 0.1 },
-          x: { duration: 0.16, delay: pageToDelete ? 0 : 0.08 },
           layout: draggedBoxId
             ? { type: 'tween', duration: 0 }
             : { type: 'spring', stiffness: 460, damping: 38, mass: 0.72 },
         }}
-        aria-hidden={Boolean(pageToDelete)}
       >
         <div className="cardo-top-leading" aria-hidden="true" />
+        {/*
+          Delete confirm stays in the page-tab center band only.
+          Full-width title bars (Fluent/Material) must not stretch the
+          alertdialog edge-to-edge across the whole strip.
+        */}
         <div className="cardo-top-center">
-          <Reorder.Group
-            as="nav"
-            axis="x"
-            className="cardo-tabs"
-            values={stripPageIds}
-            onReorder={updateOrder}
-            aria-label={t('page.workspacePages')}
-          >
-            {tabStrip}
-          </Reorder.Group>
-          {multiPage ? (
-            <motion.div className="cardo-top-actions" layout="position">
-              <MotionButton
-                variant="icon"
-                className="cardo-icon-button"
-                type="button"
-                onClick={openNewPage}
-                aria-label={t('page.add')}
-                whileTap={{ scale: 0.9 }}
+          <AnimatePresence mode="wait" initial={false}>
+            {pageToDelete ? (
+              <motion.div
+                className="cardo-tab-confirm-layer"
+                key={`confirm-${pageToDelete.id}`}
+                initial={{ opacity: 0, x: 8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -6, transition: { duration: 0.12, ease: 'easeIn' } }}
+                transition={{ duration: 0.18, ease: [0.2, 0.8, 0.2, 1] }}
               >
-                <ThemeIcon name="add" size={18} />
-              </MotionButton>
-            </motion.div>
-          ) : null}
+                <TabDeleteConfirmView
+                  title={pageToDelete.title}
+                  boxCount={deleteBoxCount}
+                  onCancel={() => setDeletePageId(null)}
+                  onConfirm={() => {
+                    deletePage(pageToDelete.id);
+                    setDeletePageId(null);
+                  }}
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                className="cardo-top-center-tabs"
+                key="tabs"
+                initial={{ opacity: 0, x: -6 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -6, transition: { duration: 0.12, ease: 'easeIn' } }}
+                transition={{ duration: 0.16, ease: [0.2, 0.8, 0.2, 1] }}
+              >
+                <Reorder.Group
+                  as="nav"
+                  axis="x"
+                  className="cardo-tabs"
+                  values={stripPageIds}
+                  onReorder={updateOrder}
+                  aria-label={t('page.workspacePages')}
+                >
+                  {tabStrip}
+                </Reorder.Group>
+                {multiPage ? (
+                  <motion.div className="cardo-top-actions" layout="position">
+                    <MotionButton
+                      variant="icon"
+                      className="cardo-icon-button"
+                      type="button"
+                      onClick={openNewPage}
+                      aria-label={t('page.add')}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <ThemeIcon name="add" size={18} />
+                    </MotionButton>
+                  </motion.div>
+                ) : null}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
         <div className="cardo-top-trailing">
           {isFluent && showCanvasTools
@@ -315,28 +348,6 @@ export function TopBar() {
             : null}
         </div>
       </motion.div>
-      <AnimatePresence>
-        {pageToDelete ? (
-          <motion.div
-            className="cardo-tab-confirm-layer"
-            key={pageToDelete.id}
-            initial={{ opacity: 0, x: 8 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -6, transition: { duration: 0.12, ease: 'easeIn' } }}
-            transition={{ duration: 0.18, delay: 0.1, ease: [0.2, 0.8, 0.2, 1] }}
-          >
-            <TabDeleteConfirmView
-              title={pageToDelete.title}
-              boxCount={deleteBoxCount}
-              onCancel={() => setDeletePageId(null)}
-              onConfirm={() => {
-                deletePage(pageToDelete.id);
-                setDeletePageId(null);
-              }}
-            />
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
     </header>
   );
 }

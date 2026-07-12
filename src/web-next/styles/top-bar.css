@@ -27,10 +27,6 @@
   overflow: hidden;
 }
 
-.cardo-top-bar-confirming .cardo-top-inner {
-  pointer-events: none;
-}
-
 .cardo-top-inner {
   display: flex;
   align-items: center;
@@ -43,6 +39,20 @@
 
 .cardo-top-center {
   display: flex;
+  min-width: 0;
+  align-items: center;
+}
+
+/* Confirming: center band may grow so dialog text fits without full-bar stretch */
+.cardo-top-bar-confirming .cardo-top-center {
+  flex: 1 1 auto;
+  max-width: 100%;
+}
+
+/* Tabs + add stay grouped so delete confirm can replace only this band */
+.cardo-top-center-tabs {
+  display: flex;
+  width: 100%;
   min-width: 0;
   align-items: center;
 }
@@ -193,23 +203,28 @@
   display: flex;
   width: 100%;
   min-width: 0;
+  max-width: min(560px, 100%);
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 0 2px 0 14px;
+  gap: 12px;
+  padding: 0 2px 0 10px;
   color: var(--cardo-soft-text);
   font-size: 14px;
   font-weight: 500;
 }
 
+/*
+ * In-flow layer inside .cardo-top-center — same band as page tabs.
+ * Not absolute inset over the whole header (full-width Fluent/Material bars).
+ */
 .cardo-tab-confirm-layer {
-  position: absolute;
+  position: relative;
   z-index: 4;
-  inset: 6px;
   display: flex;
+  width: 100%;
   min-width: 0;
+  max-width: 100%;
   align-items: center;
-  border-radius: var(--cardo-radius-pill);
 }
 
 .cardo-tab-confirm > span {
