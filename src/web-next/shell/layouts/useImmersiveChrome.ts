@@ -5,13 +5,14 @@ const EDGE_PX = 18;
 const HIDE_DELAY_MS = 900;
 
 /**
- * Immersive profile: reveal shell chrome when the pointer approaches edges
- * or presses Alt+` (backtick). Classic/compact leave data-chrome-reveal unset.
+ * Floating profile: reveal shell chrome when the pointer approaches edges
+ * or presses Alt+` (backtick). Classic/zen leave data-chrome-reveal unset
+ * (zen stays fully hidden; exit is a dedicated floating control).
  */
 export function useImmersiveChrome(layoutProfileId: LayoutProfileId) {
   useEffect(() => {
     const root = document.documentElement;
-    if (layoutProfileId !== 'immersive') {
+    if (layoutProfileId !== 'floating') {
       delete root.dataset.chromeReveal;
       return;
     }
@@ -42,7 +43,7 @@ export function useImmersiveChrome(layoutProfileId: LayoutProfileId) {
       const nearLeft = event.clientX <= EDGE_PX;
       const overChrome = Boolean(
         (event.target as Element | null)?.closest?.(
-          '.cardo-top-bar, .cardo-history-controls, .cardo-bottom-shell, .cardo-canvas-tools, .cardo-settings-window, .cardo-independent-menu',
+          '.cardo-top-bar, .cardo-history-controls, .cardo-bottom-shell, .cardo-canvas-tools, .cardo-settings-window, .cardo-independent-menu, .cardo-zen-exit',
         ),
       );
       if (nearTop || nearBottom || nearLeft || overChrome) {

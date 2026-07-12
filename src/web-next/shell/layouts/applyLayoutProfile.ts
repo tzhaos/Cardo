@@ -4,8 +4,8 @@ import { DEFAULT_LAYOUT_PROFILE_ID } from '../../../core/contracts/layoutProfile
 /**
  * Apply layout profile markers on the document root.
  * classic: identity (official Cardo shell).
- * compact: denser chrome via CSS variables on [data-layout-profile=compact].
- * immersive: chrome auto-hide via CSS + data attribute (hover edge to reveal).
+ * floating: chrome auto-hide via CSS + data attribute (hover edge to reveal).
+ * zen: chrome fully hidden; floating exit control only.
  */
 export function applyLayoutProfile(
   root: HTMLElement,

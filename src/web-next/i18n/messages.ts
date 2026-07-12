@@ -79,13 +79,14 @@ export const WEB_NEXT_MESSAGES = {
       'Shell structure variants. Classic freezes the official Cardo product look',
     'settings.layout.classic': 'Classic',
     'settings.layout.classicDescription':
-      'Official default: top bar, bottom bar, infinite canvas',
-    'settings.layout.compact': 'Compact',
-    'settings.layout.compactDescription':
-      'Tighter chrome radius and spacing without changing canvas hit-testing',
-    'settings.layout.immersive': 'Immersive',
-    'settings.layout.immersiveDescription':
+      'Official default: top bar, bottom bar, and other chrome stay visible',
+    'settings.layout.floating': 'Floating',
+    'settings.layout.floatingDescription':
       'Auto-hide chrome; move pointer to screen edges or press Alt+` to reveal',
+    'settings.layout.zen': 'Zen',
+    'settings.layout.zenDescription':
+      'Hide all chrome for a clean canvas; use the floating control to exit',
+    'layout.exitZen': 'Exit Zen',
     'settings.cssSnippet': 'CSS snippet',
     'settings.cssSnippetDescription':
       'Optional advanced CSS. Disabled by default. Scopes under [data-cardo-root]; blocks @import and remote url()',
@@ -122,8 +123,6 @@ export const WEB_NEXT_MESSAGES = {
       'Create, reorder, and switch workspace pages. Off keeps a single visible page tab',
     'settings.feature.box.appearancePopover': 'Box appearance',
     'settings.feature.box.appearancePopoverDescription': 'Customize box icon and accent color',
-    'settings.feature.item.contextMenu': 'Item context menu',
-    'settings.feature.item.contextMenuDescription': 'Right-click actions on items',
     'settings.multiClient': 'Shared workspace across clients',
     'settings.multiClientDescription':
       'Active page and the global undo stack are shared by every window (Web, Desktop, Extension) connected to the same Cardo Runtime. Changes in one client appear in the others',
@@ -399,16 +398,16 @@ export const WEB_NEXT_MESSAGES = {
     'settings.interface': '界面',
     'settings.interfaceDescription':
       '开关 Cardo 壳层与工作区槽位。默认与官方产品外壳一致',
-    'settings.layout': '布局配置',
+    'settings.layout': '布局模式',
     'settings.layoutDescription': '壳层结构变体。经典布局冻结官方 Cardo 产品外观',
     'settings.layout.classic': '经典',
-    'settings.layout.classicDescription': '官方默认：顶栏、底栏与无限画布',
-    'settings.layout.compact': '紧凑',
-    'settings.layout.compactDescription':
-      '收紧壳层圆角与间距，不改变画布命中模型',
-    'settings.layout.immersive': '沉浸',
-    'settings.layout.immersiveDescription':
+    'settings.layout.classicDescription': '官方默认：顶栏、底栏等壳层始终显示',
+    'settings.layout.floating': '浮动',
+    'settings.layout.floatingDescription':
       '自动隐藏壳层；指针移到屏幕边缘或按 Alt+` 唤出',
+    'settings.layout.zen': '禅',
+    'settings.layout.zenDescription': '隐藏全部壳层，专注画布；通过浮动按钮退出',
+    'layout.exitZen': '退出禅模式',
     'settings.cssSnippet': 'CSS 片段',
     'settings.cssSnippetDescription':
       '可选高级 CSS。默认关闭。作用在 [data-cardo-root] 下；禁止 @import 与远程 url()',
@@ -444,8 +443,6 @@ export const WEB_NEXT_MESSAGES = {
       '创建、排序并切换工作区页面。关闭后仅保留一个可见页面标签',
     'settings.feature.box.appearancePopover': '盒子外观',
     'settings.feature.box.appearancePopoverDescription': '自定义盒子图标与强调色',
-    'settings.feature.item.contextMenu': '项目右键菜单',
-    'settings.feature.item.contextMenuDescription': '项目上的右键操作',
     'settings.multiClient': '多客户端共享工作区',
     'settings.multiClientDescription':
       '当前活动页面与全局撤销栈会在所有连接同一 Cardo Runtime 的窗口（Web、Desktop、扩展）之间共享。一个客户端中的改动会出现在其他客户端',

@@ -1,73 +1,42 @@
 /* Layout profiles — classic is identity (official Cardo shell). */
 
-[data-layout-profile='compact'] {
-  --cardo-radius-xs: 3px;
-  --cardo-radius-sm: 4px;
-  --cardo-radius-md: 7px;
-  --cardo-radius-lg: 9px;
-  --cardo-radius-xl: 12px;
-  --cardo-space-1: 3px;
-  --cardo-space-2: 6px;
-  --cardo-space-3: 9px;
-  --cardo-space-4: 12px;
-  --cardo-space-5: 15px;
-  --cardo-space-6: 18px;
-  --cardo-space-7: 24px;
-  --cardo-space-8: 30px;
-  --cardo-topbar-offset: 8px;
-}
-
-[data-layout-profile='compact'] .cardo-top-bar {
-  min-height: 44px;
-}
-
-[data-layout-profile='compact'] .cardo-bottom-toolbar,
-[data-layout-profile='compact'] .cardo-history-controls {
-  transform: scale(0.94);
-  transform-origin: bottom center;
-}
-
-[data-layout-profile='compact'] .cardo-history-controls {
-  transform-origin: top left;
-}
-
-/* Immersive: chrome fades; reveal when pointer nears edges or focuses inside. */
-[data-layout-profile='immersive'] .cardo-top-bar,
-[data-layout-profile='immersive'] .cardo-history-controls,
-[data-layout-profile='immersive'] .cardo-bottom-shell,
-[data-layout-profile='immersive'] .cardo-canvas-tools {
+/* Floating: chrome fades; reveal when pointer nears edges or focuses inside. */
+[data-layout-profile='floating'] .cardo-top-bar,
+[data-layout-profile='floating'] .cardo-history-controls,
+[data-layout-profile='floating'] .cardo-bottom-shell,
+[data-layout-profile='floating'] .cardo-canvas-tools {
   transition:
     opacity var(--cardo-duration-normal) var(--cardo-easing),
     transform var(--cardo-duration-normal) var(--cardo-easing);
 }
 
-[data-layout-profile='immersive']:not([data-chrome-reveal='true']) .cardo-top-bar {
+[data-layout-profile='floating']:not([data-chrome-reveal='true']) .cardo-top-bar {
   opacity: 0;
   pointer-events: none;
   transform: translateY(-8px);
 }
 
-[data-layout-profile='immersive']:not([data-chrome-reveal='true']) .cardo-history-controls {
+[data-layout-profile='floating']:not([data-chrome-reveal='true']) .cardo-history-controls {
   opacity: 0;
   pointer-events: none;
   transform: translateY(-6px);
 }
 
-[data-layout-profile='immersive']:not([data-chrome-reveal='true']) .cardo-bottom-shell {
+[data-layout-profile='floating']:not([data-chrome-reveal='true']) .cardo-bottom-shell {
   opacity: 0;
   pointer-events: none;
   transform: translateY(10px);
 }
 
-[data-layout-profile='immersive']:not([data-chrome-reveal='true']) .cardo-canvas-tools {
+[data-layout-profile='floating']:not([data-chrome-reveal='true']) .cardo-canvas-tools {
   opacity: 0;
   pointer-events: none;
 }
 
-[data-layout-profile='immersive'][data-chrome-reveal='true'] .cardo-top-bar,
-[data-layout-profile='immersive'][data-chrome-reveal='true'] .cardo-history-controls,
-[data-layout-profile='immersive'][data-chrome-reveal='true'] .cardo-bottom-shell,
-[data-layout-profile='immersive'][data-chrome-reveal='true'] .cardo-canvas-tools {
+[data-layout-profile='floating'][data-chrome-reveal='true'] .cardo-top-bar,
+[data-layout-profile='floating'][data-chrome-reveal='true'] .cardo-history-controls,
+[data-layout-profile='floating'][data-chrome-reveal='true'] .cardo-bottom-shell,
+[data-layout-profile='floating'][data-chrome-reveal='true'] .cardo-canvas-tools {
   opacity: 1;
   pointer-events: auto;
   transform: none;
@@ -99,4 +68,62 @@
   bottom: 0;
   left: 0;
   width: 12px;
+}
+
+/*
+ * Zen: hide all product chrome. Canvas + zen exit stay interactive.
+ * Settings / menus still mount when opened from elsewhere (e.g. shortcut).
+ */
+[data-layout-profile='zen'] .cardo-top-bar,
+[data-layout-profile='zen'] .cardo-history-controls,
+[data-layout-profile='zen'] .cardo-bottom-shell,
+[data-layout-profile='zen'] .cardo-canvas-tools {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden;
+}
+
+.cardo-zen-exit {
+  position: fixed;
+  z-index: 80;
+  right: 20px;
+  bottom: 20px;
+  display: inline-flex;
+  min-width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--cardo-border);
+  border-radius: 999px;
+  padding: 0 14px 0 12px;
+  background: var(--cardo-surface);
+  color: var(--cardo-soft-text);
+  box-shadow: var(--cardo-shadow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    color var(--cardo-duration-normal) var(--cardo-easing),
+    background var(--cardo-duration-normal) var(--cardo-easing),
+    border-color var(--cardo-duration-normal) var(--cardo-easing),
+    box-shadow var(--cardo-duration-normal) var(--cardo-easing);
+}
+
+.cardo-zen-exit:hover {
+  border-color: color-mix(in srgb, var(--cardo-blue) 28%, var(--cardo-border));
+  background: var(--cardo-hover);
+  color: var(--cardo-text);
+}
+
+.cardo-zen-exit:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--cardo-blue) 45%, transparent);
+  outline-offset: 2px;
+}
+
+.cardo-app-desktop .cardo-zen-exit {
+  bottom: 28px;
 }

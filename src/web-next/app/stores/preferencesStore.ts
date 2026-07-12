@@ -18,11 +18,13 @@ import type {
 } from '../../../core/contracts/featureCatalog';
 import {
   featureFlagOverridesSchema,
+  normalizeFeatureFlagOverrides,
   withFeatureEnabled,
 } from '../../../core/contracts/featureCatalog';
 import {
   DEFAULT_LAYOUT_PROFILE_ID,
   layoutProfileIdSchema,
+  normalizeLayoutProfileId,
   type LayoutProfileId,
 } from '../../../core/contracts/layoutProfile';
 import { cssSnippetSchema } from '../../../core/contracts/cssSnippet';
@@ -327,10 +329,9 @@ async function refreshPreferences() {
     preferences.themeColorOverrides ?? {},
   );
   const themeOptionValues = themeOptionValuesSchema.parse(preferences.themeOptionValues ?? {});
-  const featureFlags = featureFlagOverridesSchema.parse(preferences.featureFlags ?? {});
-  const layoutProfileId = layoutProfileIdSchema.parse(
-    preferences.layoutProfileId ?? DEFAULT_LAYOUT_PROFILE_ID,
-  );
+  // Drop retired flag keys (e.g. item.contextMenu) without failing the whole hydrate.
+  const featureFlags = normalizeFeatureFlagOverrides(preferences.featureFlags ?? {});
+  const layoutProfileId = normalizeLayoutProfileId(preferences.layoutProfileId);
   const cssSnippet = cssSnippetSchema.parse(preferences.cssSnippet ?? '');
   const cssSnippetEnabled = Boolean(preferences.cssSnippetEnabled);
 

@@ -2,8 +2,11 @@ import type { MouseEvent, ReactNode } from 'react';
 import { useI18n } from '../../i18n/useI18n';
 import { useContextMenu } from '../../ui/cardo/context-menu';
 import { ThemeIcon } from '../../ui/icons/ThemeIcon';
-import { useFeatureEnabled } from '../../shell/FeatureGate';
 
+/**
+ * Item right-click is always available — many actions have no other entry.
+ * Not gated by Feature Catalog.
+ */
 export function useItemContextMenu({
   pinned,
   primaryAction,
@@ -21,11 +24,9 @@ export function useItemContextMenu({
 }) {
   const { openMenu } = useContextMenu();
   const { t } = useI18n();
-  const contextMenuEnabled = useFeatureEnabled('item.contextMenu');
 
   return {
     onContextMenu: (event: MouseEvent<HTMLElement>) => {
-      if (!contextMenuEnabled) return;
       event.preventDefault();
       event.stopPropagation();
       openMenu(event.clientX, event.clientY, [

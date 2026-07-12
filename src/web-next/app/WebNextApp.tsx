@@ -13,6 +13,7 @@ import { FeatureGate } from '../shell/FeatureGate';
 import { applyLayoutProfile } from '../shell/layouts/applyLayoutProfile';
 import { applyCssSnippet } from '../shell/layouts/applyCssSnippet';
 import { useImmersiveChrome } from '../shell/layouts/useImmersiveChrome';
+import { ZenExitControl } from '../components/chrome/ZenExitControl';
 import { useCancelActivePointerOnWindowExit } from './useCancelActivePointerOnWindowExit';
 import { usePasteIntoSelectedBox } from './usePasteIntoSelectedBox';
 import { useWorkspaceHistoryShortcuts } from './useWorkspaceHistoryShortcuts';
@@ -75,7 +76,7 @@ export default function WebNextApp() {
       <div className={`cardo-app${isDesktopHost ? ' cardo-app-desktop' : ''}`}>
         <DesktopTitleBar />
         <BoxPageDropController />
-        {layoutProfileId === 'immersive' ? (
+        {layoutProfileId === 'floating' ? (
           <>
             <div className="cardo-immersive-edge cardo-immersive-edge-top" aria-hidden="true" />
             <div className="cardo-immersive-edge cardo-immersive-edge-bottom" aria-hidden="true" />
@@ -98,6 +99,7 @@ export default function WebNextApp() {
         <FeatureGate feature="chrome.bottomToolbar">
           <BottomToolbar />
         </FeatureGate>
+        {layoutProfileId === 'zen' ? <ZenExitControl /> : null}
         <SettingsWindow />
         <ContextMenuHost />
       </div>

@@ -528,6 +528,24 @@
   font-weight: 600;
 }
 
+.cardo-layout-profile-tabs.cardo-segmented-control {
+  display: flex;
+  width: 100%;
+}
+
+.cardo-layout-profile-tabs.cardo-segmented-control > button {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.cardo-layout-profile-hint {
+  margin: 8px 0 0;
+  color: var(--cardo-muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
 .cardo-custom-search-template {
   display: flex;
   flex-direction: column;

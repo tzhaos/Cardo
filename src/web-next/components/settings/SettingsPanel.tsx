@@ -33,6 +33,10 @@ import {
   isFeatureEnabled,
 } from '../../../core/contracts/featureCatalog';
 import {
+  LAYOUT_PROFILES,
+  type LayoutProfileId,
+} from '../../../core/contracts/layoutProfile';
+import {
   overridableColorKeys,
   type OverridableColorKey,
 } from '../../../core/contracts/themePack';
@@ -491,7 +495,51 @@ function GeneralSettings({
           <small>{t('settings.customSearchTemplateHint')}</small>
         </label>
       ) : null}
+      <LayoutProfileSettings />
       <FeatureSettings />
+    </>
+  );
+}
+
+function LayoutProfileSettings() {
+  const layoutProfileId = usePreferencesStore((state) => state.layoutProfileId);
+  const setLayoutProfileId = usePreferencesStore((state) => state.setLayoutProfileId);
+  const { t } = useI18n();
+
+  return (
+    <>
+      <div className="cardo-settings-subheading">
+        <span>{t('settings.layout')}</span>
+        <small>{t('settings.layoutDescription')}</small>
+      </div>
+      <ToggleGroup
+        aria-label={t('settings.layout')}
+        className="cardo-layout-profile-tabs"
+        type="single"
+        value={layoutProfileId}
+        onValueChange={(value) => {
+          if (!value) return;
+          if (value === 'classic' || value === 'floating' || value === 'zen') {
+            setLayoutProfileId(value as LayoutProfileId);
+          }
+        }}
+      >
+        {LAYOUT_PROFILES.map((profile) => (
+          <SegmentButton
+            key={profile.id}
+            active={layoutProfileId === profile.id}
+            value={profile.id}
+          >
+            {t(profile.labelKey as WebNextMessageKey)}
+          </SegmentButton>
+        ))}
+      </ToggleGroup>
+      <p className="cardo-layout-profile-hint">
+        {t(
+          (LAYOUT_PROFILES.find((entry) => entry.id === layoutProfileId)?.descriptionKey ??
+            'settings.layout.classicDescription') as WebNextMessageKey,
+        )}
+      </p>
     </>
   );
 }

@@ -17,7 +17,6 @@ export const featureIds = [
   'workspace.recycleBin',
   'workspace.multiPage',
   'box.appearancePopover',
-  'item.contextMenu',
 ] as const;
 
 export const featureIdSchema = z.enum(featureIds);
@@ -26,6 +25,19 @@ export type FeatureId = z.infer<typeof featureIdSchema>;
 /** User overrides only. Missing key ⇒ catalog default (true for all v1 features). */
 export const featureFlagOverridesSchema = z.partialRecord(featureIdSchema, z.boolean());
 export type FeatureFlagOverrides = z.infer<typeof featureFlagOverridesSchema>;
+
+/** Strip retired keys (e.g. item.contextMenu) without failing hydrate. */
+export function normalizeFeatureFlagOverrides(value: unknown): FeatureFlagOverrides {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  const next: FeatureFlagOverrides = {};
+  const source = value as Record<string, unknown>;
+  for (const id of featureIds) {
+    if (typeof source[id] === 'boolean') {
+      next[id] = source[id];
+    }
+  }
+  return pruneDefaultOverrides(next);
+}
 
 export type FeatureSlot =
   | 'shell.top'
@@ -36,8 +48,7 @@ export type FeatureSlot =
   | 'shell.toast'
   | 'topBar.tab'
   | 'topBar'
-  | 'box.chrome'
-  | 'item';
+  | 'box.chrome';
 
 export interface FeatureDefinition {
   id: FeatureId;
@@ -131,14 +142,6 @@ export const FEATURE_CATALOG: readonly FeatureDefinition[] = [
     dependsOn: [],
     labelKey: 'settings.feature.box.appearancePopover',
     descriptionKey: 'settings.feature.box.appearancePopoverDescription',
-  },
-  {
-    id: 'item.contextMenu',
-    slot: 'item',
-    defaultEnabled: true,
-    dependsOn: [],
-    labelKey: 'settings.feature.item.contextMenu',
-    descriptionKey: 'settings.feature.item.contextMenuDescription',
   },
 ] as const;
 
