@@ -45,11 +45,5 @@ jobs:
       - name: Run static checks and tests
         run: npm run check
 
-      - name: Build browser extension
-        run: npm run build
-
-      - name: Build desktop application
-        run: npm run desktop:build
-
-      - name: Build Native Messaging host
-        run: npm run native-host:build
+      - name: Full product build
+        run: npm run build:all
