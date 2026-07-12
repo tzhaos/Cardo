@@ -52,7 +52,9 @@ import WebAssetRounded from '@mui/icons-material/WebAssetRounded';
 import WorkOutlineRounded from '@mui/icons-material/WorkOutlineRounded';
 import { adaptSvgIcon, type ThemeIconPack } from '../types';
 
-const M = (Icon: Parameters<typeof adaptSvgIcon>[0]) => adaptSvgIcon(Icon, 'mui');
+// MUI OverridableComponent is not assignable to ComponentType without a cast.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const M = (Icon: any) => adaptSvgIcon(Icon, 'mui');
 
 /**
  * Material / AI Studio — official Material Icons (Rounded).

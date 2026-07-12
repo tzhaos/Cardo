@@ -1,4 +1,4 @@
-import type { ComponentType, SVGProps } from 'react';
+import type { ComponentType, CSSProperties } from 'react';
 
 /**
  * Semantic chrome / content icons.
@@ -72,15 +72,22 @@ export type ThemeIconComponent = ComponentType<ThemeIconProps>;
 
 export type ThemeIconPack = Record<ThemeIconName, ThemeIconComponent>;
 
+/**
+ * Accept any third-party icon component (Lucide / Fluent / MUI OverridableComponent).
+ * MUI SvgIcon types require `component` in some overloads; runtime only needs a renderable.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyIconComponent = ComponentType<any>;
+
 /** Normalize third-party icons to ThemeIconProps. */
 export function adaptSvgIcon(
-  Icon: ComponentType<SVGProps<SVGSVGElement> & { fontSize?: number | string; size?: number }>,
+  Icon: AnyIconComponent,
   mode: 'lucide' | 'fluent' | 'mui' = 'lucide',
 ): ThemeIconComponent {
   return function AdaptedThemeIcon({ size = 16, className, strokeWidth, title }: ThemeIconProps) {
     // Force a square layout box so optical padding differences across packs stay centered.
-    const boxStyle = {
-      display: 'block' as const,
+    const boxStyle: CSSProperties = {
+      display: 'block',
       width: size,
       height: size,
       flexShrink: 0,
