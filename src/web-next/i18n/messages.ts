@@ -170,9 +170,14 @@ export const WEB_NEXT_MESSAGES = {
     'settings.optionOn': 'On',
     'settings.optionOff': 'Off',
     'settings.resetThemeOptions': 'Reset theme options',
-    'settings.colorOverrides': 'Theme colors',
+    'settings.themeLooks': 'Color looks',
+    'settings.themeLooksDescription': 'Designed palettes for this theme. Switch light/dark to preview both sides.',
+    'settings.themeLookCustom': 'Custom',
+    'settings.colorOverrides': 'Customize colors',
     'settings.colorOverridesDescription':
-      'Pick a preset or enter a custom value for canvas, surfaces, text, and accent in the current light or dark mode. Empty fields use the theme default.',
+      'Fine-tune individual tokens if the looks above are not enough.',
+    'settings.colorOverridesExpand': 'Show custom colors',
+    'settings.colorOverridesCollapse': 'Hide custom colors',
     'settings.resetColorOverrides': 'Restore default theme colors',
     'settings.resetColorOverridesDescription':
       'Clear all custom theme colors for light and dark mode and return to theme defaults.',
@@ -477,9 +482,13 @@ export const WEB_NEXT_MESSAGES = {
     'settings.optionOn': '开',
     'settings.optionOff': '关',
     'settings.resetThemeOptions': '重置主题选项',
-    'settings.colorOverrides': '主题色',
-    'settings.colorOverridesDescription':
-      '在当前浅色或深色模式下，为画布、表面、文字与强调色选择预设或自定义颜色。留空则使用主题默认色。',
+    'settings.themeLooks': '配色预设',
+    'settings.themeLooksDescription': '为本主题准备的成套色板；可切换明暗预览两侧。',
+    'settings.themeLookCustom': '自定义',
+    'settings.colorOverrides': '自定义颜色',
+    'settings.colorOverridesDescription': '预设不够时，再逐项微调。',
+    'settings.colorOverridesExpand': '展开自定义颜色',
+    'settings.colorOverridesCollapse': '收起自定义颜色',
     'settings.resetColorOverrides': '恢复默认主题色',
     'settings.resetColorOverridesDescription':
       '清除浅色与深色模式下的全部自定义主题色，恢复为主题默认。',

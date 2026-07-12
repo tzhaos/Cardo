@@ -42,11 +42,18 @@ export const SETTINGS_SEARCH_CATALOG: readonly SettingsSearchEntry[] = [
     keywords: { en: ['light', 'dark', 'night'], zh: ['浅色', '深色', '暗色', '夜间'] },
   },
   {
+    id: 'theme-looks',
+    section: 'appearance',
+    titleKey: 'settings.themeLooks',
+    descriptionKey: 'settings.themeLooksDescription',
+    keywords: { en: ['look', 'palette', 'preset'], zh: ['配色', '预设', '色板'] },
+  },
+  {
     id: 'color-overrides',
     section: 'appearance',
     titleKey: 'settings.colorOverrides',
     descriptionKey: 'settings.colorOverridesDescription',
-    keywords: { en: ['accent', 'palette', 'preset'], zh: ['强调色', '配色', '预设'] },
+    keywords: { en: ['accent', 'custom', 'token'], zh: ['强调色', '自定义', '颜色'] },
   },
   {
     id: 'settings-chrome',

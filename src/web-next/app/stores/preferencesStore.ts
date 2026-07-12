@@ -29,6 +29,7 @@ import { cssSnippetSchema } from '../../../core/contracts/cssSnippet';
 import type {
   ImportedThemePacks,
   OverridableColorKey,
+  OverridableColorMap,
   ThemeColorOverrides,
   ThemeOptionValues,
   ThemePack,
@@ -80,6 +81,14 @@ interface PreferencesStore {
     colorMode: WebNextColorMode,
     key: OverridableColorKey,
     value: string | null,
+  ) => void;
+  /**
+   * Apply a designed light+dark color look for a theme pack.
+   * Pass empty maps to clear overrides (pack defaults).
+   */
+  applyThemeColorLook: (
+    themeId: string,
+    colors: { light: OverridableColorMap; dark: OverridableColorMap },
   ) => void;
   resetThemeColorOverrides: (themeId?: string) => void;
   setThemeOptionValue: (optionId: string, value: boolean | string) => void;
@@ -140,6 +149,23 @@ const actions = {
       delete next[themeId];
     } else {
       next[themeId] = themeBucket;
+    }
+    fireCommand({
+      type: 'preferences.setThemeColorOverrides',
+      themeColorOverrides: themeColorOverridesSchema.parse(next),
+    });
+  },
+  applyThemeColorLook: (themeId, colors) => {
+    const next: ThemeColorOverrides = structuredClone(state.themeColorOverrides);
+    const lightEmpty = Object.keys(colors.light).length === 0;
+    const darkEmpty = Object.keys(colors.dark).length === 0;
+    if (lightEmpty && darkEmpty) {
+      delete next[themeId];
+    } else {
+      next[themeId] = {
+        ...(lightEmpty ? {} : { light: { ...colors.light } }),
+        ...(darkEmpty ? {} : { dark: { ...colors.dark } }),
+      };
     }
     fireCommand({
       type: 'preferences.setThemeColorOverrides',

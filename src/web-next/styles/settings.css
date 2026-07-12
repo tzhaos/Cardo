@@ -821,6 +821,116 @@
   right: 16px;
 }
 
+/* Designed multi-token looks for the active theme pack */
+.cardo-theme-look-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.cardo-theme-look-card {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-lg);
+  padding: 10px;
+  background: var(--cardo-panel-content);
+  color: var(--cardo-text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--cardo-duration-normal) var(--cardo-easing),
+    background var(--cardo-duration-normal) var(--cardo-easing),
+    box-shadow var(--cardo-duration-normal) var(--cardo-easing);
+}
+
+.cardo-theme-look-card:hover {
+  background: var(--cardo-hover);
+}
+
+.cardo-theme-look-card-selected {
+  border-color: color-mix(in srgb, var(--cardo-blue) 50%, var(--cardo-border));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--cardo-blue) 16%, transparent);
+}
+
+.cardo-theme-look-card-custom {
+  border-style: dashed;
+  cursor: default;
+  opacity: 0.92;
+}
+
+.cardo-theme-look-swatches {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  height: 28px;
+}
+
+.cardo-theme-look-swatches > i {
+  display: block;
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--cardo-text) 10%, transparent);
+  border-radius: 6px;
+}
+
+.cardo-theme-look-name {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.cardo-theme-look-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: var(--cardo-blue);
+}
+
+.cardo-settings-disclosure {
+  display: flex;
+  width: 100%;
+  min-height: 52px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-xl);
+  padding: 12px 14px;
+  background: var(--cardo-panel-content);
+  color: var(--cardo-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.cardo-settings-disclosure > span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cardo-settings-disclosure small {
+  color: var(--cardo-muted);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.cardo-settings-disclosure-chevron {
+  flex: 0 0 auto;
+  color: var(--cardo-muted);
+  transition: transform 160ms ease;
+}
+
+.cardo-settings-disclosure-chevron-open {
+  transform: rotate(90deg);
+}
+
 .cardo-data-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
