@@ -1003,16 +1003,6 @@
   box-shadow: none;
 }
 
-[data-cardo-theme='fluent'] .cardo-theme-state-icon {
-  width: 32px;
-  height: 28px;
-}
-
-[data-cardo-theme='fluent'] .cardo-state-glyph {
-  filter: none !important;
-  transform: none !important;
-}
-
 [data-cardo-theme='fluent'] .cardo-theme-pack-grid {
   gap: 10px;
 }

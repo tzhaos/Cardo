@@ -1162,67 +1162,6 @@
   transform-origin: center;
 }
 
-/*
- * Dual-glyph color-mode state icon.
- * Primary = top-left solid; secondary = bottom-right muted.
- * Snap roles — only opacity/color animate (no font-size / position tween blur).
- */
-.cardo-theme-state-icon {
-  position: relative;
-  display: block;
-  width: 32px;
-  height: 28px;
-  flex: 0 0 auto;
-  color: var(--cardo-text);
-}
-
-.cardo-state-glyph {
-  position: absolute;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  user-select: none;
-  pointer-events: none;
-  transform: none;
-  filter: none;
-  transition: opacity 140ms ease, color 140ms ease;
-}
-
-/* Color mode: light primary */
-.cardo-state-icon-light .cardo-theme-sun {
-  top: 0;
-  left: 0;
-  opacity: 1;
-  color: var(--cardo-text);
-  z-index: 2;
-}
-
-.cardo-state-icon-light .cardo-theme-moon {
-  top: 12px;
-  left: 14px;
-  opacity: 0.4;
-  color: var(--cardo-muted);
-  z-index: 1;
-}
-
-/* Color mode: dark primary */
-.cardo-state-icon-dark .cardo-theme-moon {
-  top: 0;
-  left: 0;
-  opacity: 1;
-  color: var(--cardo-text);
-  z-index: 2;
-}
-
-.cardo-state-icon-dark .cardo-theme-sun {
-  top: 12px;
-  left: 14px;
-  opacity: 0.4;
-  color: var(--cardo-muted);
-  z-index: 1;
-}
-
 /* Shared list grouping (Fluent uses this heavily; other themes keep simple stack). */
 .cardo-settings-list-group {
   display: flex;

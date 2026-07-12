@@ -28,7 +28,6 @@ import {
   OFFICIAL_DEFAULT_THEME_ID,
 } from '../../themes/themeRegistry';
 import { resolveEffectiveThemeTokens } from '../../themes/resolveTheme';
-import { ColorModeStateIcon } from './StateIcons';
 import { SettingsNavIcon } from './SettingsNavIcons';
 import { IconButton, IconFrame } from '../../ui/cardo/icon-button';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
@@ -560,7 +559,6 @@ function AppearanceSettings({
       <div className="cardo-settings-list-group cardo-settings-list-group-spaced">
         <div className="cardo-settings-card">
           <div className="cardo-settings-card-copy">
-            <ColorModeStateIcon colorMode={colorMode} />
             <span>
               {t('settings.mode')}
               <small>{t('settings.modeDescription')}</small>
