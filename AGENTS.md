@@ -2,8 +2,80 @@
 
 1. 输出的 Markdown 内容未经允许禁止使用加粗。
 2. 不运行测试，只执行用户指定的浏览器插件和桌面端构建。
-3. 每个独立 Feature 或 Fix 完成后执行 `npm run build:all`（会先 `cardo:stop` 清掉本机 Runtime/Desktop/CLI 实例，再构建 extension + CLI + web-runtime + desktop + native-host），单独提交并推送。局部验证可用 `npm run build` / `npm run desktop:build`（二者也会先停实例）。
+3. 每个独立 Feature 或 Fix 在合并前执行 `npm run build:all`（会先 `cardo:stop` 清掉本机 Runtime/Desktop/CLI 实例，再构建 extension + CLI + web-runtime + desktop + native-host）。局部验证可用 `npm run build` / `npm run desktop:build`（二者也会先停实例）。
 4. 项目禁止旧 Schema、旧字段、旧持久化格式和退休机制的兼容代码。
+5. Git 协作与发版必须遵守下方「分支、合并与发布」；AI 默认不得在 `main` 上直接堆功能提交。
+
+## 分支、合并与发布
+
+采用业界通用主干模型（trunk-based）。`main` 是唯一长期主线：保持可构建、可发版候选状态，但「进入 main」不等于「自动发 GitHub Release」。
+
+### 分支角色
+
+| 分支 | 角色 |
+| --- | --- |
+| `main` | 默认主干；只接受已审查的合并；CI 做校验与 `build:all`，不发布安装包 |
+| `feature/*` / `fix/*` / `chore/*` / `docs/*` | 任务分支；贡献者与 AI 的日常工作区 |
+| `vX.Y.Z` tag | 里程碑发版节点；仅稳定 semver；触发 Desktop Release 工作流 |
+
+不强制维护长期 `dev` 分支。若仓库另有 `dev`/`develop` 开发线，则任务分支先合入该线，再由里程碑 PR 合入 `main`；规则与下表相同，仅把「目标主干」替换为实际开发线。
+
+### AI / 贡献者日常流程（必须）
+
+1. 开始任务前从最新 `main`（或当前开发线）拉出任务分支，命名示例：
+   - `feature/settings-update-ui`
+   - `fix/desktop-runtime-attach`
+   - `chore/agents-git-rules`
+2. 在任务分支上开发与提交；一个逻辑变更一个 commit 为佳；消息用 conventional commits（`feat` / `fix` / `chore` / `docs` / `ci` / `refactor` 等）。
+3. 完成后在该分支推送远程，并打开 Pull Request 申请合并到 `main`（或开发线）。
+4. PR 描述写清：动机、主要改动、风险、验证方式（例如是否跑过 `build:all` / Desktop 打包）。
+5. 等待 CI 通过与审查；需要时在同一 PR 分支上继续推送修复，不另开无关分支搅乱历史。
+6. 未经用户明确要求，禁止：
+   - 直接向 `main` push 功能/修复提交
+   - `--force` push 到 `main` 或他人分支
+   - 自行创建/推送 `v*` 发版 tag
+   - 自行触发或改写会对外发包的 Release（除非用户要求处理发版）
+   - 合并他人 PR 或关闭 issue（除非用户明确授权）
+
+用户若明确说「直接提交到 main / 推 main」，才可在 `main` 上提交并推送；该授权仅对当次指令有效。
+
+### 合并策略
+
+1. 默认 Squash merge 或 Rebase 后 merge 均可；保持 `main` 历史可读。
+2. 合并前确认：与目标分支无冲突、CI 绿、无秘密与生成物误入（`artifacts/`、`node_modules/`、`.orca/`、`mcps/` 等已 ignore）。
+3. 合并后删除已合入的远程任务分支（可选，推荐）。
+
+### 版本与里程碑发布
+
+1. 产品版本为严格 `X.Y.Z`（无 prerelease 后缀）。`package.json` 的 `version` 是 SoT；构建注入 `__APP_VERSION__`；Desktop 安装包版本与此一致。
+2. 常规 CI（push/PR 到 `main`）只做 format / check / `build:all`，绝不上传 GitHub Release、绝不 `npm publish`。
+3. 仅关键节点发版。触发方式二选一：
+   - 在已合入 `main` 的提交上打稳定 tag：`git tag vX.Y.Z && git push origin vX.Y.Z`
+   - 或使用 GitHub Actions `Release` 工作流的 `workflow_dispatch`，输入 `X.Y.Z`（可创建 tag）
+4. Release 产物以 Desktop 为主（Setup / Portable / SHA256SUMS）。CLI 等其它分发通道后续走 npm，不随每次 CI 产出。
+5. Desktop 应用内更新只消费 GitHub 上非 draft、非 prerelease 的 latest stable Release；开发中的 CI artifact 不是更新源。
+6. AI 不得擅自 bump 版本号并打 tag；版本推进与发版由用户在里程碑时明确指示。
+
+### 推荐命令备忘
+
+```text
+# 开工
+git fetch origin
+git checkout main
+git pull
+git checkout -b feature/short-topic
+
+# 收工
+npm run build:all
+git add …
+git commit -m "feat(scope): …"
+git push -u origin HEAD
+# 然后 gh pr create 或由用户在托管平台开 PR 合入 main
+
+# 里程碑发版（仅维护者 / 用户要求时）
+# 1) 确认 main 已包含发版内容且 version 已对齐
+# 2) git tag vX.Y.Z && git push origin vX.Y.Z
+```
 
 ## Cardo 架构
 
