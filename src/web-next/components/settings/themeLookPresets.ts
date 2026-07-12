@@ -7,27 +7,41 @@ export interface ThemeLookPreset {
   name: { en: string; zh: string };
   /**
    * Designed light/dark pair for this pack.
-   * Empty maps mean pack defaults (no overrides).
+   * Empty maps mean pack defaults (no overrides) — the official default look.
    */
   colors: Record<ColorMode, OverridableColorMap>;
 }
 
 /**
- * Curated looks — one coherent palette family per option.
+ * Accent-only helper: leave canvas / panel / text to the pack default.
+ * Extra looks must not redesign the shell — defaults are the designed product.
+ */
+function accentOnly(
+  light: { blue: string; create?: string; hover: string },
+  dark: { blue: string; create?: string; hover: string },
+): Record<ColorMode, OverridableColorMap> {
+  return {
+    light: {
+      blue: light.blue,
+      createBackground: light.create ?? light.blue,
+      settingsHover: light.hover,
+    },
+    dark: {
+      blue: dark.blue,
+      createBackground: dark.create ?? dark.blue,
+      settingsHover: dark.hover,
+    },
+  };
+}
+
+/**
+ * Curated looks per official theme pack.
  *
- * Design rules (all packs):
- * 1. Keep shell hierarchy: canvas (recessed) → panel (raised) → surface (chrome).
- * 2. Body text stays near-neutral for reading; accent is for actions / selection only.
- * 3. Light and dark of the same look share hue identity (same family, not two random themes).
- * 4. settingsChrome / settingsHover sit in the same family as canvas, slightly quieter.
- * 5. createBackground matches accent (or one step deeper in light mode for contrast).
- * 6. Respect each pack’s design language (Fluent neutrals, Material tonal, Apple system, …).
+ * - id "default": empty maps → 100% pack tokens (do not invent a second default).
+ * - other ids: accent variants only (blue / create / settingsHover).
+ *   Shell surfaces stay the pack’s designed neutrals so global hierarchy is preserved.
  */
 export const THEME_LOOK_PRESETS: Record<string, readonly ThemeLookPreset[]> = {
-  /**
-   * Classic — soft product glass.
-   * Looks shift the neutral temperature + one restrained accent; panels stay clean.
-   */
   classic: [
     {
       id: 'default',
@@ -35,92 +49,34 @@ export const THEME_LOOK_PRESETS: Record<string, readonly ThemeLookPreset[]> = {
       colors: { light: {}, dark: {} },
     },
     {
-      id: 'slate',
-      name: { en: 'Slate', zh: '青灰' },
-      // Cool slate neutrals + calm sky accent (desktop utility, low noise).
-      colors: {
-        light: {
-          canvas: '#eef1f5',
-          panel: '#ffffff',
-          surface: 'rgba(255, 255, 255, 0.88)',
-          text: '#152033',
-          blue: '#3b6fd4',
-          createBackground: '#2f5bb8',
-          settingsChrome: '#f3f5f8',
-          settingsHover: '#e2e8f2',
-        },
-        dark: {
-          canvas: '#14181f',
-          panel: '#1e2430',
-          surface: 'rgba(30, 36, 48, 0.92)',
-          text: '#e8edf5',
-          blue: '#7aa2f0',
-          createBackground: '#7aa2f0',
-          settingsChrome: '#171c26',
-          settingsHover: '#283246',
-        },
-      },
+      id: 'ocean',
+      name: { en: 'Ocean', zh: '海雾' },
+      // Cool sky blue on classic glass neutrals.
+      colors: accentOnly(
+        { blue: '#2563eb', create: '#1d4ed8', hover: '#dbeafe' },
+        { blue: '#60a5fa', create: '#60a5fa', hover: '#1e3a5f' },
+      ),
     },
     {
-      id: 'sand',
-      name: { en: 'Sand', zh: '沙色' },
-      // Warm stone neutrals + copper accent (paper / reading mood).
-      colors: {
-        light: {
-          canvas: '#f3efe9',
-          panel: '#fffcf8',
-          surface: 'rgba(255, 252, 248, 0.92)',
-          text: '#2a2118',
-          blue: '#c46a2d',
-          createBackground: '#a85a26',
-          settingsChrome: '#f7f3ee',
-          settingsHover: '#ebe2d6',
-        },
-        dark: {
-          canvas: '#171310',
-          panel: '#241e19',
-          surface: 'rgba(36, 30, 25, 0.94)',
-          text: '#f3ebe2',
-          blue: '#e0a06a',
-          createBackground: '#e0a06a',
-          settingsChrome: '#1b1612',
-          settingsHover: '#342a22',
-        },
-      },
+      id: 'sunset',
+      name: { en: 'Sunset', zh: '暮光' },
+      // Warm amber accent — same shell, different action color.
+      colors: accentOnly(
+        { blue: '#d97706', create: '#b45309', hover: '#fef3c7' },
+        { blue: '#fbbf24', create: '#fbbf24', hover: '#422006' },
+      ),
     },
     {
-      id: 'sage',
-      name: { en: 'Sage', zh: '鼠尾草' },
-      // Muted sage neutrals + evergreen accent (calm workspace).
-      colors: {
-        light: {
-          canvas: '#eef2ef',
-          panel: '#fbfcfb',
-          surface: 'rgba(251, 252, 251, 0.92)',
-          text: '#1a2620',
-          blue: '#3d7a5c',
-          createBackground: '#32664c',
-          settingsChrome: '#f3f6f4',
-          settingsHover: '#dde8e1',
-        },
-        dark: {
-          canvas: '#121816',
-          panel: '#1b2420',
-          surface: 'rgba(27, 36, 32, 0.94)',
-          text: '#e4efe8',
-          blue: '#7dba98',
-          createBackground: '#7dba98',
-          settingsChrome: '#151c19',
-          settingsHover: '#27352e',
-        },
-      },
+      id: 'forest',
+      name: { en: 'Forest', zh: '林间' },
+      // Evergreen accent for a calmer primary.
+      colors: accentOnly(
+        { blue: '#059669', create: '#047857', hover: '#d1fae5' },
+        { blue: '#34d399', create: '#34d399', hover: '#14532d' },
+      ),
     },
   ],
 
-  /**
-   * Glass — ethereal atmosphere.
-   * Soft tinted canvases + translucent white panels; accent is jewel-toned but not neon.
-   */
   glass: [
     {
       id: 'default',
@@ -128,93 +84,34 @@ export const THEME_LOOK_PRESETS: Record<string, readonly ThemeLookPreset[]> = {
       colors: { light: {}, dark: {} },
     },
     {
-      id: 'mist',
-      name: { en: 'Mist', zh: '薄雾' },
-      // Cool blue mist — airy, high clarity.
-      colors: {
-        light: {
-          canvas: '#eef3f8',
-          panel: 'rgba(255, 255, 255, 0.82)',
-          surface: 'rgba(255, 255, 255, 0.72)',
-          text: '#1a2740',
-          blue: '#3d7ccc',
-          createBackground: '#2f6bb8',
-          settingsChrome: '#f5f8fb',
-          settingsHover: '#dfeaf5',
-        },
-        dark: {
-          canvas: '#0c121a',
-          panel: 'rgba(22, 32, 46, 0.88)',
-          surface: 'rgba(28, 40, 56, 0.84)',
-          text: '#e6eef8',
-          blue: '#7eb3ef',
-          createBackground: '#7eb3ef',
-          settingsChrome: '#101822',
-          settingsHover: '#1e3048',
-        },
-      },
+      id: 'aurora',
+      name: { en: 'Aurora', zh: '极光' },
+      // Soft indigo accent on ethereal glass shell.
+      colors: accentOnly(
+        { blue: '#6366f1', create: '#4f46e5', hover: '#e0e7ff' },
+        { blue: '#a5b4fc', create: '#a5b4fc', hover: '#312e81' },
+      ),
     },
     {
-      id: 'lilac',
-      name: { en: 'Lilac', zh: '丁香' },
-      // Soft violet glass — atmospheric, not party-purple.
-      colors: {
-        light: {
-          canvas: '#f2f0f8',
-          panel: 'rgba(255, 255, 255, 0.84)',
-          surface: 'rgba(255, 255, 255, 0.74)',
-          text: '#241f3a',
-          blue: '#6b5bb5',
-          createBackground: '#5a4ba0',
-          settingsChrome: '#f6f4fb',
-          settingsHover: '#e6e1f4',
-        },
-        dark: {
-          canvas: '#12101a',
-          panel: 'rgba(30, 26, 44, 0.9)',
-          surface: 'rgba(38, 32, 56, 0.86)',
-          text: '#ece8f8',
-          blue: '#b0a3ef',
-          createBackground: '#b0a3ef',
-          settingsChrome: '#161320',
-          settingsHover: '#2c2644',
-        },
-      },
+      id: 'frost',
+      name: { en: 'Frost', zh: '霜白' },
+      // Ice sky accent.
+      colors: accentOnly(
+        { blue: '#0ea5e9', create: '#0284c7', hover: '#e0f2fe' },
+        { blue: '#38bdf8', create: '#38bdf8', hover: '#0c4a6e' },
+      ),
     },
     {
-      id: 'rose',
-      name: { en: 'Rose', zh: '蔷薇' },
-      // Dusty rose glass — warm atmosphere without candy pink.
-      colors: {
-        light: {
-          canvas: '#f7f0f2',
-          panel: 'rgba(255, 255, 255, 0.86)',
-          surface: 'rgba(255, 252, 253, 0.78)',
-          text: '#2e1c24',
-          blue: '#b85a78',
-          createBackground: '#9e4a66',
-          settingsChrome: '#faf5f7',
-          settingsHover: '#f0dde4',
-        },
-        dark: {
-          canvas: '#160e12',
-          panel: 'rgba(36, 22, 30, 0.9)',
-          surface: 'rgba(46, 28, 38, 0.88)',
-          text: '#f6e8ee',
-          blue: '#e09bb2',
-          createBackground: '#e09bb2',
-          settingsChrome: '#1a1116',
-          settingsHover: '#3a2430',
-        },
-      },
+      id: 'ember',
+      name: { en: 'Ember', zh: '余烬' },
+      // Rose accent — restrained, not neon pink shell.
+      colors: accentOnly(
+        { blue: '#e11d48', create: '#be123c', hover: '#ffe4e6' },
+        { blue: '#fb7185', create: '#fb7185', hover: '#4c0519' },
+      ),
     },
   ],
 
-  /**
-   * Fluent — Windows 11.
-   * Official pattern: neutral shell (#f3f3f3 / #202020 family) + system accent color only.
-   * Do not recolor the whole canvas like a Material seed — Fluent keeps chrome gray.
-   */
   fluent: [
     {
       id: 'default',
@@ -222,268 +119,101 @@ export const THEME_LOOK_PRESETS: Record<string, readonly ThemeLookPreset[]> = {
       colors: { light: {}, dark: {} },
     },
     {
-      id: 'blue',
+      id: 'daylight',
       name: { en: 'Blue', zh: '蓝色' },
-      // Windows accent blue on stock neutrals.
-      colors: {
-        light: {
-          canvas: '#f3f3f3',
-          panel: '#ffffff',
-          surface: '#ffffff',
-          text: '#1a1a1a',
-          blue: '#0078d4',
-          createBackground: '#0078d4',
-          settingsChrome: '#ffffff',
-          settingsHover: '#e8f3fc',
-        },
-        dark: {
-          canvas: '#202020',
-          panel: '#2c2c2c',
-          surface: '#2c2c2c',
-          text: '#ffffff',
-          blue: '#60cdff',
-          createBackground: '#60cdff',
-          settingsChrome: '#202020',
-          settingsHover: '#1b3a4d',
-        },
-      },
+      // Windows accent blue (pack default is already close; kept as explicit option).
+      colors: accentOnly(
+        { blue: '#0078d4', create: '#0078d4', hover: '#e8f3fc' },
+        { blue: '#60cdff', create: '#60cdff', hover: '#1b3a4d' },
+      ),
     },
     {
-      id: 'teal',
-      name: { en: 'Teal', zh: '青色' },
-      // Windows teal accent.
-      colors: {
-        light: {
-          canvas: '#f3f3f3',
-          panel: '#ffffff',
-          surface: '#ffffff',
-          text: '#1a1a1a',
-          blue: '#038387',
-          createBackground: '#038387',
-          settingsChrome: '#ffffff',
-          settingsHover: '#dff6f7',
-        },
-        dark: {
-          canvas: '#202020',
-          panel: '#2c2c2c',
-          surface: '#2c2c2c',
-          text: '#ffffff',
-          blue: '#00b7c3',
-          createBackground: '#00b7c3',
-          settingsChrome: '#202020',
-          settingsHover: '#0f3a3d',
-        },
-      },
+      id: 'moss',
+      name: { en: 'Green', zh: '绿色' },
+      // Windows green accent on stock Fluent neutrals.
+      colors: accentOnly(
+        { blue: '#107c10', create: '#0f7b0f', hover: '#dff6dd' },
+        { blue: '#6ccb5f', create: '#6ccb5f', hover: '#1f3d1f' },
+      ),
     },
     {
-      id: 'purple',
+      id: 'orchid',
       name: { en: 'Purple', zh: '紫色' },
-      // Windows orchid / purple accent.
-      colors: {
-        light: {
-          canvas: '#f3f3f3',
-          panel: '#ffffff',
-          surface: '#ffffff',
-          text: '#1a1a1a',
-          blue: '#744da9',
-          createBackground: '#744da9',
-          settingsChrome: '#ffffff',
-          settingsHover: '#f0e8f8',
-        },
-        dark: {
-          canvas: '#202020',
-          panel: '#2c2c2c',
-          surface: '#2c2c2c',
-          text: '#ffffff',
-          blue: '#b6a0ff',
-          createBackground: '#b6a0ff',
-          settingsChrome: '#202020',
-          settingsHover: '#2e2445',
-        },
-      },
+      // Windows purple / orchid accent.
+      colors: accentOnly(
+        { blue: '#744da9', create: '#744da9', hover: '#f0e8f8' },
+        { blue: '#b6a0ff', create: '#b6a0ff', hover: '#2e2445' },
+      ),
     },
   ],
 
-  /**
-   * Material — AI Studio / Material You tone.
-   * Tonal surfaces are subtle (not full-chroma wallpaper). On-surface text stays readable.
-   * Accent drives primary actions and settings hover wash only.
-   */
   material: [
     {
       id: 'default',
-      name: { en: 'Baseline', zh: '基线' },
+      name: { en: 'Default', zh: '默认' },
       colors: { light: {}, dark: {} },
     },
     {
-      id: 'sky',
-      name: { en: 'Sky', zh: '晴空' },
-      colors: {
-        light: {
-          canvas: '#f4f7fb',
-          panel: '#ffffff',
-          surface: '#ffffff',
-          text: '#1a1c1e',
-          blue: '#1a73e8',
-          createBackground: '#1a73e8',
-          settingsChrome: '#f8fafc',
-          settingsHover: '#e8f0fe',
-        },
-        dark: {
-          canvas: '#111316',
-          panel: '#1c1f24',
-          surface: '#22262c',
-          text: '#e3e3e3',
-          blue: '#8ab4f8',
-          createBackground: '#8ab4f8',
-          settingsChrome: '#181b20',
-          settingsHover: '#243247',
-        },
-      },
+      id: 'baseline',
+      name: { en: 'Blue', zh: '蓝色' },
+      // Google blue primary on AI Studio neutrals (shell unchanged).
+      colors: accentOnly(
+        { blue: '#1a73e8', create: '#1a73e8', hover: '#e8f0fe' },
+        { blue: '#8ab4f8', create: '#8ab4f8', hover: '#2a3441' },
+      ),
     },
     {
-      id: 'meadow',
-      name: { en: 'Meadow', zh: '草地' },
-      colors: {
-        light: {
-          canvas: '#f3f7f4',
-          panel: '#ffffff',
-          surface: '#ffffff',
-          text: '#1a1c1a',
-          blue: '#137333',
-          createBackground: '#137333',
-          settingsChrome: '#f6faf7',
-          settingsHover: '#e6f4ea',
-        },
-        dark: {
-          canvas: '#111413',
-          panel: '#1b211d',
-          surface: '#222a25',
-          text: '#e3e3e3',
-          blue: '#81c995',
-          createBackground: '#81c995',
-          settingsChrome: '#161b18',
-          settingsHover: '#1f3a28',
-        },
-      },
+      id: 'tonal',
+      name: { en: 'Green', zh: '绿色' },
+      // Material green primary.
+      colors: accentOnly(
+        { blue: '#188038', create: '#137333', hover: '#e6f4ea' },
+        { blue: '#81c995', create: '#81c995', hover: '#1f3a28' },
+      ),
     },
     {
-      id: 'terracotta',
-      name: { en: 'Terracotta', zh: '赤陶' },
-      // Warm primary with neutral on-surface (not red body text).
-      colors: {
-        light: {
-          canvas: '#f8f4f2',
-          panel: '#ffffff',
-          surface: '#ffffff',
-          text: '#1c1917',
-          blue: '#c5221f',
-          createBackground: '#b3261e',
-          settingsChrome: '#faf7f6',
-          settingsHover: '#fce8e6',
-        },
-        dark: {
-          canvas: '#161211',
-          panel: '#221c1b',
-          surface: '#2a2322',
-          text: '#e8e2e0',
-          blue: '#f2b8b5',
-          createBackground: '#f2b8b5',
-          settingsChrome: '#1a1514',
-          settingsHover: '#3d2422',
-        },
-      },
+      id: 'dynamic',
+      name: { en: 'Coral', zh: '珊瑚红' },
+      // Material red primary — text/surfaces stay pack default.
+      colors: accentOnly(
+        { blue: '#d93025', create: '#c5221f', hover: '#fce8e6' },
+        { blue: '#f28b82', create: '#f28b82', hover: '#3d2422' },
+      ),
     },
   ],
 
-  /**
-   * SwiftUI — Apple system accents on system gray canvas.
-   * Shell stays SF gray; only accent + active wash change (true to iOS/macOS Settings).
-   */
   swiftui: [
     {
       id: 'default',
-      name: { en: 'Blue', zh: '蓝色' },
+      name: { en: 'System', zh: '系统' },
       colors: { light: {}, dark: {} },
     },
     {
       id: 'indigo',
       name: { en: 'Indigo', zh: '靛蓝' },
-      colors: {
-        light: {
-          canvas: '#ececf0',
-          panel: '#ffffff',
-          surface: 'rgba(255, 255, 255, 0.78)',
-          text: '#1d1d1f',
-          blue: '#5856d6',
-          createBackground: '#5856d6',
-          settingsChrome: '#f5f5f7',
-          settingsHover: '#e8e7f4',
-        },
-        dark: {
-          canvas: '#1c1c1e',
-          panel: '#2c2c2e',
-          surface: 'rgba(44, 44, 46, 0.82)',
-          text: '#f5f5f7',
-          blue: '#5e5ce6',
-          createBackground: '#5e5ce6',
-          settingsChrome: '#1c1c1e',
-          settingsHover: '#2c2b44',
-        },
-      },
+      // Apple system indigo on SF gray shell.
+      colors: accentOnly(
+        { blue: '#5856d6', create: '#5856d6', hover: '#e8e7f4' },
+        { blue: '#5e5ce6', create: '#5e5ce6', hover: '#2c2b44' },
+      ),
     },
     {
       id: 'teal',
       name: { en: 'Teal', zh: '青色' },
-      colors: {
-        light: {
-          canvas: '#ececf0',
-          panel: '#ffffff',
-          surface: 'rgba(255, 255, 255, 0.78)',
-          text: '#1d1d1f',
-          blue: '#30b0c7',
-          createBackground: '#30b0c7',
-          settingsChrome: '#f5f5f7',
-          settingsHover: '#dff3f7',
-        },
-        dark: {
-          canvas: '#1c1c1e',
-          panel: '#2c2c2e',
-          surface: 'rgba(44, 44, 46, 0.82)',
-          text: '#f5f5f7',
-          blue: '#64d2ff',
-          createBackground: '#64d2ff',
-          settingsChrome: '#1c1c1e',
-          settingsHover: '#1e3640',
-        },
-      },
+      // Apple system teal / cyan.
+      colors: accentOnly(
+        { blue: '#30b0c7', create: '#30b0c7', hover: '#dff3f7' },
+        { blue: '#64d2ff', create: '#64d2ff', hover: '#1e3640' },
+      ),
     },
     {
-      id: 'orange',
-      name: { en: 'Orange', zh: '橙色' },
-      // Apple system orange — warmer alternative to pink candy.
-      colors: {
-        light: {
-          canvas: '#ececf0',
-          panel: '#ffffff',
-          surface: 'rgba(255, 255, 255, 0.78)',
-          text: '#1d1d1f',
-          blue: '#ff9500',
-          createBackground: '#ff9500',
-          settingsChrome: '#f5f5f7',
-          settingsHover: '#ffecd2',
-        },
-        dark: {
-          canvas: '#1c1c1e',
-          panel: '#2c2c2e',
-          surface: 'rgba(44, 44, 46, 0.82)',
-          text: '#f5f5f7',
-          blue: '#ff9f0a',
-          createBackground: '#ff9f0a',
-          settingsChrome: '#1c1c1e',
-          settingsHover: '#3d2e14',
-        },
-      },
+      id: 'pink',
+      name: { en: 'Pink', zh: '粉色' },
+      // Apple system pink.
+      colors: accentOnly(
+        { blue: '#ff2d55', create: '#ff2d55', hover: '#ffe0e8' },
+        { blue: '#ff375f', create: '#ff375f', hover: '#3d1c28' },
+      ),
     },
   ],
 };
