@@ -14,6 +14,7 @@ const npmCliPath = process.env.npm_execpath;
 if (!npmCliPath) {
   throw new Error('无法定位当前 npm CLI。请通过 npm run release:build 启动流水线。');
 }
+const npmCli = npmCliPath;
 const buildEnvironment = {
   ...process.env,
   HTTP_PROXY: process.env.HTTP_PROXY ?? process.env.http_proxy ?? proxy,
@@ -27,6 +28,11 @@ const desktopArtifacts = [
 const stages: BuildStage[] = [
   { name: '停止 Cardo 实例', command: ['run', 'cardo:stop'], artifacts: [] },
   { name: '校验', command: ['run', 'check'], artifacts: [] },
+  {
+    name: 'CLI + Web Runtime 构建',
+    command: ['run', 'cardo:build'],
+    artifacts: ['artifacts/cli/cardo.js', 'artifacts/web-runtime/assets/web-runtime/index.html'],
+  },
   {
     name: '浏览器扩展构建',
     command: ['run', 'build'],
@@ -46,7 +52,7 @@ const stages: BuildStage[] = [
 
 for (const stage of stages) {
   console.log(`\n=== ${stage.name} ===`);
-  const result = spawnSync(process.execPath, [npmCliPath, ...stage.command], {
+  const result = spawnSync(process.execPath, [npmCli, ...stage.command], {
     cwd: process.cwd(),
     env: buildEnvironment,
     shell: false,

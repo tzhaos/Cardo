@@ -10,10 +10,11 @@ const npmCliPath = process.env.npm_execpath;
 if (!npmCliPath) {
   throw new Error('Run via npm run build:all so npm_execpath is set.');
 }
+const npmCli = npmCliPath;
 
 function run(label: string, args: string[]) {
   console.log(`\n=== ${label} ===`);
-  const result = spawnSync(process.execPath, [npmCliPath, ...args], {
+  const result = spawnSync(process.execPath, [npmCli, ...args], {
     cwd: process.cwd(),
     env: process.env,
     shell: false,
