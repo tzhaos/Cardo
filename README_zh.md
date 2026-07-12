@@ -30,13 +30,13 @@ Cardo（拉丁语 cardo：门枢 / 枢纽 / 轴线）是本机优先的空间工
 
 它不是「只有插件」或「只有桌面端」：产品围绕本机唯一权威 Runtime 展开，多表面对称接入同一工作区。
 
-| 表面 | 角色 |
-| --- | --- |
-| Cardo Runtime | 唯一 SQLite 持有者与业务写路径 |
-| CLI（`cardo`） | 进程管家：`serve` / `open` / `status` / `stop` |
-| Web UI | Runtime 托管在 `/app/` 的图形客户端 |
-| 浏览器扩展 | Manifest V3 客户端；经 Native Messaging 发现 Runtime |
-| 桌面端 | Electron 壳；优先 attach，缺失则 embed |
+| 表面           | 角色                                                 |
+| -------------- | ---------------------------------------------------- |
+| Cardo Runtime  | 唯一 SQLite 持有者与业务写路径                       |
+| CLI（`cardo`） | 进程管家：`serve` / `open` / `status` / `stop`       |
+| Web UI         | Runtime 托管在 `/app/` 的图形客户端                  |
+| 浏览器扩展     | Manifest V3 客户端；经 Native Messaging 发现 Runtime |
+| 桌面端         | Electron 壳；优先 attach，缺失则 embed               |
 
 所有图形表面共用同一套 React UI（`src/web-next`），经 Zod 校验的协议访问 Runtime。扩展 OPFS 与桌面 raw SQL IPC 都不会成为第二套长期业务库。
 
@@ -119,11 +119,11 @@ Cardo（拉丁语 cardo：门枢 / 枢纽 / 轴线）是本机优先的空间工
 
 默认数据路径（可用 `CARDO_DATA_DIR` 覆盖）：
 
-| 系统 | 路径 |
-| --- | --- |
-| Windows | `%APPDATA%/cardo/cardo.sqlite` |
-| macOS | `~/Library/Application Support/cardo/cardo.sqlite` |
-| Linux | `${XDG_CONFIG_HOME:-~/.config}/cardo/cardo.sqlite` |
+| 系统    | 路径                                               |
+| ------- | -------------------------------------------------- |
+| Windows | `%APPDATA%/cardo/cardo.sqlite`                     |
+| macOS   | `~/Library/Application Support/cardo/cardo.sqlite` |
+| Linux   | `${XDG_CONFIG_HOME:-~/.config}/cardo/cardo.sqlite` |
 
 ---
 
@@ -238,23 +238,23 @@ Host 只读 discovery（并可可选中继），永不打开 SQLite。
 
 ## 开发脚本
 
-| 命令 | 说明 |
-| --- | --- |
-| `npm run dev` | 持续构建扩展到 `artifacts/extension/unpacked` |
-| `npm run build` | 停止本机实例并构建浏览器扩展 |
-| `npm run cardo:build` | 构建 CLI 与 Runtime 托管 Web UI |
-| `npm run cardo -- open` | 确保 Runtime 并打开 Web UI |
-| `npm run cardo -- serve` | 前台 Cardo Runtime |
-| `npm run desktop:build` | 构建 web-runtime 与 Electron main / preload / renderer |
-| `npm run desktop:start` | 构建并启动桌面端 |
-| `npm run desktop:package` | Windows 安装版 + 便携版 |
-| `npm run native-host:build` | 构建 Native Messaging Host |
-| `npm run native-host:install` | 为 Chrome 和 Edge 注册 host |
-| `npm run build:all` | 完整产品编译（扩展 + CLI + web-runtime + 桌面 + native-host） |
-| `npm run check` | TypeScript + ESLint + 测试 |
-| `npm run test:ts` | TypeScript 测试 |
-| `npm run format` | Prettier 格式化源码与 README |
-| `npm run clean` | 删除生成产物 |
+| 命令                          | 说明                                                          |
+| ----------------------------- | ------------------------------------------------------------- |
+| `npm run dev`                 | 持续构建扩展到 `artifacts/extension/unpacked`                 |
+| `npm run build`               | 停止本机实例并构建浏览器扩展                                  |
+| `npm run cardo:build`         | 构建 CLI 与 Runtime 托管 Web UI                               |
+| `npm run cardo -- open`       | 确保 Runtime 并打开 Web UI                                    |
+| `npm run cardo -- serve`      | 前台 Cardo Runtime                                            |
+| `npm run desktop:build`       | 构建 web-runtime 与 Electron main / preload / renderer        |
+| `npm run desktop:start`       | 构建并启动桌面端                                              |
+| `npm run desktop:package`     | Windows 安装版 + 便携版                                       |
+| `npm run native-host:build`   | 构建 Native Messaging Host                                    |
+| `npm run native-host:install` | 为 Chrome 和 Edge 注册 host                                   |
+| `npm run build:all`           | 完整产品编译（扩展 + CLI + web-runtime + 桌面 + native-host） |
+| `npm run check`               | TypeScript + ESLint + 测试                                    |
+| `npm run test:ts`             | TypeScript 测试                                               |
+| `npm run format`              | Prettier 格式化源码与 README                                  |
+| `npm run clean`               | 删除生成产物                                                  |
 
 本仓库在完成独立 Feature / Fix 后通常执行 `npm run build:all`，再单独提交并推送（见 `AGENTS.md`）。
 
@@ -264,13 +264,13 @@ Host 只读 discovery（并可可选中继），永不打开 SQLite。
 
 官方主题位于 `themes/builtin/`：
 
-| id | 气质 |
-| --- | --- |
-| `classic` | 默认柔和玻璃壳 |
-| `glass` | 浮动半透明层 |
-| `fluent` | 接近 Windows 11 的实心壳 |
-| `material` | Material 风格实心壳 |
-| `swiftui` | App 风格玻璃壳 |
+| id         | 气质                     |
+| ---------- | ------------------------ |
+| `classic`  | 默认柔和玻璃壳           |
+| `glass`    | 浮动半透明层             |
+| `fluent`   | 接近 Windows 11 的实心壳 |
+| `material` | Material 风格实心壳      |
+| `swiftui`  | App 风格玻璃壳           |
 
 JSON 只放可序列化 token；结构方言 CSS 挂在 `[data-cardo-theme]` 下。制作说明见 `docs/architecture/theme-pack-authoring.md`。校验：
 
@@ -282,33 +282,33 @@ npx tsx scripts/validate-builtin-themes.ts
 
 ## 技术栈
 
-| 层级 | 选型 |
-| --- | --- |
-| 语言 | TypeScript |
-| UI | React 19、Motion、Radix 基础件、产品级 `ui/cardo` 封装 |
-| 样式 | Tailwind CSS 4、Design Token、主题 recipe |
-| 契约 | Zod 4（类型用 `z.infer`） |
-| 持久化 | Drizzle ORM + SQLite |
-| Runtime 宿主 | Node HTTP（CLI）或 Desktop embed |
-| 桌面壳 | Electron 42 + electron-builder |
-| 扩展 | Manifest V3 |
-| 客户端传输 | RuntimeClient（HTTP + fetch ReadableStream） |
-| UI 状态 | Zustand（仅临时状态） |
+| 层级         | 选型                                                   |
+| ------------ | ------------------------------------------------------ |
+| 语言         | TypeScript                                             |
+| UI           | React 19、Motion、Radix 基础件、产品级 `ui/cardo` 封装 |
+| 样式         | Tailwind CSS 4、Design Token、主题 recipe              |
+| 契约         | Zod 4（类型用 `z.infer`）                              |
+| 持久化       | Drizzle ORM + SQLite                                   |
+| Runtime 宿主 | Node HTTP（CLI）或 Desktop embed                       |
+| 桌面壳       | Electron 42 + electron-builder                         |
+| 扩展         | Manifest V3                                            |
+| 客户端传输   | RuntimeClient（HTTP + fetch ReadableStream）           |
+| UI 状态      | Zustand（仅临时状态）                                  |
 
 ---
 
 ## 文档
 
-| 文档 | 主题 |
-| --- | --- |
-| [`docs/architecture/local-runtime-multi-client.md`](./docs/architecture/local-runtime-multi-client.md) | Runtime 拓扑、路径、硬决策 |
-| [`docs/architecture/ui-theme-system.md`](./docs/architecture/ui-theme-system.md) | 主题系统总览 |
-| [`docs/architecture/theme-pack-authoring.md`](./docs/architecture/theme-pack-authoring.md) | 官方 / 用户主题包写作 |
-| [`docs/architecture/zod-drizzle-shadcn-refactor.md`](./docs/architecture/zod-drizzle-shadcn-refactor.md) | 契约与 UI 边界重构笔记 |
-| [`docs/product-roadmap-v0.4.md`](./docs/product-roadmap-v0.4.md) | 模板体系方向 |
-| [`docs/product-roadmap-v0.5.md`](./docs/product-roadmap-v0.5.md) | 书签 / 网址资产方向 |
-| [`AGENTS.md`](./AGENTS.md) | 贡献者架构约束 |
-| [`assets/brand/README.md`](./assets/brand/README.md) | 品牌素材用法 |
+| 文档                                                                                                     | 主题                       |
+| -------------------------------------------------------------------------------------------------------- | -------------------------- |
+| [`docs/architecture/local-runtime-multi-client.md`](./docs/architecture/local-runtime-multi-client.md)   | Runtime 拓扑、路径、硬决策 |
+| [`docs/architecture/ui-theme-system.md`](./docs/architecture/ui-theme-system.md)                         | 主题系统总览               |
+| [`docs/architecture/theme-pack-authoring.md`](./docs/architecture/theme-pack-authoring.md)               | 官方 / 用户主题包写作      |
+| [`docs/architecture/zod-drizzle-shadcn-refactor.md`](./docs/architecture/zod-drizzle-shadcn-refactor.md) | 契约与 UI 边界重构笔记     |
+| [`docs/product-roadmap-v0.4.md`](./docs/product-roadmap-v0.4.md)                                         | 模板体系方向               |
+| [`docs/product-roadmap-v0.5.md`](./docs/product-roadmap-v0.5.md)                                         | 书签 / 网址资产方向        |
+| [`AGENTS.md`](./AGENTS.md)                                                                               | 贡献者架构约束             |
+| [`assets/brand/README.md`](./assets/brand/README.md)                                                     | 品牌素材用法               |
 
 ---
 

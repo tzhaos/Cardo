@@ -30,13 +30,13 @@ Cardo (Latin cardo: hinge / axis) is a local-first spatial workbench. You organi
 
 Unlike a pure browser extension or a single desktop binary, Cardo is a multi-surface product around one authoritative local Runtime:
 
-| Surface | Role |
-| --- | --- |
-| Cardo Runtime | Sole SQLite owner and business write path |
-| CLI (`cardo`) | Process steward: `serve` / `open` / `status` / `stop` |
-| Web UI | Graphical client hosted by Runtime at `/app/` |
+| Surface           | Role                                                       |
+| ----------------- | ---------------------------------------------------------- |
+| Cardo Runtime     | Sole SQLite owner and business write path                  |
+| CLI (`cardo`)     | Process steward: `serve` / `open` / `status` / `stop`      |
+| Web UI            | Graphical client hosted by Runtime at `/app/`              |
 | Browser extension | Manifest V3 client; discovers Runtime via Native Messaging |
-| Desktop | Electron shell; attach-first, embed-if-missing |
+| Desktop           | Electron shell; attach-first, embed-if-missing             |
 
 All graphical surfaces share the same React UI (`src/web-next`) and talk to Runtime through a Zod-validated protocol. There is no second long-lived business database in Extension OPFS or Desktop raw SQL IPC.
 
@@ -119,11 +119,11 @@ Design pillars (see `docs/architecture/local-runtime-multi-client.md`):
 
 Default data paths (overridable with `CARDO_DATA_DIR`):
 
-| OS | Location |
-| --- | --- |
-| Windows | `%APPDATA%/cardo/cardo.sqlite` |
-| macOS | `~/Library/Application Support/cardo/cardo.sqlite` |
-| Linux | `${XDG_CONFIG_HOME:-~/.config}/cardo/cardo.sqlite` |
+| OS      | Location                                           |
+| ------- | -------------------------------------------------- |
+| Windows | `%APPDATA%/cardo/cardo.sqlite`                     |
+| macOS   | `~/Library/Application Support/cardo/cardo.sqlite` |
+| Linux   | `${XDG_CONFIG_HOME:-~/.config}/cardo/cardo.sqlite` |
 
 ---
 
@@ -238,23 +238,23 @@ The host only reads discovery (and may relay); it never opens SQLite.
 
 ## Development scripts
 
-| Command | Description |
-| --- | --- |
-| `npm run dev` | Watch-build extension → `artifacts/extension/unpacked` |
-| `npm run build` | Stop local instances, build browser extension |
-| `npm run cardo:build` | Build CLI + Runtime-hosted Web UI |
-| `npm run cardo -- open` | Ensure Runtime + open Web UI |
-| `npm run cardo -- serve` | Foreground Cardo Runtime |
-| `npm run desktop:build` | Build web-runtime + Electron main / preload / renderer |
-| `npm run desktop:start` | Build and launch Desktop |
-| `npm run desktop:package` | Windows NSIS + portable package |
-| `npm run native-host:build` | Build Native Messaging host |
-| `npm run native-host:install` | Register host for Chrome and Edge |
-| `npm run build:all` | Full product compile (extension + CLI + web-runtime + desktop + native-host) |
-| `npm run check` | TypeScript + ESLint + tests |
-| `npm run test:ts` | TypeScript tests |
-| `npm run format` | Prettier write for source and README files |
-| `npm run clean` | Remove generated artifacts |
+| Command                       | Description                                                                  |
+| ----------------------------- | ---------------------------------------------------------------------------- |
+| `npm run dev`                 | Watch-build extension → `artifacts/extension/unpacked`                       |
+| `npm run build`               | Stop local instances, build browser extension                                |
+| `npm run cardo:build`         | Build CLI + Runtime-hosted Web UI                                            |
+| `npm run cardo -- open`       | Ensure Runtime + open Web UI                                                 |
+| `npm run cardo -- serve`      | Foreground Cardo Runtime                                                     |
+| `npm run desktop:build`       | Build web-runtime + Electron main / preload / renderer                       |
+| `npm run desktop:start`       | Build and launch Desktop                                                     |
+| `npm run desktop:package`     | Windows NSIS + portable package                                              |
+| `npm run native-host:build`   | Build Native Messaging host                                                  |
+| `npm run native-host:install` | Register host for Chrome and Edge                                            |
+| `npm run build:all`           | Full product compile (extension + CLI + web-runtime + desktop + native-host) |
+| `npm run check`               | TypeScript + ESLint + tests                                                  |
+| `npm run test:ts`             | TypeScript tests                                                             |
+| `npm run format`              | Prettier write for source and README files                                   |
+| `npm run clean`               | Remove generated artifacts                                                   |
 
 Feature / fix completion in this repo typically runs `npm run build:all`, then a focused commit and push (see `AGENTS.md`).
 
@@ -264,13 +264,13 @@ Feature / fix completion in this repo typically runs `npm run build:all`, then a
 
 Official packs ship under `themes/builtin/`:
 
-| id | Character |
-| --- | --- |
-| `classic` | Default soft glass chrome |
-| `glass` | Floating translucent layers |
-| `fluent` | Windows 11–inspired solid chrome |
-| `material` | Material-inspired solid chrome |
-| `swiftui` | App-style glass chrome |
+| id         | Character                        |
+| ---------- | -------------------------------- |
+| `classic`  | Default soft glass chrome        |
+| `glass`    | Floating translucent layers      |
+| `fluent`   | Windows 11–inspired solid chrome |
+| `material` | Material-inspired solid chrome   |
+| `swiftui`  | App-style glass chrome           |
 
 Tokens live in JSON; structural dialect CSS hangs off `[data-cardo-theme]`. Authoring guide: `docs/architecture/theme-pack-authoring.md`. Validate with:
 
@@ -282,33 +282,33 @@ npx tsx scripts/validate-builtin-themes.ts
 
 ## Tech stack
 
-| Layer | Choice |
-| --- | --- |
-| Language | TypeScript |
-| UI | React 19, Motion, Radix primitives, product `ui/cardo` wrappers |
-| Styling | Tailwind CSS 4, design tokens, theme recipes |
-| Contracts | Zod 4 (`z.infer` for types) |
-| Persistence | Drizzle ORM + SQLite |
-| Runtime host | Node HTTP server (CLI) or Desktop embed |
-| Desktop shell | Electron 42 + electron-builder |
-| Extension | Manifest V3 |
-| Client transport | RuntimeClient over HTTP + fetch ReadableStream |
-| UI state | Zustand (ephemeral only) |
+| Layer            | Choice                                                          |
+| ---------------- | --------------------------------------------------------------- |
+| Language         | TypeScript                                                      |
+| UI               | React 19, Motion, Radix primitives, product `ui/cardo` wrappers |
+| Styling          | Tailwind CSS 4, design tokens, theme recipes                    |
+| Contracts        | Zod 4 (`z.infer` for types)                                     |
+| Persistence      | Drizzle ORM + SQLite                                            |
+| Runtime host     | Node HTTP server (CLI) or Desktop embed                         |
+| Desktop shell    | Electron 42 + electron-builder                                  |
+| Extension        | Manifest V3                                                     |
+| Client transport | RuntimeClient over HTTP + fetch ReadableStream                  |
+| UI state         | Zustand (ephemeral only)                                        |
 
 ---
 
 ## Documentation
 
-| Document | Topic |
-| --- | --- |
-| [`docs/architecture/local-runtime-multi-client.md`](./docs/architecture/local-runtime-multi-client.md) | Runtime topology, paths, hard decisions |
-| [`docs/architecture/ui-theme-system.md`](./docs/architecture/ui-theme-system.md) | Theme system overview |
-| [`docs/architecture/theme-pack-authoring.md`](./docs/architecture/theme-pack-authoring.md) | Writing official / user theme packs |
+| Document                                                                                                 | Topic                                   |
+| -------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| [`docs/architecture/local-runtime-multi-client.md`](./docs/architecture/local-runtime-multi-client.md)   | Runtime topology, paths, hard decisions |
+| [`docs/architecture/ui-theme-system.md`](./docs/architecture/ui-theme-system.md)                         | Theme system overview                   |
+| [`docs/architecture/theme-pack-authoring.md`](./docs/architecture/theme-pack-authoring.md)               | Writing official / user theme packs     |
 | [`docs/architecture/zod-drizzle-shadcn-refactor.md`](./docs/architecture/zod-drizzle-shadcn-refactor.md) | Contract and UI boundary refactor notes |
-| [`docs/product-roadmap-v0.4.md`](./docs/product-roadmap-v0.4.md) | Template system direction |
-| [`docs/product-roadmap-v0.5.md`](./docs/product-roadmap-v0.5.md) | Bookmark / web library direction |
-| [`AGENTS.md`](./AGENTS.md) | Contributor architecture constraints |
-| [`assets/brand/README.md`](./assets/brand/README.md) | Brand asset usage |
+| [`docs/product-roadmap-v0.4.md`](./docs/product-roadmap-v0.4.md)                                         | Template system direction               |
+| [`docs/product-roadmap-v0.5.md`](./docs/product-roadmap-v0.5.md)                                         | Bookmark / web library direction        |
+| [`AGENTS.md`](./AGENTS.md)                                                                               | Contributor architecture constraints    |
+| [`assets/brand/README.md`](./assets/brand/README.md)                                                     | Brand asset usage                       |
 
 ---
 
