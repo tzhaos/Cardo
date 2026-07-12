@@ -4,7 +4,7 @@ import { DEFAULT_LAYOUT_PROFILE_ID } from '../../../core/contracts/layoutProfile
 /**
  * Apply layout profile markers on the document root (and app root if present).
  * classic: identity (official Cardo shell).
- * floating: chrome auto-hide via CSS + data attribute (hover edge to reveal).
+ * floating: chrome hidden until pointer nears each piece.
  * zen: chrome fully hidden; floating exit control only.
  */
 export function applyLayoutProfile(

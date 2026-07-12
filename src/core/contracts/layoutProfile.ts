@@ -3,7 +3,7 @@ import { z } from 'zod';
 /**
  * Built-in Layout Profiles — product shell variants, not user CSS DOM rewrites.
  * classic: always-visible chrome (official default)
- * floating: auto-hide chrome; edge hover / Alt+` reveals
+ * floating: chrome hidden until pointer nears each piece
  * zen: chrome fully hidden; floating exit control only
  */
 export const layoutProfileIds = ['classic', 'floating', 'zen'] as const;

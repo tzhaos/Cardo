@@ -76,13 +76,6 @@ export default function WebNextApp() {
       <div className={`cardo-app${isDesktopHost ? ' cardo-app-desktop' : ''}`}>
         <DesktopTitleBar />
         <BoxPageDropController />
-        {layoutProfileId === 'floating' ? (
-          <>
-            <div className="cardo-immersive-edge cardo-immersive-edge-top" aria-hidden="true" />
-            <div className="cardo-immersive-edge cardo-immersive-edge-bottom" aria-hidden="true" />
-            <div className="cardo-immersive-edge cardo-immersive-edge-left" aria-hidden="true" />
-          </>
-        ) : null}
         <FeatureGate feature="chrome.topBar">
           <TopBar />
         </FeatureGate>
