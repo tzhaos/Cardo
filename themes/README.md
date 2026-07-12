@@ -26,6 +26,7 @@ src/web-next/styles/themes/<id>…             ← 该包结构方言 recipe
 | --- | --- | --- | --- |
 | `classic` | Classic（默认） | glass | 玻璃壳、居中胶囊顶栏 |
 | `fluent` | Windows Fluent | solid | 全宽顶栏、下划线 tab、扁平卡片、设置侧栏 |
+| `material` | Material You | solid | M3 / AI Studio：粉彩表面、大圆角、软阴影、单色导航 |
 
 ### 包文件
 
@@ -33,6 +34,7 @@ src/web-next/styles/themes/<id>…             ← 该包结构方言 recipe
 themes/builtin/
   classic/theme.cardo-theme.json
   fluent/theme.cardo-theme.json
+  material/theme.cardo-theme.json
 ```
 
 ### Recipe 文件
@@ -44,6 +46,11 @@ src/web-next/styles/themes/
   chrome-material.css    ← glass | solid 浮动壳
   classic.css
   fluent/
+    index.css
+    shell.css
+    settings.css
+    overlays.css
+  material/
     index.css
     shell.css
     settings.css

@@ -1,0 +1,11 @@
+/**
+ * Material You Theme Pack recipes — M3 / Google AI Studio language.
+ * Tokens: themes/builtin/material/theme.cardo-theme.json
+ *
+ *   shell.css     — top bar, tabs, boxes, bottom FABs
+ *   settings.css  — soft preferences shell
+ *   overlays.css  — menus, select, chips
+ */
+@import './shell.css';
+@import './settings.css';
+@import './overlays.css';

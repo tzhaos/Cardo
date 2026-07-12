@@ -1,0 +1,313 @@
+/**
+ * Material You — settings / preferences shell.
+ * Soft pastel panel, pill nav selection, large nested cards (AI Studio + M3).
+ */
+
+[data-cardo-theme='material'] .cardo-independent-menu.cardo-settings-window,
+[data-cardo-theme='material'] .cardo-settings-window {
+  border: 0;
+  border-radius: 28px;
+  background: var(--cardo-settings-chrome);
+  box-shadow:
+    0 4px 8px color-mix(in srgb, #000 3%, transparent),
+    0 24px 48px color-mix(in srgb, #000 8%, transparent);
+}
+
+[data-cardo-theme='material'] .cardo-settings-panel {
+  border-radius: 28px;
+  background: var(--cardo-settings-chrome);
+}
+
+[data-cardo-theme='material'] .cardo-settings-header {
+  min-height: 56px;
+  border-bottom: 0;
+  padding: 8px 16px 4px 20px;
+  background: transparent;
+  gap: 12px;
+}
+
+[data-cardo-theme='material'] .cardo-settings-header-title {
+  gap: 10px;
+  color: var(--cardo-text);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+[data-cardo-theme='material'] .cardo-settings-header-actions {
+  gap: 8px;
+}
+
+[data-cardo-theme='material'] .cardo-settings-header button {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+}
+
+[data-cardo-theme='material'] .cardo-settings-search {
+  width: min(280px, 40vw);
+  height: 36px;
+  gap: 8px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 14px;
+  background: var(--cardo-panel-content);
+  color: var(--cardo-secondary-text);
+  box-shadow: none;
+}
+
+[data-cardo-theme='material'] .cardo-settings-search:hover,
+[data-cardo-theme='material'] .cardo-settings-search:focus-within {
+  background: var(--cardo-panel-content);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--cardo-blue) 35%, transparent);
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='material'] .cardo-settings-search input {
+  background: transparent;
+  color: var(--cardo-text);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+[data-cardo-theme='material'] .cardo-settings-layout {
+  gap: 0;
+  padding: 0 8px 12px;
+}
+
+[data-cardo-theme='material'] .cardo-settings-nav {
+  width: 168px;
+  padding: 8px 8px 16px 12px;
+  background: transparent;
+  border-right: 0;
+  gap: 2px;
+}
+
+[data-cardo-theme='material'] .cardo-settings-nav button {
+  min-height: 44px;
+  gap: 12px;
+  border-radius: 999px;
+  padding: 0 14px;
+  color: var(--cardo-secondary-text);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+[data-cardo-theme='material'] .cardo-settings-nav button:hover {
+  background: color-mix(in srgb, var(--cardo-settings-hover) 55%, transparent);
+  color: var(--cardo-text);
+}
+
+/* Soft filled selection pill — no left rail */
+[data-cardo-theme='material'] .cardo-settings-nav-indicator {
+  border-radius: 999px;
+  background: var(--cardo-settings-hover);
+  box-shadow: none;
+  will-change: auto;
+  transform: none;
+  filter: none;
+}
+
+[data-cardo-theme='material'] .cardo-settings-nav [data-state='active']::before {
+  display: none;
+}
+
+[data-cardo-theme='material'] .cardo-settings-nav [data-state='active'] {
+  color: var(--cardo-text) !important;
+  font-weight: 600;
+}
+
+[data-cardo-theme='material'] .cardo-settings-nav-mono-icon,
+[data-cardo-theme='material'] .cardo-settings-nav-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--cardo-secondary-text);
+  filter: none !important;
+  transform: none !important;
+}
+
+[data-cardo-theme='material'] .cardo-settings-nav [data-state='active'] .cardo-settings-nav-mono-icon,
+[data-cardo-theme='material'] .cardo-settings-nav [data-state='active'] .cardo-settings-nav-icon {
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='material'] .cardo-settings-content {
+  background: transparent;
+  padding: 8px 16px 28px 8px;
+}
+
+[data-cardo-theme='material'] .cardo-settings-heading {
+  margin-bottom: 14px;
+}
+
+[data-cardo-theme='material'] .cardo-settings-heading h2 {
+  margin: 0;
+  color: var(--cardo-blue);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+[data-cardo-theme='material'] .cardo-settings-heading p {
+  display: none;
+}
+
+[data-cardo-theme='material'] .cardo-settings-list-group,
+[data-cardo-theme='material'] .cardo-theme-color-list,
+[data-cardo-theme='material'] .cardo-settings-search-results,
+[data-cardo-theme='material'] .cardo-theme-pack-card,
+[data-cardo-theme='material'] .cardo-about-card,
+[data-cardo-theme='material'] .cardo-custom-search-template,
+[data-cardo-theme='material'] .cardo-data-actions > button {
+  overflow: hidden;
+  border: 0;
+  border-radius: 20px;
+  background: var(--cardo-panel-content);
+  box-shadow: none;
+}
+
+[data-cardo-theme='material'] .cardo-settings-list-group,
+[data-cardo-theme='material'] .cardo-theme-color-list,
+[data-cardo-theme='material'] .cardo-settings-search-results {
+  gap: 10px;
+  background: transparent;
+  overflow: visible;
+}
+
+/* Each settings row is its own soft white card */
+[data-cardo-theme='material'] .cardo-settings-card {
+  border: 0;
+  border-radius: 20px;
+  padding: 16px 18px;
+  background: var(--cardo-panel-content);
+  box-shadow: none;
+}
+
+[data-cardo-theme='material'] .cardo-settings-card-copy > span:last-child {
+  gap: 4px;
+  color: var(--cardo-text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+[data-cardo-theme='material'] .cardo-settings-card-copy small {
+  color: var(--cardo-secondary-text);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+[data-cardo-theme='material'] .cardo-segmented-control {
+  border: 0;
+  border-radius: 999px;
+  padding: 3px;
+  background: var(--cardo-neutral-button);
+  gap: 0;
+}
+
+[data-cardo-theme='material'] .cardo-segmented-control button {
+  border-radius: 999px;
+  min-height: 32px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+[data-cardo-theme='material'] .cardo-segment-indicator {
+  border-radius: 999px;
+  box-shadow: none;
+}
+
+[data-cardo-theme='material'] .cardo-segment-indicator-active {
+  border-color: transparent;
+  background: var(--cardo-panel-content);
+  box-shadow: 0 1px 2px color-mix(in srgb, #000 6%, transparent);
+}
+
+[data-cardo-theme='material'] .cardo-theme-pack-grid {
+  gap: 12px;
+}
+
+[data-cardo-theme='material'] .cardo-theme-pack-card {
+  border: 0;
+  border-radius: 20px;
+  padding: 12px;
+  background: var(--cardo-panel-content);
+}
+
+[data-cardo-theme='material'] .cardo-theme-pack-card-selected {
+  box-shadow: inset 0 0 0 2px var(--cardo-blue);
+}
+
+[data-cardo-theme='material'] .cardo-theme-pack-preview {
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+[data-cardo-theme='material'] .cardo-about-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+}
+
+[data-cardo-theme='material'] .cardo-about-logo {
+  border-radius: 16px;
+  box-shadow: none;
+}
+
+[data-cardo-theme='material'] .cardo-about-name {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+[data-cardo-theme='material'] .cardo-about-details {
+  margin-top: 12px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--cardo-panel-content);
+}
+
+[data-cardo-theme='material'] .cardo-theme-color-row {
+  border: 0;
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: var(--cardo-panel-content);
+}
+
+[data-cardo-theme='material'] .cardo-theme-color-preset {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  filter: none;
+  transform: none;
+}
+
+[data-cardo-theme='material'] .cardo-theme-color-preset-fill {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+}
+
+[data-cardo-theme='material'] .cardo-settings-secondary-button {
+  min-height: 36px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 16px;
+  background: var(--cardo-neutral-button);
+  color: var(--cardo-text);
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: none;
+}
+
+[data-cardo-theme='material'] .cardo-data-actions > button {
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+
+[data-cardo-theme='material'] .cardo-ui-button-default:not(.cardo-box-icon):not(.cardo-resize-handle) {
+  border-radius: 999px;
+  background: var(--cardo-blue);
+  color: #ffffff;
+}

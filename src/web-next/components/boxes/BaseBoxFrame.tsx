@@ -46,10 +46,11 @@ import { Input } from '../../ui/primitives/input';
 import { Button } from '../../ui/primitives/button';
 import { MotionButton } from '../../ui/primitives/motion-button';
 
-/** Motion borderRadius must be numeric; keep Classic soft vs Fluent restrained. */
+/** Motion borderRadius must be numeric — Classic soft, Fluent restrained, Material M3 large. */
 const BOX_CORNER_RADIUS = {
   classic: { idle: 16, compact: 24 },
   fluent: { idle: 6, compact: 8 },
+  material: { idle: 28, compact: 32 },
 } as const;
 
 interface BaseBoxFrameProps {
@@ -308,7 +309,11 @@ export function BaseBoxFrame({
   const detailMode = isTemporary ? 'detailed' : box.detailMode;
   const themeId = usePreferencesStore((state) => state.themeId);
   const cornerRadiusSteps =
-    themeId === 'fluent' ? BOX_CORNER_RADIUS.fluent : BOX_CORNER_RADIUS.classic;
+    themeId === 'fluent'
+      ? BOX_CORNER_RADIUS.fluent
+      : themeId === 'material'
+        ? BOX_CORNER_RADIUS.material
+        : BOX_CORNER_RADIUS.classic;
   // Classic: soft 16/24. Fluent: restrained 6/8 (matches --cardo-box-radius).
   const boxCornerRadius = draggingOverTopBar ? cornerRadiusSteps.compact : cornerRadiusSteps.idle;
   const visualScale = draggingOverTopBar

@@ -72,7 +72,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/primitives/ta
 type SettingsSection = SettingsSectionId;
 
 /**
- * Product settings: language, search, Classic/Fluent theme, light/dark, color overrides, backup.
+ * Product settings: language, search, theme packs, light/dark, color overrides, backup.
  */
 export function SettingsPanel({
   onClose,
@@ -94,6 +94,8 @@ export function SettingsPanel({
   const setCustomSearchTemplate = usePreferencesStore((state) => state.setCustomSearchTemplate);
   const themeId = usePreferencesStore((state) => state.themeId);
   const isFluent = themeId === 'fluent';
+  /** Soft static nav pill — avoid Motion layoutId under Material/Fluent text shells. */
+  const useStaticNavIndicator = themeId === 'fluent' || themeId === 'material';
   const { t, locale: i18nLocale } = useI18n();
   const sections = [
     {
@@ -187,9 +189,9 @@ export function SettingsPanel({
         <TabsList className="cardo-settings-nav" aria-label={t('settings.sections')}>
           {sections.map(({ id, label, monoIcon }) => (
             <TabsTrigger key={id} value={id}>
-              {/* Classic: shared layoutId pill. Fluent: pure CSS indicator — avoids hover blur. */}
+              {/* Classic: layoutId pill. Fluent/Material: static CSS indicator (crisper). */}
               {section === id && !isSearching ? (
-                isFluent ? (
+                useStaticNavIndicator ? (
                   <span className="cardo-settings-nav-indicator" aria-hidden />
                 ) : (
                   <motion.span
