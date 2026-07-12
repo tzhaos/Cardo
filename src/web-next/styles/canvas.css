@@ -293,6 +293,22 @@
   backface-visibility: hidden;
 }
 
+/*
+ * Floating drag host above page scenes (and page-bar chrome via canvas z-index).
+ * Children use position:fixed left/top in client space while dragging.
+ */
+.cardo-dragged-box-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 120;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.cardo-dragged-box-layer .cardo-box {
+  pointer-events: auto;
+}
+
 .cardo-canvas-world {
   position: absolute;
   inset: 0;

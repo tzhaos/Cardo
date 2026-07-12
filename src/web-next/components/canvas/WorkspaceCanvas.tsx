@@ -165,11 +165,10 @@ export function WorkspaceCanvas() {
           className="cardo-page-scene"
           custom={pageTransitionDirection}
           key={activePageId}
-          variants={draggedBoxId ? undefined : pageSceneVariants}
-          initial={draggedBoxId ? false : 'enter'}
-          animate={draggedBoxId ? { x: 0, opacity: 1 } : 'center'}
-          exit={draggedBoxId ? undefined : 'exit'}
-          transition={draggedBoxId ? { duration: 0 } : undefined}
+          variants={pageSceneVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
         >
           {isCollection ? (
             <CanvasWorld pageId={activePageId}>
@@ -182,6 +181,7 @@ export function WorkspaceCanvas() {
               <PageBoxes
                 pageId={activePageId}
                 skipEntryAnimation={isPageSwitch || Boolean(draggedBoxId)}
+                excludeBoxId={draggedBoxId}
               />
             </CanvasWorld>
           )}
@@ -203,6 +203,11 @@ export function WorkspaceCanvas() {
           </AnimatePresence>
         </motion.section>
       </AnimatePresence>
+      {/*
+        Dragged box lives outside page scenes so horizontal page-turn can run
+        while the floating box stays under the pointer (fixed layer).
+      */}
+      <DraggedBoxLayer />
       <CanvasBoundaryFeedback pageId={activePageId} />
     </main>
   );
@@ -211,16 +216,39 @@ export function WorkspaceCanvas() {
 function PageBoxes({
   pageId,
   skipEntryAnimation,
+  excludeBoxId,
 }: {
   pageId: string;
   skipEntryAnimation: boolean;
+  excludeBoxId?: string | null;
 }) {
   const allBoxes = useWorkspaceStore((state) => state.projection.boxes);
-  const boxes = useMemo(() => allBoxes.filter((box) => box.pageId === pageId), [allBoxes, pageId]);
+  const boxes = useMemo(
+    () =>
+      allBoxes.filter(
+        (box) => box.pageId === pageId && (!excludeBoxId || box.id !== excludeBoxId),
+      ),
+    [allBoxes, excludeBoxId, pageId],
+  );
 
   return boxes.map((box) => (
     <WorkspaceBoxRenderer box={box} key={box.id} skipEntryAnimation={skipEntryAnimation} />
   ));
+}
+
+function DraggedBoxLayer() {
+  const draggedBoxId = useUiStore((state) => state.draggedBoxId);
+  const box = useWorkspaceStore((state) =>
+    draggedBoxId
+      ? state.projection.boxes.find((entry) => entry.id === draggedBoxId) ?? null
+      : null,
+  );
+  if (!box) return null;
+  return (
+    <div className="cardo-dragged-box-layer" aria-hidden="true">
+      <WorkspaceBoxRenderer box={box} skipEntryAnimation />
+    </div>
+  );
 }
 
 /**
@@ -317,11 +345,11 @@ function cameraTransform(camera: { panX: number; panY: number; zoom?: number }) 
  * Horizontal page turn (not fade).
  * direction > 0 → navigating forward (higher tab order): enter from right, exit left.
  * direction < 0 → navigating backward: enter from left, exit right.
- * Cross-page box drag disables these variants so the floating box stays stable.
+ * Runs during cross-page box drag too — the dragged box is portaled outside scenes.
  */
 const PAGE_SLIDE_TRANSITION = {
   type: 'tween' as const,
-  duration: 0.34,
+  duration: 0.42,
   ease: [0.22, 0.82, 0.2, 1] as const,
 };
 

@@ -118,7 +118,11 @@
 }
 
 .cardo-box.cardo-box-dragging {
-  /* Within canvas world only; root elevation is .cardo-app:has(.cardo-box-dragging) .cardo-canvas */
+  /*
+   * Fixed + client left/top while dragging so page-scene slides do not carry the box.
+   * Root elevation: .cardo-app:has(.cardo-box-dragging) .cardo-canvas
+   */
+  position: fixed !important;
   z-index: 100 !important;
   box-shadow:
     var(--cardo-shadow-hover),

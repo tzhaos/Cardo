@@ -149,8 +149,14 @@ export function BaseBoxFrame({
       setDragTransformOrigin(session.transformOrigin);
       // Prefer latestFrame so page-transfer rebases do not flash the pre-switch coords.
       const initialFrame = session.latestFrame ?? session.startFrame;
-      boxLeft.set(initialFrame.x);
-      boxTop.set(initialFrame.y);
+      // Fixed-layer visual from transform origin — stable across remount into drag layer.
+      const originTokens = session.transformOrigin.trim().split(/\s+/);
+      const originXPct = Number.parseFloat(originTokens[0] ?? '50') || 50;
+      const originYPct = Number.parseFloat(originTokens[1] ?? '50') || 50;
+      const grabOffsetX = (initialFrame.width * originXPct) / 100;
+      const grabOffsetY = (initialFrame.height * originYPct) / 100;
+      boxLeft.set(session.startClientX - grabOffsetX);
+      boxTop.set(session.startClientY - grabOffsetY);
       let latestFrame = initialFrame;
       const pointerSession = startWindowPointerSession({
         pointerId: session.pointerId,
@@ -170,13 +176,14 @@ export function BaseBoxFrame({
             },
             createCanvasWorldBounds(useCanvasStore.getState().viewportSize),
           );
-          boxLeft.set(latestFrame.x);
-          boxTop.set(latestFrame.y);
+          // Client/fixed position — independent of page-scene slide and camera pan.
+          boxLeft.set(moveEvent.clientX - grabOffsetX);
+          boxTop.set(moveEvent.clientY - grabOffsetY);
           updateBoxDragFrame(latestFrame);
         },
         onEnd: () => {
           dragTiltTarget.set(0);
-          // Hold the floating visual until the adaptive landing is applied.
+          // Hold world-space frame for remount into the page scene + landing.
           holdVisualUntilLandingRef.current = true;
           boxLeft.set(latestFrame.x);
           boxTop.set(latestFrame.y);
@@ -384,7 +391,7 @@ export function BaseBoxFrame({
 
     // Distance-aware landing: short hops stay snappy, cross-page tab place takes longer.
     const travel = Math.hypot(deltaX, deltaY);
-    const duration = Math.min(0.52, Math.max(0.32, 0.22 + travel / 1400));
+    const duration = Math.min(0.78, Math.max(0.48, 0.36 + travel / 1100));
     const positionTransition = {
       type: 'tween' as const,
       duration,
@@ -488,26 +495,26 @@ export function BaseBoxFrame({
             : { duration: 0.52, ease: [0.22, 0.72, 0.18, 1] }
           : dragging
             ? {
-                // Snap with the pointer / tab chrome — springs lag cross-page handoff.
-                y: { type: 'tween', duration: 0.12, ease: [0.2, 0.8, 0.2, 1] },
-                scale: { type: 'tween', duration: 0.14, ease: [0.2, 0.8, 0.2, 1] },
-                borderRadius: { duration: 0.12 },
-                opacity: { duration: 0.1 },
+                // Follow pointer / tab chrome — slightly slower shrink into mini-card.
+                y: { type: 'tween', duration: 0.2, ease: [0.2, 0.8, 0.2, 1] },
+                scale: { type: 'tween', duration: 0.24, ease: [0.2, 0.8, 0.2, 1] },
+                borderRadius: { duration: 0.2 },
+                opacity: { duration: 0.16 },
               }
             : {
                 // Match landing pace after tab release (compact → full size).
                 y: {
                   type: 'tween',
-                  duration: pendingBoxLanding ? 0.36 : 0.16,
+                  duration: pendingBoxLanding ? 0.58 : 0.2,
                   ease: [0.22, 0.82, 0.2, 1],
                 },
                 scale: {
                   type: 'tween',
-                  duration: pendingBoxLanding ? 0.4 : 0.16,
+                  duration: pendingBoxLanding ? 0.62 : 0.2,
                   ease: [0.22, 0.82, 0.2, 1],
                 },
-                borderRadius: { duration: pendingBoxLanding ? 0.32 : 0.16 },
-                opacity: { duration: pendingBoxLanding ? 0.28 : 0.12 },
+                borderRadius: { duration: pendingBoxLanding ? 0.5 : 0.18 },
+                opacity: { duration: pendingBoxLanding ? 0.42 : 0.14 },
               }
       }
       onAnimationComplete={finishDeleteMotion}
