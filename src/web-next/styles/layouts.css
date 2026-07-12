@@ -1,17 +1,14 @@
 /* Layout profiles — classic is identity (official Cardo shell). */
 
 /*
- * Floating: each chrome piece hides until the pointer approaches that piece.
- * Visibility is toggled per-element via data-float-visible (not a global flag).
+ * Floating: each chrome piece stays in place (no transform shift) so proximity
+ * hit-testing matches the real resting rect. Near → show; leave → hide.
  */
 [data-layout-profile='floating'] .cardo-top-bar,
 [data-layout-profile='floating'] .cardo-history-controls,
 [data-layout-profile='floating'] .cardo-bottom-shell,
 [data-layout-profile='floating'] .cardo-canvas-tools {
-  transition:
-    opacity var(--cardo-duration-normal) var(--cardo-easing),
-    transform var(--cardo-duration-normal) var(--cardo-easing),
-    visibility var(--cardo-duration-normal) var(--cardo-easing);
+  transition: opacity 120ms var(--cardo-easing);
 }
 
 [data-layout-profile='floating'] .cardo-top-bar:not([data-float-visible='true']),
@@ -19,24 +16,7 @@
 [data-layout-profile='floating'] .cardo-bottom-shell:not([data-float-visible='true']),
 [data-layout-profile='floating'] .cardo-canvas-tools:not([data-float-visible='true']) {
   opacity: 0 !important;
-  visibility: hidden;
   pointer-events: none !important;
-}
-
-[data-layout-profile='floating'] .cardo-top-bar:not([data-float-visible='true']) {
-  transform: translateX(-50%) translateY(-10px) !important;
-}
-
-[data-layout-profile='floating'] .cardo-history-controls:not([data-float-visible='true']) {
-  transform: translateY(-8px) !important;
-}
-
-[data-layout-profile='floating'] .cardo-bottom-shell:not([data-float-visible='true']) {
-  transform: translateX(-50%) translateY(12px) !important;
-}
-
-[data-layout-profile='floating'] .cardo-canvas-tools:not([data-float-visible='true']) {
-  transform: translateY(-8px) !important;
 }
 
 [data-layout-profile='floating'] .cardo-top-bar[data-float-visible='true'],
@@ -44,37 +24,11 @@
 [data-layout-profile='floating'] .cardo-bottom-shell[data-float-visible='true'],
 [data-layout-profile='floating'] .cardo-canvas-tools[data-float-visible='true'] {
   opacity: 1 !important;
-  visibility: visible;
   pointer-events: auto !important;
-}
-
-[data-layout-profile='floating'] .cardo-top-bar[data-float-visible='true'] {
-  transform: translateX(-50%) !important;
-}
-
-[data-layout-profile='floating'] .cardo-history-controls[data-float-visible='true'],
-[data-layout-profile='floating'] .cardo-canvas-tools[data-float-visible='true'] {
-  transform: none !important;
-}
-
-[data-layout-profile='floating'] .cardo-bottom-shell[data-float-visible='true'] {
-  transform: translateX(-50%) !important;
-}
-
-/* Fluent / Material full-width top bars do not use translateX(-50%). */
-[data-cardo-theme='fluent'][data-layout-profile='floating'] .cardo-top-bar:not([data-float-visible='true']),
-[data-cardo-theme='material'][data-layout-profile='floating'] .cardo-top-bar:not([data-float-visible='true']) {
-  transform: translateY(-10px) !important;
-}
-
-[data-cardo-theme='fluent'][data-layout-profile='floating'] .cardo-top-bar[data-float-visible='true'],
-[data-cardo-theme='material'][data-layout-profile='floating'] .cardo-top-bar[data-float-visible='true'] {
-  transform: none !important;
 }
 
 /*
  * Zen: hide all product chrome. Canvas + zen exit stay interactive.
- * Settings / menus still mount when opened.
  */
 [data-layout-profile='zen'] .cardo-top-bar,
 [data-layout-profile='zen'] .cardo-history-controls,
