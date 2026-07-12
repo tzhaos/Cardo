@@ -25,7 +25,10 @@ export const SETTINGS_SEARCH_CATALOG: readonly SettingsSearchEntry[] = [
     section: 'general',
     titleKey: 'settings.searchEngine',
     descriptionKey: 'settings.searchEngineDescription',
-    keywords: { en: ['bing', 'google', 'baidu', 'web search'], zh: ['搜索引擎', '必应', '百度', '谷歌'] },
+    keywords: {
+      en: ['bing', 'google', 'baidu', 'web search'],
+      zh: ['搜索引擎', '必应', '百度', '谷歌'],
+    },
   },
   {
     id: 'layout',
@@ -99,7 +102,10 @@ export const SETTINGS_SEARCH_CATALOG: readonly SettingsSearchEntry[] = [
     section: 'data',
     titleKey: 'settings.workspaceBackup',
     descriptionKey: 'settings.workspaceBackupDescription',
-    keywords: { en: ['backup', 'workspace', 'import', 'export'], zh: ['备份', '工作区', '导入', '导出'] },
+    keywords: {
+      en: ['backup', 'workspace', 'import', 'export'],
+      zh: ['备份', '工作区', '导入', '导出'],
+    },
   },
   {
     id: 'export-data',
@@ -135,6 +141,13 @@ export const SETTINGS_SEARCH_CATALOG: readonly SettingsSearchEntry[] = [
     titleKey: 'settings.about',
     descriptionKey: 'settings.aboutDescription',
     keywords: { en: ['version', 'cardo', 'edition'], zh: ['关于', '版本', '产品'] },
+  },
+  {
+    id: 'about-version',
+    section: 'about',
+    titleKey: 'settings.version',
+    descriptionKey: 'settings.aboutDescription',
+    keywords: { en: ['version', 'release', 'semver', 'build'], zh: ['版本', '版本号', '发行'] },
   },
 ];
 

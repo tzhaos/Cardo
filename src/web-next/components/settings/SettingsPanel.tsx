@@ -28,31 +28,12 @@ import {
   preferenceLocaleSchema,
   webSearchEngineIdSchema,
 } from '../../../core/contracts/preferences';
-import {
-  FEATURE_CATALOG,
-  isFeatureEnabled,
-} from '../../../core/contracts/featureCatalog';
-import {
-  LAYOUT_PROFILES,
-  type LayoutProfileId,
-} from '../../../core/contracts/layoutProfile';
-import {
-  overridableColorKeys,
-  type OverridableColorKey,
-} from '../../../core/contracts/themePack';
-import {
-  COLOR_OVERRIDE_PRESETS,
-  isColorPresetActive,
-} from './colorPresets';
-import {
-  getThemeLookPresets,
-  matchThemeLookId,
-  type ThemeLookPreset,
-} from './themeLookPresets';
-import {
-  matchSettingsSearchEntries,
-  type SettingsSectionId,
-} from './settingsSearchCatalog';
+import { FEATURE_CATALOG, isFeatureEnabled } from '../../../core/contracts/featureCatalog';
+import { LAYOUT_PROFILES, type LayoutProfileId } from '../../../core/contracts/layoutProfile';
+import { overridableColorKeys, type OverridableColorKey } from '../../../core/contracts/themePack';
+import { COLOR_OVERRIDE_PRESETS, isColorPresetActive } from './colorPresets';
+import { getThemeLookPresets, matchThemeLookId, type ThemeLookPreset } from './themeLookPresets';
+import { matchSettingsSearchEntries, type SettingsSectionId } from './settingsSearchCatalog';
 import {
   Select,
   SelectContent,
@@ -96,10 +77,7 @@ export function SettingsPanel({
   const isSwiftUI = themeId === 'swiftui';
   /** Static nav pill under themed shells — avoids layoutId soft text. */
   const useStaticNavIndicator =
-    themeId === 'glass' ||
-    themeId === 'fluent' ||
-    themeId === 'material' ||
-    themeId === 'swiftui';
+    themeId === 'glass' || themeId === 'fluent' || themeId === 'material' || themeId === 'swiftui';
   const { t, locale: i18nLocale } = useI18n();
   const sections = [
     { id: 'general' as const, label: t('settings.general') },
@@ -212,7 +190,11 @@ export function SettingsPanel({
         </TabsList>
         <div className="cardo-settings-content cardo-custom-scrollbar">
           {isSearching ? (
-            <div className="cardo-settings-search-results" role="listbox" aria-label={t('settings.search')}>
+            <div
+              className="cardo-settings-search-results"
+              role="listbox"
+              aria-label={t('settings.search')}
+            >
               {searchResults.length === 0 ? (
                 <p className="cardo-settings-search-empty">{t('settings.searchNoResults')}</p>
               ) : (
@@ -227,7 +209,9 @@ export function SettingsPanel({
                     <span className="cardo-settings-search-result-copy">
                       <strong>{t(entry.titleKey)}</strong>
                       {entry.descriptionKey ? <small>{t(entry.descriptionKey)}</small> : null}
-                      <em>{t('settings.searchInSection', { section: sectionLabel(entry.section) })}</em>
+                      <em>
+                        {t('settings.searchInSection', { section: sectionLabel(entry.section) })}
+                      </em>
                     </span>
                     <ThemeIcon name="chevronRight" size={16} />
                   </button>
@@ -633,8 +617,8 @@ function AppearanceSettings({
   const themeBucket = themeColorOverrides[themeId];
   const hasAnyOverrides = Boolean(
     themeBucket &&
-      (Object.keys(themeBucket.light ?? {}).length > 0 ||
-        Object.keys(themeBucket.dark ?? {}).length > 0),
+    (Object.keys(themeBucket.light ?? {}).length > 0 ||
+      Object.keys(themeBucket.dark ?? {}).length > 0),
   );
   const activeLookId = matchThemeLookId(
     themeId || OFFICIAL_DEFAULT_THEME_ID,
@@ -685,7 +669,8 @@ function AppearanceSettings({
                   <i
                     style={{
                       background: theme.palettes[colorMode].panel,
-                      borderColor: theme.palettes[colorMode].blue ?? theme.palettes[colorMode].border,
+                      borderColor:
+                        theme.palettes[colorMode].blue ?? theme.palettes[colorMode].border,
                       boxShadow: `inset 0 0 0 1px ${theme.palettes[colorMode].border}, 0 2px 6px rgba(0,0,0,0.12)`,
                     }}
                   />
@@ -750,11 +735,8 @@ function AppearanceSettings({
           const lightCanvas = look.colors.light.canvas ?? pack.tokens.colors.light!.canvas;
           const darkCanvas = look.colors.dark.canvas ?? pack.tokens.colors.dark!.canvas;
           const accent =
-            look.colors[colorMode].blue ??
-            pack.tokens.colors[colorMode]!.blue ??
-            '#3b82f6';
-          const panel =
-            look.colors[colorMode].panel ?? pack.tokens.colors[colorMode]!.panel;
+            look.colors[colorMode].blue ?? pack.tokens.colors[colorMode]!.blue ?? '#3b82f6';
+          const panel = look.colors[colorMode].panel ?? pack.tokens.colors[colorMode]!.panel;
           const label = look.name[locale === 'zh' ? 'zh' : 'en'];
           return (
             <button
@@ -763,10 +745,7 @@ function AppearanceSettings({
               role="option"
               aria-selected={selected}
               aria-label={label}
-              className={[
-                'cardo-theme-look-card',
-                selected ? 'cardo-theme-look-card-selected' : '',
-              ]
+              className={['cardo-theme-look-card', selected ? 'cardo-theme-look-card-selected' : '']
                 .filter(Boolean)
                 .join(' ')}
               onClick={() => applyLook(look)}
@@ -956,6 +935,7 @@ function cssColorToHexInput(value: string): string {
 
 function AboutSettings() {
   const { t } = useI18n();
+  const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0';
 
   return (
     <>
@@ -971,10 +951,16 @@ function AboutSettings() {
         />
         <div className="cardo-about-copy">
           <span className="cardo-about-name">Cardo</span>
-          <small className="cardo-about-edition">{t('settings.webNextEdition')}</small>
+          <small className="cardo-about-edition">
+            {t('settings.webNextEdition')} · v{appVersion}
+          </small>
         </div>
       </div>
       <dl className="cardo-about-details">
+        <div>
+          <dt>{t('settings.version')}</dt>
+          <dd>{appVersion}</dd>
+        </div>
         <div>
           <dt>{t('settings.themeSystem')}</dt>
           <dd>{t('settings.tokenThemePack')}</dd>
@@ -1006,10 +992,7 @@ function SegmentButton({
     <ToggleGroupItem value={value}>
       {/* Static indicator — no Motion scale (blurred text under Fluent) */}
       <span
-        className={[
-          'cardo-segment-indicator',
-          active ? 'cardo-segment-indicator-active' : '',
-        ]
+        className={['cardo-segment-indicator', active ? 'cardo-segment-indicator-active' : '']
           .filter(Boolean)
           .join(' ')}
         aria-hidden
