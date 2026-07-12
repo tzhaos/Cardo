@@ -631,22 +631,16 @@ function AppearanceSettings({
                 .join(' ')}
               onClick={() => applyLook(look)}
             >
-              <span className="cardo-theme-look-preview" aria-hidden="true">
-                <span style={{ background: lightCanvas }} />
-                <span style={{ background: darkCanvas }} />
-                <i
-                  style={{
-                    background: panel,
-                    borderColor: accent,
-                    boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${accent} 28%, transparent)`,
-                  }}
-                />
-                <em className="cardo-theme-look-preview-accent" style={{ background: accent }} />
+              <span className="cardo-theme-look-swatches" aria-hidden="true">
+                <i style={{ background: lightCanvas }} />
+                <i style={{ background: darkCanvas }} />
+                <i style={{ background: panel }} />
+                <i style={{ background: accent }} />
               </span>
               <span className="cardo-theme-look-name">{label}</span>
               {selected ? (
                 <IconFrame className="cardo-theme-look-check">
-                  <ThemeIcon name="check" size={12} />
+                  <ThemeIcon name="check" size={11} />
                 </IconFrame>
               ) : null}
             </button>
@@ -659,18 +653,15 @@ function AppearanceSettings({
             aria-selected
             aria-label={t('settings.themeLookCustom')}
           >
-            <span className="cardo-theme-look-preview" aria-hidden="true">
-              <span style={{ background: effectiveColors.canvas }} />
-              <span
+            <span className="cardo-theme-look-swatches" aria-hidden="true">
+              <i style={{ background: effectiveColors.canvas }} />
+              <i
                 style={{
                   background:
                     effectiveColors.panel ?? effectiveColors.surface ?? effectiveColors.canvas,
                 }}
               />
-              <em
-                className="cardo-theme-look-preview-accent"
-                style={{ background: effectiveColors.blue ?? '#3b82f6' }}
-              />
+              <i style={{ background: effectiveColors.blue ?? '#3b82f6' }} />
             </span>
             <span className="cardo-theme-look-name">{t('settings.themeLookCustom')}</span>
           </div>

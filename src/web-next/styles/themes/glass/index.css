@@ -118,7 +118,11 @@
 
 [data-cardo-theme='glass'] .cardo-settings-nav {
   border-right: 1px solid var(--cardo-border);
-  background: transparent;
+  background: #f9fafd;
+}
+
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-settings-nav {
+  background: color-mix(in srgb, var(--cardo-panel-chrome) 88%, transparent);
 }
 
 [data-cardo-theme='glass'] .cardo-settings-nav button {
