@@ -1,36 +1,22 @@
-import {
-  BookOpen,
-  Bookmark,
-  BriefcaseBusiness,
-  Clipboard,
-  Code2,
-  Folder,
-  Heart,
-  Image,
-  Lightbulb,
-  Music2,
-  PackageOpen,
-  Star,
-} from 'lucide-react';
-import type { ComponentType } from 'react';
 import type { WorkspaceBoxIcon } from '../../domain/workspace';
+import { ThemeIcon, type ThemeIconName } from '../../ui/icons/ThemeIcon';
 
-const BOX_ICON_COMPONENTS = {
-  box: PackageOpen,
-  folder: Folder,
-  bookmark: Bookmark,
-  clipboard: Clipboard,
-  briefcase: BriefcaseBusiness,
-  code: Code2,
-  image: Image,
-  music: Music2,
-  book: BookOpen,
-  idea: Lightbulb,
-  star: Star,
-  heart: Heart,
-} satisfies Record<WorkspaceBoxIcon, ComponentType<{ size?: number }>>;
+const BOX_ICON_NAMES = {
+  box: 'box',
+  folder: 'folder',
+  bookmark: 'bookmark',
+  clipboard: 'clipboard',
+  briefcase: 'briefcase',
+  code: 'code',
+  image: 'image',
+  music: 'music',
+  book: 'book',
+  idea: 'idea',
+  star: 'star',
+  heart: 'heart',
+} satisfies Record<WorkspaceBoxIcon, ThemeIconName>;
 
+/** Box decorative icons follow the active theme icon pack (official when available). */
 export function BoxAppearanceIcon({ icon, size = 16 }: { icon: WorkspaceBoxIcon; size?: number }) {
-  const Icon = BOX_ICON_COMPONENTS[icon];
-  return <Icon size={size} />;
+  return <ThemeIcon name={BOX_ICON_NAMES[icon]} size={size} />;
 }

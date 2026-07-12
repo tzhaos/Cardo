@@ -1,7 +1,7 @@
-import { Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useI18n } from '../../i18n/useI18n';
 import { IconFrame } from '../../ui/cardo/icon-button';
+import { ThemeIcon } from '../../ui/icons/ThemeIcon';
 import { Button } from '../../ui/primitives/button';
 
 export function ItemDeleteView({
@@ -30,7 +30,7 @@ export function ItemDeleteView({
     >
       <span className="cardo-item-delete-copy">
         <IconFrame>
-          <Trash2 size={15} />
+          <ThemeIcon name="trash" size={15} />
         </IconFrame>
         <span>{t('item.deleteQuestion')}</span>
       </span>
@@ -38,7 +38,7 @@ export function ItemDeleteView({
         <Button autoFocus variant="ghost" onClick={onCancel}>
           {t('common.cancel')}
         </Button>
-        <Button className="cardo-item-delete-confirm" variant="danger" onClick={onConfirm}>
+        <Button variant="danger" onClick={onConfirm}>
           {t('common.delete')}
         </Button>
       </span>

@@ -1,22 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
 import type { PointerEventHandler, ReactNode } from 'react';
-import {
-  Check,
-  ChevronRight,
-  CircleHelp,
-  Database,
-  Download,
-  FileDown,
-  Moon,
-  Palette,
-  RotateCcw,
-  Search,
-  Settings,
-  SlidersHorizontal,
-  Sun,
-  Upload,
-  X,
-} from 'lucide-react';
 import cardoMarkUrl from '../../../../assets/brand/cardo-mark.svg';
 import { AnimatePresence, motion } from 'motion/react';
 import { usePreferencesStore } from '../../app/stores/preferencesStore';
@@ -29,6 +12,7 @@ import {
 } from '../../themes/themeRegistry';
 import { resolveEffectiveThemeTokens } from '../../themes/resolveTheme';
 import { SettingsNavIcon } from './SettingsNavIcons';
+import { ThemeIcon } from '../../ui/icons/ThemeIcon';
 import { IconButton, IconFrame } from '../../ui/cardo/icon-button';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import type { WorkspaceProjection } from '../../domain/workspace';
@@ -108,26 +92,10 @@ export function SettingsPanel({
     themeId === 'swiftui';
   const { t, locale: i18nLocale } = useI18n();
   const sections = [
-    {
-      id: 'general' as const,
-      label: t('settings.general'),
-      monoIcon: <SlidersHorizontal size={16} />,
-    },
-    {
-      id: 'appearance' as const,
-      label: t('settings.appearance'),
-      monoIcon: <Palette size={16} />,
-    },
-    {
-      id: 'data' as const,
-      label: t('settings.data'),
-      monoIcon: <Database size={16} />,
-    },
-    {
-      id: 'about' as const,
-      label: t('settings.about'),
-      monoIcon: <CircleHelp size={16} />,
-    },
+    { id: 'general' as const, label: t('settings.general') },
+    { id: 'appearance' as const, label: t('settings.appearance') },
+    { id: 'data' as const, label: t('settings.data') },
+    { id: 'about' as const, label: t('settings.about') },
   ];
   const sectionLabel = (id: SettingsSection) =>
     sections.find((entry) => entry.id === id)?.label ?? id;
@@ -160,7 +128,7 @@ export function SettingsPanel({
         <div className="cardo-settings-header-title">
           {isSwiftUI ? null : (
             <IconFrame>
-              <Settings size={17} />
+              <ThemeIcon name="settings" size={17} />
             </IconFrame>
           )}
           <span>{t('settings.title')}</span>
@@ -169,7 +137,7 @@ export function SettingsPanel({
         <div className="cardo-settings-header-actions">
           <label className="cardo-settings-search" data-no-menu-drag>
             <span className="cardo-settings-search-icon" aria-hidden>
-              <Search size={16} strokeWidth={2} />
+              <ThemeIcon name="search" size={16} />
             </span>
             <Input
               ref={searchInputRef}
@@ -193,13 +161,13 @@ export function SettingsPanel({
                 aria-label={t('common.close')}
                 onClick={() => setSettingsQuery('')}
               >
-                <X size={14} />
+                <ThemeIcon name="close" size={14} />
               </button>
             ) : null}
           </label>
           {isSwiftUI ? null : (
             <IconButton data-no-menu-drag onClick={onClose} aria-label={t('common.close')}>
-              <X size={16} />
+              <ThemeIcon name="close" size={16} />
             </IconButton>
           )}
         </div>
@@ -213,9 +181,9 @@ export function SettingsPanel({
         }}
       >
         <TabsList className="cardo-settings-nav" aria-label={t('settings.sections')}>
-          {sections.map(({ id, label, monoIcon }) => (
+          {sections.map(({ id, label }) => (
             <TabsTrigger key={id} value={id}>
-              {/* Classic: layoutId pill. Fluent/Material: static CSS indicator (crisper). */}
+              {/* Classic: layoutId pill. Themed shells: static CSS indicator (crisper). */}
               {section === id && !isSearching ? (
                 useStaticNavIndicator ? (
                   <span className="cardo-settings-nav-indicator" aria-hidden />
@@ -227,11 +195,7 @@ export function SettingsPanel({
                   />
                 )
               ) : null}
-              {isFluent ? (
-                <SettingsNavIcon id={id} />
-              ) : (
-                <IconFrame className="cardo-settings-nav-mono-icon">{monoIcon}</IconFrame>
-              )}
+              <SettingsNavIcon id={id} />
               <span>{label}</span>
             </TabsTrigger>
           ))}
@@ -255,7 +219,7 @@ export function SettingsPanel({
                       {entry.descriptionKey ? <small>{t(entry.descriptionKey)}</small> : null}
                       <em>{t('settings.searchInSection', { section: sectionLabel(entry.section) })}</em>
                     </span>
-                    <ChevronRight size={16} aria-hidden />
+                    <ThemeIcon name="chevronRight" size={16} />
                   </button>
                 ))
               )}
@@ -323,7 +287,7 @@ function DataSettings() {
       <div className="cardo-data-actions">
         <Button variant="card" onClick={() => void exportWorkspaceData()}>
           <IconFrame>
-            <Download size={18} />
+            <ThemeIcon name="download" size={18} />
           </IconFrame>
           <span>
             {t('settings.exportData')}
@@ -332,7 +296,7 @@ function DataSettings() {
         </Button>
         <Button variant="card" onClick={() => inputRef.current?.click()}>
           <IconFrame>
-            <Upload size={18} />
+            <ThemeIcon name="upload" size={18} />
           </IconFrame>
           <span>
             {t('settings.importData')}
@@ -341,7 +305,7 @@ function DataSettings() {
         </Button>
         <Button variant="card" onClick={() => void exportOperationLog()}>
           <IconFrame>
-            <FileDown size={18} />
+            <ThemeIcon name="fileDown" size={18} />
           </IconFrame>
           <span>
             {t('settings.exportLog')}
@@ -599,7 +563,7 @@ function AppearanceSettings({
                 </span>
                 {selected ? (
                   <IconFrame className="cardo-theme-check">
-                    <Check size={12} />
+                    <ThemeIcon name="check" size={12} />
                   </IconFrame>
                 ) : null}
               </MotionButton>
@@ -623,11 +587,11 @@ function AppearanceSettings({
             onValueChange={(value) => value && setColorMode(colorModeSchema.parse(value))}
           >
             <SegmentButton active={colorMode === 'light'} value="light">
-              <Sun size={14} />
+              <ThemeIcon name="sun" size={14} />
               {t('settings.light')}
             </SegmentButton>
             <SegmentButton active={colorMode === 'dark'} value="dark">
-              <Moon size={14} />
+              <ThemeIcon name="moon" size={14} />
               {t('settings.dark')}
             </SegmentButton>
           </ToggleGroup>
@@ -649,12 +613,14 @@ function AppearanceSettings({
             '#3b82f6';
           const panel =
             look.colors[colorMode].panel ?? pack.tokens.colors[colorMode]!.panel;
+          const label = look.name[locale === 'zh' ? 'zh' : 'en'];
           return (
             <button
               key={look.id}
               type="button"
               role="option"
               aria-selected={selected}
+              aria-label={label}
               className={[
                 'cardo-theme-look-card',
                 selected ? 'cardo-theme-look-card-selected' : '',
@@ -663,29 +629,46 @@ function AppearanceSettings({
                 .join(' ')}
               onClick={() => applyLook(look)}
             >
-              <span className="cardo-theme-look-swatches" aria-hidden>
-                <i style={{ background: lightCanvas }} />
-                <i style={{ background: darkCanvas }} />
-                <i style={{ background: panel }} />
-                <i style={{ background: accent }} />
+              <span className="cardo-theme-look-preview" aria-hidden="true">
+                <span style={{ background: lightCanvas }} />
+                <span style={{ background: darkCanvas }} />
+                <i
+                  style={{
+                    background: panel,
+                    borderColor: accent,
+                    boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${accent} 28%, transparent)`,
+                  }}
+                />
+                <em className="cardo-theme-look-preview-accent" style={{ background: accent }} />
               </span>
-              <span className="cardo-theme-look-name">
-                {look.name[locale === 'zh' ? 'zh' : 'en']}
-              </span>
+              <span className="cardo-theme-look-name">{label}</span>
               {selected ? (
                 <IconFrame className="cardo-theme-look-check">
-                  <Check size={11} />
+                  <ThemeIcon name="check" size={12} />
                 </IconFrame>
               ) : null}
             </button>
           );
         })}
         {activeLookId === null && hasAnyOverrides ? (
-          <div className="cardo-theme-look-card cardo-theme-look-card-custom" aria-selected>
-            <span className="cardo-theme-look-swatches" aria-hidden>
-              <i style={{ background: effectiveColors.canvas }} />
-              <i style={{ background: effectiveColors.panel }} />
-              <i style={{ background: effectiveColors.blue ?? '#3b82f6' }} />
+          <div
+            className="cardo-theme-look-card cardo-theme-look-card-custom"
+            role="option"
+            aria-selected
+            aria-label={t('settings.themeLookCustom')}
+          >
+            <span className="cardo-theme-look-preview" aria-hidden="true">
+              <span style={{ background: effectiveColors.canvas }} />
+              <span
+                style={{
+                  background:
+                    effectiveColors.panel ?? effectiveColors.surface ?? effectiveColors.canvas,
+                }}
+              />
+              <em
+                className="cardo-theme-look-preview-accent"
+                style={{ background: effectiveColors.blue ?? '#3b82f6' }}
+              />
             </span>
             <span className="cardo-theme-look-name">{t('settings.themeLookCustom')}</span>
           </div>
@@ -703,14 +686,14 @@ function AppearanceSettings({
             {t('settings.colorOverrides')}
             <small>{t('settings.colorOverridesDescription')}</small>
           </span>
-          <ChevronRight
+          <ThemeIcon
+            name="chevronRight"
             size={16}
             className={
               customColorsOpen
                 ? 'cardo-settings-disclosure-chevron cardo-settings-disclosure-chevron-open'
                 : 'cardo-settings-disclosure-chevron'
             }
-            aria-hidden
           />
         </button>
       </div>
@@ -798,7 +781,7 @@ function AppearanceSettings({
             <div className="cardo-settings-card cardo-theme-color-reset-card">
               <div className="cardo-settings-card-copy">
                 <IconFrame>
-                  <RotateCcw size={16} />
+                  <ThemeIcon name="rotateCcw" size={16} />
                 </IconFrame>
                 <span>
                   {t('settings.resetColorOverrides')}

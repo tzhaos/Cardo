@@ -11,7 +11,9 @@
   font-size: 14px;
   font-weight: 500;
   text-align: left;
-  transition: background var(--cardo-duration-normal) var(--cardo-easing);
+  transition:
+    background var(--cardo-duration-normal) var(--cardo-easing),
+    color var(--cardo-duration-normal) var(--cardo-easing);
 }
 
 .cardo-create-menu-button svg {
@@ -20,6 +22,12 @@
 
 .cardo-create-menu-button:hover {
   background: var(--cardo-hover);
+  color: var(--cardo-text);
+}
+
+.cardo-create-menu-button:focus-visible {
+  background: var(--cardo-hover);
+  color: var(--cardo-text);
 }
 
 .cardo-floating-menu-wrap {
@@ -35,11 +43,11 @@
   display: grid;
   min-width: 192px;
   max-height: inherit;
-  gap: 8px;
+  gap: 2px;
   overflow-y: auto;
   border: 1px solid var(--cardo-border);
   border-radius: var(--cardo-radius-xl);
-  padding: 8px;
+  padding: 6px;
   background: var(--cardo-surface);
   box-shadow: var(--cardo-shadow);
   backdrop-filter: blur(18px);
@@ -59,13 +67,30 @@
   font-size: 14px;
   font-weight: 500;
   text-align: left;
-  transition: background var(--cardo-duration-normal) var(--cardo-easing);
+  outline: none;
+  transition:
+    background var(--cardo-duration-normal) var(--cardo-easing),
+    color var(--cardo-duration-normal) var(--cardo-easing);
 }
 
+/* Default: surface hover — themes may override (Fluent rail, SwiftUI accent fill). */
 .cardo-menu-row:hover:not(:disabled),
 .cardo-menu-row[data-highlighted],
 .cardo-menu-row[data-state='open'] {
   background: var(--cardo-hover);
+  color: var(--cardo-text);
+}
+
+.cardo-menu-row:hover:not(:disabled) .cardo-menu-icon,
+.cardo-menu-row[data-highlighted] .cardo-menu-icon,
+.cardo-menu-row[data-state='open'] .cardo-menu-icon {
+  color: var(--cardo-text);
+}
+
+/* Keyboard focus: ring only — never solid accent fill (theme recipes keep focus-visible). */
+.cardo-menu-row:focus-visible {
+  background: var(--cardo-hover);
+  color: var(--cardo-text);
 }
 
 .cardo-menu-row:disabled {
@@ -75,10 +100,15 @@
 
 .cardo-menu-icon {
   color: var(--cardo-secondary-text);
+  transition: color var(--cardo-duration-normal) var(--cardo-easing);
 }
 
 .cardo-menu-row-danger {
   color: var(--cardo-red) !important;
+}
+
+.cardo-menu-row-danger .cardo-menu-icon {
+  color: var(--cardo-red);
 }
 
 .cardo-floating-submenu {

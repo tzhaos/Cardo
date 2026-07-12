@@ -197,11 +197,60 @@
   box-shadow: var(--cardo-shadow);
 }
 
+[data-cardo-theme='glass'] .cardo-canvas-tools {
+  gap: 2px;
+  border-radius: var(--cardo-radius-xl);
+  padding: 5px;
+}
+
+[data-cardo-theme='glass'] .cardo-canvas-tools button {
+  border-radius: var(--cardo-radius-lg);
+  color: var(--cardo-secondary-text);
+}
+
+[data-cardo-theme='glass'] .cardo-canvas-tools button:hover:not(:disabled) {
+  background: var(--cardo-hover);
+  color: var(--cardo-text);
+}
+
+/* Active: soft surface wash, not solid primary */
+[data-cardo-theme='glass'] .cardo-canvas-tools-button-active {
+  background: color-mix(in srgb, var(--cardo-panel) 70%, transparent) !important;
+  color: var(--cardo-text) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cardo-border) 80%, transparent);
+}
+
 [data-cardo-theme='glass'] .cardo-floating-menu,
+[data-cardo-theme='glass'] .cardo-ui-menu-content,
 [data-cardo-theme='glass'] .cardo-ui-select-content {
+  gap: 0;
   border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-xl);
+  padding: 6px;
   background: var(--cardo-surface-strong);
-  backdrop-filter: blur(var(--cardo-chrome-blur));
-  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur));
+  backdrop-filter: blur(var(--cardo-chrome-blur)) saturate(1.15);
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur)) saturate(1.15);
   box-shadow: var(--cardo-shadow-hover);
+}
+
+[data-cardo-theme='glass'] .cardo-menu-row,
+[data-cardo-theme='glass'] .cardo-ui-select-item {
+  border-radius: var(--cardo-radius-lg);
+}
+
+/* Surface hover — avoid solid accent fills on glass menus */
+[data-cardo-theme='glass'] .cardo-menu-row:hover:not(:disabled),
+[data-cardo-theme='glass'] .cardo-menu-row[data-highlighted],
+[data-cardo-theme='glass'] .cardo-menu-row[data-state='open'],
+[data-cardo-theme='glass'] .cardo-menu-row:focus-visible,
+[data-cardo-theme='glass'] .cardo-ui-select-item[data-highlighted],
+[data-cardo-theme='glass'] .cardo-ui-select-item[data-state='checked'] {
+  background: var(--cardo-hover);
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='glass'] .cardo-menu-row-danger:hover:not(:disabled),
+[data-cardo-theme='glass'] .cardo-menu-row-danger[data-highlighted] {
+  background: color-mix(in srgb, var(--cardo-red) 10%, transparent);
+  color: var(--cardo-red) !important;
 }

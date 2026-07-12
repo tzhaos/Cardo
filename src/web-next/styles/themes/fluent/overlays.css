@@ -5,9 +5,9 @@
  */
 
 /*
- * Fluent DropDown / ComboBox (Win11):
+ * Fluent DropDown / ComboBox / MenuFlyout (Win11):
  * white flyout, soft elevation, 8px radius;
- * selected row = light gray fill + left accent rail (no check glyph).
+ * hover = light gray fill; selected = gray + left accent rail (no solid blue row).
  */
 [data-cardo-theme='fluent'] .cardo-ui-select-trigger {
   min-height: 32px;
@@ -37,7 +37,7 @@
   border: 1px solid color-mix(in srgb, var(--cardo-border) 90%, transparent);
   border-radius: 8px;
   padding: 4px;
-  background: #ffffff;
+  background: var(--cardo-settings-chrome, #ffffff);
   box-shadow:
     0 0 0 1px color-mix(in srgb, #000 2%, transparent),
     0 8px 24px color-mix(in srgb, #000 12%, transparent);
@@ -66,14 +66,18 @@
   font-weight: 400;
 }
 
-/* Win11: highlight / selected = soft gray + left blue rail */
-[data-cardo-theme='fluent'] .cardo-ui-select-item[data-highlighted],
+/* Win11 pointer-over: soft gray only (no blue fill) */
+[data-cardo-theme='fluent'] .cardo-ui-select-item[data-highlighted] {
+  background: var(--cardo-settings-hover, #f0f0f0);
+  color: var(--cardo-text);
+}
+
+/* Selected: gray + left accent rail */
 [data-cardo-theme='fluent'] .cardo-ui-select-item[data-state='checked'] {
   background: var(--cardo-settings-hover, #f0f0f0);
   color: var(--cardo-text);
 }
 
-[data-cardo-theme='fluent'] .cardo-ui-select-item[data-highlighted]::before,
 [data-cardo-theme='fluent'] .cardo-ui-select-item[data-state='checked']::before {
   content: '';
   position: absolute;
@@ -95,13 +99,14 @@
   background: color-mix(in srgb, var(--cardo-settings-hover) 35%, var(--cardo-settings-chrome));
 }
 
-/* Context / floating menus match the same flyout language */
-[data-cardo-theme='fluent'] .cardo-floating-menu {
+/* Context / floating menus match MenuFlyout language */
+[data-cardo-theme='fluent'] .cardo-floating-menu,
+[data-cardo-theme='fluent'] .cardo-ui-menu-content {
   gap: 0;
   border: 1px solid color-mix(in srgb, var(--cardo-border) 90%, transparent);
   border-radius: 8px;
   padding: 4px;
-  background: #ffffff;
+  background: var(--cardo-settings-chrome, #ffffff);
   box-shadow:
     0 0 0 1px color-mix(in srgb, #000 2%, transparent),
     0 8px 24px color-mix(in srgb, #000 12%, transparent);
@@ -109,7 +114,8 @@
   -webkit-backdrop-filter: none;
 }
 
-[data-cardo-theme='fluent'][data-color-mode='dark'] .cardo-floating-menu {
+[data-cardo-theme='fluent'][data-color-mode='dark'] .cardo-floating-menu,
+[data-cardo-theme='fluent'][data-color-mode='dark'] .cardo-ui-menu-content {
   background: var(--cardo-panel);
 }
 
@@ -123,14 +129,23 @@
   font-weight: 400;
 }
 
+/* MenuFlyout: hover / keyboard highlight = soft gray only */
 [data-cardo-theme='fluent'] .cardo-menu-row:hover:not(:disabled),
 [data-cardo-theme='fluent'] .cardo-menu-row[data-highlighted],
-[data-cardo-theme='fluent'] .cardo-menu-row[data-state='open'] {
+[data-cardo-theme='fluent'] .cardo-menu-row[data-state='open'],
+[data-cardo-theme='fluent'] .cardo-menu-row:focus-visible {
   background: var(--cardo-settings-hover, #f0f0f0);
+  color: var(--cardo-text);
 }
 
-[data-cardo-theme='fluent'] .cardo-menu-row:hover:not(:disabled)::before,
-[data-cardo-theme='fluent'] .cardo-menu-row[data-highlighted]::before {
+[data-cardo-theme='fluent'] .cardo-menu-row:hover:not(:disabled) .cardo-menu-icon,
+[data-cardo-theme='fluent'] .cardo-menu-row[data-highlighted] .cardo-menu-icon,
+[data-cardo-theme='fluent'] .cardo-menu-row[data-state='open'] .cardo-menu-icon {
+  color: var(--cardo-text);
+}
+
+/* Submenu open: subtle left rail (selected affordance, not full blue fill) */
+[data-cardo-theme='fluent'] .cardo-menu-row[data-state='open']::before {
   content: '';
   position: absolute;
   top: 8px;
@@ -141,6 +156,22 @@
   background: var(--cardo-blue);
 }
 
+[data-cardo-theme='fluent'] .cardo-menu-row-danger:hover:not(:disabled),
+[data-cardo-theme='fluent'] .cardo-menu-row-danger[data-highlighted] {
+  background: color-mix(in srgb, var(--cardo-red) 8%, var(--cardo-settings-chrome, #ffffff));
+  color: var(--cardo-red) !important;
+}
+
+[data-cardo-theme='fluent'][data-color-mode='dark'] .cardo-menu-row-danger:hover:not(:disabled),
+[data-cardo-theme='fluent'][data-color-mode='dark'] .cardo-menu-row-danger[data-highlighted] {
+  background: color-mix(in srgb, var(--cardo-red) 12%, var(--cardo-panel));
+}
+
+[data-cardo-theme='fluent'] .cardo-ui-menu-separator {
+  margin: 2px 4px;
+  background: var(--cardo-divider);
+}
+
 /* Drop / drag chrome stays neutral under Fluent too */
 [data-cardo-theme='fluent'] .cardo-top-bar-drop-mode,
 [data-cardo-theme='fluent'] .cardo-top-bar-drag-over {
@@ -148,4 +179,3 @@
   background: var(--cardo-panel) !important;
   box-shadow: none !important;
 }
-

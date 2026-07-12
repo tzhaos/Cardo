@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { GripVertical } from 'lucide-react';
 import { AnimatePresence, Reorder, useDragControls } from 'motion/react';
 import type { PanInfo } from 'motion/react';
 import { useStagedOrder } from '../../app/motion/useStagedOrder';
@@ -8,6 +7,7 @@ import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import type { BoxItem, WorkspaceBoxViewMode } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { IconButton } from '../../ui/cardo/icon-button';
+import { ThemeIcon } from '../../ui/icons/ThemeIcon';
 
 export function SortableItemList<TItem extends BoxItem>({
   boxId,
@@ -187,7 +187,7 @@ function SortableItemEntry({
           controls.start(event);
         }}
       >
-        <GripVertical size={14} />
+        <ThemeIcon name="grip" size={14} />
       </IconButton>
       {children}
     </Reorder.Item>

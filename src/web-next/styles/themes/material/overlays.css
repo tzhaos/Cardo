@@ -1,6 +1,7 @@
 /**
  * Material / AI Studio — flyouts & menus.
- * White surface, hairline, 12px radius, soft elevation (see Studio Theme menu).
+ * White surface, hairline, 12px radius, soft elevation.
+ * Hover / selected = gray surface (not solid primary blue fill).
  */
 
 [data-cardo-theme='material'] .cardo-ui-select-trigger {
@@ -36,6 +37,7 @@
   background: var(--cardo-panel);
   box-shadow: var(--cardo-shadow-hover);
   backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 [data-cardo-theme='material'] .cardo-ui-select-item {
@@ -47,31 +49,44 @@
   color: var(--cardo-soft-text);
 }
 
+/* Gray surface hover — never solid blue */
 [data-cardo-theme='material'] .cardo-ui-select-item[data-highlighted] {
   background: var(--cardo-hover);
   color: var(--cardo-text);
 }
 
+/* Selected: stronger neutral surface + weight (Studio chip), not primary fill */
 [data-cardo-theme='material'] .cardo-ui-select-item[data-state='checked'] {
-  background: var(--cardo-settings-hover);
+  background: var(--cardo-neutral-button);
   color: var(--cardo-text);
   font-weight: 500;
 }
 
-/* Context / account menu — Studio floating panel */
+[data-cardo-theme='material'] .cardo-ui-select-item[data-state='checked'][data-highlighted] {
+  background: var(--cardo-neutral-button-hover);
+}
+
+[data-cardo-theme='material'] .cardo-ui-select-check {
+  color: var(--cardo-secondary-text);
+}
+
+/* Context / account / create menu — Studio floating panel */
 [data-cardo-theme='material'] .cardo-floating-menu,
-[data-cardo-theme='material'] .cardo-ui-dropdown-content {
+[data-cardo-theme='material'] .cardo-ui-menu-content {
+  gap: 0;
   border: 1px solid var(--cardo-border);
   border-radius: 12px;
   padding: 6px;
   background: var(--cardo-panel);
   box-shadow: var(--cardo-shadow-hover);
   backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 [data-cardo-theme='material'] .cardo-menu-row {
   border-radius: 8px;
   min-height: 36px;
+  padding: 8px 12px;
   font-size: 13px;
   font-weight: 400;
   color: var(--cardo-soft-text);
@@ -79,17 +94,38 @@
 
 [data-cardo-theme='material'] .cardo-menu-row:hover:not(:disabled),
 [data-cardo-theme='material'] .cardo-menu-row[data-highlighted],
-[data-cardo-theme='material'] .cardo-menu-row[data-state='open'] {
+[data-cardo-theme='material'] .cardo-menu-row[data-state='open'],
+[data-cardo-theme='material'] .cardo-menu-row:focus-visible {
   background: var(--cardo-hover);
   color: var(--cardo-text);
 }
 
-[data-cardo-theme='material'] .cardo-create-menu-button {
-  border-radius: 8px;
+[data-cardo-theme='material'] .cardo-menu-row:hover:not(:disabled) .cardo-menu-icon,
+[data-cardo-theme='material'] .cardo-menu-row[data-highlighted] .cardo-menu-icon,
+[data-cardo-theme='material'] .cardo-menu-row[data-state='open'] .cardo-menu-icon {
+  color: var(--cardo-text);
 }
 
-[data-cardo-theme='material'] .cardo-create-menu-button:hover {
+[data-cardo-theme='material'] .cardo-menu-row-danger:hover:not(:disabled),
+[data-cardo-theme='material'] .cardo-menu-row-danger[data-highlighted] {
+  background: color-mix(in srgb, var(--cardo-red) 8%, var(--cardo-panel));
+  color: var(--cardo-red) !important;
+}
+
+[data-cardo-theme='material'] .cardo-create-menu-button {
+  border-radius: 8px;
+  color: var(--cardo-soft-text);
+}
+
+[data-cardo-theme='material'] .cardo-create-menu-button:hover,
+[data-cardo-theme='material'] .cardo-create-menu-button:focus-visible {
   background: var(--cardo-hover);
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='material'] .cardo-ui-menu-separator {
+  margin: 4px 8px;
+  background: var(--cardo-divider);
 }
 
 [data-cardo-theme='material'] .cardo-ui-tooltip-content {

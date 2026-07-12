@@ -93,6 +93,7 @@
   user-select: none;
 }
 
+/* Default surface highlight — theme recipes may override (SwiftUI blue, Fluent rail). */
 .cardo-ui-select-item[data-highlighted],
 .cardo-ui-select-item[data-state='checked'] {
   background: var(--cardo-hover);
@@ -102,7 +103,11 @@
 .cardo-ui-select-check {
   position: absolute;
   right: 9px;
-  color: var(--cardo-blue);
+  color: var(--cardo-secondary-text);
+}
+
+.cardo-ui-select-item[data-state='checked'] .cardo-ui-select-check {
+  color: var(--cardo-text);
 }
 
 .cardo-ui-menu-content {

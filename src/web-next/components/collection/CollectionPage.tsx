@@ -1,23 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from 'react';
-import {
-  AppWindow,
-  ChevronsDownUp,
-  ChevronsUpDown,
-  Clipboard,
-  Copy,
-  ExternalLink,
-  File,
-  Folder,
-  Globe,
-  LayoutGrid,
-  List,
-  LocateFixed,
-  StarOff,
-  X,
-} from 'lucide-react';
 import { AnimatePresence, motion, useMotionValue } from 'motion/react';
 import type { MotionStyle } from 'motion/react';
+import { recordItemActivity } from '../../app/operationActivity';
 import { useCanvasStore } from '../../app/stores/canvasStore';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
@@ -25,7 +10,6 @@ import {
   startWindowPointerSession,
   type WindowPointerSession,
 } from '../../app/windowPointerSession';
-import { recordItemActivity } from '../../app/operationActivity';
 import { getBoxAccent, getBoxIcon } from '../../domain/boxAppearance';
 import { getItemDetail, getItemResultTitle } from '../../domain/itemPresentation';
 import {
@@ -41,9 +25,10 @@ import {
   openLocalResource,
   writeClipboardText,
 } from '../../platform/hostPlatform';
-import { BoxAppearanceIcon } from '../boxes/boxIconRegistry';
 import { useContextMenu } from '../../ui/cardo/context-menu';
+import { ThemeIcon } from '../../ui/icons/ThemeIcon';
 import { Button } from '../../ui/primitives/button';
+import { BoxAppearanceIcon } from '../boxes/boxIconRegistry';
 
 export function CollectionPage() {
   const projection = useWorkspaceStore((state) => state.projection);
@@ -140,7 +125,12 @@ export function CollectionPage() {
                 {
                   id: 'view-mode',
                   label: t(view.viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList'),
-                  icon: view.viewMode === 'list' ? <LayoutGrid size={16} /> : <List size={16} />,
+                  icon:
+                    view.viewMode === 'list' ? (
+                      <ThemeIcon name="layoutGrid" size={16} />
+                    ) : (
+                      <ThemeIcon name="list" size={16} />
+                    ),
                   onSelect: () =>
                     updateCollectionBoxView(box.id, {
                       viewMode: view.viewMode === 'list' ? 'grid' : 'list',
@@ -153,9 +143,9 @@ export function CollectionPage() {
                   ),
                   icon:
                     view.detailMode === 'detailed' ? (
-                      <ChevronsDownUp size={16} />
+                      <ThemeIcon name="collapse" size={16} />
                     ) : (
-                      <ChevronsUpDown size={16} />
+                      <ThemeIcon name="expand" size={16} />
                     ),
                   onSelect: () =>
                     updateCollectionBoxView(box.id, {
@@ -165,13 +155,13 @@ export function CollectionPage() {
                 {
                   id: 'locate-source',
                   label: t('collection.locateSource'),
-                  icon: <LocateFixed size={16} />,
+                  icon: <ThemeIcon name="locate" size={16} />,
                   onSelect: () => locateSource(box),
                 },
                 {
                   id: 'remove',
                   label: t('menu.removeFromCollection'),
-                  icon: <StarOff size={16} />,
+                  icon: <ThemeIcon name="starOff" size={16} />,
                   onSelect: () => removeBoxFromCollection(box.id),
                 },
               ]);
@@ -318,9 +308,9 @@ function CollectionBox({
           title={t(view.detailMode === 'detailed' ? 'box.switchToCompact' : 'box.switchToDetailed')}
         >
           {view.detailMode === 'detailed' ? (
-            <ChevronsDownUp size={14} />
+            <ThemeIcon name="collapse" size={14} />
           ) : (
-            <ChevronsUpDown size={14} />
+            <ThemeIcon name="expand" size={14} />
           )}
         </Button>
         <Button
@@ -330,7 +320,11 @@ function CollectionBox({
           onClick={() => onViewChange({ viewMode: view.viewMode === 'list' ? 'grid' : 'list' })}
           title={t(view.viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList')}
         >
-          {view.viewMode === 'list' ? <LayoutGrid size={14} /> : <List size={14} />}
+          {view.viewMode === 'list' ? (
+            <ThemeIcon name="layoutGrid" size={14} />
+          ) : (
+            <ThemeIcon name="list" size={14} />
+          )}
         </Button>
         <Button
           variant="ghost"
@@ -341,7 +335,7 @@ function CollectionBox({
           aria-label={t('collection.remove', { title: box.title })}
           title={t('collection.remove', { title: box.title })}
         >
-          <X size={14} />
+          <ThemeIcon name="close" size={14} />
         </Button>
       </header>
       <div className="cardo-collection-box-items">
@@ -359,7 +353,11 @@ function CollectionBox({
                 </strong>
                 <small>{getItemDetail(item)}</small>
               </span>
-              {item.type === 'clipboard' ? <Copy size={13} /> : <ExternalLink size={13} />}
+              {item.type === 'clipboard' ? (
+                <ThemeIcon name="copy" size={13} />
+              ) : (
+                <ThemeIcon name="externalLink" size={13} />
+              )}
             </Button>
           ))
         ) : (
@@ -395,18 +393,18 @@ function constrainCollectionFrame(frame: BoxFrame, viewport: { width: number; he
 function CollectionItemIcon({ item }: { item: BoxItem }) {
   switch (item.type) {
     case 'folder':
-      return <Folder size={16} />;
+      return <ThemeIcon name="folder" size={16} />;
     case 'file':
-      return <File size={16} />;
+      return <ThemeIcon name="document" size={16} />;
     case 'shortcut':
-      return <AppWindow size={16} />;
+      return <ThemeIcon name="apps" size={16} />;
     case 'bookmark':
       return item.favicon ? (
         <img className="cardo-website-icon" src={item.favicon} alt="" />
       ) : (
-        <Globe size={16} />
+        <ThemeIcon name="globe" size={16} />
       );
     case 'clipboard':
-      return <Clipboard size={16} />;
+      return <ThemeIcon name="clipboard" size={16} />;
   }
 }

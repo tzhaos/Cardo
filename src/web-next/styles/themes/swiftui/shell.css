@@ -71,22 +71,27 @@
   font-weight: 500;
 }
 
+/* Active page: SF blue label + light blue selection pill */
 [data-cardo-theme='swiftui'] .cardo-tab-pill-active button {
-  color: var(--cardo-text);
+  color: var(--cardo-blue);
   font-weight: 600;
 }
 
 [data-cardo-theme='swiftui'] .cardo-active-tab-indicator {
   inset: 1px;
   border-radius: 999px;
-  background: var(--cardo-panel);
-  box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.08);
+  background: var(--cardo-active);
+  box-shadow: 0 0.5px 1px color-mix(in srgb, var(--cardo-blue) 18%, transparent);
   height: auto;
 }
 
 [data-cardo-theme='swiftui'] .cardo-tab-pill-system button {
   width: 28px;
   padding: 0;
+}
+
+[data-cardo-theme='swiftui'] .cardo-box-drop-target .cardo-tab-pill-active > button {
+  color: var(--cardo-blue);
 }
 
 [data-cardo-theme='swiftui'] .cardo-history-controls {
@@ -272,12 +277,53 @@
   background: var(--cardo-blue) !important;
 }
 
+/*
+ * Canvas tools — macOS control-strip chrome:
+ * translucent continuous surface, compact 8px chips, blue-tinted active.
+ */
 [data-cardo-theme='swiftui'] .cardo-canvas-tools {
+  gap: 2px !important;
   border: 0 !important;
-  border-radius: 14px !important;
-  background: color-mix(in srgb, var(--cardo-panel) 85%, transparent) !important;
+  border-radius: 12px !important;
+  padding: 4px !important;
+  background: color-mix(in srgb, var(--cardo-panel) 72%, transparent) !important;
   box-shadow: var(--cardo-shadow) !important;
-  backdrop-filter: blur(24px) !important;
+  backdrop-filter: blur(var(--cardo-chrome-blur, 24px)) saturate(1.2) !important;
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur, 24px)) saturate(1.2) !important;
+  color: var(--cardo-secondary-text);
+}
+
+[data-cardo-theme='swiftui'] .cardo-canvas-tools button {
+  width: 32px !important;
+  height: 32px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: var(--cardo-secondary-text);
+  box-shadow: none !important;
+}
+
+[data-cardo-theme='swiftui'] .cardo-canvas-tools button:hover:not(:disabled) {
+  background: var(--cardo-hover) !important;
+  color: var(--cardo-text) !important;
+}
+
+[data-cardo-theme='swiftui'] .cardo-canvas-tools button:focus-visible {
+  background: var(--cardo-hover) !important;
+  color: var(--cardo-text) !important;
+  outline: 2px solid color-mix(in srgb, var(--cardo-blue) 40%, transparent);
+  outline-offset: 1px;
+}
+
+[data-cardo-theme='swiftui'] .cardo-canvas-tools button:disabled {
+  opacity: 0.34;
+}
+
+/* Active lock: SF blue wash + blue glyph (not solid blue slab for whole strip) */
+[data-cardo-theme='swiftui'] .cardo-canvas-tools .cardo-canvas-tools-button-active,
+[data-cardo-theme='swiftui'] .cardo-canvas-tools-button-active {
+  background: color-mix(in srgb, var(--cardo-blue) 16%, transparent) !important;
+  color: var(--cardo-blue) !important;
 }
 
 [data-cardo-theme='swiftui'] .cardo-search-pill {

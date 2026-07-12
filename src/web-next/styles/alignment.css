@@ -8,6 +8,7 @@
 .cardo-box-delete,
 .cardo-add-view header button,
 .cardo-add-primary {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
@@ -37,6 +38,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  line-height: 0;
 }
 
 .cardo-box-title-group {

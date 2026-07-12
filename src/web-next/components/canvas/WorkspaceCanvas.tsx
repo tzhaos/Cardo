@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { AnimatePresence, motion, type Variants } from 'motion/react';
-import { House, PanelTop, Plus, Star, Trash2 } from 'lucide-react';
 import { useCanvasPan } from '../../app/useCanvasPan';
 import { useCanvasViewport } from '../../app/useCanvasViewport';
 import { getPageCanvasState, useCanvasStore } from '../../app/stores/canvasStore';
@@ -18,6 +17,7 @@ import { createBoxFrameCenteredAt } from '../../domain/placement';
 import { isCollectionPageId, isRecycleBinPageId } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { useContextMenu, type ContextMenuItem } from '../../ui/cardo/context-menu';
+import { ThemeIcon } from '../../ui/icons/ThemeIcon';
 import { WorkspaceBoxRenderer } from './WorkspaceBoxRenderer';
 import { useCanvasTools } from './useCanvasTools';
 import { CollectionPage } from '../collection/CollectionPage';
@@ -52,13 +52,13 @@ export function WorkspaceCanvas() {
     isRecycleBin && activePageBoxCount === 0
       ? {
           key: 'recycle-bin-empty',
-          icon: <Trash2 size={22} strokeWidth={1.75} />,
+          icon: <ThemeIcon name="trash" size={22} strokeWidth={1.75} />,
           label: t('page.recycleBinEmpty'),
         }
       : isCollection && isCollectionEmpty
         ? {
             key: 'collection-empty',
-            icon: <Star size={22} strokeWidth={1.75} />,
+            icon: <ThemeIcon name="star" size={22} strokeWidth={1.75} />,
             label: t('page.collectionEmpty'),
           }
         : null;
@@ -124,7 +124,7 @@ export function WorkspaceCanvas() {
                 {
                   id: 'set-default-page',
                   label: t(activePageId === defaultPageId ? 'page.default' : 'page.setDefault'),
-                  icon: <House size={16} />,
+                  icon: <ThemeIcon name="home" size={16} />,
                   disabled: activePageId === defaultPageId,
                   onSelect: () => setDefaultPage(activePageId),
                 },
@@ -138,13 +138,13 @@ export function WorkspaceCanvas() {
                 {
                   id: 'new-page',
                   label: t('menu.newPage'),
-                  icon: <PanelTop size={16} />,
+                  icon: <ThemeIcon name="panel" size={16} />,
                   onSelect: () => createPage(t('page.untitled')),
                 },
                 {
                   id: 'new-box',
                   label: t('menu.newBox'),
-                  icon: <Plus size={16} />,
+                  icon: <ThemeIcon name="add" size={16} />,
                   onSelect: () =>
                     createBox(
                       constrainBoxFrameToCanvas(createBoxFrameCenteredAt(point), canvasBounds),

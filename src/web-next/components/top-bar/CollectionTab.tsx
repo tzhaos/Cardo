@@ -1,12 +1,11 @@
-import { Star } from 'lucide-react';
 import { Reorder, useDragControls } from 'motion/react';
 import { useCallback, useEffect, useRef } from 'react';
 import type { MouseEventHandler, PointerEvent as ReactPointerEvent } from 'react';
 import { registerPageDropElement } from '../../app/interactionElementRegistry';
 import { useUiStore } from '../../app/stores/uiStore';
 import type { WorkspacePage } from '../../domain/workspace';
-import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import { useI18n } from '../../i18n/useI18n';
+import { ThemeIcon } from '../../ui/icons/ThemeIcon';
 import { TabPill } from './TabPill';
 
 const LONG_PRESS_MS = 320;
@@ -36,7 +35,6 @@ export function CollectionTab({
   onReorderEnd,
 }: CollectionTabProps) {
   const { t } = useI18n();
-  const isFluent = usePreferencesStore((state) => state.themeId === 'fluent');
   const boxDragActive = useUiStore((state) => Boolean(state.draggedBoxId));
   const controls = useDragControls();
   const cancelLongPressRef = useRef<(() => void) | null>(null);
@@ -123,9 +121,8 @@ export function CollectionTab({
     >
       <TabPill
         active={active}
-        icon={<Star size={16} />}
+        icon={<ThemeIcon name="star" size={16} />}
         page={{ ...page, title: t('page.collection') }}
-        showLabel={isFluent}
         systemPage
         onActivate={onActivate}
         onRename={() => undefined}

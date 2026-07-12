@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { ExternalLink, Globe } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { BookmarkItem as BookmarkItemModel } from '../../domain/workspace';
 import { ItemDeleteView } from './ItemDeleteView';
@@ -10,6 +9,7 @@ import { Input } from '../../ui/primitives/input';
 import { useI18n } from '../../i18n/useI18n';
 import { openExternalUrl } from '../../platform/hostPlatform';
 import { IconFrame } from '../../ui/cardo/icon-button';
+import { ThemeIcon } from '../../ui/icons/ThemeIcon';
 import { useItemContextMenu } from './useItemContextMenu';
 import { recordItemActivity } from '../../app/operationActivity';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
@@ -37,7 +37,7 @@ export function BookmarkItem({
     pinned: Boolean(item.isPinned),
     primaryAction: {
       label: t('item.open'),
-      icon: <ExternalLink size={16} />,
+      icon: <ThemeIcon name="externalLink" size={16} />,
       onSelect: openItem,
     },
     onRename: rename.startRenaming,
@@ -102,7 +102,7 @@ export function BookmarkItem({
               {item.favicon ? (
                 <img className="cardo-website-icon" src={item.favicon} alt="" />
               ) : (
-                <Globe size={16} />
+                <ThemeIcon name="globe" size={16} />
               )}
             </IconFrame>
             <div className="cardo-item-main">

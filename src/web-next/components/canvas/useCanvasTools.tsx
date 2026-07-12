@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
-import { LocateFixed, Lock, Unlock } from 'lucide-react';
 import { useCanvasStore } from '../../app/stores/canvasStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { useI18n } from '../../i18n/useI18n';
 import type { ContextMenuItem } from '../../ui/cardo/context-menu';
+import { ThemeIcon } from '../../ui/icons/ThemeIcon';
 
 export function useCanvasTools() {
   const activePageId = useWorkspaceStore((state) => state.projection.activePageId);
@@ -19,14 +19,14 @@ export function useCanvasTools() {
       {
         id: 'return-to-origin',
         label: t('canvas.returnToOrigin'),
-        icon: <LocateFixed size={16} />,
+        icon: <ThemeIcon name="locate" size={16} />,
         disabled: panX === 0 && panY === 0,
         onSelect: () => resetCamera(activePageId),
       },
       {
         id: 'toggle-canvas-lock',
         label: t(isLocked ? 'canvas.unlockViewport' : 'canvas.lockViewport'),
-        icon: isLocked ? <Lock size={16} /> : <Unlock size={16} />,
+        icon: isLocked ? <ThemeIcon name="lock" size={16} /> : <ThemeIcon name="unlock" size={16} />,
         onSelect: () => toggleLocked(activePageId),
       },
     ],

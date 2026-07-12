@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronRight } from 'lucide-react';
 import { create } from 'zustand';
+import { ThemeIcon } from '../icons/ThemeIcon';
 import { IconFrame } from './icon-button';
 import {
   DropdownMenu,
@@ -162,7 +162,7 @@ function MenuItem({ item, closeMenu }: { item: ContextMenuItem; closeMenu: () =>
       <span>{item.label}</span>
       <IconFrame className="cardo-menu-trailing">
         {item.children ? (
-          <ChevronRight size={14} />
+          <ThemeIcon name="chevronRight" size={14} />
         ) : item.shortcut ? (
           <kbd>{item.shortcut}</kbd>
         ) : null}

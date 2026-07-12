@@ -1,50 +1,36 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
-import {
-  ChevronsDownUp,
-  ChevronsUpDown,
-  LayoutGrid,
-  List,
-  Lock,
-  PackageCheck,
-  Plus,
-  SquarePen,
-  Star,
-  StarOff,
-  Trash2,
-  Unlock,
-  X,
-} from 'lucide-react';
 import { animate as animateMotion, motion, useMotionValue, useSpring } from 'motion/react';
 import type { MotionStyle } from 'motion/react';
-import {
-  RECYCLE_BIN_PAGE_ID,
-  isRecycleBinPageId,
-  type WorkspaceBox,
-  type WorkspaceBoxIcon,
-} from '../../domain/workspace';
 import { useCanvasStore } from '../../app/stores/canvasStore';
+import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
-import { useInlineRename } from '../../app/useInlineRename';
 import { getPageDropElement, registerBoxElement } from '../../app/interactionElementRegistry';
+import { useInlineRename } from '../../app/useInlineRename';
 import {
   constrainBoxFrameToCanvas,
   constrainBoxResizeToCanvas,
   createCanvasWorldBounds,
 } from '../../domain/canvasGeometry';
 import {
+  RECYCLE_BIN_PAGE_ID,
+  isRecycleBinPageId,
+  type WorkspaceBox,
+  type WorkspaceBoxIcon,
+} from '../../domain/workspace';
+import {
   startWindowPointerSession,
   type WindowPointerSession,
 } from '../../app/windowPointerSession';
-import { useContextMenu } from '../../ui/cardo/context-menu';
 import { useI18n } from '../../i18n/useI18n';
 import { useFeatureEnabled } from '../../shell/FeatureGate';
-import { usePreferencesStore } from '../../app/stores/preferencesStore';
-import { BoxAppearanceView } from './BoxAppearancePopover';
+import { useContextMenu } from '../../ui/cardo/context-menu';
+import { ThemeIcon } from '../../ui/icons/ThemeIcon';
 import { Input } from '../../ui/primitives/input';
 import { Button } from '../../ui/primitives/button';
 import { MotionButton } from '../../ui/primitives/motion-button';
+import { BoxAppearanceView } from './BoxAppearancePopover';
 
 /** Motion borderRadius must be numeric per theme dialect. */
 const BOX_CORNER_RADIUS = {
@@ -542,13 +528,13 @@ export function BaseBoxFrame({
           {
             id: 'rename',
             label: t('menu.rename'),
-            icon: <SquarePen size={16} />,
+            icon: <ThemeIcon name="edit" size={16} />,
             onSelect: () => titleRename.start(),
           },
           {
             id: 'add',
             label: t('menu.addItem'),
-            icon: <Plus size={16} />,
+            icon: <ThemeIcon name="add" size={16} />,
             onSelect: () => {
               setConfirmDelete(false);
               onAddItem();
@@ -557,7 +543,11 @@ export function BaseBoxFrame({
           {
             id: 'lock',
             label: t(box.isLocked ? 'menu.unlockBox' : 'menu.lockBox'),
-            icon: box.isLocked ? <Unlock size={16} /> : <Lock size={16} />,
+            icon: box.isLocked ? (
+              <ThemeIcon name="unlock" size={16} />
+            ) : (
+              <ThemeIcon name="lock" size={16} />
+            ),
             onSelect: () => setBoxLocked(box.id, !box.isLocked),
           },
           ...(!isInRecycleBin
@@ -565,7 +555,11 @@ export function BaseBoxFrame({
                 {
                   id: 'collection',
                   label: t(isCollected ? 'menu.removeFromCollection' : 'menu.addToCollection'),
-                  icon: isCollected ? <StarOff size={16} /> : <Star size={16} />,
+                  icon: isCollected ? (
+                    <ThemeIcon name="starOff" size={16} />
+                  ) : (
+                    <ThemeIcon name="star" size={16} />
+                  ),
                   onSelect: () =>
                     isCollected ? removeBoxFromCollection(box.id) : addBoxToCollection(box.id),
                 },
@@ -574,7 +568,7 @@ export function BaseBoxFrame({
           {
             id: 'delete',
             label: t(isInRecycleBin ? 'menu.deletePermanently' : 'menu.moveToRecycleBin'),
-            icon: <Trash2 size={16} />,
+            icon: <ThemeIcon name="trash" size={16} />,
             danger: true,
             onSelect: () => setConfirmDelete(true),
           },
@@ -609,7 +603,7 @@ export function BaseBoxFrame({
             title={t('box.promote')}
             aria-label={t('box.promote')}
           >
-            <PackageCheck size={15} />
+            <ThemeIcon name="packageCheck" size={15} />
             <span>{t('box.keep')}</span>
           </Button>
         </header>
@@ -667,7 +661,11 @@ export function BaseBoxFrame({
               aria-pressed={Boolean(box.isLocked)}
               title={t(box.isLocked ? 'box.unlock' : 'box.lock')}
             >
-              {box.isLocked ? <Lock size={15} /> : <Unlock size={15} />}
+              {box.isLocked ? (
+                <ThemeIcon name="lock" size={15} />
+              ) : (
+                <ThemeIcon name="unlock" size={15} />
+              )}
             </MotionButton>
             <MotionButton
               variant="icon"
@@ -684,9 +682,9 @@ export function BaseBoxFrame({
               title={t(detailMode === 'detailed' ? 'box.switchToCompact' : 'box.switchToDetailed')}
             >
               {detailMode === 'detailed' ? (
-                <ChevronsDownUp size={15} />
+                <ThemeIcon name="collapse" size={15} />
               ) : (
-                <ChevronsUpDown size={15} />
+                <ThemeIcon name="expand" size={15} />
               )}
             </MotionButton>
             <MotionButton
@@ -699,7 +697,11 @@ export function BaseBoxFrame({
               aria-pressed={viewMode === 'grid'}
               title={t(viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList')}
             >
-              {viewMode === 'list' ? <LayoutGrid size={15} /> : <List size={15} />}
+              {viewMode === 'list' ? (
+                <ThemeIcon name="layoutGrid" size={15} />
+              ) : (
+                <ThemeIcon name="list" size={15} />
+              )}
             </MotionButton>
             <MotionButton
               variant="icon"
@@ -722,7 +724,7 @@ export function BaseBoxFrame({
                     : t(isInRecycleBin ? 'menu.deletePermanently' : 'menu.moveToRecycleBin')
               }
             >
-              <X size={14} />
+              <ThemeIcon name="close" size={14} />
             </MotionButton>
           </div>
         </header>
@@ -769,7 +771,7 @@ export function BaseBoxFrame({
       {!isTemporary && !addViewState?.mode && !appearanceView && !confirmDelete ? (
         <footer className="cardo-box-footer">
           <Button variant="ghost" onClick={onAddItem}>
-            <Plus size={14} />
+            <ThemeIcon name="add" size={14} />
             <span>{t('box.addItem')}</span>
           </Button>
         </footer>

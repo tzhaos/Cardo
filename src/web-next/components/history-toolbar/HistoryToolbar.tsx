@@ -1,7 +1,7 @@
-import { Redo2, Undo2 } from 'lucide-react';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { useI18n } from '../../i18n/useI18n';
 import { IconButton } from '../../ui/cardo/icon-button';
+import { ThemeIcon } from '../../ui/icons/ThemeIcon';
 
 export function HistoryToolbar() {
   const undo = useWorkspaceStore((state) => state.undo);
@@ -19,7 +19,7 @@ export function HistoryToolbar() {
         title={t('history.undo')}
         tooltip={t('history.undo')}
       >
-        <Undo2 size={17} />
+        <ThemeIcon name="undo" size={17} />
       </IconButton>
       <IconButton
         disabled={!canRedo}
@@ -28,7 +28,7 @@ export function HistoryToolbar() {
         title={t('history.redo')}
         tooltip={t('history.redo')}
       >
-        <Redo2 size={17} />
+        <ThemeIcon name="redo" size={17} />
       </IconButton>
     </aside>
   );

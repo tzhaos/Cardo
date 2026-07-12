@@ -1,7 +1,7 @@
 import * as SelectPrimitive from '@radix-ui/react-select';
-import { Check, ChevronDown } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import { IconFrame } from '../cardo/icon-button';
+import { ThemeIcon } from '../icons/ThemeIcon';
 import { cn } from '../lib/cn';
 
 export const Select = SelectPrimitive.Root;
@@ -21,7 +21,7 @@ export function SelectTrigger({
       {children}
       <SelectPrimitive.Icon asChild>
         <IconFrame className="cardo-ui-select-chevron">
-          <ChevronDown size={14} />
+          <ThemeIcon name="chevronDown" size={14} />
         </IconFrame>
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
@@ -68,7 +68,7 @@ export function SelectItem({
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
       <SelectPrimitive.ItemIndicator asChild>
         <IconFrame className="cardo-ui-select-check">
-          <Check size={13} strokeWidth={2.25} />
+          <ThemeIcon name="check" size={13} strokeWidth={2.25} />
         </IconFrame>
       </SelectPrimitive.ItemIndicator>
     </SelectPrimitive.Item>

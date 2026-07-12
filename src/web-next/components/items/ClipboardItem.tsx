@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Check, Copy } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
+import { ThemeIcon } from '../../ui/icons/ThemeIcon';
 import type { ClipboardItem as ClipboardItemModel } from '../../domain/workspace';
 import { ItemDeleteView } from './ItemDeleteView';
 import { ItemContentEditView } from './ItemContentEditView';
@@ -53,7 +53,7 @@ export function ClipboardItem({
     pinned: Boolean(item.isPinned),
     primaryAction: {
       label: t('item.copy'),
-      icon: <Copy size={16} />,
+      icon: <ThemeIcon name="copy" size={16} />,
       onSelect: () => void copyText(),
     },
     onEdit: () => setEditView(true),
@@ -111,7 +111,7 @@ export function ClipboardItem({
                   exit={{ opacity: 0, scale: 0.96 }}
                   transition={{ duration: 0.16 }}
                 >
-                  <Check size={15} />
+                  <ThemeIcon name="check" size={15} />
                   <span>{t('item.copied')}</span>
                 </motion.span>
               ) : null}

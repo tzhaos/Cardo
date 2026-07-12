@@ -1,7 +1,7 @@
 import type { MouseEvent, ReactNode } from 'react';
-import { Edit2, Pin, PinOff, SquarePen, Trash2 } from 'lucide-react';
 import { useI18n } from '../../i18n/useI18n';
 import { useContextMenu } from '../../ui/cardo/context-menu';
+import { ThemeIcon } from '../../ui/icons/ThemeIcon';
 import { useFeatureEnabled } from '../../shell/FeatureGate';
 
 export function useItemContextMenu({
@@ -40,7 +40,7 @@ export function useItemContextMenu({
               {
                 id: 'rename',
                 label: t('item.rename'),
-                icon: <SquarePen size={16} />,
+                icon: <ThemeIcon name="edit" size={16} />,
                 onSelect: onRename,
               },
             ]
@@ -48,19 +48,19 @@ export function useItemContextMenu({
         {
           id: 'edit',
           label: t('item.editContent'),
-          icon: <Edit2 size={16} />,
+          icon: <ThemeIcon name="edit" size={16} />,
           onSelect: onEdit,
         },
         {
           id: 'pin',
           label: t(pinned ? 'item.unpin' : 'item.pin'),
-          icon: pinned ? <PinOff size={16} /> : <Pin size={16} />,
+          icon: pinned ? <ThemeIcon name="pinOff" size={16} /> : <ThemeIcon name="pin" size={16} />,
           onSelect: onPin,
         },
         {
           id: 'delete',
           label: t('item.delete'),
-          icon: <Trash2 size={16} />,
+          icon: <ThemeIcon name="trash" size={16} />,
           danger: true,
           onSelect: onDelete,
         },

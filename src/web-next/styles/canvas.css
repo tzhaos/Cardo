@@ -334,6 +334,7 @@
   padding: 0;
   background: transparent;
   color: var(--cardo-secondary-text);
+  outline: none;
   transition:
     color var(--cardo-duration-normal) var(--cardo-easing),
     background var(--cardo-duration-normal) var(--cardo-easing),
@@ -341,6 +342,12 @@
 }
 
 .cardo-canvas-tools button:hover:not(:disabled) {
+  background: var(--cardo-hover);
+  color: var(--cardo-text);
+}
+
+/* Base a11y ring; theme recipes may restyle without removing focus-visible */
+.cardo-canvas-tools button:focus-visible {
   background: var(--cardo-hover);
   color: var(--cardo-text);
 }

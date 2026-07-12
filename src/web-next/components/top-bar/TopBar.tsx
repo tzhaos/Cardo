@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
-import { House, Plus, SquarePen, Trash2 } from 'lucide-react';
+import { ThemeIcon } from '../../ui/icons/ThemeIcon';
 import { AnimatePresence, motion, Reorder } from 'motion/react';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useStagedOrder } from '../../app/motion/useStagedOrder';
@@ -143,7 +143,7 @@ export function TopBar() {
             {
               id: 'new-page',
               label: t('menu.newPage'),
-              icon: <Plus size={16} />,
+              icon: <ThemeIcon name="add" size={16} />,
               onSelect: openNewPage,
             },
           ]
@@ -153,7 +153,7 @@ export function TopBar() {
             {
               id: 'rename-page',
               label: t('menu.rename'),
-              icon: <SquarePen size={16} />,
+              icon: <ThemeIcon name="edit" size={16} />,
               onSelect: () => setRenamePageId(page.id),
             },
             ...(multiPage
@@ -161,14 +161,14 @@ export function TopBar() {
                   {
                     id: 'set-default-page',
                     label: t(page.id === defaultPageId ? 'page.default' : 'page.setDefault'),
-                    icon: <House size={16} />,
+                    icon: <ThemeIcon name="home" size={16} />,
                     disabled: page.id === defaultPageId,
                     onSelect: () => setDefaultPage(page.id),
                   },
                   {
                     id: 'delete-page',
                     label: t('page.delete', { title: page.title }),
-                    icon: <Trash2 size={16} />,
+                    icon: <ThemeIcon name="trash" size={16} />,
                     danger: true,
                     disabled: workspacePages.length <= 1,
                     onSelect: () => setDeletePageId(page.id),
@@ -285,7 +285,7 @@ export function TopBar() {
                 aria-label={t('page.add')}
                 whileTap={{ scale: 0.9 }}
               >
-                <Plus size={18} />
+                <ThemeIcon name="add" size={18} />
               </MotionButton>
             </motion.div>
           ) : null}

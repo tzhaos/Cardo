@@ -1,6 +1,6 @@
-import { Edit2, Pin, PinOff, Trash2 } from 'lucide-react';
 import { useI18n } from '../../i18n/useI18n';
 import { IconButton } from '../../ui/cardo/icon-button';
+import { ThemeIcon } from '../../ui/icons/ThemeIcon';
 
 export function ItemActions({
   pinned = false,
@@ -23,15 +23,15 @@ export function ItemActions({
         aria-pressed={pinned}
         onClick={onPin}
       >
-        {pinned ? <PinOff size={14} /> : <Pin size={14} />}
+        {pinned ? <ThemeIcon name="pinOff" size={14} /> : <ThemeIcon name="pin" size={14} />}
       </IconButton>
       {onEdit ? (
         <IconButton aria-label={t('item.editContent')} onClick={onEdit}>
-          <Edit2 size={14} />
+          <ThemeIcon name="edit" size={14} />
         </IconButton>
       ) : null}
       <IconButton className="cardo-item-delete" aria-label={t('item.delete')} onClick={onDelete}>
-        <Trash2 size={14} />
+        <ThemeIcon name="trash" size={14} />
       </IconButton>
     </div>
   );

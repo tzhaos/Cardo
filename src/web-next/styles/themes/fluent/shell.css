@@ -87,25 +87,10 @@
   font-weight: 400;
 }
 
+/* Collection / recycle: icon-only square tabs (title via tooltip / aria). */
 [data-cardo-theme='fluent'] .cardo-tab-pill-system button {
   width: 40px;
   padding: 0;
-}
-
-/* Icon + i18n label — underline indicator needs tab width */
-[data-cardo-theme='fluent'] .cardo-tab-pill-system-labeled button {
-  width: auto;
-  gap: 6px;
-  padding: 0 12px;
-}
-
-[data-cardo-theme='fluent'] .cardo-tab-pill-system-labeled .cardo-tab-label {
-  gap: 6px;
-}
-
-[data-cardo-theme='fluent'] .cardo-tab-pill-system-labeled .cardo-tab-label-icon svg {
-  width: 15px;
-  height: 15px;
 }
 
 [data-cardo-theme='fluent'] .cardo-tab-pill-active button {
@@ -124,10 +109,6 @@
 
 [data-cardo-theme='fluent'] .cardo-tab-pill-system.cardo-tab-pill-active .cardo-active-tab-indicator {
   inset: auto 8px 0 8px;
-}
-
-[data-cardo-theme='fluent'] .cardo-tab-pill-system-labeled.cardo-tab-pill-active .cardo-active-tab-indicator {
-  inset: auto 10px 0 10px;
 }
 
 /* + sits next to tabs; no divider bar under Fluent */

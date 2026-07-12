@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { Globe2, Plus, Search, Settings } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useIndependentMenuStore } from '../../app/stores/independentMenuStore';
 import { useCanvasStore } from '../../app/stores/canvasStore';
@@ -15,11 +14,15 @@ import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { useI18n } from '../../i18n/useI18n';
 import { IconButton } from '../../ui/cardo/icon-button';
+import { ThemeIcon } from '../../ui/icons/ThemeIcon';
 import { GlobalSearchPanel } from '../global-search/GlobalSearchPanel';
 import { createWebSearchUrl } from '../../domain/webSearch';
 import { openExternalUrl } from '../../platform/hostPlatform';
 import { Input } from '../../ui/primitives/input';
 import { useFeatureEnabled } from '../../shell/FeatureGate';
+
+/** Shared glyph size for settings / search / create so hit targets match optically. */
+const TOOLBAR_ICON_SIZE = 18;
 
 export function BottomToolbar() {
   const globalSearchEnabled = useFeatureEnabled('chrome.globalSearch');
@@ -98,50 +101,50 @@ export function BottomToolbar() {
             animate={{ rotate: settingsOpen ? 120 : 0, scale: settingsOpen ? 1.08 : 1 }}
             transition={{ type: 'spring', stiffness: 330, damping: 22 }}
           >
-            <Settings size={18} />
+            <ThemeIcon name="settings" size={TOOLBAR_ICON_SIZE} />
           </motion.span>
         </IconButton>
         {globalSearchEnabled ? <div className="cardo-toolbar-divider" /> : null}
         {globalSearchEnabled ? (
-        <motion.div
-          className={`cardo-search-pill${isSearchActive ? ' cardo-search-pill-active' : ''}`}
-          animate={{ width: isSearchActive ? 360 : 40 }}
-        >
-          <IconButton
-            className="cardo-search-local-trigger"
-            onClick={() => {
-              if (isSearchActive) closeSearch();
-              else setIsSearchActive(true);
-            }}
-            aria-label={t('toolbar.search')}
+          <motion.div
+            className={`cardo-search-pill${isSearchActive ? ' cardo-search-pill-active' : ''}`}
+            animate={{ width: isSearchActive ? 360 : 40 }}
           >
-            <Search size={18} />
-          </IconButton>
-          <Input
-            ref={searchInputRef}
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key !== 'Enter') return;
-              event.preventDefault();
-              runWebSearch();
-            }}
-            placeholder={t('toolbar.searchPlaceholder')}
-            style={{
-              opacity: isSearchActive ? 1 : 0,
-              pointerEvents: isSearchActive ? 'auto' : 'none',
-            }}
-          />
-          <IconButton
-            className="cardo-search-web-trigger"
-            disabled={!webSearchUrl}
-            onClick={runWebSearch}
-            aria-label={t('search.web')}
-            title={t('search.web')}
-          >
-            <Globe2 size={17} />
-          </IconButton>
-        </motion.div>
+            <IconButton
+              className="cardo-search-local-trigger"
+              onClick={() => {
+                if (isSearchActive) closeSearch();
+                else setIsSearchActive(true);
+              }}
+              aria-label={t('toolbar.search')}
+            >
+              <ThemeIcon name="search" size={TOOLBAR_ICON_SIZE} />
+            </IconButton>
+            <Input
+              ref={searchInputRef}
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key !== 'Enter') return;
+                event.preventDefault();
+                runWebSearch();
+              }}
+              placeholder={t('toolbar.searchPlaceholder')}
+              style={{
+                opacity: isSearchActive ? 1 : 0,
+                pointerEvents: isSearchActive ? 'auto' : 'none',
+              }}
+            />
+            <IconButton
+              className="cardo-search-web-trigger"
+              disabled={!webSearchUrl}
+              onClick={runWebSearch}
+              aria-label={t('search.web')}
+              title={t('search.web')}
+            >
+              <ThemeIcon name="globe" size={TOOLBAR_ICON_SIZE} />
+            </IconButton>
+          </motion.div>
         ) : null}
         {!isSystemPageId(activePageId) ? (
           <>
@@ -158,9 +161,11 @@ export function BottomToolbar() {
               title={t('toolbar.newBox')}
             >
               <motion.span className="cardo-icon-frame" whileTap={{ scale: 0.82, rotate: 90 }}>
-                <Plus size={isFluent ? 16 : 20} />
+                <ThemeIcon name="add" size={TOOLBAR_ICON_SIZE} />
               </motion.span>
-              {isFluent ? <span className="cardo-toolbar-create-label">{t('toolbar.new')}</span> : null}
+              {isFluent ? (
+                <span className="cardo-toolbar-create-label">{t('toolbar.new')}</span>
+              ) : null}
             </IconButton>
           </>
         ) : null}

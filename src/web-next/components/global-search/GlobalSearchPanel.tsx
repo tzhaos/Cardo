@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { AppWindow, Box, Clipboard, File, Folder, Globe, PanelTop, Search } from 'lucide-react';
 import { motion } from 'motion/react';
+import type { GlobalSearchResult } from '../../../core/contracts/globalSearch';
+import { recordBoxActivity, recordItemActivity } from '../../app/operationActivity';
 import { useCanvasStore } from '../../app/stores/canvasStore';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
-import type { GlobalSearchResult } from '../../../core/contracts/globalSearch';
 import type { BoxItem } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import {
@@ -13,7 +13,7 @@ import {
   queryGlobalSearch,
   writeClipboardText,
 } from '../../platform/hostPlatform';
-import { recordBoxActivity, recordItemActivity } from '../../app/operationActivity';
+import { ThemeIcon } from '../../ui/icons/ThemeIcon';
 import { Button } from '../../ui/primitives/button';
 
 export function GlobalSearchPanel({ query }: { query: string }) {
@@ -158,7 +158,7 @@ export function GlobalSearchPanel({ query }: { query: string }) {
           </div>
         ) : (
           <div className="cardo-global-search-empty">
-            <Search size={20} />
+            <ThemeIcon name="search" size={20} />
             <span>{t('search.noGlobalResults')}</span>
           </div>
         )}
@@ -168,26 +168,26 @@ export function GlobalSearchPanel({ query }: { query: string }) {
 }
 
 function ResultIcon({ result }: { result: GlobalSearchResult }) {
-  if (result.kind === 'page') return <PanelTop size={17} />;
-  if (result.kind === 'box') return <Box size={17} />;
+  if (result.kind === 'page') return <ThemeIcon name="panel" size={17} />;
+  if (result.kind === 'box') return <ThemeIcon name="box" size={17} />;
   return <ItemTypeIcon item={result.item} />;
 }
 
 function ItemTypeIcon({ item }: { item: BoxItem }) {
   switch (item.type) {
     case 'folder':
-      return <Folder size={17} />;
+      return <ThemeIcon name="folder" size={17} />;
     case 'file':
-      return <File size={17} />;
+      return <ThemeIcon name="document" size={17} />;
     case 'shortcut':
-      return <AppWindow size={17} />;
+      return <ThemeIcon name="apps" size={17} />;
     case 'bookmark':
       return item.favicon ? (
         <img className="cardo-website-icon" src={item.favicon} alt="" />
       ) : (
-        <Globe size={17} />
+        <ThemeIcon name="globe" size={17} />
       );
     case 'clipboard':
-      return <Clipboard size={17} />;
+      return <ThemeIcon name="clipboard" size={17} />;
   }
 }

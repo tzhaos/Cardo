@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { AppWindow, ExternalLink, File, Folder } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { FileItem, FolderItem, ShortcutItem } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { openLocalResource } from '../../platform/hostPlatform';
 import { IconFrame } from '../../ui/cardo/icon-button';
+import { ThemeIcon, type ThemeIconName } from '../../ui/icons/ThemeIcon';
 import { ItemContentEditView } from './ItemContentEditView';
 import { ItemDeleteView } from './ItemDeleteView';
 import { ItemActions } from './ItemActions';
@@ -15,6 +15,12 @@ import { recordItemActivity } from '../../app/operationActivity';
 
 type LocalResourceItemModel = FileItem | FolderItem | ShortcutItem;
 
+function localItemIconName(type: LocalResourceItemModel['type']): ThemeIconName {
+  if (type === 'folder') return 'folder';
+  if (type === 'file') return 'document';
+  return 'window';
+}
+
 export function LocalResourceItem({
   boxId,
   item,
@@ -24,7 +30,7 @@ export function LocalResourceItem({
   item: LocalResourceItemModel;
   highlight: boolean;
 }) {
-  const Icon = item.type === 'folder' ? Folder : item.type === 'file' ? File : AppWindow;
+  const iconName = localItemIconName(item.type);
   const rename = useItemRename(boxId, item.id, item.title);
   const [deleteView, setDeleteView] = useState(false);
   const [editView, setEditView] = useState(false);
@@ -41,7 +47,7 @@ export function LocalResourceItem({
     pinned: Boolean(item.isPinned),
     primaryAction: {
       label: t('item.open'),
-      icon: <ExternalLink size={16} />,
+      icon: <ThemeIcon name="externalLink" size={16} />,
       onSelect: () => void openItem(),
     },
     onRename: rename.startRenaming,
@@ -90,7 +96,7 @@ export function LocalResourceItem({
                 }
               }}
             >
-              <Icon size={16} />
+              <ThemeIcon name={iconName} size={16} />
               {item.type === 'shortcut' ? <span className="cardo-shortcut-badge">↗</span> : null}
             </IconFrame>
             <div className="cardo-item-main">

@@ -85,6 +85,7 @@ interface PreferencesStore {
   /**
    * Apply a designed light+dark color look for a theme pack.
    * Pass empty maps to clear overrides (pack defaults).
+   * Patches themeColorOverrides optimistically so CSS vars update immediately.
    */
   applyThemeColorLook: (
     themeId: string,
@@ -150,11 +151,13 @@ const actions = {
     } else {
       next[themeId] = themeBucket;
     }
-    fireCommand({
-      type: 'preferences.setThemeColorOverrides',
-      themeColorOverrides: themeColorOverridesSchema.parse(next),
-    });
+    commitThemeColorOverrides(next);
   },
+  /**
+   * Apply a designed light+dark color look for a theme pack.
+   * Pass empty maps to clear overrides (pack defaults).
+   * Optimistically patches local state so CSS vars update before Runtime ack.
+   */
   applyThemeColorLook: (themeId, colors) => {
     const next: ThemeColorOverrides = structuredClone(state.themeColorOverrides);
     const lightEmpty = Object.keys(colors.light).length === 0;
@@ -162,23 +165,18 @@ const actions = {
     if (lightEmpty && darkEmpty) {
       delete next[themeId];
     } else {
+      // Replace this theme's bucket entirely so look switches are absolute, not merged.
       next[themeId] = {
         ...(lightEmpty ? {} : { light: { ...colors.light } }),
         ...(darkEmpty ? {} : { dark: { ...colors.dark } }),
       };
     }
-    fireCommand({
-      type: 'preferences.setThemeColorOverrides',
-      themeColorOverrides: themeColorOverridesSchema.parse(next),
-    });
+    commitThemeColorOverrides(next);
   },
   resetThemeColorOverrides: (themeId = state.themeId || OFFICIAL_DEFAULT_THEME_ID) => {
-    const next: ThemeColorOverrides = { ...state.themeColorOverrides };
+    const next: ThemeColorOverrides = structuredClone(state.themeColorOverrides);
     delete next[themeId];
-    fireCommand({
-      type: 'preferences.setThemeColorOverrides',
-      themeColorOverrides: themeColorOverridesSchema.parse(next),
-    });
+    commitThemeColorOverrides(next);
   },
   setThemeOptionValue: (optionId: string, value: boolean | string) => {
     const next: ThemeOptionValues = {
@@ -242,7 +240,7 @@ const actions = {
     fireCommand({ type: 'preferences.setFontFamily', fontFamily: DEFAULT_FONT_FAMILY_ID });
     fireCommand({ type: 'preferences.setFontScale', fontScale: DEFAULT_FONT_SCALE });
     fireCommand({ type: 'preferences.setDensity', density: DEFAULT_DENSITY });
-    fireCommand({ type: 'preferences.setThemeColorOverrides', themeColorOverrides: {} });
+    commitThemeColorOverrides({});
     fireCommand({ type: 'preferences.setThemeOptionValues', themeOptionValues: {} });
     fireCommand({ type: 'preferences.setFeatureFlags', featureFlags: {} });
     fireCommand({ type: 'preferences.setCssSnippetEnabled', cssSnippetEnabled: false });
@@ -300,7 +298,18 @@ function patchPreferences(
   patch: Partial<
     Pick<
       PreferencesStore,
-      'colorMode' | 'locale' | 'themeId' | 'searchEngine' | 'customSearchTemplate'
+      | 'colorMode'
+      | 'locale'
+      | 'themeId'
+      | 'searchEngine'
+      | 'customSearchTemplate'
+      | 'themeColorOverrides'
+      | 'fontFamily'
+      | 'fontScale'
+      | 'density'
+      | 'featureFlags'
+      | 'layoutProfileId'
+      | 'themeOptionValues'
     >
   >,
 ) {
@@ -374,6 +383,18 @@ export async function applyPreferencesInvalidationScopes(
 }
 
 /**
+ * Validate + fire theme color overrides. Always goes through fireCommand so
+ * applyOptimisticCommand patches themeColorOverrides before Runtime ack
+ * (looks, single-token edits, and restore paths share this).
+ */
+function commitThemeColorOverrides(next: ThemeColorOverrides) {
+  fireCommand({
+    type: 'preferences.setThemeColorOverrides',
+    themeColorOverrides: themeColorOverridesSchema.parse(next),
+  });
+}
+
+/**
  * Optimistic local patch so initiator UI (controlled toggles/inputs) updates
  * immediately. Runtime command.ok / SSE scopes re-query and reconcile.
  */
@@ -393,6 +414,30 @@ function applyOptimisticCommand(command: WorkspaceCommand) {
       break;
     case 'preferences.setCustomSearchTemplate':
       patchPreferences({ customSearchTemplate: command.customSearchTemplate });
+      break;
+    case 'preferences.setThemeColorOverrides':
+      // New object reference so WebNextApp re-applies CSS vars synchronously.
+      patchPreferences({
+        themeColorOverrides: structuredClone(command.themeColorOverrides),
+      });
+      break;
+    case 'preferences.setFontFamily':
+      patchPreferences({ fontFamily: command.fontFamily });
+      break;
+    case 'preferences.setFontScale':
+      patchPreferences({ fontScale: command.fontScale });
+      break;
+    case 'preferences.setDensity':
+      patchPreferences({ density: command.density });
+      break;
+    case 'preferences.setFeatureFlags':
+      patchPreferences({ featureFlags: command.featureFlags });
+      break;
+    case 'preferences.setLayoutProfile':
+      patchPreferences({ layoutProfileId: command.layoutProfileId });
+      break;
+    case 'preferences.setThemeOptionValues':
+      patchPreferences({ themeOptionValues: command.themeOptionValues });
       break;
     default:
       break;

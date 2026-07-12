@@ -87,16 +87,45 @@
   backdrop-filter: blur(12px);
 }
 
+/* Single classic hit target: matches .cardo-search-pill height (40). */
 .cardo-bottom-toolbar button {
+  display: inline-flex;
   width: 40px;
   height: 40px;
   flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   font-size: 13px;
+  line-height: 0;
 }
 
 .cardo-bottom-toolbar .cardo-toolbar-button-active {
   background: var(--cardo-active);
   color: var(--cardo-text);
+}
+
+/* Nested icon frame fills the control so glyphs center in the full hit target. */
+.cardo-bottom-toolbar button > .cardo-icon-frame {
+  display: inline-flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+/* Labeled create (Fluent) keeps natural icon box beside the text. */
+.cardo-bottom-toolbar .cardo-toolbar-create-labeled > .cardo-icon-frame {
+  width: auto;
+  height: auto;
+}
+
+.cardo-bottom-toolbar button svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
 }
 
 .cardo-tab-pill-system button {

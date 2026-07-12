@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { Check, Palette } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import {
@@ -10,9 +9,10 @@ import {
 } from '../../domain/boxAppearance';
 import type { WorkspaceBox, WorkspaceBoxIcon } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
-import { BoxAppearanceIcon } from './boxIconRegistry';
+import { ThemeIcon } from '../../ui/icons/ThemeIcon';
 import { Input } from '../../ui/primitives/input';
 import { Button } from '../../ui/primitives/button';
+import { BoxAppearanceIcon } from './boxIconRegistry';
 
 export function BoxAppearanceView({
   box,
@@ -73,7 +73,9 @@ export function BoxAppearanceView({
               onClick={() => setBoxAppearance(box.id, { icon: candidate })}
             >
               <BoxAppearanceIcon icon={candidate} size={17} />
-              {candidate === icon ? <Check className="cardo-box-choice-check" size={10} /> : null}
+              {candidate === icon ? (
+                <ThemeIcon name="check" className="cardo-box-choice-check" size={10} />
+              ) : null}
             </Button>
           ))}
         </div>
@@ -96,13 +98,13 @@ export function BoxAppearanceView({
                 setBoxAppearance(box.id, { accent: candidate });
               }}
             >
-              {candidate === accent.toLowerCase() ? <Check size={11} /> : null}
+              {candidate === accent.toLowerCase() ? <ThemeIcon name="check" size={11} /> : null}
             </Button>
           ))}
         </div>
         <div className="cardo-box-custom-color-row">
           <label className="cardo-box-native-color" title={t('box.colorPicker')}>
-            <Palette size={15} />
+            <ThemeIcon name="palette" size={15} />
             <Input
               type="color"
               value={accent}

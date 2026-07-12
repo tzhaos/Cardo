@@ -155,21 +155,25 @@
 .cardo-top-actions button,
 .cardo-bottom-toolbar button {
   display: inline-flex;
-  width: 36px;
-  height: 36px;
   align-items: center;
   justify-content: center;
   border: 0;
   border-radius: var(--cardo-radius-pill);
   background: transparent;
   color: var(--cardo-secondary-text);
-  font-size: 15px;
   font-weight: 500;
   transition:
     color var(--cardo-duration-normal) var(--cardo-easing),
     background var(--cardo-duration-normal) var(--cardo-easing),
     box-shadow var(--cardo-duration-normal) var(--cardo-easing),
     transform var(--cardo-duration-fast) var(--cardo-easing);
+}
+
+/* Top chrome stays 36; bottom toolbar size lives only in toolbars.css (40). */
+.cardo-top-actions button {
+  width: 36px;
+  height: 36px;
+  font-size: 15px;
 }
 
 /* Icon chrome: no hover fill (themes stay neutral). Keep focus-visible for a11y. */

@@ -1,18 +1,22 @@
-import { AppWindow, Bookmark, Clipboard, File, Folder } from 'lucide-react';
 import { useUiStore } from '../../../app/stores/uiStore';
 import type { WorkspaceItemType } from '../../../domain/workspace';
 import { useI18n } from '../../../i18n/useI18n';
+import { ThemeIcon, type ThemeIconName } from '../../../ui/icons/ThemeIcon';
+import { Button } from '../../../ui/primitives/button';
 import { BookmarkAddView } from './BookmarkAddView';
 import { ClipboardAddView } from './ClipboardAddView';
 import { LocalResourceAddView } from './LocalResourceAddView';
-import { Button } from '../../../ui/primitives/button';
 
-const ITEM_TYPES = [
-  { type: 'file' as const, icon: File, label: 'itemType.file' as const },
-  { type: 'shortcut' as const, icon: AppWindow, label: 'itemType.shortcut' as const },
-  { type: 'folder' as const, icon: Folder, label: 'itemType.folder' as const },
-  { type: 'bookmark' as const, icon: Bookmark, label: 'itemType.bookmark' as const },
-  { type: 'clipboard' as const, icon: Clipboard, label: 'itemType.clipboard' as const },
+const ITEM_TYPES: Array<{
+  type: WorkspaceItemType;
+  icon: ThemeIconName;
+  label: 'itemType.file' | 'itemType.shortcut' | 'itemType.folder' | 'itemType.bookmark' | 'itemType.clipboard';
+}> = [
+  { type: 'file', icon: 'document', label: 'itemType.file' },
+  { type: 'shortcut', icon: 'apps', label: 'itemType.shortcut' },
+  { type: 'folder', icon: 'folder', label: 'itemType.folder' },
+  { type: 'bookmark', icon: 'bookmark', label: 'itemType.bookmark' },
+  { type: 'clipboard', icon: 'clipboard', label: 'itemType.clipboard' },
 ];
 
 export function UniversalAddView({
@@ -27,7 +31,7 @@ export function UniversalAddView({
   const { t } = useI18n();
   const typePicker = (
     <div className="cardo-item-type-picker" aria-label={t('add.itemType')}>
-      {ITEM_TYPES.map(({ type, icon: Icon, label }) => (
+      {ITEM_TYPES.map(({ type, icon, label }) => (
         <Button
           variant="ghost"
           className={selectedType === type ? 'cardo-item-type-active' : undefined}
@@ -38,7 +42,7 @@ export function UniversalAddView({
           aria-pressed={selectedType === type}
           onClick={() => selectAddItemType(boxId, type)}
         >
-          <Icon size={15} />
+          <ThemeIcon name={icon} size={15} />
         </Button>
       ))}
     </div>
