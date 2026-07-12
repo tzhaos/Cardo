@@ -192,14 +192,32 @@ async function waitForRuntimeGone(
 }
 
 function resolveRuntimeChildPath(desktopAppRoot: string): string | null {
-  const candidates = [
+  const candidates: string[] = [];
+
+  // Packaged Electron + ELECTRON_RUN_AS_NODE cannot execute scripts from app.asar.
+  // Prefer real files under app.asar.unpacked (see build.asarUnpack).
+  const resourcesPath = process.resourcesPath;
+  if (typeof resourcesPath === 'string' && resourcesPath.length > 0) {
+    candidates.push(path.join(resourcesPath, 'app.asar.unpacked', 'main', 'runtime-child.js'));
+  }
+
+  const asarUnpackedRoot = desktopAppRoot.replace(/app\.asar(?=$|[\\/])/i, 'app.asar.unpacked');
+  if (asarUnpackedRoot !== desktopAppRoot) {
+    candidates.push(path.join(asarUnpackedRoot, 'main', 'runtime-child.js'));
+  }
+
+  candidates.push(
     path.join(desktopAppRoot, 'main', 'runtime-child.js'),
     path.resolve(desktopAppRoot, 'main', 'runtime-child.js'),
-  ];
+  );
 
   try {
     const here = path.dirname(fileURLToPath(import.meta.url));
     candidates.push(path.join(here, 'runtime-child.js'));
+    // When main.js itself is served from asar, also probe sibling unpacked path.
+    candidates.push(
+      here.replace(/app\.asar(?=$|[\\/])/i, 'app.asar.unpacked') + path.sep + 'runtime-child.js',
+    );
   } catch {
     // ignore
   }

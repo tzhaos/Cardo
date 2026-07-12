@@ -91,17 +91,28 @@ async function main(): Promise<void> {
 function resolveServeStaticDir(): string | undefined {
   const candidates: string[] = [];
 
+  // Packaged Desktop: static UI is copied next to main/ and asarUnpack'ed.
+  const resourcesPath = process.resourcesPath;
+  if (typeof resourcesPath === 'string' && resourcesPath.length > 0) {
+    candidates.push(path.join(resourcesPath, 'app.asar.unpacked', 'web-runtime'));
+    candidates.push(path.join(resourcesPath, 'web-runtime'));
+  }
+
   try {
     const here = path.dirname(fileURLToPath(import.meta.url));
-    // artifacts/desktop/main → artifacts/web-runtime
+    const hereUnpacked = here.replace(/app\.asar(?=$|[\\/])/i, 'app.asar.unpacked');
+    // app.../main → app.../web-runtime
+    candidates.push(path.resolve(hereUnpacked, '../web-runtime'));
+    candidates.push(path.resolve(here, '../web-runtime'));
+    // monorepo dev layouts
     candidates.push(path.resolve(here, '../../web-runtime'));
-    // artifacts/desktop/main → repo artifacts/web-runtime (dev layout)
     candidates.push(path.resolve(here, '../../../artifacts/web-runtime'));
   } catch {
     // ignore
   }
 
   candidates.push(path.resolve(process.cwd(), 'artifacts/web-runtime'));
+  candidates.push(path.resolve(process.cwd(), 'web-runtime'));
 
   for (const dir of candidates) {
     if (fs.existsSync(path.join(dir, 'index.html'))) {
