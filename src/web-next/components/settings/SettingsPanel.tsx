@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { PointerEventHandler, ReactNode } from 'react';
 import cardoMarkUrl from '../../../../assets/brand/cardo-mark.svg';
 import { AnimatePresence, motion } from 'motion/react';
@@ -28,6 +28,7 @@ import {
   preferenceLocaleSchema,
   webSearchEngineIdSchema,
 } from '../../../core/contracts/preferences';
+import type { DesktopUpdateState } from '../../../core/contracts/desktopUpdate';
 import { FEATURE_CATALOG, isFeatureEnabled } from '../../../core/contracts/featureCatalog';
 import { LAYOUT_PROFILES } from '../../../core/contracts/layoutProfile';
 import { overridableColorKeys, type OverridableColorKey } from '../../../core/contracts/themePack';
@@ -935,6 +936,7 @@ function cssColorToHexInput(value: string): string {
 function AboutSettings() {
   const { t } = useI18n();
   const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0';
+  const isDesktop = typeof window !== 'undefined' && Boolean(window.cardoDesktop);
 
   return (
     <>
@@ -965,7 +967,142 @@ function AboutSettings() {
           <dd>{t('settings.tokenThemePack')}</dd>
         </div>
       </dl>
+      {isDesktop ? <DesktopUpdatePanel /> : null}
     </>
+  );
+}
+
+function DesktopUpdatePanel() {
+  const { t } = useI18n();
+  const [state, setState] = useState<DesktopUpdateState | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const bridge = window.cardoDesktop;
+    if (!bridge) return;
+    let cancelled = false;
+    void bridge.getUpdateState().then((next) => {
+      if (!cancelled) setState(next);
+    });
+    const unsubscribe = bridge.onUpdateStateChange((next) => {
+      setState(next);
+    });
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, []);
+
+  if (!state) return null;
+
+  const statusText = (() => {
+    switch (state.phase) {
+      case 'checking':
+        return t('settings.updateChecking');
+      case 'upToDate':
+        return t('settings.updateUpToDate');
+      case 'available':
+        return t('settings.updateAvailable', {
+          version: state.available?.version ?? '',
+        });
+      case 'downloading':
+        return t('settings.updateDownloading', {
+          percent: String(state.downloadPercent ?? 0),
+        });
+      case 'readyToInstall':
+        return t('settings.updateReady');
+      case 'installing':
+        return t('settings.updateInstalling');
+      case 'unsupported':
+        return t('settings.updateUnsupported');
+      case 'error':
+        return state.errorMessage
+          ? `${t('settings.updateError')}: ${state.errorMessage}`
+          : t('settings.updateError');
+      default:
+        return t('settings.updateIdle');
+    }
+  })();
+
+  const run = async (action: () => Promise<unknown>) => {
+    setBusy(true);
+    try {
+      await action();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const bridge = window.cardoDesktop;
+  if (!bridge) return null;
+
+  return (
+    <div className="cardo-settings-group" style={{ marginTop: 16 }}>
+      <div className="cardo-settings-subheading">
+        <span>{t('settings.update')}</span>
+        <small>{t('settings.updateDescription')}</small>
+      </div>
+      <div className="cardo-settings-card">
+        <div className="cardo-settings-card-copy">
+          <span>{statusText}</span>
+          {state.available?.version ? (
+            <small>
+              v{state.currentVersion} → v{state.available.version}
+            </small>
+          ) : (
+            <small>v{state.currentVersion}</small>
+          )}
+        </div>
+        <div
+          className="cardo-settings-card-actions"
+          style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}
+        >
+          <Button
+            type="button"
+            disabled={busy || state.phase === 'checking' || state.phase === 'downloading'}
+            onClick={() => void run(() => bridge.checkForUpdates())}
+          >
+            {t('settings.updateCheck')}
+          </Button>
+          {state.phase === 'available' || state.phase === 'error' ? (
+            <Button
+              type="button"
+              disabled={busy || !state.available}
+              onClick={() => void run(() => bridge.downloadUpdate())}
+            >
+              {t('settings.updateDownload')}
+            </Button>
+          ) : null}
+          {state.phase === 'downloading' ? (
+            <Button
+              type="button"
+              disabled={busy}
+              onClick={() => void run(() => bridge.cancelUpdateDownload())}
+            >
+              {t('settings.updateCancel')}
+            </Button>
+          ) : null}
+          {state.phase === 'readyToInstall' ? (
+            <Button
+              type="button"
+              disabled={busy}
+              onClick={() => void run(() => bridge.installUpdate())}
+            >
+              {t('settings.updateInstall')}
+            </Button>
+          ) : null}
+          {state.available?.releaseUrl ? (
+            <Button
+              type="button"
+              disabled={busy}
+              onClick={() => void run(() => bridge.openUpdateReleasePage())}
+            >
+              {t('settings.updateOpenRelease')}
+            </Button>
+          ) : null}
+        </div>
+      </div>
+    </div>
   );
 }
 

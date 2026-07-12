@@ -149,6 +149,16 @@ export const SETTINGS_SEARCH_CATALOG: readonly SettingsSearchEntry[] = [
     descriptionKey: 'settings.aboutDescription',
     keywords: { en: ['version', 'release', 'semver', 'build'], zh: ['版本', '版本号', '发行'] },
   },
+  {
+    id: 'about-update',
+    section: 'about',
+    titleKey: 'settings.update',
+    descriptionKey: 'settings.updateDescription',
+    keywords: {
+      en: ['update', 'upgrade', 'download', 'install', 'github'],
+      zh: ['更新', '升级', '下载', '安装', '检查更新'],
+    },
+  },
 ];
 
 export function matchSettingsSearchEntries(
