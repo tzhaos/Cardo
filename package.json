@@ -101,7 +101,12 @@
       "output": "artifacts/desktop-dist"
     },
     "files": [
-      "main/**"
+      "main/**",
+      "web-runtime/**"
+    ],
+    "asarUnpack": [
+      "main/**",
+      "web-runtime/**"
     ],
     "icon": "assets/brand/cardo-icon.ico",
     "win": {
