@@ -85,7 +85,7 @@
     "vite": "^6.2.0"
   },
   "build": {
-    "electronVersion": "42.3.0",
+    "electronVersion": "42.4.0",
     "electronDownload": {
       "mirror": "https://npmmirror.com/mirrors/electron/"
     },

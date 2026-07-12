@@ -16,7 +16,7 @@ jobs:
   release:
     name: Build and publish release
     runs-on: windows-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
 
     defaults:
       run:
@@ -38,12 +38,19 @@ jobs:
       - name: Check formatting
         run: npm run format:check
 
-      - name: Apply release version
+      - name: Resolve release version
+        id: version
         run: |
           $version = $env:GITHUB_REF_NAME -replace '^v', ''
           if ($version -notmatch '^\d+\.\d+\.\d+$') {
             throw "Release tags must use the vX.Y.Z format. Received: $env:GITHUB_REF_NAME"
           }
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          Write-Host "Release version: $version"
+
+      - name: Apply release version
+        run: |
+          $version = "${{ steps.version.outputs.version }}"
 
           npm version $version --no-git-tag-version --allow-same-version
           if ($LASTEXITCODE -ne 0) {
@@ -59,12 +66,12 @@ jobs:
       - name: Run release build pipeline
         env:
           CARDO_BUILD_PROXY: ''
-          KHAOSBOX_BUILD_PROXY: ''
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
         run: npm run release:build
 
       - name: Prepare release assets
         run: |
-          $version = $env:GITHUB_REF_NAME -replace '^v', ''
+          $version = "${{ steps.version.outputs.version }}"
           $releaseDir = "artifacts/release"
           New-Item -ItemType Directory -Force $releaseDir | Out-Null
 
@@ -73,12 +80,16 @@ jobs:
             -DestinationPath "$releaseDir/Cardo-$version-Extension.zip" `
             -CompressionLevel Optimal
 
-          if (Test-Path "artifacts/cli/cardo.js") {
-            Compress-Archive `
-              -Path "artifacts/cli/cardo.js" `
-              -DestinationPath "$releaseDir/Cardo-$version-CLI.zip" `
-              -CompressionLevel Optimal
-          }
+          # CLI entry + co-located web-runtime (cardo.js resolves ../web-runtime).
+          $cliStage = Join-Path $env:RUNNER_TEMP "cardo-cli-$version"
+          if (Test-Path $cliStage) { Remove-Item -Recurse -Force $cliStage }
+          New-Item -ItemType Directory -Force $cliStage | Out-Null
+          Copy-Item "artifacts/cli/cardo.js" (Join-Path $cliStage "cardo.js")
+          Copy-Item "artifacts/web-runtime" (Join-Path $cliStage "web-runtime") -Recurse
+          Compress-Archive `
+            -Path "$cliStage/*" `
+            -DestinationPath "$releaseDir/Cardo-$version-CLI.zip" `
+            -CompressionLevel Optimal
 
           Copy-Item `
             "artifacts/native-host/cardo-native-host.exe" `
@@ -102,10 +113,12 @@ jobs:
             -Encoding utf8NoBOM `
             -NoNewline
 
+          Get-ChildItem $releaseDir | Format-Table Name, Length
+
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Cardo-${{ github.ref_name }}
+          name: Cardo-v${{ steps.version.outputs.version }}
           path: artifacts/release/*
           if-no-files-found: error
           retention-days: 14
@@ -115,7 +128,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = $env:GITHUB_REF_NAME
-          $version = $tag -replace '^v', ''
+          $version = "${{ steps.version.outputs.version }}"
           $assets = Get-ChildItem "artifacts/release" -File |
             Sort-Object Name |
             Select-Object -ExpandProperty FullName

@@ -20,7 +20,7 @@ jobs:
   verify:
     name: Verify and build
     runs-on: windows-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     defaults:
       run:
@@ -45,5 +45,8 @@ jobs:
       - name: Run static checks and tests
         run: npm run check
 
+      # Verify product surfaces compile (no Electron installer in CI).
       - name: Full product build
+        env:
+          CARDO_BUILD_PROXY: ''
         run: npm run build:all

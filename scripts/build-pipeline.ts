@@ -9,29 +9,64 @@ interface BuildStage {
 }
 
 const rootPackage = JSON.parse(fs.readFileSync('package.json', 'utf8')) as { version: string };
-const proxy = process.env.CARDO_BUILD_PROXY ?? 'http://127.0.0.1:7890';
 const npmCliPath = process.env.npm_execpath;
 if (!npmCliPath) {
   throw new Error('无法定位当前 npm CLI。请通过 npm run release:build 启动流水线。');
 }
 const npmCli = npmCliPath;
-const buildEnvironment = {
+
+/**
+ * Proxy policy:
+ * - CARDO_BUILD_PROXY set to non-empty → use it
+ * - CARDO_BUILD_PROXY='' → force no proxy
+ * - unset + CI/GitHub Actions → no proxy
+ * - unset + local → default 127.0.0.1:7890 (common local tunnel)
+ */
+function resolveBuildProxy(): string | undefined {
+  if (Object.prototype.hasOwnProperty.call(process.env, 'CARDO_BUILD_PROXY')) {
+    const value = process.env.CARDO_BUILD_PROXY?.trim() ?? '';
+    return value.length > 0 ? value : undefined;
+  }
+  if (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true') {
+    return undefined;
+  }
+  return 'http://127.0.0.1:7890';
+}
+
+const proxy = resolveBuildProxy();
+const buildEnvironment: NodeJS.ProcessEnv = {
   ...process.env,
-  HTTP_PROXY: process.env.HTTP_PROXY ?? process.env.http_proxy ?? proxy,
-  HTTPS_PROXY: process.env.HTTPS_PROXY ?? process.env.https_proxy ?? proxy,
   NO_PROXY: process.env.NO_PROXY ?? process.env.no_proxy ?? 'localhost,127.0.0.1',
+  // Unsigned open-source Windows builds: skip auto code-sign discovery.
+  CSC_IDENTITY_AUTO_DISCOVERY: process.env.CSC_IDENTITY_AUTO_DISCOVERY ?? 'false',
 };
+
+if (proxy) {
+  buildEnvironment.HTTP_PROXY = process.env.HTTP_PROXY ?? process.env.http_proxy ?? proxy;
+  buildEnvironment.HTTPS_PROXY = process.env.HTTPS_PROXY ?? process.env.https_proxy ?? proxy;
+} else {
+  // Ensure empty override wins over ambient shell proxies when explicitly disabled.
+  if (Object.prototype.hasOwnProperty.call(process.env, 'CARDO_BUILD_PROXY')) {
+    delete buildEnvironment.HTTP_PROXY;
+    delete buildEnvironment.HTTPS_PROXY;
+    delete buildEnvironment.http_proxy;
+    delete buildEnvironment.https_proxy;
+  }
+}
+
 const desktopArtifacts = [
   `artifacts/desktop-dist/Cardo Setup ${rootPackage.version}.exe`,
   `artifacts/desktop-dist/Cardo ${rootPackage.version}.exe`,
 ];
+
 const stages: BuildStage[] = [
   { name: '停止 Cardo 实例', command: ['run', 'cardo:stop'], artifacts: [] },
   { name: '校验', command: ['run', 'check'], artifacts: [] },
   {
     name: 'CLI + Web Runtime 构建',
     command: ['run', 'cardo:build'],
-    artifacts: ['artifacts/cli/cardo.js', 'artifacts/web-runtime/assets/web-runtime/index.html'],
+    // flatten plugin writes index.html at static root (not assets/web-runtime/).
+    artifacts: ['artifacts/cli/cardo.js', 'artifacts/web-runtime/index.html'],
   },
   {
     name: '浏览器扩展构建',
