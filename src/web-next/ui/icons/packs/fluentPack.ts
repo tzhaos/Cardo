@@ -46,7 +46,6 @@ import {
   Image20Color,
   Image20Regular,
   Lightbulb20Regular,
-  Link20Regular,
   Location20Filled,
   Location20Regular,
   LockClosed20Color,

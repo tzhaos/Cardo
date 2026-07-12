@@ -44,7 +44,12 @@ export function classifyCardoError(
   locale: 'en' | 'zh' = 'en',
 ): CardoErrorViewModel {
   const raw = formatErrorDetail(error);
-  const message = error instanceof Error ? error.message : String(error ?? 'Unknown error');
+  const message =
+    error instanceof Error
+      ? error.message
+      : typeof error === 'string'
+        ? error
+        : raw || 'Unknown error';
   const zh = locale === 'zh';
 
   const baseActions: CardoErrorAction[] = [

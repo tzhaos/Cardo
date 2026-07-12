@@ -42,7 +42,7 @@ const FORBIDDEN_PATTERNS: Array<{ re: RegExp; message: string }> = [
  * Selectors should target under [data-cardo-root] — we wrap injection accordingly.
  */
 export function validateCssSnippet(raw: string): CssSnippetValidationResult {
-  const sanitized = raw.replace(/\u0000/g, '').trimEnd();
+  const sanitized = raw.split('\0').join('').trimEnd();
   const errors: string[] = [];
 
   if (sanitized.length > MAX_CSS_SNIPPET_CHARS) {

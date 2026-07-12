@@ -112,7 +112,20 @@ export function classifyRuntimeGuideError(error: unknown): {
     }
   }
 
-  const message = error instanceof Error ? error.message : String(error ?? '');
+  const message =
+    error instanceof Error
+      ? error.message
+      : typeof error === 'string'
+        ? error
+        : error == null
+          ? ''
+          : (() => {
+              try {
+                return JSON.stringify(error);
+              } catch {
+                return '';
+              }
+            })();
   if (/native messaging host|specified native messaging host|not found/i.test(message)) {
     return { kind: 'native_host_missing', detail: message };
   }

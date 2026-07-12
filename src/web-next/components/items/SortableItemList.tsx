@@ -80,7 +80,7 @@ export function SortableItemList<TItem extends BoxItem>({
 function SortableItemEntry({
   itemId,
   children,
-  isGrid,
+  isGrid: _isGrid,
   onReorderEnd,
   onReorderStart,
   onCrossBoxDrop,

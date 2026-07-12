@@ -716,7 +716,11 @@ async function readJsonBody(req: IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = [];
   let total = 0;
   for await (const chunk of req) {
-    const buf = typeof chunk === 'string' ? Buffer.from(chunk) : chunk;
+    const buf: Buffer = Buffer.isBuffer(chunk)
+      ? chunk
+      : typeof chunk === 'string'
+        ? Buffer.from(chunk)
+        : Buffer.from(chunk as Uint8Array);
     total += buf.byteLength;
     if (total > MAX_JSON_BODY_BYTES) {
       throw new JsonBodyError('Request body exceeds size limit.');

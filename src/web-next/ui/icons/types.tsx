@@ -77,7 +77,7 @@ export type ThemeIconPack = Record<ThemeIconName, ThemeIconComponent>;
  * MUI SvgIcon types require `component` in some overloads; runtime only needs a renderable.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyIconComponent = ComponentType<any>;
+export type AnyIconComponent = ComponentType<any>;
 
 /** Normalize third-party icons to ThemeIconProps. */
 export function adaptSvgIcon(

@@ -29,9 +29,7 @@ function flattenWebRuntimeHtml() {
       if (fs.existsSync(nestedDir)) {
         fs.rmSync(nestedDir, { recursive: true, force: true });
       }
-      // Drop empty assets shell folder if nothing else remains under assets/web-runtime parent path.
-      const shellRoot = path.join(OUT_DIR, 'assets');
-      // keep shellRoot — built JS/CSS live under assets/*.js
+      // assets/*.js|css remain under OUT_DIR/assets after flattening HTML.
     },
   };
 }

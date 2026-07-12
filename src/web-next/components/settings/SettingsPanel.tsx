@@ -29,7 +29,7 @@ import {
   webSearchEngineIdSchema,
 } from '../../../core/contracts/preferences';
 import { FEATURE_CATALOG, isFeatureEnabled } from '../../../core/contracts/featureCatalog';
-import { LAYOUT_PROFILES, type LayoutProfileId } from '../../../core/contracts/layoutProfile';
+import { LAYOUT_PROFILES } from '../../../core/contracts/layoutProfile';
 import { overridableColorKeys, type OverridableColorKey } from '../../../core/contracts/themePack';
 import { COLOR_OVERRIDE_PRESETS, isColorPresetActive } from './colorPresets';
 import { getThemeLookPresets, matchThemeLookId, type ThemeLookPreset } from './themeLookPresets';
@@ -73,7 +73,6 @@ export function SettingsPanel({
   const setSearchEngine = usePreferencesStore((state) => state.setSearchEngine);
   const setCustomSearchTemplate = usePreferencesStore((state) => state.setCustomSearchTemplate);
   const themeId = usePreferencesStore((state) => state.themeId);
-  const isFluent = themeId === 'fluent';
   const isSwiftUI = themeId === 'swiftui';
   /** Static nav pill under themed shells — avoids layoutId soft text. */
   const useStaticNavIndicator =
