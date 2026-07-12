@@ -2,7 +2,7 @@ import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import { useI18n } from '../../i18n/useI18n';
 import { ThemeIcon } from '../../ui/icons/ThemeIcon';
 
-/** Persistent floating control to leave zen layout (chrome fully hidden). */
+/** Icon-only control to leave zen; floats like other chrome (near → show). */
 export function ZenExitControl() {
   const setLayoutProfileId = usePreferencesStore((state) => state.setLayoutProfileId);
   const { t } = useI18n();
@@ -15,8 +15,7 @@ export function ZenExitControl() {
       title={t('layout.exitZen')}
       onClick={() => setLayoutProfileId('classic')}
     >
-      <ThemeIcon name="expand" size={18} />
-      <span>{t('layout.exitZen')}</span>
+      <ThemeIcon name="close" size={18} />
     </button>
   );
 }

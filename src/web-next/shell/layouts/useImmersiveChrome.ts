@@ -4,16 +4,18 @@ import type { LayoutProfileId } from '../../../core/contracts/layoutProfile';
 /** How far outside each chrome rect still counts as near. */
 const NEAR_PX = 40;
 
-const CHROME_SELECTORS = [
+const FLOATING_SELECTORS = [
   '.cardo-top-bar',
   '.cardo-history-controls',
   '.cardo-canvas-tools',
   '.cardo-bottom-shell',
 ] as const;
 
+const ZEN_EXIT_SELECTOR = '.cardo-zen-exit';
+
 /**
- * Floating: each chrome piece is hidden until the pointer is near it;
- * leaves the near zone → hide immediately. No delays, no edge bands.
+ * Floating layout: each chrome piece shows when the pointer is near it, hides when it leaves.
+ * Zen layout: exit icon uses the same near → show / leave → hide behavior.
  */
 export function useImmersiveChrome(layoutProfileId: LayoutProfileId) {
   useEffect(() => {
@@ -21,17 +23,25 @@ export function useImmersiveChrome(layoutProfileId: LayoutProfileId) {
     delete root.dataset.chromeReveal;
     root.removeAttribute('data-chrome-reveal');
 
-    if (layoutProfileId !== 'floating') {
-      clearFloatVisible();
+    if (layoutProfileId === 'classic') {
+      clearFloatVisible([...FLOATING_SELECTORS, ZEN_EXIT_SELECTOR]);
       return;
     }
 
+    const selectors =
+      layoutProfileId === 'floating'
+        ? [...FLOATING_SELECTORS]
+        : layoutProfileId === 'zen'
+          ? [ZEN_EXIT_SELECTOR]
+          : [];
+
+    if (selectors.length === 0) return;
+
     const onMove = (event: PointerEvent) => {
       const { clientX: x, clientY: y } = event;
-      for (const selector of CHROME_SELECTORS) {
+      for (const selector of selectors) {
         const el = document.querySelector(selector) as HTMLElement | null;
         if (!el) continue;
-        // Geometry stays in resting place (CSS does not shift hidden chrome).
         const rect = el.getBoundingClientRect();
         const near =
           x >= rect.left - NEAR_PX &&
@@ -48,17 +58,17 @@ export function useImmersiveChrome(layoutProfileId: LayoutProfileId) {
       }
     };
 
-    clearFloatVisible();
+    clearFloatVisible(selectors);
     window.addEventListener('pointermove', onMove, { passive: true });
     return () => {
       window.removeEventListener('pointermove', onMove);
-      clearFloatVisible();
+      clearFloatVisible(selectors);
     };
   }, [layoutProfileId]);
 }
 
-function clearFloatVisible() {
-  for (const selector of CHROME_SELECTORS) {
+function clearFloatVisible(selectors: readonly string[]) {
+  for (const selector of selectors) {
     document.querySelectorAll(selector).forEach((node) => {
       const el = node as HTMLElement;
       delete el.dataset.floatVisible;

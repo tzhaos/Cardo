@@ -28,7 +28,8 @@
 }
 
 /*
- * Zen: hide all product chrome. Canvas + zen exit stay interactive.
+ * Zen: hide all product chrome. Exit icon floats like other chrome
+ * (near → show / leave → hide).
  */
 [data-layout-profile='zen'] .cardo-top-bar,
 [data-layout-profile='zen'] .cardo-history-controls,
@@ -45,28 +46,35 @@
   right: 20px;
   bottom: 20px;
   display: inline-flex;
-  min-width: 40px;
+  width: 40px;
   height: 40px;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   border: 1px solid var(--cardo-border);
   border-radius: 999px;
-  padding: 0 14px 0 12px;
+  padding: 0;
   background: var(--cardo-surface);
   color: var(--cardo-soft-text);
   box-shadow: var(--cardo-shadow);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1;
   cursor: pointer;
   transition:
+    opacity 120ms var(--cardo-easing),
     color var(--cardo-duration-normal) var(--cardo-easing),
     background var(--cardo-duration-normal) var(--cardo-easing),
     border-color var(--cardo-duration-normal) var(--cardo-easing),
     box-shadow var(--cardo-duration-normal) var(--cardo-easing);
+}
+
+[data-layout-profile='zen'] .cardo-zen-exit:not([data-float-visible='true']) {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+[data-layout-profile='zen'] .cardo-zen-exit[data-float-visible='true'] {
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 .cardo-zen-exit:hover {
