@@ -20,8 +20,6 @@ import {
 } from '../../../core/contracts/featureCatalog';
 import {
   DEFAULT_LAYOUT_PROFILE_ID,
-  layoutProfileIdSchema,
-  normalizeLayoutProfileId,
   type LayoutProfileId,
 } from '../../../core/contracts/layoutProfile';
 import { cssSnippetSchema } from '../../../core/contracts/cssSnippet';
@@ -220,11 +218,10 @@ const actions = {
   resetFeatureFlags: () => {
     fireCommand({ type: 'preferences.setFeatureFlags', featureFlags: {} });
   },
-  setLayoutProfileId: (layoutProfileId: LayoutProfileId) => {
-    const next = layoutProfileIdSchema.parse(layoutProfileId);
-    // Local state first so controlled tabs update even if Runtime is slow.
+  setLayoutProfileId: (_layoutProfileId: LayoutProfileId) => {
+    // Layout is product-fixed to classic; ignore alternate values.
+    const next = DEFAULT_LAYOUT_PROFILE_ID;
     patchPreferences({ layoutProfileId: next });
-    // Immediate root marker so chrome modes apply before layout effects.
     if (typeof document !== 'undefined') {
       applyLayoutProfile(document.documentElement, next);
     }
@@ -337,9 +334,16 @@ async function refreshPreferences() {
   const themeOptionValues = themeOptionValuesSchema.parse(preferences.themeOptionValues ?? {});
   // Drop retired flag keys (e.g. item.contextMenu) without failing the whole hydrate.
   const featureFlags = normalizeFeatureFlagOverrides(preferences.featureFlags ?? {});
-  const layoutProfileId = normalizeLayoutProfileId(preferences.layoutProfileId);
+  const layoutProfileId = DEFAULT_LAYOUT_PROFILE_ID;
   const cssSnippet = cssSnippetSchema.parse(preferences.cssSnippet ?? '');
   const cssSnippetEnabled = Boolean(preferences.cssSnippetEnabled);
+  // One-way repair: older rows may still say floating/zen; force classic in DB.
+  if (preferences.layoutProfileId !== DEFAULT_LAYOUT_PROFILE_ID) {
+    fireCommand({
+      type: 'preferences.setLayoutProfile',
+      layoutProfileId: DEFAULT_LAYOUT_PROFILE_ID,
+    });
+  }
 
   // Disk themes from Runtime dataDir/themes (fail soft if query unavailable).
   let diskPacks: ThemePack[] = [];
@@ -458,7 +462,7 @@ function applyOptimisticCommand(command: WorkspaceCommand) {
       patchPreferences({ featureFlags: command.featureFlags });
       break;
     case 'preferences.setLayoutProfile':
-      patchPreferences({ layoutProfileId: command.layoutProfileId });
+      patchPreferences({ layoutProfileId: DEFAULT_LAYOUT_PROFILE_ID });
       break;
     case 'preferences.setThemeOptionValues':
       patchPreferences({ themeOptionValues: command.themeOptionValues });
