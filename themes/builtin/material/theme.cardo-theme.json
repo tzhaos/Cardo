@@ -5,12 +5,12 @@
     "id": "material",
     "version": "1.1.0",
     "name": {
-      "en": "Material You",
-      "zh": "Material You"
+      "en": "Material",
+      "zh": "Material"
     },
     "description": {
-      "en": "Google AI Studio language — pure white field, hairline borders, soft gray selection pills, medium radius, monochrome chrome.",
-      "zh": "Google AI Studio 语言：近纯白画布、细线描边、浅灰选中胶囊、中等圆角、单色壳层。"
+      "en": "Clean Studio white.",
+      "zh": "干净 Studio 白底。"
     },
     "tokens": {
       "colors": {

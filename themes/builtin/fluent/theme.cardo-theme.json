@@ -9,8 +9,8 @@
       "zh": "Windows Fluent"
     },
     "description": {
-      "en": "Win11 Fluent — Mica canvas, flat elevated cards, underline tabs, Segoe, system accent blue.",
-      "zh": "Win11 Fluent：Mica 画布、扁平抬升卡片、下划线标签、Segoe、系统强调蓝。"
+      "en": "Windows 11 Mica shell.",
+      "zh": "Windows 11 Mica 壳层。"
     },
     "tokens": {
       "colors": {

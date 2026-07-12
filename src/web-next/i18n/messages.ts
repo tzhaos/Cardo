@@ -141,8 +141,7 @@ export const WEB_NEXT_MESSAGES = {
     'settings.customSearchTemplatePlaceholder': 'https://example.com/search?q={query}',
     'settings.customSearchTemplateHint': 'Use {query} where the encoded search text belongs.',
     'settings.appearance': 'Appearance',
-    'settings.appearanceDescription':
-      'Choose Classic or Windows Fluent, light or dark mode, and optional theme colors.',
+    'settings.appearanceDescription': 'Theme, light/dark mode, and colors.',
     'settings.restoreOfficialLook': 'Restore official look',
     'settings.restoreOfficialLookDescription':
       'Reset theme, layout, chrome features, type, and color tweaks to Cardo Classic defaults.',
@@ -156,7 +155,7 @@ export const WEB_NEXT_MESSAGES = {
     'settings.mode': 'Color mode',
     'settings.modeDescription': 'Every theme includes both light and dark palettes.',
     'settings.theme': 'Theme',
-    'settings.themeDescription': 'Classic glass chrome, or Windows Fluent Mica language.',
+    'settings.themeDescription': 'Classic, Fluent, or Material.',
     'settings.themeOfficial': 'Official',
     'settings.exportTheme': 'Export theme pack',
     'settings.exportThemeDescription': 'Download the selected pack as .cardo-theme.json.',
@@ -450,7 +449,7 @@ export const WEB_NEXT_MESSAGES = {
     'settings.customSearchTemplatePlaceholder': 'https://example.com/search?q={query}',
     'settings.customSearchTemplateHint': '使用 {query} 标记编码后的搜索内容。',
     'settings.appearance': '外观',
-    'settings.appearanceDescription': '选择经典或 Windows Fluent、明暗模式，并可微调主题色。',
+    'settings.appearanceDescription': '主题、明暗与颜色。',
     'settings.restoreOfficialLook': '恢复官方外观',
     'settings.restoreOfficialLookDescription':
       '将主题、布局、壳层功能、字体与色板微调恢复为 Cardo 经典默认。',
@@ -464,7 +463,7 @@ export const WEB_NEXT_MESSAGES = {
     'settings.mode': '明暗模式',
     'settings.modeDescription': '每套主题都同时提供浅色与深色调色板。',
     'settings.theme': '主题',
-    'settings.themeDescription': '经典玻璃壳层，或 Windows Fluent Mica 语言。',
+    'settings.themeDescription': '经典、Fluent 或 Material。',
     'settings.themeOfficial': '官方',
     'settings.exportTheme': '导出主题包',
     'settings.exportThemeDescription': '将当前选中主题下载为 .cardo-theme.json。',

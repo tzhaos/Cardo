@@ -26,7 +26,7 @@ src/web-next/styles/themes/<id>…             ← 该包结构方言 recipe
 | --- | --- | --- | --- |
 | `classic` | Classic（默认） | glass | 玻璃壳、居中胶囊顶栏 |
 | `fluent` | Windows Fluent | solid | 全宽顶栏、下划线 tab、扁平卡片、设置侧栏 |
-| `material` | Material You | solid | AI Studio：近纯白、细线描边、浅灰选中 pill、中等圆角、单色壳 |
+| `material` | Material | solid | AI Studio 白底细线风格 |
 
 ### 包文件
 
