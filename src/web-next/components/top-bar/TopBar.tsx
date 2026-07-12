@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import { House, Plus, SquarePen, Trash2 } from 'lucide-react';
 import { AnimatePresence, motion, Reorder } from 'motion/react';
@@ -53,19 +53,43 @@ export function TopBar() {
     () => persistedPages.filter((page) => !isSystemPageId(page.id)),
     [persistedPages],
   );
-  const collectionPage = persistedPages.find((page) => isCollectionPageId(page.id));
-  const recycleBinPage = persistedPages.find((page) => isRecycleBinPageId(page.id));
+  /**
+   * Visible tab strip: collection / recycle (if enabled) + workspace pages.
+   * Single-page mode only shows the active workspace tab among user pages.
+   */
+  const stripPages = useMemo(() => {
+    return persistedPages.filter((page) => {
+      if (isCollectionPageId(page.id)) return showCollection;
+      if (isRecycleBinPageId(page.id)) return showRecycleBin;
+      if (!multiPage) return page.id === activePageId;
+      return true;
+    });
+  }, [persistedPages, showCollection, showRecycleBin, multiPage, activePageId]);
+  const commitStripOrder = useCallback(
+    (orderedIds: string[]) => {
+      if (multiPage) {
+        reorderPages(orderedIds);
+        return;
+      }
+      // Hidden workspace pages stay after the visible strip, prior relative order kept.
+      const hiddenWorkspaceIds = workspacePages
+        .map((page) => page.id)
+        .filter((id) => !orderedIds.includes(id));
+      reorderPages([...orderedIds, ...hiddenWorkspaceIds]);
+    },
+    [multiPage, reorderPages, workspacePages],
+  );
   const {
-    orderedIds: pageIds,
+    orderedIds: stripPageIds,
     startReordering,
     updateOrder,
     finishReordering,
-  } = useStagedOrder(workspacePages, reorderPages);
+  } = useStagedOrder(stripPages, commitStripOrder);
   const pagesById = useMemo(
-    () => new Map(workspacePages.map((page) => [page.id, page])),
-    [workspacePages],
+    () => new Map(persistedPages.map((page) => [page.id, page])),
+    [persistedPages],
   );
-  const pages = pageIds
+  const orderedStripPages = stripPageIds
     .map((pageId) => pagesById.get(pageId))
     .filter((page): page is (typeof persistedPages)[number] => Boolean(page));
   const pageToDelete = workspacePages.find((page) => page.id === deletePageId);
@@ -108,11 +132,6 @@ export function TopBar() {
     .join(' ');
 
   const openNewPage = () => createPage(t('page.untitled'));
-  const visiblePages = multiPage
-    ? pages
-    : pages.filter((page) => page.id === activePageId).length > 0
-      ? pages.filter((page) => page.id === activePageId)
-      : pages.slice(0, 1);
   const openPageMenu = (
     event: ReactMouseEvent<HTMLElement>,
     page?: (typeof workspacePages)[number],
@@ -161,56 +180,70 @@ export function TopBar() {
     ]);
   };
 
-  const collectionTab =
-    showCollection && collectionPage ? (
-      <CollectionTab
-        active={collectionPage.id === activePageId}
-        highlighted={boxDropPageId === collectionPage.id}
-        page={collectionPage}
-        released={boxDropRelease?.pageId === collectionPage.id}
-        onActivate={() => {
-          useUiStore.getState().selectBox(null);
-          setActivePage(collectionPage.id);
-        }}
-        onContextMenu={(event) => openPageMenu(event)}
-      />
-    ) : null;
+  const canReorderTabs = multiPage || stripPages.length > 1;
+  const beginTabReorder = canReorderTabs ? startReordering : () => undefined;
+  const endTabReorder = canReorderTabs ? finishReordering : () => undefined;
 
-  const recycleTab =
-    showRecycleBin && recycleBinPage ? (
-      <RecycleBinTab
-        active={recycleBinPage.id === activePageId}
-        highlighted={boxDropPageId === recycleBinPage.id}
-        page={recycleBinPage}
-        released={boxDropRelease?.pageId === recycleBinPage.id}
-        onActivate={() => setActivePage(recycleBinPage.id)}
-        onContextMenu={(event) => openPageMenu(event)}
-      />
-    ) : null;
-
-  const pageTabs = (
+  const tabStrip = (
     <AnimatePresence mode="popLayout">
-      {visiblePages.map((page) => (
-        <SortablePageTab
-          active={page.id === activePageId}
-          className={[
-            boxDropPageId === page.id ? 'cardo-box-drop-target' : '',
-            boxDropRelease?.pageId === page.id ? 'cardo-box-drop-released' : '',
-          ]
-            .filter(Boolean)
-            .join(' ')}
-          key={page.id}
-          page={page}
-          renameRequested={renamePageId === page.id}
-          onActivate={() => setActivePage(page.id)}
-          onContextMenu={(event) => openPageMenu(event, page)}
-          onRename={(title) => renamePage(page.id, title)}
-          onRenameRequestHandled={() => setRenamePageId(null)}
-          onReorderStart={multiPage ? startReordering : () => undefined}
-          onReorderEnd={multiPage ? finishReordering : () => undefined}
-          reorderable={multiPage}
-        />
-      ))}
+      {orderedStripPages.map((page) => {
+        if (isCollectionPageId(page.id)) {
+          return (
+            <CollectionTab
+              key={page.id}
+              active={page.id === activePageId}
+              highlighted={boxDropPageId === page.id}
+              page={page}
+              released={boxDropRelease?.pageId === page.id}
+              reorderable={canReorderTabs}
+              onActivate={() => {
+                useUiStore.getState().selectBox(null);
+                setActivePage(page.id);
+              }}
+              onContextMenu={(event) => openPageMenu(event)}
+              onReorderStart={beginTabReorder}
+              onReorderEnd={endTabReorder}
+            />
+          );
+        }
+        if (isRecycleBinPageId(page.id)) {
+          return (
+            <RecycleBinTab
+              key={page.id}
+              active={page.id === activePageId}
+              highlighted={boxDropPageId === page.id}
+              page={page}
+              released={boxDropRelease?.pageId === page.id}
+              reorderable={canReorderTabs}
+              onActivate={() => setActivePage(page.id)}
+              onContextMenu={(event) => openPageMenu(event)}
+              onReorderStart={beginTabReorder}
+              onReorderEnd={endTabReorder}
+            />
+          );
+        }
+        return (
+          <SortablePageTab
+            active={page.id === activePageId}
+            className={[
+              boxDropPageId === page.id ? 'cardo-box-drop-target' : '',
+              boxDropRelease?.pageId === page.id ? 'cardo-box-drop-released' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            key={page.id}
+            page={page}
+            renameRequested={renamePageId === page.id}
+            onActivate={() => setActivePage(page.id)}
+            onContextMenu={(event) => openPageMenu(event, page)}
+            onRename={(title) => renamePage(page.id, title)}
+            onRenameRequestHandled={() => setRenamePageId(null)}
+            onReorderStart={beginTabReorder}
+            onReorderEnd={endTabReorder}
+            reorderable={canReorderTabs}
+          />
+        );
+      })}
     </AnimatePresence>
   );
 
@@ -236,14 +269,11 @@ export function TopBar() {
             as="nav"
             axis="x"
             className="cardo-tabs"
-            values={pageIds}
+            values={stripPageIds}
             onReorder={updateOrder}
             aria-label={t('page.workspacePages')}
           >
-            {/* Collection | pages | Recycle — same adjacency as Classic under every theme. */}
-            {collectionTab}
-            {pageTabs}
-            {recycleTab}
+            {tabStrip}
           </Reorder.Group>
           {multiPage ? (
             <motion.div className="cardo-top-actions" layout="position">

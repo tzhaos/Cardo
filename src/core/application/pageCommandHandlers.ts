@@ -108,8 +108,8 @@ async function reorderPages(transaction: DatabaseTransaction, orderedPageIds: st
   const currentIds = allPages.map((page) => page.id);
   const orderedSet = new Set(orderedPageIds);
 
-  // Visible tab strip may omit feature-disabled system pages; include missing ones
-  // after the reordered list, preserving their prior relative order.
+  // Tab strip may include collection / recycle (user-reorderable). Feature-disabled
+  // system pages can be omitted; they are appended preserving prior relative order.
   if (
     orderedPageIds.length === 0 ||
     orderedSet.size !== orderedPageIds.length ||
@@ -125,6 +125,8 @@ async function reorderPages(transaction: DatabaseTransaction, orderedPageIds: st
     throw new Error('Page reorder must include every workspace page.');
   }
 
+  // System pages present in orderedPageIds keep their strip positions;
+  // any DB page missing from the strip is appended after.
   const missingIds = currentIds.filter((pageId) => !orderedSet.has(pageId));
   const finalOrder = [...orderedPageIds, ...missingIds];
   if (currentIds.every((pageId, index) => pageId === finalOrder[index])) {
