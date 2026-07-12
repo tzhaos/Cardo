@@ -14,12 +14,11 @@ import {
   fetchLatestStableUpdate,
   UpdateFetchError,
 } from './githubReleaseClient';
+import { detectInstallChannel, type DesktopInstallChannelInfo } from './installChannel';
 
 type StateListener = (state: DesktopUpdateState) => void;
 
 function readCurrentVersion(): string {
-  // Packaged builds use artifacts/desktop/package.json version written at package time.
-  // Unpackaged dev falls back to app.getVersion() / inject.
   const fromApp = normalizeProductSemver(app.getVersion());
   if (fromApp) return fromApp;
   if (typeof __APP_VERSION__ !== 'undefined') {
@@ -30,22 +29,24 @@ function readCurrentVersion(): string {
 }
 
 /**
- * Desktop-only GitHub Release updater.
- * Milestone releases only (stable, non-draft). CI does not publish.
+ * Desktop GitHub Release updater with Setup vs Portable install channels.
  */
 export class DesktopUpdater {
   private state: DesktopUpdateState;
   private readonly listeners = new Set<StateListener>();
+  private readonly install: DesktopInstallChannelInfo;
   private checkPromise: Promise<DesktopUpdateState> | null = null;
   private downloadPromise: Promise<DesktopUpdateState> | null = null;
   private downloadAbort: AbortController | null = null;
   private autoCheckTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
+    this.install = detectInstallChannel();
     this.state = desktopUpdateStateSchema.parse({
       phase: app.isPackaged ? 'idle' : 'unsupported',
       currentVersion: readCurrentVersion(),
       channel: 'github-stable',
+      installChannel: this.install.channel,
       available: null,
       downloadPercent: null,
       downloadedBytes: null,
@@ -101,7 +102,7 @@ export class DesktopUpdater {
   }
 
   async checkForUpdates(): Promise<DesktopUpdateState> {
-    if (!this.state.isPackaged) {
+    if (!this.state.isPackaged || this.install.channel === 'dev') {
       this.setState({
         phase: 'unsupported',
         errorMessage: 'Updates are only available in packaged Desktop builds.',
@@ -130,6 +131,7 @@ export class DesktopUpdater {
     try {
       const available = await fetchLatestStableUpdate({
         currentVersion: this.state.currentVersion,
+        installChannel: this.install.channel,
       });
       const checkedAt = new Date().toISOString();
       if (!available) {
@@ -281,18 +283,20 @@ export class DesktopUpdater {
     this.setState({ phase: 'installing', errorMessage: null });
 
     try {
-      // NSIS interactive installer (oneClick=false). Detach so Desktop can exit cleanly.
-      const child = spawn(installerPath, [], {
-        detached: true,
-        stdio: 'ignore',
-        windowsHide: false,
-      });
-      child.unref();
-
-      // Give the installer a moment to spawn, then quit so files can be replaced.
-      setTimeout(() => {
-        app.quit();
-      }, 400);
+      if (this.install.channel === 'portable' && available.assetKind === 'portable') {
+        await this.applyPortableUpdate(installerPath);
+      } else {
+        // Setup install (or portable fell back to Setup asset): run NSIS UI.
+        const child = spawn(installerPath, [], {
+          detached: true,
+          stdio: 'ignore',
+          windowsHide: false,
+        });
+        child.unref();
+        setTimeout(() => {
+          app.quit();
+        }, 400);
+      }
 
       return { ok: true, errorMessage: null };
     } catch (error) {
@@ -300,6 +304,69 @@ export class DesktopUpdater {
       this.setState({ phase: 'readyToInstall', errorMessage: message });
       return { ok: false, errorMessage: message };
     }
+  }
+
+  /**
+   * Portable: cannot overwrite the running exe. Write a helper script that waits for
+   * this process to exit, replaces the portable executable, relaunches, then self-deletes.
+   */
+  private async applyPortableUpdate(downloadedPath: string): Promise<void> {
+    const targetPath = this.install.executablePath;
+    const targetDir = path.dirname(targetPath);
+    if (!fs.existsSync(targetDir)) {
+      throw new Error(`Portable install directory is missing: ${targetDir}`);
+    }
+
+    try {
+      fs.accessSync(targetDir, fs.constants.W_OK);
+    } catch {
+      throw new Error(
+        `Portable directory is not writable: ${targetDir}. Move Cardo to a writable folder or open the release page and replace the file manually.`,
+      );
+    }
+
+    const updatesDir = path.join(app.getPath('userData'), 'updates');
+    fs.mkdirSync(updatesDir, { recursive: true });
+    const helperPath = path.join(updatesDir, 'apply-portable-update.cmd');
+    const pid = process.pid;
+
+    // cmd.exe-friendly escaped paths
+    const esc = (value: string) => value.replace(/"/g, '""');
+    const batch = [
+      '@echo off',
+      'setlocal',
+      `set "SOURCE=${esc(downloadedPath)}"`,
+      `set "TARGET=${esc(targetPath)}"`,
+      `set "PID=${pid}"`,
+      ':wait',
+      'tasklist /FI "PID eq %PID%" 2>NUL | find "%PID%" >NUL',
+      'if not errorlevel 1 (',
+      '  timeout /t 1 /nobreak >NUL',
+      '  goto wait',
+      ')',
+      'copy /Y "%SOURCE%" "%TARGET%" >NUL',
+      'if errorlevel 1 (',
+      '  echo Cardo portable update failed.>>"%TEMP%\\cardo-portable-update.log"',
+      '  exit /b 1',
+      ')',
+      'start "" "%TARGET%"',
+      'del "%~f0"',
+      '',
+    ].join('\r\n');
+
+    fs.writeFileSync(helperPath, batch, 'utf8');
+
+    const child = spawn('cmd.exe', ['/d', '/c', helperPath], {
+      detached: true,
+      stdio: 'ignore',
+      windowsHide: true,
+      cwd: updatesDir,
+    });
+    child.unref();
+
+    setTimeout(() => {
+      app.quit();
+    }, 300);
   }
 
   async openReleasePage(): Promise<void> {

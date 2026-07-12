@@ -5,7 +5,11 @@ import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { Readable } from 'node:stream';
 import { z } from 'zod';
-import type { DesktopUpdateAvailableInfo } from '../../core/contracts/desktopUpdate';
+import type {
+  DesktopInstallChannel,
+  DesktopUpdateAvailableInfo,
+  DesktopUpdateAssetKind,
+} from '../../core/contracts/desktopUpdate';
 import {
   githubLatestReleaseApiUrl,
   githubReleasePageUrl,
@@ -85,6 +89,42 @@ function pickSetupAsset(assets: GitHubRelease['assets'], version: string) {
   );
 }
 
+function pickPortableAsset(assets: GitHubRelease['assets'], version: string) {
+  const preferred = [
+    `Cardo-${version}-Portable-x64.exe`,
+    `Cardo ${version}.exe`,
+    `Cardo-${version}-win-x64.exe`,
+  ];
+  for (const name of preferred) {
+    const hit = assets.find((asset) => asset.name === name);
+    if (hit) return hit;
+  }
+  return (
+    assets.find((asset) => /portable.*\.exe$/i.test(asset.name)) ??
+    assets.find((asset) => /\.exe$/i.test(asset.name) && /portable/i.test(asset.name)) ??
+    null
+  );
+}
+
+function pickAssetForChannel(
+  assets: GitHubRelease['assets'],
+  version: string,
+  installChannel: DesktopInstallChannel,
+): { asset: GitHubRelease['assets'][number]; assetKind: DesktopUpdateAssetKind } | null {
+  // dev uses setup assets only for manual testing of download paths if ever packaged wrongly
+  if (installChannel === 'portable') {
+    const portable = pickPortableAsset(assets, version);
+    if (portable) return { asset: portable, assetKind: 'portable' };
+    // Fall back to Setup only if Portable asset missing (still better than no update).
+    const setup = pickSetupAsset(assets, version);
+    return setup ? { asset: setup, assetKind: 'setup' } : null;
+  }
+
+  const setup = pickSetupAsset(assets, version);
+  if (setup) return { asset: setup, assetKind: 'setup' };
+  return null;
+}
+
 function pickChecksumAsset(assets: GitHubRelease['assets']) {
   return (
     assets.find((asset) => asset.name === 'SHA256SUMS.txt') ??
@@ -111,6 +151,7 @@ function parseSha256Sums(text: string, fileName: string): string | null {
 
 export async function fetchLatestStableUpdate(options: {
   currentVersion: string;
+  installChannel: DesktopInstallChannel;
   env?: NodeJS.ProcessEnv;
 }): Promise<DesktopUpdateAvailableInfo | null> {
   const { owner, repo } = resolveUpdateRepository(options.env);
@@ -123,7 +164,6 @@ export async function fetchLatestStableUpdate(options: {
   const release = githubReleaseSchema.parse(raw);
 
   if (release.draft || release.prerelease) {
-    // /releases/latest should not return these; guard anyway.
     return null;
   }
 
@@ -139,13 +179,17 @@ export async function fetchLatestStableUpdate(options: {
     return null;
   }
 
-  const setup = pickSetupAsset(release.assets, version);
-  if (!setup) {
+  const picked = pickAssetForChannel(release.assets, version, options.installChannel);
+  if (!picked) {
     throw new UpdateFetchError(
       'missing_installer',
-      `Release v${version} has no Desktop Setup installer asset.`,
+      options.installChannel === 'portable'
+        ? `Release v${version} has no Desktop Portable (or Setup) asset.`
+        : `Release v${version} has no Desktop Setup installer asset.`,
     );
   }
+
+  const { asset, assetKind } = picked;
 
   let sha256: string | null = null;
   const checksumAsset = pickChecksumAsset(release.assets);
@@ -158,7 +202,7 @@ export async function fetchLatestStableUpdate(options: {
       });
       if (checksumResponse.ok) {
         const text = await checksumResponse.text();
-        sha256 = parseSha256Sums(text, setup.name);
+        sha256 = parseSha256Sums(text, asset.name);
       }
     } catch {
       sha256 = null;
@@ -172,9 +216,10 @@ export async function fetchLatestStableUpdate(options: {
     releaseUrl: release.html_url ?? githubReleasePageUrl(owner, repo, tag),
     notes: (release.body ?? '').trim(),
     publishedAt: release.published_at ?? null,
-    installerName: setup.name,
-    installerUrl: setup.browser_download_url,
-    installerSizeBytes: setup.size,
+    assetKind,
+    installerName: asset.name,
+    installerUrl: asset.browser_download_url,
+    installerSizeBytes: asset.size,
     sha256,
   };
 }
@@ -246,7 +291,6 @@ export async function downloadInstaller(options: {
     );
   }
 
-  // Prefer SHA-256 when present. Size is advisory only (CDN/encoding can drift slightly).
   if (
     !options.expectedSha256 &&
     options.expectedSizeBytes != null &&

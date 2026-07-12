@@ -15,6 +15,13 @@ export const desktopUpdatePhaseSchema = z.enum([
 
 export type DesktopUpdatePhase = z.infer<typeof desktopUpdatePhaseSchema>;
 
+/** How this Desktop binary was distributed (drives asset pick + apply strategy). */
+export const desktopInstallChannelSchema = z.enum(['setup', 'portable', 'dev']);
+export type DesktopInstallChannel = z.infer<typeof desktopInstallChannelSchema>;
+
+export const desktopUpdateAssetKindSchema = z.enum(['setup', 'portable']);
+export type DesktopUpdateAssetKind = z.infer<typeof desktopUpdateAssetKindSchema>;
+
 export const desktopUpdateAvailableInfoSchema = z
   .object({
     version: z.string().regex(PRODUCT_SEMVER_RE),
@@ -22,6 +29,8 @@ export const desktopUpdateAvailableInfoSchema = z
     releaseUrl: z.string().url(),
     notes: z.string(),
     publishedAt: z.string().nullable(),
+    /** Which Release asset was selected for this install channel. */
+    assetKind: desktopUpdateAssetKindSchema,
     installerName: z.string().min(1),
     installerUrl: z.string().url(),
     installerSizeBytes: z.number().int().nonnegative().nullable(),
@@ -39,6 +48,8 @@ export const desktopUpdateStateSchema = z
     phase: desktopUpdatePhaseSchema,
     currentVersion: z.string().min(1),
     channel: z.literal('github-stable'),
+    /** Local install shape: setup | portable | dev. */
+    installChannel: desktopInstallChannelSchema,
     available: desktopUpdateAvailableInfoSchema.nullable(),
     downloadPercent: z.number().min(0).max(100).nullable(),
     downloadedBytes: z.number().int().nonnegative().nullable(),
