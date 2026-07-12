@@ -2,7 +2,7 @@
 
 1. 输出的 Markdown 内容未经允许禁止使用加粗。
 2. 不运行测试，只执行用户指定的浏览器插件和桌面端构建。
-3. 每个独立 Feature 或 Fix 完成后分别执行 `npm run build` 和 `npm run desktop:build`，单独提交并推送。
+3. 每个独立 Feature 或 Fix 完成后执行 `npm run build:all`（会先 `cardo:stop` 清掉本机 Runtime/Desktop/CLI 实例，再构建 extension + CLI + web-runtime + desktop + native-host），单独提交并推送。局部验证可用 `npm run build` / `npm run desktop:build`（二者也会先停实例）。
 4. 项目禁止旧 Schema、旧字段、旧持久化格式和退休机制的兼容代码。
 
 ## Cardo 架构

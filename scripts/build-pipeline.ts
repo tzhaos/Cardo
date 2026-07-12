@@ -25,6 +25,7 @@ const desktopArtifacts = [
   `artifacts/desktop-dist/Cardo ${rootPackage.version}.exe`,
 ];
 const stages: BuildStage[] = [
+  { name: '停止 Cardo 实例', command: ['run', 'cardo:stop'], artifacts: [] },
   { name: '校验', command: ['run', 'check'], artifacts: [] },
   {
     name: '浏览器扩展构建',
