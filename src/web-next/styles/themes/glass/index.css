@@ -142,7 +142,11 @@
 }
 
 [data-cardo-theme='glass'] .cardo-settings-content {
-  background: transparent;
+  background: #f9fafd;
+}
+
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-settings-content {
+  background: color-mix(in srgb, var(--cardo-panel-content) 88%, transparent);
 }
 
 [data-cardo-theme='glass'] .cardo-settings-card,
