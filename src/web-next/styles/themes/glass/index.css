@@ -97,11 +97,31 @@
   color: var(--cardo-soft-text) !important;
 }
 
+/*
+ * Full-panel atmosphere: title bar + left nav + content share one field.
+ * Floating frosted items sit on top; chrome strips stay translucent, not solid plates.
+ */
 [data-cardo-theme='glass'] .cardo-independent-menu.cardo-settings-window,
 [data-cardo-theme='glass'] .cardo-settings-window {
   border: 1px solid color-mix(in srgb, #ffffff 55%, var(--cardo-border));
   border-radius: 22px;
-  background: color-mix(in srgb, var(--cardo-surface-strong) 72%, transparent);
+  background-color: #f9fafd;
+  background-image:
+    radial-gradient(
+      ellipse 90% 70% at 8% 0%,
+      color-mix(in srgb, var(--cardo-blue) 10%, transparent),
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 70% 55% at 96% 12%,
+      color-mix(in srgb, var(--cardo-purple) 9%, transparent),
+      transparent 52%
+    ),
+    radial-gradient(
+      ellipse 80% 50% at 50% 100%,
+      color-mix(in srgb, var(--cardo-blue) 7%, transparent),
+      transparent 55%
+    );
   box-shadow:
     0 0 0 1px color-mix(in srgb, #ffffff 40%, transparent) inset,
     0 24px 64px rgba(15, 23, 42, 0.14),
@@ -111,25 +131,47 @@
   overflow: hidden;
 }
 
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-independent-menu.cardo-settings-window,
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-settings-window {
+  background-color: color-mix(in srgb, var(--cardo-panel-content) 92%, #0b0c14);
+  background-image:
+    radial-gradient(
+      ellipse 80% 60% at 10% 0%,
+      color-mix(in srgb, var(--cardo-purple) 14%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 65% 50% at 92% 18%,
+      color-mix(in srgb, var(--cardo-blue) 12%, transparent),
+      transparent 50%
+    );
+}
+
 [data-cardo-theme='glass'] .cardo-settings-panel {
   background: transparent;
 }
 
 [data-cardo-theme='glass'] .cardo-settings-header {
-  border-bottom: 1px solid color-mix(in srgb, var(--cardo-border) 80%, transparent);
-  background: color-mix(in srgb, #ffffff 42%, transparent);
-  backdrop-filter: blur(16px) saturate(1.15);
-  -webkit-backdrop-filter: blur(16px) saturate(1.15);
+  border-bottom: 1px solid color-mix(in srgb, var(--cardo-border) 70%, transparent);
+  background: color-mix(in srgb, #ffffff 36%, transparent);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
 }
 
-/* Left rail: solid soft plate (contrast to floating glass items on the right). */
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-settings-header {
+  background: color-mix(in srgb, var(--cardo-panel) 32%, transparent);
+}
+
+/* Left rail: translucent over the shared window field (not a solid plate). */
 [data-cardo-theme='glass'] .cardo-settings-nav {
-  border-right: 1px solid color-mix(in srgb, var(--cardo-border) 70%, transparent);
-  background: #f9fafd;
+  border-right: 1px solid color-mix(in srgb, var(--cardo-border) 65%, transparent);
+  background: color-mix(in srgb, #ffffff 28%, transparent);
+  backdrop-filter: blur(14px) saturate(1.12);
+  -webkit-backdrop-filter: blur(14px) saturate(1.12);
 }
 
 [data-color-mode='dark'][data-cardo-theme='glass'] .cardo-settings-nav {
-  background: color-mix(in srgb, var(--cardo-panel-chrome) 88%, transparent);
+  background: color-mix(in srgb, var(--cardo-panel) 28%, transparent);
 }
 
 [data-cardo-theme='glass'] .cardo-settings-nav button {
@@ -148,49 +190,19 @@
 }
 
 [data-color-mode='dark'][data-cardo-theme='glass'] .cardo-settings-nav-indicator {
-  background: var(--cardo-settings-hover);
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  background: color-mix(in srgb, var(--cardo-panel) 80%, transparent);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-/*
- * Right pane: soft atmospheric field so frosted cards have depth to blur over.
- * Left stays flat #F9FAFD; items float as glass chips.
- */
+/* Content sits on the same window field — no second solid fill. */
 [data-cardo-theme='glass'] .cardo-settings-content {
-  background-color: #f9fafd;
-  background-image:
-    radial-gradient(
-      ellipse 90% 70% at 12% 8%,
-      color-mix(in srgb, var(--cardo-blue) 9%, transparent),
-      transparent 58%
-    ),
-    radial-gradient(
-      ellipse 70% 55% at 92% 18%,
-      color-mix(in srgb, var(--cardo-purple) 8%, transparent),
-      transparent 52%
-    ),
-    radial-gradient(
-      ellipse 80% 50% at 50% 100%,
-      color-mix(in srgb, var(--cardo-blue) 6%, transparent),
-      transparent 55%
-    );
+  background: transparent;
 }
 
 [data-color-mode='dark'][data-cardo-theme='glass'] .cardo-settings-content {
-  background-color: color-mix(in srgb, var(--cardo-panel-content) 88%, transparent);
-  background-image:
-    radial-gradient(
-      ellipse 80% 60% at 15% 10%,
-      color-mix(in srgb, var(--cardo-purple) 12%, transparent),
-      transparent 55%
-    ),
-    radial-gradient(
-      ellipse 65% 50% at 90% 20%,
-      color-mix(in srgb, var(--cardo-blue) 10%, transparent),
-      transparent 50%
-    );
+  background: transparent;
 }
 
 /*
