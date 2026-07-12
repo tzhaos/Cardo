@@ -973,9 +973,13 @@ function DesktopUpdatePanel() {
           percent: String(state.downloadPercent ?? 0),
         });
       case 'readyToInstall':
-        return t('settings.updateReady');
+        return state.installChannel === 'portable' && state.available?.assetKind === 'portable'
+          ? t('settings.updateReadyPortable')
+          : t('settings.updateReady');
       case 'installing':
-        return t('settings.updateInstalling');
+        return state.installChannel === 'portable' && state.available?.assetKind === 'portable'
+          ? t('settings.updateInstallingPortable')
+          : t('settings.updateInstalling');
       case 'unsupported':
         return t('settings.updateUnsupported');
       case 'error':
@@ -986,6 +990,25 @@ function DesktopUpdatePanel() {
         return t('settings.updateIdle');
     }
   })();
+
+  const installChannelLabel =
+    state.installChannel === 'setup'
+      ? t('settings.updateInstallChannel.setup')
+      : state.installChannel === 'portable'
+        ? t('settings.updateInstallChannel.portable')
+        : t('settings.updateInstallChannel.dev');
+
+  const assetLabel =
+    state.available?.assetKind === 'portable'
+      ? t('settings.updateAssetPortable')
+      : state.available
+        ? t('settings.updateAssetSetup')
+        : null;
+
+  const applyLabel =
+    state.installChannel === 'portable' && state.available?.assetKind === 'portable'
+      ? t('settings.updateReplace')
+      : t('settings.updateInstall');
 
   const run = async (action: () => Promise<unknown>) => {
     setBusy(true);
@@ -1008,6 +1031,10 @@ function DesktopUpdatePanel() {
       <div className="cardo-settings-card">
         <div className="cardo-settings-card-copy">
           <span>{statusText}</span>
+          <small>
+            {t('settings.updateInstallChannel')}: {installChannelLabel}
+            {assetLabel ? ` · ${assetLabel}` : ''}
+          </small>
           {state.available?.version ? (
             <small>
               v{state.currentVersion} → v{state.available.version}
@@ -1051,7 +1078,7 @@ function DesktopUpdatePanel() {
               disabled={busy}
               onClick={() => void run(() => bridge.installUpdate())}
             >
-              {t('settings.updateInstall')}
+              {applyLabel}
             </Button>
           ) : null}
           {state.available?.releaseUrl ? (
