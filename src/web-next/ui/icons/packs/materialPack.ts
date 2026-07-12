@@ -1,114 +1,118 @@
-import AddOutlined from '@mui/icons-material/AddOutlined';
-import AppsOutlined from '@mui/icons-material/AppsOutlined';
-import BookmarkBorderOutlined from '@mui/icons-material/BookmarkBorderOutlined';
-import BrushOutlined from '@mui/icons-material/BrushOutlined';
-import CheckOutlined from '@mui/icons-material/CheckOutlined';
-import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
-import ChevronRightOutlined from '@mui/icons-material/ChevronRightOutlined';
-import CloseOutlined from '@mui/icons-material/CloseOutlined';
-import CodeOutlined from '@mui/icons-material/CodeOutlined';
-import ContentCopyOutlined from '@mui/icons-material/ContentCopyOutlined';
-import ContentPasteOutlined from '@mui/icons-material/ContentPasteOutlined';
-import DarkModeOutlined from '@mui/icons-material/DarkModeOutlined';
-import DeleteOutlineOutlined from '@mui/icons-material/DeleteOutlineOutlined';
-import DescriptionOutlined from '@mui/icons-material/DescriptionOutlined';
-import DownloadOutlined from '@mui/icons-material/DownloadOutlined';
-import DragIndicatorOutlined from '@mui/icons-material/DragIndicatorOutlined';
-import EditOutlined from '@mui/icons-material/EditOutlined';
-import ExpandMoreOutlined from '@mui/icons-material/ExpandMoreOutlined';
-import FavoriteBorderOutlined from '@mui/icons-material/FavoriteBorderOutlined';
-import FolderOutlined from '@mui/icons-material/FolderOutlined';
-import GridViewOutlined from '@mui/icons-material/GridViewOutlined';
-import HelpOutlineOutlined from '@mui/icons-material/HelpOutlineOutlined';
-import HomeOutlined from '@mui/icons-material/HomeOutlined';
-import ImageOutlined from '@mui/icons-material/ImageOutlined';
-import Inventory2Outlined from '@mui/icons-material/Inventory2Outlined';
-import LanguageOutlined from '@mui/icons-material/LanguageOutlined';
-import LightModeOutlined from '@mui/icons-material/LightModeOutlined';
-import LightbulbOutlined from '@mui/icons-material/LightbulbOutlined';
-import LockOpenOutlined from '@mui/icons-material/LockOpenOutlined';
-import LockOutlined from '@mui/icons-material/LockOutlined';
-import MenuBookOutlined from '@mui/icons-material/MenuBookOutlined';
-import MusicNoteOutlined from '@mui/icons-material/MusicNoteOutlined';
-import MyLocationOutlined from '@mui/icons-material/MyLocationOutlined';
-import OpenInNewOutlined from '@mui/icons-material/OpenInNewOutlined';
-import PaletteOutlined from '@mui/icons-material/PaletteOutlined';
+import AddRounded from '@mui/icons-material/AddRounded';
+import AppsRounded from '@mui/icons-material/AppsRounded';
+import BookmarkBorderRounded from '@mui/icons-material/BookmarkBorderRounded';
+import BrushRounded from '@mui/icons-material/BrushRounded';
+import CheckRounded from '@mui/icons-material/CheckRounded';
+import CheckCircleRounded from '@mui/icons-material/CheckCircleRounded';
+import ChevronRightRounded from '@mui/icons-material/ChevronRightRounded';
+import CloseRounded from '@mui/icons-material/CloseRounded';
+import CodeRounded from '@mui/icons-material/CodeRounded';
+import ContentCopyRounded from '@mui/icons-material/ContentCopyRounded';
+import ContentPasteRounded from '@mui/icons-material/ContentPasteRounded';
+import DarkModeRounded from '@mui/icons-material/DarkModeRounded';
+import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
+import DescriptionRounded from '@mui/icons-material/DescriptionRounded';
+import DownloadRounded from '@mui/icons-material/DownloadRounded';
+import DragIndicatorRounded from '@mui/icons-material/DragIndicatorRounded';
+import EditRounded from '@mui/icons-material/EditRounded';
+import ExpandMoreRounded from '@mui/icons-material/ExpandMoreRounded';
+import FavoriteBorderRounded from '@mui/icons-material/FavoriteBorderRounded';
+import FolderRounded from '@mui/icons-material/FolderRounded';
+import GridViewRounded from '@mui/icons-material/GridViewRounded';
+import HelpOutlineRounded from '@mui/icons-material/HelpOutlineRounded';
+import HomeRounded from '@mui/icons-material/HomeRounded';
+import ImageRounded from '@mui/icons-material/ImageRounded';
+import Inventory2Rounded from '@mui/icons-material/Inventory2Rounded';
+import LanguageRounded from '@mui/icons-material/LanguageRounded';
+import LightModeRounded from '@mui/icons-material/LightModeRounded';
+import LightbulbRounded from '@mui/icons-material/LightbulbRounded';
+import LockOpenRounded from '@mui/icons-material/LockOpenRounded';
+import LockRounded from '@mui/icons-material/LockRounded';
+import MenuBookRounded from '@mui/icons-material/MenuBookRounded';
+import MusicNoteRounded from '@mui/icons-material/MusicNoteRounded';
+import MyLocationRounded from '@mui/icons-material/MyLocationRounded';
+import OpenInNewRounded from '@mui/icons-material/OpenInNewRounded';
+import PaletteRounded from '@mui/icons-material/PaletteRounded';
 import PushPin from '@mui/icons-material/PushPin';
-import PushPinOutlined from '@mui/icons-material/PushPinOutlined';
-import RedoOutlined from '@mui/icons-material/RedoOutlined';
-import RestartAltOutlined from '@mui/icons-material/RestartAltOutlined';
-import SearchOutlined from '@mui/icons-material/SearchOutlined';
-import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
-import StarBorderOutlined from '@mui/icons-material/StarBorderOutlined';
-import StarOutlined from '@mui/icons-material/StarOutlined';
-import StorageOutlined from '@mui/icons-material/StorageOutlined';
-import TuneOutlined from '@mui/icons-material/TuneOutlined';
-import UndoOutlined from '@mui/icons-material/UndoOutlined';
-import UnfoldLessOutlined from '@mui/icons-material/UnfoldLessOutlined';
-import UnfoldMoreOutlined from '@mui/icons-material/UnfoldMoreOutlined';
-import UploadOutlined from '@mui/icons-material/UploadOutlined';
-import ViewListOutlined from '@mui/icons-material/ViewListOutlined';
-import WebAssetOutlined from '@mui/icons-material/WebAssetOutlined';
-import WorkOutlineOutlined from '@mui/icons-material/WorkOutlineOutlined';
+import PushPinRounded from '@mui/icons-material/PushPinRounded';
+import RedoRounded from '@mui/icons-material/RedoRounded';
+import RestartAltRounded from '@mui/icons-material/RestartAltRounded';
+import SearchRounded from '@mui/icons-material/SearchRounded';
+import SettingsRounded from '@mui/icons-material/SettingsRounded';
+import StarBorderRounded from '@mui/icons-material/StarBorderRounded';
+import StarRounded from '@mui/icons-material/StarRounded';
+import StorageRounded from '@mui/icons-material/StorageRounded';
+import TuneRounded from '@mui/icons-material/TuneRounded';
+import UndoRounded from '@mui/icons-material/UndoRounded';
+import UnfoldLessRounded from '@mui/icons-material/UnfoldLessRounded';
+import UnfoldMoreRounded from '@mui/icons-material/UnfoldMoreRounded';
+import UploadRounded from '@mui/icons-material/UploadRounded';
+import ViewListRounded from '@mui/icons-material/ViewListRounded';
+import WebAssetRounded from '@mui/icons-material/WebAssetRounded';
+import WorkOutlineRounded from '@mui/icons-material/WorkOutlineRounded';
 import { adaptSvgIcon, type ThemeIconPack } from '../types';
 
 const M = (Icon: Parameters<typeof adaptSvgIcon>[0]) => adaptSvgIcon(Icon, 'mui');
 
-/** Material / AI Studio — official Material Icons (Outlined). */
+/**
+ * Material / AI Studio — official Material Icons (Rounded).
+ * Used app-wide via ThemeIcon when themeId === 'material' (toolbar, boxes,
+ * menus, settings header/search — not limited to settings nav).
+ */
 export const materialIconPack: ThemeIconPack = {
-  settings: M(SettingsOutlined),
-  search: M(SearchOutlined),
-  add: M(AddOutlined),
-  star: M(StarBorderOutlined),
-  starOff: M(StarOutlined),
-  trash: M(DeleteOutlineOutlined),
-  home: M(HomeOutlined),
-  box: M(Inventory2Outlined),
-  folder: M(FolderOutlined),
-  document: M(DescriptionOutlined),
-  clipboard: M(ContentPasteOutlined),
-  undo: M(UndoOutlined),
-  redo: M(RedoOutlined),
-  lock: M(LockOutlined),
-  unlock: M(LockOpenOutlined),
-  sun: M(LightModeOutlined),
-  moon: M(DarkModeOutlined),
-  check: M(CheckOutlined),
-  close: M(CloseOutlined),
-  chevronRight: M(ChevronRightOutlined),
-  chevronDown: M(ExpandMoreOutlined),
-  database: M(StorageOutlined),
-  options: M(TuneOutlined),
-  paintBrush: M(BrushOutlined),
-  help: M(HelpOutlineOutlined),
-  upload: M(UploadOutlined),
-  download: M(DownloadOutlined),
-  globe: M(LanguageOutlined),
-  pin: M(PushPinOutlined),
+  settings: M(SettingsRounded),
+  search: M(SearchRounded),
+  add: M(AddRounded),
+  star: M(StarBorderRounded),
+  starOff: M(StarRounded),
+  trash: M(DeleteOutlineRounded),
+  home: M(HomeRounded),
+  box: M(Inventory2Rounded),
+  folder: M(FolderRounded),
+  document: M(DescriptionRounded),
+  clipboard: M(ContentPasteRounded),
+  undo: M(UndoRounded),
+  redo: M(RedoRounded),
+  lock: M(LockRounded),
+  unlock: M(LockOpenRounded),
+  sun: M(LightModeRounded),
+  moon: M(DarkModeRounded),
+  check: M(CheckRounded),
+  close: M(CloseRounded),
+  chevronRight: M(ChevronRightRounded),
+  chevronDown: M(ExpandMoreRounded),
+  database: M(StorageRounded),
+  options: M(TuneRounded),
+  paintBrush: M(BrushRounded),
+  help: M(HelpOutlineRounded),
+  upload: M(UploadRounded),
+  download: M(DownloadRounded),
+  globe: M(LanguageRounded),
+  pin: M(PushPinRounded),
   pinOff: M(PushPin),
-  edit: M(EditOutlined),
-  copy: M(ContentCopyOutlined),
-  externalLink: M(OpenInNewOutlined),
-  locate: M(MyLocationOutlined),
-  image: M(ImageOutlined),
-  apps: M(AppsOutlined),
-  window: M(WebAssetOutlined),
-  bookmark: M(BookmarkBorderOutlined),
-  palette: M(PaletteOutlined),
-  rotateCcw: M(RestartAltOutlined),
-  fileDown: M(DownloadOutlined),
-  fileUp: M(UploadOutlined),
-  list: M(ViewListOutlined),
-  layoutGrid: M(GridViewOutlined),
-  collapse: M(UnfoldLessOutlined),
-  expand: M(UnfoldMoreOutlined),
-  grip: M(DragIndicatorOutlined),
-  packageCheck: M(CheckCircleOutlined),
-  panel: M(WebAssetOutlined),
-  heart: M(FavoriteBorderOutlined),
-  music: M(MusicNoteOutlined),
-  book: M(MenuBookOutlined),
-  idea: M(LightbulbOutlined),
-  code: M(CodeOutlined),
-  briefcase: M(WorkOutlineOutlined),
+  edit: M(EditRounded),
+  copy: M(ContentCopyRounded),
+  externalLink: M(OpenInNewRounded),
+  locate: M(MyLocationRounded),
+  image: M(ImageRounded),
+  apps: M(AppsRounded),
+  window: M(WebAssetRounded),
+  bookmark: M(BookmarkBorderRounded),
+  palette: M(PaletteRounded),
+  rotateCcw: M(RestartAltRounded),
+  fileDown: M(DownloadRounded),
+  fileUp: M(UploadRounded),
+  list: M(ViewListRounded),
+  layoutGrid: M(GridViewRounded),
+  collapse: M(UnfoldLessRounded),
+  expand: M(UnfoldMoreRounded),
+  grip: M(DragIndicatorRounded),
+  packageCheck: M(CheckCircleRounded),
+  panel: M(WebAssetRounded),
+  heart: M(FavoriteBorderRounded),
+  music: M(MusicNoteRounded),
+  book: M(MenuBookRounded),
+  idea: M(LightbulbRounded),
+  code: M(CodeRounded),
+  briefcase: M(WorkOutlineRounded),
 };

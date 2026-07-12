@@ -10,8 +10,9 @@ import { ThemeIcon, type ThemeIconName } from '../../ui/icons/ThemeIcon';
 
 /**
  * Settings section nav glyphs.
- * Fluent: official multi-color Fluent icons.
- * Other themes: monochrome pack via ThemeIcon (Material Icons / Lucide).
+ * Fluent: multi-color Fluent System Icons (Settings-style).
+ * Material / others: same app-wide ThemeIcon packs (Material Rounded / Lucide).
+ * Bottom toolbar, header, boxes also use ThemeIcon — not limited to this nav.
  */
 
 export type SettingsSectionId = 'general' | 'appearance' | 'data' | 'about';

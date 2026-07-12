@@ -5,12 +5,13 @@ import { materialIconPack } from './packs/materialPack';
 import type { ThemeIconName, ThemeIconPack, ThemeIconProps } from './types';
 
 /**
- * Per-theme icon policy (official packs preferred):
- * - fluent   → @fluentui/react-icons (Microsoft Fluent System Icons)
- * - material → @mui/icons-material Outlined (Google Material Icons)
- * - swiftui  → Lucide (SF Symbols–like; no official free SF web pack)
- * - glass    → Lucide (stroke glass / aura chrome)
- * - classic  → Lucide (default product chrome)
+ * App-wide icon routing (not limited to settings nav):
+ * - fluent   → @fluentui/react-icons (Color/Filled preferred, official Fluent System Icons)
+ * - material → @mui/icons-material Rounded (official Material Icons)
+ * - swiftui / glass / classic → Lucide (SF-like stroke; no free official SF web pack)
+ *
+ * Every chrome call site should use <ThemeIcon name="…" /> so switching theme
+ * swaps the entire glyph set (bottom toolbar, top bar, boxes, menus, settings).
  */
 export function resolveThemeIconPack(themeId: string): ThemeIconPack {
   switch (themeId) {
