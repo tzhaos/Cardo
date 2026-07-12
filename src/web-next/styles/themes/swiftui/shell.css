@@ -117,7 +117,11 @@
   color: var(--cardo-secondary-text);
 }
 
-/* White system card */
+/*
+ * Hierarchy (iOS-style):
+ * canvas (gray field) → box panel (white / elevated) → item cells (secondary fill).
+ * Items must never be transparent on the same white as the box.
+ */
 [data-cardo-theme='swiftui'] .cardo-box,
 [data-cardo-theme='swiftui'] .cardo-collection-box {
   border: 0;
@@ -147,13 +151,50 @@
 
 [data-cardo-theme='swiftui'] .cardo-box-content,
 [data-cardo-theme='swiftui'] .cardo-collection-box-content {
-  padding: 4px 12px 8px;
+  padding: 6px 12px 10px;
 }
 
+[data-cardo-theme='swiftui'] .cardo-item-list {
+  gap: 6px;
+}
+
+/* Secondary system fill on white card — always visible, not hover-only */
 [data-cardo-theme='swiftui'] .cardo-item-row {
-  border: 0;
+  border: 0 !important;
   border-radius: 10px;
-  background: transparent;
+  background: var(--cardo-glyph) !important;
+  box-shadow: none;
+}
+
+[data-cardo-theme='swiftui'] .cardo-item-row:hover {
+  border-color: transparent !important;
+  background: var(--cardo-item-hover) !important;
+  box-shadow: none;
+}
+
+[data-cardo-theme='swiftui'] .cardo-item-row.cardo-item-pinned {
+  border: 0 !important;
+  background: color-mix(in srgb, var(--box-accent) 10%, var(--cardo-glyph)) !important;
+}
+
+[data-cardo-theme='swiftui'] .cardo-item-list-grid .cardo-item-row {
+  background: var(--cardo-glyph) !important;
+}
+
+[data-cardo-theme='swiftui'] .cardo-item-list-grid .cardo-item-row:hover {
+  background: var(--cardo-item-hover) !important;
+}
+
+[data-color-mode='dark'][data-cardo-theme='swiftui'] .cardo-item-row {
+  background: color-mix(in srgb, #ffffff 8%, var(--cardo-panel)) !important;
+}
+
+[data-color-mode='dark'][data-cardo-theme='swiftui'] .cardo-item-row:hover {
+  background: color-mix(in srgb, #ffffff 12%, var(--cardo-panel)) !important;
+}
+
+[data-color-mode='dark'][data-cardo-theme='swiftui'] .cardo-item-row.cardo-item-pinned {
+  background: color-mix(in srgb, var(--box-accent) 16%, var(--cardo-panel)) !important;
 }
 
 [data-cardo-theme='swiftui'] .cardo-box-footer {
