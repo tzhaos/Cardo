@@ -534,16 +534,14 @@
 }
 
 .cardo-layout-profile-tabs.cardo-segmented-control > button {
+  position: relative;
   flex: 1 1 0;
   min-width: 0;
+  cursor: pointer;
 }
 
-.cardo-layout-profile-hint {
-  margin: 8px 0 0;
-  color: var(--cardo-muted);
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 1.45;
+.cardo-layout-profile-tabs.cardo-segmented-control > button.cardo-layout-profile-tab-active {
+  color: var(--cardo-text);
 }
 
 .cardo-custom-search-template {

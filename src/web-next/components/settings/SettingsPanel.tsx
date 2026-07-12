@@ -510,36 +510,37 @@ function LayoutProfileSettings() {
     <>
       <div className="cardo-settings-subheading">
         <span>{t('settings.layout')}</span>
-        <small>{t('settings.layoutDescription')}</small>
       </div>
-      <ToggleGroup
+      <div
+        className="cardo-layout-profile-tabs cardo-segmented-control"
+        role="tablist"
         aria-label={t('settings.layout')}
-        className="cardo-layout-profile-tabs"
-        type="single"
-        value={layoutProfileId}
-        onValueChange={(value) => {
-          if (!value) return;
-          if (value === 'classic' || value === 'floating' || value === 'zen') {
-            setLayoutProfileId(value as LayoutProfileId);
-          }
-        }}
       >
-        {LAYOUT_PROFILES.map((profile) => (
-          <SegmentButton
-            key={profile.id}
-            active={layoutProfileId === profile.id}
-            value={profile.id}
-          >
-            {t(profile.labelKey as WebNextMessageKey)}
-          </SegmentButton>
-        ))}
-      </ToggleGroup>
-      <p className="cardo-layout-profile-hint">
-        {t(
-          (LAYOUT_PROFILES.find((entry) => entry.id === layoutProfileId)?.descriptionKey ??
-            'settings.layout.classicDescription') as WebNextMessageKey,
-        )}
-      </p>
+        {LAYOUT_PROFILES.map((profile) => {
+          const active = layoutProfileId === profile.id;
+          return (
+            <button
+              key={profile.id}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              className={active ? 'cardo-layout-profile-tab-active' : undefined}
+              onClick={() => setLayoutProfileId(profile.id as LayoutProfileId)}
+            >
+              <span
+                className={[
+                  'cardo-segment-indicator',
+                  active ? 'cardo-segment-indicator-active' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+                aria-hidden
+              />
+              <span>{t(profile.labelKey as WebNextMessageKey)}</span>
+            </button>
+          );
+        })}
+      </div>
     </>
   );
 }
@@ -555,7 +556,6 @@ function FeatureSettings() {
     <>
       <div className="cardo-settings-subheading">
         <span>{t('settings.features')}</span>
-        <small>{t('settings.featuresDescription')}</small>
       </div>
       <div className="cardo-settings-list-group">
         {FEATURE_CATALOG.map((feature) => {
@@ -580,10 +580,7 @@ function FeatureSettings() {
       </div>
       <div className="cardo-settings-card cardo-feature-reset-card cardo-settings-list-group-spaced">
         <div className="cardo-settings-card-copy">
-          <span>
-            {t('settings.resetFeatures')}
-            <small>{t('settings.resetFeaturesDescription')}</small>
-          </span>
+          <span>{t('settings.resetFeatures')}</span>
         </div>
         <Button
           type="button"

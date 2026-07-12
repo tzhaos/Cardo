@@ -56,6 +56,7 @@ import {
   queryLocalThemePacks,
   queryPreferences,
 } from '../../platform/hostPlatform';
+import { applyLayoutProfile } from '../../shell/layouts/applyLayoutProfile';
 
 interface PreferencesStore {
   colorMode: WebNextColorMode;
@@ -222,11 +223,17 @@ const actions = {
   resetFeatureFlags: () => {
     fireCommand({ type: 'preferences.setFeatureFlags', featureFlags: {} });
   },
-  setLayoutProfileId: (layoutProfileId: LayoutProfileId) =>
+  setLayoutProfileId: (layoutProfileId: LayoutProfileId) => {
+    const next = layoutProfileIdSchema.parse(layoutProfileId);
+    // Immediate root marker so chrome modes apply before Runtime ack / layout effect.
+    if (typeof document !== 'undefined') {
+      applyLayoutProfile(document.documentElement, next);
+    }
     fireCommand({
       type: 'preferences.setLayoutProfile',
-      layoutProfileId: layoutProfileIdSchema.parse(layoutProfileId),
-    }),
+      layoutProfileId: next,
+    });
+  },
   setCssSnippet: (cssSnippet: string) =>
     fireCommand({
       type: 'preferences.setCssSnippet',
