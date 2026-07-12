@@ -8,6 +8,8 @@ import {
   desktopRuntimeConfigSchema,
   desktopSaveFileRequestSchema,
   desktopTextResponseSchema,
+  desktopUpdateInstallResultSchema,
+  desktopUpdateStateSchema,
   desktopUrlRequestSchema,
   desktopVoidResponseSchema,
   desktopWebsiteIconResponseSchema,
@@ -92,6 +94,25 @@ const bridge: DesktopBridge = {
     desktopWebsiteIconResponseSchema.parse(
       await ipcRenderer.invoke('website-icon:resolve', desktopUrlRequestSchema.parse({ url })),
     ),
+  getUpdateState: async () =>
+    desktopUpdateStateSchema.parse(await ipcRenderer.invoke('update:get-state')),
+  checkForUpdates: async () =>
+    desktopUpdateStateSchema.parse(await ipcRenderer.invoke('update:check')),
+  downloadUpdate: async () =>
+    desktopUpdateStateSchema.parse(await ipcRenderer.invoke('update:download')),
+  cancelUpdateDownload: async () =>
+    desktopUpdateStateSchema.parse(await ipcRenderer.invoke('update:cancel-download')),
+  installUpdate: async () =>
+    desktopUpdateInstallResultSchema.parse(await ipcRenderer.invoke('update:install')),
+  openUpdateReleasePage: async () =>
+    desktopVoidResponseSchema.parse(await ipcRenderer.invoke('update:open-release-page')),
+  onUpdateStateChange: (callback) => {
+    const listener = (_event: Electron.IpcRendererEvent, state: unknown) => {
+      callback(desktopUpdateStateSchema.parse(state));
+    };
+    ipcRenderer.on('update:state', listener);
+    return () => ipcRenderer.off('update:state', listener);
+  },
 };
 
 contextBridge.exposeInMainWorld('cardoDesktop', bridge);

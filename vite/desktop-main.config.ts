@@ -2,6 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { defineConfig } from 'vite';
 
+const PACKAGE_JSON = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8'),
+) as { version?: string };
+
 function copyDesktopIcons() {
   return {
     name: 'copy-desktop-icons',
@@ -26,6 +30,7 @@ function copyDesktopIcons() {
 export default defineConfig({
   define: {
     __CARDO_DEBUG_PACKAGE__: JSON.stringify(process.env.CARDO_DEBUG_PACKAGE === '1'),
+    __APP_VERSION__: JSON.stringify(PACKAGE_JSON.version ?? '0.0.0'),
   },
   plugins: [copyDesktopIcons()],
   build: {

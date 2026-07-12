@@ -58,8 +58,8 @@ if (!isCi && !process.env.ELECTRON_MIRROR) {
 }
 
 const desktopArtifacts = [
-  `artifacts/desktop-dist/Cardo Setup ${rootPackage.version}.exe`,
-  `artifacts/desktop-dist/Cardo ${rootPackage.version}.exe`,
+  `artifacts/desktop-dist/Cardo-${rootPackage.version}-Setup-x64.exe`,
+  `artifacts/desktop-dist/Cardo-${rootPackage.version}-Portable-x64.exe`,
 ];
 
 // Release focuses on Desktop installers. CLI / extension / native-host ship via npm or other channels later.

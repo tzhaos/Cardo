@@ -5,6 +5,14 @@
   "version": "0.1.0",
   "description": "Cardo — local Runtime spatial workspace (CLI, Web, Extension, Desktop)",
   "license": "MIT",
+  "homepage": "https://github.com/tzhaos/Cardo",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tzhaos/Cardo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tzhaos/Cardo/issues"
+  },
   "type": "module",
   "bin": {
     "cardo": "./artifacts/cli/cardo.js"
@@ -85,6 +93,8 @@
     "vite": "^6.2.0"
   },
   "build": {
+    "appId": "com.cardo.desktop",
+    "productName": "Cardo",
     "electronVersion": "42.4.0",
     "directories": {
       "app": "artifacts/desktop",
@@ -109,7 +119,8 @@
             "x64"
           ]
         }
-      ]
+      ],
+      "artifactName": "Cardo-${version}-${os}-${arch}.${ext}"
     },
     "mac": {
       "icon": "assets/brand/cardo-icon-512.png",
@@ -125,7 +136,19 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
-    }
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "Cardo-${version}-Setup-${arch}.${ext}"
+    },
+    "portable": {
+      "artifactName": "Cardo-${version}-Portable-${arch}.${ext}"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "tzhaos",
+        "repo": "Cardo",
+        "releaseType": "release"
+      }
+    ]
   }
 }
