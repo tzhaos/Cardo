@@ -28,6 +28,16 @@ export const SETTINGS_SEARCH_CATALOG: readonly SettingsSearchEntry[] = [
     keywords: { en: ['bing', 'google', 'baidu', 'web search'], zh: ['搜索引擎', '必应', '百度', '谷歌'] },
   },
   {
+    id: 'features',
+    section: 'general',
+    titleKey: 'settings.features',
+    descriptionKey: 'settings.featuresDescription',
+    keywords: {
+      en: ['toggle', 'chrome', 'catalog', 'multi page', 'recycle', 'collection'],
+      zh: ['开关', '功能', '多页面', '回收站', '收藏', '顶栏', '底栏'],
+    },
+  },
+  {
     id: 'theme',
     section: 'appearance',
     titleKey: 'settings.theme',

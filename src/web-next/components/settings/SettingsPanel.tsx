@@ -29,6 +29,10 @@ import {
   webSearchEngineIdSchema,
 } from '../../../core/contracts/preferences';
 import {
+  FEATURE_CATALOG,
+  isFeatureEnabled,
+} from '../../../core/contracts/featureCatalog';
+import {
   overridableColorKeys,
   type OverridableColorKey,
 } from '../../../core/contracts/themePack';
@@ -57,6 +61,8 @@ import { Button } from '../../ui/primitives/button';
 import { MotionButton } from '../../ui/primitives/motion-button';
 import { ToggleGroup, ToggleGroupItem } from '../../ui/primitives/toggle-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/primitives/tabs';
+import { Switch } from '../../ui/primitives/switch';
+import type { WebNextMessageKey } from '../../i18n/messages';
 
 type SettingsSection = SettingsSectionId;
 
@@ -473,6 +479,62 @@ function GeneralSettings({
           <small>{t('settings.customSearchTemplateHint')}</small>
         </label>
       ) : null}
+      <FeatureSettings />
+    </>
+  );
+}
+
+function FeatureSettings() {
+  const featureFlags = usePreferencesStore((state) => state.featureFlags);
+  const setFeatureEnabled = usePreferencesStore((state) => state.setFeatureEnabled);
+  const resetFeatureFlags = usePreferencesStore((state) => state.resetFeatureFlags);
+  const { t } = useI18n();
+  const hasOverrides = Object.keys(featureFlags).length > 0;
+
+  return (
+    <>
+      <div className="cardo-settings-subheading">
+        <span>{t('settings.features')}</span>
+        <small>{t('settings.featuresDescription')}</small>
+      </div>
+      <div className="cardo-settings-list-group">
+        {FEATURE_CATALOG.map((feature) => {
+          const enabled = isFeatureEnabled(feature.id, featureFlags);
+          const label = t(feature.labelKey as WebNextMessageKey);
+          return (
+            <div className="cardo-settings-card" key={feature.id}>
+              <div className="cardo-settings-card-copy">
+                <span>
+                  {label}
+                  <small>{t(feature.descriptionKey as WebNextMessageKey)}</small>
+                </span>
+              </div>
+              <Switch
+                checked={enabled}
+                aria-label={label}
+                onCheckedChange={(next) => setFeatureEnabled(feature.id, next)}
+              />
+            </div>
+          );
+        })}
+      </div>
+      <div className="cardo-settings-card cardo-feature-reset-card cardo-settings-list-group-spaced">
+        <div className="cardo-settings-card-copy">
+          <span>
+            {t('settings.resetFeatures')}
+            <small>{t('settings.resetFeaturesDescription')}</small>
+          </span>
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          className="cardo-settings-secondary-button"
+          disabled={!hasOverrides}
+          onClick={() => resetFeatureFlags()}
+        >
+          {t('settings.resetFeaturesAction')}
+        </Button>
+      </div>
     </>
   );
 }

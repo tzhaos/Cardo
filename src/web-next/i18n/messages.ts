@@ -99,6 +99,8 @@ export const WEB_NEXT_MESSAGES = {
     'settings.featuresDescription':
       'Closed catalog only. Turning a feature off unmounts its UI and does not break canvas drag',
     'settings.resetFeatures': 'Reset interface features',
+    'settings.resetFeaturesDescription': 'Restore official defaults for every chrome feature',
+    'settings.resetFeaturesAction': 'Reset',
     'settings.feature.chrome.topBar': 'Top bar',
     'settings.feature.chrome.topBarDescription': 'Page tabs and system page entry points',
     'settings.feature.chrome.historyToolbar': 'History toolbar',
@@ -415,6 +417,8 @@ export const WEB_NEXT_MESSAGES = {
     'settings.featuresDescription':
       '仅含封闭目录。关闭某项会卸载其界面，且不会影响画布拖拽',
     'settings.resetFeatures': '重置界面功能',
+    'settings.resetFeaturesDescription': '将全部壳层功能恢复为官方默认（全部开启）',
+    'settings.resetFeaturesAction': '重置',
     'settings.feature.chrome.topBar': '顶栏',
     'settings.feature.chrome.topBarDescription': '页面标签与系统页面入口',
     'settings.feature.chrome.historyToolbar': '历史工具栏',

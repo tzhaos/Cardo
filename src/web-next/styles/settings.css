@@ -823,8 +823,66 @@
   opacity: 1;
 }
 
-.cardo-theme-color-reset-card .cardo-settings-secondary-button:disabled {
+.cardo-theme-color-reset-card .cardo-settings-secondary-button:disabled,
+.cardo-feature-reset-card .cardo-settings-secondary-button:disabled {
   opacity: 1;
+}
+
+/* Binary feature switches — product geometry; themes may retune color only */
+.cardo-ui-switch {
+  position: relative;
+  display: inline-flex;
+  width: 42px;
+  height: 26px;
+  flex: 0 0 auto;
+  align-items: center;
+  border: 0;
+  border-radius: 999px;
+  padding: 0;
+  background: var(--cardo-neutral-button);
+  cursor: pointer;
+  transition: background var(--cardo-duration-normal) var(--cardo-easing);
+}
+
+.cardo-ui-switch:hover:not(:disabled) {
+  background: var(--cardo-neutral-button-hover);
+}
+
+.cardo-ui-switch[data-state='checked'] {
+  background: var(--cardo-blue);
+}
+
+.cardo-ui-switch[data-state='checked']:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--cardo-blue) 88%, #000);
+}
+
+.cardo-ui-switch:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--cardo-blue) 45%, transparent);
+  outline-offset: 2px;
+}
+
+.cardo-ui-switch:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.cardo-ui-switch-thumb {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
+  transform: translateX(3px);
+  transition: transform var(--cardo-duration-normal) var(--cardo-easing);
+}
+
+.cardo-ui-switch[data-state='checked'] .cardo-ui-switch-thumb {
+  transform: translateX(19px);
+}
+
+.cardo-feature-reset-card {
+  margin-top: 0;
 }
 
 /* Legacy theme pack card styles (unused; keep layout utilities harmless). */
