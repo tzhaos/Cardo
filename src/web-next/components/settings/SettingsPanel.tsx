@@ -668,10 +668,10 @@ function AppearanceSettings({
         ) : null}
       </div>
 
-      <div className="cardo-settings-list-group cardo-settings-list-group-spaced">
+      <div className="cardo-settings-group cardo-settings-list-group-spaced">
         <button
           type="button"
-          className="cardo-settings-disclosure"
+          className="cardo-settings-disclosure cardo-settings-group-header"
           aria-expanded={customColorsOpen}
           onClick={() => setCustomColorsOpen((open) => !open)}
         >
@@ -689,88 +689,86 @@ function AppearanceSettings({
             }
           />
         </button>
-      </div>
 
-      {customColorsOpen ? (
-        <>
-          <div className="cardo-theme-color-list">
-            {overridableColorKeys.map((key) => {
-              const current = String(effectiveColors[key] ?? '');
-              const pickerValue = cssColorToHexInput(current);
-              const presets = COLOR_OVERRIDE_PRESETS[key][colorMode];
-              const label = t(COLOR_OVERRIDE_LABEL_KEYS[key] as Parameters<typeof t>[0]);
-              return (
-                <div className="cardo-theme-color-row" key={key}>
-                  <div className="cardo-theme-color-row-main">
-                    <span className="cardo-theme-color-label">
-                      <i
-                        className="cardo-theme-color-swatch"
-                        style={{ background: current }}
-                        aria-hidden
-                      />
-                      {label}
-                    </span>
-                    <span className="cardo-theme-color-controls">
-                      <input
-                        className="cardo-theme-color-picker"
-                        type="color"
-                        value={pickerValue}
-                        aria-label={label}
-                        title={t('settings.colorOverride.custom')}
-                        onChange={(event) =>
-                          setThemeColorOverride(colorMode, key, event.target.value)
-                        }
-                      />
-                      <Input
-                        className="cardo-theme-color-text"
-                        value={modeOverrides[key] ?? ''}
-                        placeholder={current}
-                        spellCheck={false}
-                        aria-label={t('settings.colorOverride.customValue', { label })}
-                        onChange={(event) => {
-                          const next = event.target.value.trim();
-                          setThemeColorOverride(colorMode, key, next.length ? next : null);
-                        }}
-                      />
-                    </span>
+        {customColorsOpen ? (
+          <div className="cardo-settings-group-body">
+            <div className="cardo-theme-color-list">
+              {overridableColorKeys.map((key) => {
+                const current = String(effectiveColors[key] ?? '');
+                const pickerValue = cssColorToHexInput(current);
+                const presets = COLOR_OVERRIDE_PRESETS[key][colorMode];
+                const label = t(COLOR_OVERRIDE_LABEL_KEYS[key] as Parameters<typeof t>[0]);
+                return (
+                  <div className="cardo-theme-color-row" key={key}>
+                    <div className="cardo-theme-color-row-main">
+                      <span className="cardo-theme-color-label">
+                        <i
+                          className="cardo-theme-color-swatch"
+                          style={{ background: current }}
+                          aria-hidden
+                        />
+                        {label}
+                      </span>
+                      <span className="cardo-theme-color-controls">
+                        <input
+                          className="cardo-theme-color-picker"
+                          type="color"
+                          value={pickerValue}
+                          aria-label={label}
+                          title={t('settings.colorOverride.custom')}
+                          onChange={(event) =>
+                            setThemeColorOverride(colorMode, key, event.target.value)
+                          }
+                        />
+                        <Input
+                          className="cardo-theme-color-text"
+                          value={modeOverrides[key] ?? ''}
+                          placeholder={current}
+                          spellCheck={false}
+                          aria-label={t('settings.colorOverride.customValue', { label })}
+                          onChange={(event) => {
+                            const next = event.target.value.trim();
+                            setThemeColorOverride(colorMode, key, next.length ? next : null);
+                          }}
+                        />
+                      </span>
+                    </div>
+                    <div
+                      className="cardo-theme-color-presets"
+                      role="group"
+                      aria-label={t('settings.colorOverride.presets', { label })}
+                    >
+                      {presets.map((preset) => {
+                        const active = isColorPresetActive(current, preset.value);
+                        return (
+                          <button
+                            key={preset.id}
+                            type="button"
+                            className={[
+                              'cardo-theme-color-preset',
+                              active ? 'cardo-theme-color-preset-active' : '',
+                            ]
+                              .filter(Boolean)
+                              .join(' ')}
+                            aria-label={`${label}: ${preset.id}`}
+                            aria-pressed={active}
+                            title={preset.value}
+                            onClick={() => setThemeColorOverride(colorMode, key, preset.value)}
+                          >
+                            <span
+                              className="cardo-theme-color-preset-fill"
+                              style={{ background: preset.value }}
+                              aria-hidden
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div
-                    className="cardo-theme-color-presets"
-                    role="group"
-                    aria-label={t('settings.colorOverride.presets', { label })}
-                  >
-                    {presets.map((preset) => {
-                      const active = isColorPresetActive(current, preset.value);
-                      return (
-                        <button
-                          key={preset.id}
-                          type="button"
-                          className={[
-                            'cardo-theme-color-preset',
-                            active ? 'cardo-theme-color-preset-active' : '',
-                          ]
-                            .filter(Boolean)
-                            .join(' ')}
-                          aria-label={`${label}: ${preset.id}`}
-                          aria-pressed={active}
-                          title={preset.value}
-                          onClick={() => setThemeColorOverride(colorMode, key, preset.value)}
-                        >
-                          <span
-                            className="cardo-theme-color-preset-fill"
-                            style={{ background: preset.value }}
-                            aria-hidden
-                          />
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
 
-          <div className="cardo-settings-list-group cardo-settings-list-group-spaced">
             <div className="cardo-settings-card cardo-theme-color-reset-card">
               <div className="cardo-settings-card-copy">
                 <IconFrame>
@@ -792,8 +790,8 @@ function AppearanceSettings({
               </Button>
             </div>
           </div>
-        </>
-      ) : null}
+        ) : null}
+      </div>
     </>
   );
 }
