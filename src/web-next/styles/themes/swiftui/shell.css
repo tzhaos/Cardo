@@ -267,16 +267,16 @@
   font-weight: 600;
 }
 
-/* Dock-like bottom toolbar — equal 36px chips, glyphs centered */
+/* Dock-like bottom toolbar — equal 36px chips, roomy chip gaps (not 2px cramped) */
 [data-cardo-theme='swiftui'] .cardo-bottom-shell {
   bottom: 18px;
 }
 
 [data-cardo-theme='swiftui'] .cardo-bottom-toolbar {
-  gap: 2px;
+  gap: 6px;
   border: 0 !important;
-  border-radius: 18px !important;
-  padding: 4px !important;
+  border-radius: 20px !important;
+  padding: 5px !important;
   align-items: center !important;
   background: color-mix(in srgb, var(--cardo-panel) 82%, transparent) !important;
   box-shadow: var(--cardo-shadow) !important;
