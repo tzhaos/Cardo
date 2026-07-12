@@ -48,3 +48,11 @@ Cardo Runtime 是本机唯一权威 SQLite 持有者与业务写路径。CLI、W
 6. 拖拽和 Resize 帧内禁止提交 Command、写数据库或更新完整 Workspace。
 7. 迁移组件时先复现当前视觉与几何，不在同一提交中主动重新设计。
 8. 新实现落地后删除对应旧组件和旧 CSS，不长期保留双轨实现。
+
+## 主题包
+
+1. Design Token + Theme Pack 是唯一换皮扩展面；禁止第二套皮肤引擎或旧 token 双轨。
+2. JSON 只放可序列化 token；结构方言写在 `src/web-next/styles/themes/<id>…`，选择器挂 `[data-cardo-theme]`。
+3. 浮动壳材质用 `tokens.chrome.material`（glass|solid）与 `data-cardo-chrome-material`，设置壳背景用 `--cardo-settings-chrome`（须不透明）。
+4. 文字壳禁止 scale 进出场与长期 transform 定位；几何整数像素。详见 `docs/architecture/theme-pack-authoring.md`。
+5. 新增官方主题必须登记 id、recipe 映射，并跑 `npx tsx scripts/validate-builtin-themes.ts`。
