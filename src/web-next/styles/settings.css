@@ -283,11 +283,67 @@
 }
 
 .cardo-settings-content {
+  /*
+   * Settings item surface tokens — one place for themes to restyle every
+   * settings row/card (language, data import/export, about, looks, packs…).
+   * Markup must use a class in the shared group below, not a one-off surface.
+   */
+  --cardo-settings-item-bg: var(--cardo-panel-content);
+  --cardo-settings-item-bg-hover: var(--cardo-hover);
+  --cardo-settings-item-border: var(--cardo-border);
+  --cardo-settings-item-border-hover: color-mix(in srgb, var(--cardo-blue) 25%, var(--cardo-border));
+  --cardo-settings-item-shadow: none;
+  --cardo-settings-item-shadow-hover: none;
+  --cardo-settings-item-radius: var(--cardo-radius-xl);
+  --cardo-settings-item-blur: none;
+  --cardo-settings-item-inset: none;
+
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
   padding: var(--cardo-space-6) var(--cardo-space-6) var(--cardo-space-7);
   scrollbar-gutter: stable;
+}
+
+/*
+ * Shared settings item surface. Theme dialects override the CSS variables on
+ * .cardo-settings-content — not individual component classes — so one change
+ * paints language rows, data import/export buttons, about cards, looks, packs.
+ */
+.cardo-settings-content :is(
+  .cardo-settings-card,
+  .cardo-theme-pack-card,
+  .cardo-theme-look-card,
+  .cardo-about-card,
+  .cardo-settings-disclosure,
+  .cardo-data-actions > button,
+  .cardo-data-import-confirm,
+  .cardo-settings-search-result
+) {
+  border: 1px solid var(--cardo-settings-item-border);
+  border-radius: var(--cardo-settings-item-radius);
+  background: var(--cardo-settings-item-bg);
+  box-shadow: var(--cardo-settings-item-inset), var(--cardo-settings-item-shadow);
+  backdrop-filter: var(--cardo-settings-item-blur);
+  -webkit-backdrop-filter: var(--cardo-settings-item-blur);
+  transition:
+    border-color var(--cardo-duration-normal) var(--cardo-easing),
+    background var(--cardo-duration-normal) var(--cardo-easing),
+    box-shadow var(--cardo-duration-normal) var(--cardo-easing);
+}
+
+.cardo-settings-content
+  :is(
+    .cardo-settings-card,
+    .cardo-theme-pack-card,
+    .cardo-theme-look-card,
+    .cardo-settings-disclosure,
+    .cardo-data-actions > button,
+    .cardo-settings-search-result
+  ):hover {
+  border-color: var(--cardo-settings-item-border-hover);
+  background: var(--cardo-settings-item-bg-hover);
+  box-shadow: var(--cardo-settings-item-inset), var(--cardo-settings-item-shadow-hover);
 }
 
 .cardo-settings-heading {
@@ -314,10 +370,8 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--cardo-space-4);
-  border: 1px solid var(--cardo-border);
-  border-radius: var(--cardo-radius-xl);
   padding: var(--cardo-space-3);
-  background: var(--cardo-panel-content);
+  /* surface paint: shared token group under .cardo-settings-content */
 }
 
 .cardo-settings-card-copy {
@@ -730,25 +784,15 @@
   min-width: 0;
   flex-direction: column;
   gap: 10px;
-  border: 1px solid var(--cardo-border);
-  border-radius: var(--cardo-radius-xl);
   padding: 10px;
-  background: var(--cardo-panel-content);
   color: var(--cardo-soft-text);
   text-align: left;
-  transition:
-    border-color var(--cardo-duration-normal) var(--cardo-easing),
-    background var(--cardo-duration-normal) var(--cardo-easing),
-    box-shadow var(--cardo-duration-normal) var(--cardo-easing);
-}
-
-.cardo-theme-pack-card:hover {
-  background: var(--cardo-hover);
+  /* surface paint: shared token group under .cardo-settings-content */
 }
 
 .cardo-theme-pack-card-selected {
-  border-color: rgba(59, 130, 246, 0.36);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+  border-color: color-mix(in srgb, var(--cardo-blue) 36%, var(--cardo-border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cardo-blue) 8%, transparent);
 }
 
 .cardo-theme-pack-preview {
@@ -835,21 +879,11 @@
   min-width: 0;
   flex-direction: column;
   gap: 8px;
-  border: 1px solid var(--cardo-border);
-  border-radius: var(--cardo-radius-lg);
   padding: 10px;
-  background: var(--cardo-panel-content);
   color: var(--cardo-text);
   text-align: left;
   cursor: pointer;
-  transition:
-    border-color var(--cardo-duration-normal) var(--cardo-easing),
-    background var(--cardo-duration-normal) var(--cardo-easing),
-    box-shadow var(--cardo-duration-normal) var(--cardo-easing);
-}
-
-.cardo-theme-look-card:hover {
-  background: var(--cardo-hover);
+  /* surface paint: shared token group under .cardo-settings-content */
 }
 
 .cardo-theme-look-card-selected {
@@ -903,13 +937,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  border: 1px solid var(--cardo-border);
-  border-radius: var(--cardo-radius-xl);
   padding: 12px 14px;
-  background: var(--cardo-panel-content);
   color: var(--cardo-text);
   text-align: left;
   cursor: pointer;
+  /* surface paint: shared token group under .cardo-settings-content */
 }
 
 .cardo-settings-disclosure > span {
@@ -948,17 +980,10 @@
   min-height: 94px;
   align-items: flex-start;
   gap: 11px;
-  border: 1px solid var(--cardo-border);
-  border-radius: var(--cardo-radius-lg);
   padding: 14px;
-  background: var(--cardo-panel-content);
   color: var(--cardo-secondary-text);
   text-align: left;
-}
-
-.cardo-data-actions > button:hover {
-  border-color: color-mix(in srgb, var(--cardo-blue) 25%, var(--cardo-border));
-  background: var(--cardo-hover);
+  /* surface paint: shared token group under .cardo-settings-content */
 }
 
 .cardo-data-actions > button > span:last-child {
@@ -1207,10 +1232,8 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  border: 1px solid var(--cardo-border);
-  border-radius: var(--cardo-radius-xl);
   padding: 18px;
-  background: var(--cardo-panel-content);
+  /* surface paint: shared token group under .cardo-settings-content */
 }
 
 .cardo-about-logo {
