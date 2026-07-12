@@ -60,6 +60,8 @@ jobs:
         env:
           CARDO_BUILD_PROXY: ''
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          # Explicit official Electron CDN (do not use regional npm mirrors on GHA).
+          ELECTRON_MIRROR: https://github.com/electron/electron/releases/download/
         run: npm run release:build
 
       - name: Prepare release assets

@@ -34,6 +34,7 @@ function resolveBuildProxy(): string | undefined {
 }
 
 const proxy = resolveBuildProxy();
+const isCi = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
 const buildEnvironment: NodeJS.ProcessEnv = {
   ...process.env,
   NO_PROXY: process.env.NO_PROXY ?? process.env.no_proxy ?? 'localhost,127.0.0.1',
@@ -49,6 +50,11 @@ if (proxy) {
   delete buildEnvironment.HTTPS_PROXY;
   delete buildEnvironment.http_proxy;
   delete buildEnvironment.https_proxy;
+}
+
+// Prefer GitHub Electron CDN on CI. Local default mirror helps China networks.
+if (!isCi && !process.env.ELECTRON_MIRROR) {
+  buildEnvironment.ELECTRON_MIRROR = 'https://npmmirror.com/mirrors/electron/';
 }
 
 const desktopArtifacts = [
