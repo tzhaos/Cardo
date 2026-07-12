@@ -50,7 +50,7 @@ import { MotionButton } from '../../ui/primitives/motion-button';
 const BOX_CORNER_RADIUS = {
   classic: { idle: 16, compact: 24 },
   fluent: { idle: 6, compact: 8 },
-  material: { idle: 28, compact: 32 },
+  material: { idle: 16, compact: 20 },
 } as const;
 
 interface BaseBoxFrameProps {

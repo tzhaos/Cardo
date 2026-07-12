@@ -1,6 +1,12 @@
 /**
- * Material You — shell chrome.
- * Pastel field, floating soft chrome, large rounded shapes.
+ * Material / AI Studio — shell chrome.
+ *
+ * Core language (from Google AI Studio):
+ * - near-white field (#f8f9fa / #fff)
+ * - hairline borders, almost flat elevation
+ * - gray selection pills (not loud accent fills)
+ * - medium radius (12–16), monochrome wayfinding
+ * - soft Google blue only on primary actions / links
  */
 
 [data-cardo-theme='material'] .cardo-app {
@@ -14,96 +20,126 @@
   box-shadow: none;
 }
 
-/* Floating soft top strip — not full-bleed Fluent, not glass Classic */
+/* Full-width flat title bar — Studio top chrome */
 [data-cardo-theme='material'] .cardo-top-bar {
-  top: 12px;
-  left: 50%;
-  right: auto;
-  width: min(720px, calc(100vw - 160px));
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
   max-width: none;
-  transform: translateX(-50%);
+  transform: none;
   border: 0;
-  border-radius: 999px;
-  padding: 4px 10px;
-  background: color-mix(in srgb, var(--cardo-panel) 88%, transparent) !important;
+  border-bottom: 1px solid var(--cardo-border);
+  border-radius: 0;
+  padding: 0 12px 0 72px;
+  background: var(--cardo-panel) !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
 [data-cardo-theme='material'] .cardo-app-desktop .cardo-top-bar {
-  top: 52px;
+  top: 40px;
+  padding-left: 72px;
 }
 
 [data-cardo-theme='material'] .cardo-top-inner {
   display: flex;
   width: 100%;
-  min-height: 40px;
+  min-height: 48px;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 8px;
 }
 
-[data-cardo-theme='material'] .cardo-top-leading,
-[data-cardo-theme='material'] .cardo-top-trailing {
-  display: none;
+[data-cardo-theme='material'] .cardo-top-leading {
+  display: block;
+  flex: 1 1 0;
+  min-width: 40px;
 }
 
 [data-cardo-theme='material'] .cardo-top-center {
   flex: 0 1 auto;
+  display: flex;
+  align-items: center;
   justify-content: center;
+  min-width: 0;
+}
+
+[data-cardo-theme='material'] .cardo-top-trailing {
+  flex: 1 1 0;
+  justify-content: flex-end;
+  gap: 2px;
+  min-width: 40px;
 }
 
 [data-cardo-theme='material'] .cardo-tabs {
-  gap: 4px;
+  gap: 2px;
 }
 
-/* Soft filled pill tabs (prototype Personal active) */
+/* Soft gray pill tabs (Studio segment / nav chip) */
 [data-cardo-theme='material'] .cardo-tab-pill,
 [data-cardo-theme='material'] .cardo-tab-pill button {
   border-radius: 999px !important;
 }
 
 [data-cardo-theme='material'] .cardo-tab-pill button {
-  min-height: 34px;
-  padding: 0 16px;
+  min-height: 32px;
+  padding: 0 14px;
   color: var(--cardo-secondary-text);
   font-weight: 500;
   font-size: 13px;
 }
 
 [data-cardo-theme='material'] .cardo-tab-pill-active button {
-  color: var(--cardo-blue);
+  color: var(--cardo-text);
   font-weight: 600;
 }
 
 [data-cardo-theme='material'] .cardo-active-tab-indicator {
   inset: 2px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--cardo-blue) 18%, var(--cardo-panel));
+  background: var(--cardo-neutral-button);
   box-shadow: none;
   height: auto;
 }
 
 [data-cardo-theme='material'] .cardo-tab-pill-system button {
-  width: 34px;
+  width: 32px;
   padding: 0;
 }
 
-[data-cardo-theme='material'] .cardo-history-controls {
-  top: 12px;
-  left: 16px;
+[data-cardo-theme='material'] .cardo-top-actions button,
+[data-cardo-theme='material'] .cardo-top-trailing .cardo-icon-button {
+  width: 36px;
+  height: 36px;
   border: 0 !important;
   border-radius: 999px !important;
-  padding: 2px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--cardo-secondary-text);
+}
+
+[data-cardo-theme='material'] .cardo-top-actions button:hover,
+[data-cardo-theme='material'] .cardo-top-trailing .cardo-icon-button:hover {
+  background: var(--cardo-hover) !important;
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='material'] .cardo-history-controls {
+  top: 6px;
+  left: 8px;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
-  gap: 4px;
+  gap: 0;
 }
 
 [data-cardo-theme='material'] .cardo-app-desktop .cardo-history-controls {
-  top: 52px;
+  top: 46px;
 }
 
 [data-cardo-theme='material'] .cardo-history-controls button {
@@ -118,15 +154,18 @@
   color: var(--cardo-text);
 }
 
-/* Soft elevated cards — large M3 radius */
+/*
+ * Studio cards: white + hairline + medium radius + barely-there shadow.
+ * Icon tile may carry a pastel tint; body stays monochrome.
+ */
 [data-cardo-theme='material'] .cardo-box,
 [data-cardo-theme='material'] .cardo-collection-box {
-  border: 0;
-  --cardo-box-radius: 28px;
+  border: 1px solid var(--cardo-border);
+  --cardo-box-radius: 16px;
   border-radius: var(--cardo-box-radius);
   background-color: var(--cardo-panel);
   background-image: none;
-  box-shadow: var(--cardo-shadow);
+  box-shadow: none;
 }
 
 [data-cardo-theme='material'] .cardo-box-header,
@@ -134,11 +173,11 @@
 [data-cardo-theme='material'] .cardo-temporary-box-header {
   border-bottom: 0;
   background: transparent;
-  padding: 14px 16px 8px;
+  padding: 14px 16px 6px;
 }
 
 [data-cardo-theme='material'] .cardo-box-controls {
-  gap: 2px;
+  gap: 0;
 }
 
 [data-cardo-theme='material'] .cardo-box-view-toggle,
@@ -148,132 +187,148 @@
   height: 32px;
   border-radius: 999px !important;
   background: transparent;
+  color: var(--cardo-secondary-text);
 }
 
 [data-cardo-theme='material'] .cardo-box-view-toggle:hover,
 [data-cardo-theme='material'] .cardo-box-delete:hover,
 [data-cardo-theme='material'] .cardo-box-controls .cardo-icon-button:hover {
   background: var(--cardo-hover);
+  color: var(--cardo-text);
 }
 
 [data-cardo-theme='material'] .cardo-box-content,
 [data-cardo-theme='material'] .cardo-collection-box-content {
-  padding: 8px 12px 12px;
+  padding: 4px 12px 10px;
 }
 
-/* Nested item cards: white on soft panel */
+/* Nested rows: hairline card chips inside box */
 [data-cardo-theme='material'] .cardo-item-row {
-  border: 0;
-  border-radius: 18px;
-  background: var(--cardo-panel-content);
+  border: 1px solid var(--cardo-border-subtle);
+  border-radius: 12px;
+  background: var(--cardo-canvas);
   box-shadow: none;
+}
+
+[data-cardo-theme='material'] .cardo-item-list-grid .cardo-item-row {
+  background: var(--cardo-panel);
 }
 
 [data-cardo-theme='material'] .cardo-box-footer {
   border-top: 0;
-  padding: 8px 12px 14px;
+  padding: 4px 12px 14px;
   background: transparent;
 }
 
-/* Full-width filled primary CTA — deep blue pill */
+/* Primary CTA — Google blue filled, medium-large pill */
 [data-cardo-theme='material'] .cardo-box-footer button,
 [data-cardo-theme='material'] .cardo-box-footer .cardo-ui-button-default {
   width: 100%;
-  min-height: 44px;
+  min-height: 40px;
   border: 0 !important;
-  border-radius: 999px !important;
+  border-radius: 20px !important;
   background: var(--cardo-create-background) !important;
   color: var(--cardo-create-text) !important;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 13px;
   box-shadow: none !important;
 }
 
 [data-cardo-theme='material'] .cardo-box-footer button:hover {
-  filter: brightness(1.06);
+  filter: brightness(1.05);
 }
 
+/* Icon badge — soft circular tile (Studio agent card glyphs) */
 [data-cardo-theme='material'] button.cardo-box-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 999px !important;
-  background: color-mix(in srgb, var(--cardo-blue) 12%, var(--cardo-panel-content));
+  width: 32px;
+  height: 32px;
+  border-radius: 10px !important;
+  border: 0;
+  background: var(--cardo-glyph);
   color: var(--cardo-blue);
   box-shadow: none;
 }
 
 [data-cardo-theme='material'] .cardo-box-title,
 [data-cardo-theme='material'] .cardo-collection-box-title {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--cardo-text);
 }
 
-/* Soft FAB cluster bottom-right language (toolbar still bottom-center) */
+/* Bottom tools: outlined soft chips, not heavy FAB blocks */
 [data-cardo-theme='material'] .cardo-bottom-shell {
   bottom: 20px;
 }
 
 [data-cardo-theme='material'] .cardo-bottom-toolbar {
-  gap: 8px;
-  border: 0 !important;
-  border-radius: 999px !important;
+  gap: 6px;
+  border: 1px solid var(--cardo-border) !important;
+  border-radius: 28px !important;
   padding: 6px !important;
-  background: transparent !important;
-  box-shadow: none !important;
+  background: var(--cardo-panel) !important;
+  box-shadow: var(--cardo-shadow) !important;
   backdrop-filter: none !important;
 }
 
 [data-cardo-theme='material'] .cardo-bottom-toolbar .cardo-toolbar-divider {
-  display: none;
+  height: 20px;
+  margin: 0 2px;
+  background: var(--cardo-divider);
 }
 
 [data-cardo-theme='material'] .cardo-bottom-toolbar button {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   border: 0 !important;
-  border-radius: 16px !important;
-  background: var(--cardo-panel) !important;
-  box-shadow: var(--cardo-shadow) !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  box-shadow: none !important;
   color: var(--cardo-secondary-text);
   transform: none !important;
 }
 
 [data-cardo-theme='material'] .cardo-bottom-toolbar button:hover {
-  background: color-mix(in srgb, var(--cardo-panel) 70%, var(--cardo-blue)) !important;
+  background: var(--cardo-hover) !important;
   color: var(--cardo-text);
 }
 
 [data-cardo-theme='material'] .cardo-bottom-toolbar .cardo-toolbar-button-active {
-  background: color-mix(in srgb, var(--cardo-blue) 16%, var(--cardo-panel)) !important;
+  background: var(--cardo-settings-hover) !important;
   color: var(--cardo-blue) !important;
 }
 
 [data-cardo-theme='material'] .cardo-bottom-toolbar .cardo-toolbar-create {
-  width: 48px !important;
-  height: 48px !important;
-  border-radius: 16px !important;
-  background: color-mix(in srgb, var(--cardo-blue) 22%, var(--cardo-panel)) !important;
+  width: auto !important;
+  min-width: 40px;
+  height: 40px !important;
+  gap: 6px;
+  padding: 0 14px !important;
+  border-radius: 999px !important;
+  background: var(--cardo-settings-hover) !important;
   color: var(--cardo-blue) !important;
-  box-shadow: var(--cardo-shadow) !important;
+  box-shadow: none !important;
+  font-weight: 500;
 }
 
 [data-cardo-theme='material'] .cardo-bottom-toolbar .cardo-toolbar-create:hover {
   filter: none;
-  background: color-mix(in srgb, var(--cardo-blue) 32%, var(--cardo-panel)) !important;
+  background: color-mix(in srgb, var(--cardo-settings-hover) 70%, var(--cardo-blue)) !important;
 }
 
 [data-cardo-theme='material'] .cardo-canvas-tools {
-  border: 0 !important;
+  border: 1px solid var(--cardo-border) !important;
   border-radius: 16px !important;
   background: var(--cardo-panel) !important;
-  box-shadow: var(--cardo-shadow) !important;
+  box-shadow: none !important;
   backdrop-filter: none !important;
 }
 
 [data-cardo-theme='material'] .cardo-search-pill {
-  border: 0;
-  border-radius: 999px;
+  border: 1px solid var(--cardo-border);
+  border-radius: 28px;
   background: var(--cardo-panel);
-  box-shadow: var(--cardo-shadow);
+  box-shadow: none;
 }
 
 [data-cardo-theme='material'] .cardo-resize-handle {
@@ -281,5 +336,5 @@
 }
 
 [data-cardo-theme='material'] .cardo-resize-grip {
-  opacity: 0.35;
+  opacity: 0.28;
 }
