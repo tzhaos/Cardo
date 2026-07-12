@@ -556,7 +556,17 @@ function AppearanceSettings({
                 <span className="cardo-theme-pack-preview" aria-hidden="true">
                   <span style={{ background: theme.palettes.light.canvas }} />
                   <span style={{ background: theme.palettes.dark.canvas }} />
-                  <i style={{ background: theme.palettes[colorMode].panel }} />
+                  <i
+                    style={{
+                      background: theme.palettes[colorMode].panel,
+                      borderColor: theme.palettes[colorMode].blue ?? theme.palettes[colorMode].border,
+                      boxShadow: `inset 0 0 0 1px ${theme.palettes[colorMode].border}, 0 2px 6px rgba(0,0,0,0.12)`,
+                    }}
+                  />
+                  <em
+                    className="cardo-theme-pack-preview-accent"
+                    style={{ background: theme.palettes[colorMode].blue ?? '#3b82f6' }}
+                  />
                 </span>
                 <span className="cardo-theme-pack-card-copy">
                   <span>
