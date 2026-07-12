@@ -73,7 +73,12 @@ export async function getBoxItems(database: CardoDatabase, boxId: string) {
 
 export async function getPreferences(database: CardoDatabase) {
   const row = await database.select().from(preferences).limit(1).get();
-  return row ? preferencesSelectSchema.parse(row) : null;
+  if (!row) return null;
+  // Force classic shell: coerce any retired layout_profile_id before Zod parse.
+  return preferencesSelectSchema.parse({
+    ...row,
+    layoutProfileId: 'classic',
+  });
 }
 
 export async function getWorkspaceProjection(database: CardoDatabase) {

@@ -12,8 +12,6 @@ import { applyWebNextTheme } from '../themes/themeRegistry';
 import { FeatureGate } from '../shell/FeatureGate';
 import { applyLayoutProfile } from '../shell/layouts/applyLayoutProfile';
 import { applyCssSnippet } from '../shell/layouts/applyCssSnippet';
-import { useImmersiveChrome } from '../shell/layouts/useImmersiveChrome';
-import { ZenExitControl } from '../components/chrome/ZenExitControl';
 import { useCancelActivePointerOnWindowExit } from './useCancelActivePointerOnWindowExit';
 import { usePasteIntoSelectedBox } from './usePasteIntoSelectedBox';
 import { useWorkspaceHistoryShortcuts } from './useWorkspaceHistoryShortcuts';
@@ -35,12 +33,9 @@ export default function WebNextApp() {
   const density = usePreferencesStore((state) => state.density);
   const themeColorOverrides = usePreferencesStore((state) => state.themeColorOverrides);
   const themeOptionValues = usePreferencesStore((state) => state.themeOptionValues);
-  const layoutProfileId = usePreferencesStore((state) => state.layoutProfileId);
   const cssSnippet = usePreferencesStore((state) => state.cssSnippet);
   const cssSnippetEnabled = usePreferencesStore((state) => state.cssSnippetEnabled);
   const isDesktopHost = typeof window !== 'undefined' && Boolean(window.cardoDesktop);
-
-  useImmersiveChrome(layoutProfileId);
 
   useLayoutEffect(() => {
     document.documentElement.lang = locale === 'zh' ? 'zh-CN' : 'en';
@@ -51,7 +46,8 @@ export default function WebNextApp() {
       colorOverrides: themeColorOverrides,
       optionValues: themeOptionValues,
     });
-    applyLayoutProfile(document.documentElement, layoutProfileId);
+    // Shell layout is product-fixed classic (always-visible chrome).
+    applyLayoutProfile(document.documentElement);
     applyCssSnippet({
       themeId,
       userSnippet: cssSnippet,
@@ -64,7 +60,6 @@ export default function WebNextApp() {
     density,
     fontFamily,
     fontScale,
-    layoutProfileId,
     locale,
     themeColorOverrides,
     themeId,
@@ -92,7 +87,6 @@ export default function WebNextApp() {
         <FeatureGate feature="chrome.bottomToolbar">
           <BottomToolbar />
         </FeatureGate>
-        {layoutProfileId === 'zen' ? <ZenExitControl /> : null}
         <SettingsWindow />
         <ContextMenuHost />
       </div>

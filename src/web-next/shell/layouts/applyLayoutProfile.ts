@@ -2,15 +2,14 @@ import type { LayoutProfileId } from '../../../core/contracts/layoutProfile';
 import { DEFAULT_LAYOUT_PROFILE_ID } from '../../../core/contracts/layoutProfile';
 
 /**
- * Apply layout profile markers on the document root (and app root if present).
- * classic: identity (official Cardo shell).
- * floating: chrome hidden until pointer nears each piece.
- * zen: chrome fully hidden; floating exit control only.
+ * Apply classic shell markers on the document root (and app root if present).
+ * Product chrome is always visible — layout is forced classic.
  */
 export function applyLayoutProfile(
   root: HTMLElement,
-  layoutProfileId: LayoutProfileId = DEFAULT_LAYOUT_PROFILE_ID,
+  _layoutProfileId: LayoutProfileId = DEFAULT_LAYOUT_PROFILE_ID,
 ) {
+  const layoutProfileId = DEFAULT_LAYOUT_PROFILE_ID;
   root.dataset.layoutProfile = layoutProfileId;
   root.setAttribute('data-layout-profile', layoutProfileId);
   root.dataset.cardoRoot = '';
@@ -18,36 +17,21 @@ export function applyLayoutProfile(
     root.setAttribute('data-cardo-root', '');
   }
 
-  // Mirror on .cardo-app so rules match even if a host only scopes under the app node.
+  delete root.dataset.chromeReveal;
+  root.removeAttribute('data-chrome-reveal');
+
   const appNode = root.querySelector?.('.cardo-app');
   const app = appNode instanceof HTMLElement ? appNode : null;
   if (app) {
     app.dataset.layoutProfile = layoutProfileId;
     app.setAttribute('data-layout-profile', layoutProfileId);
+    delete app.dataset.chromeReveal;
+    app.removeAttribute('data-chrome-reveal');
   }
 
-  if (layoutProfileId === 'classic') {
-    delete root.dataset.chromeReveal;
-    root.removeAttribute('data-chrome-reveal');
-    if (app) {
-      delete app.dataset.chromeReveal;
-      app.removeAttribute('data-chrome-reveal');
-    }
-  } else if (layoutProfileId === 'zen') {
-    // Zen never uses edge-reveal.
-    delete root.dataset.chromeReveal;
-    root.removeAttribute('data-chrome-reveal');
-    if (app) {
-      delete app.dataset.chromeReveal;
-      app.removeAttribute('data-chrome-reveal');
-    }
-  } else if (layoutProfileId === 'floating') {
-    // Start hidden so switching into floating is immediately visible.
-    delete root.dataset.chromeReveal;
-    root.removeAttribute('data-chrome-reveal');
-    if (app) {
-      delete app.dataset.chromeReveal;
-      app.removeAttribute('data-chrome-reveal');
-    }
+  // Clear any leftover floating/zen visibility markers from older builds.
+  for (const el of document.querySelectorAll<HTMLElement>('[data-float-visible]')) {
+    delete el.dataset.floatVisible;
+    el.removeAttribute('data-float-visible');
   }
 }

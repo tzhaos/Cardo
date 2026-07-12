@@ -68,7 +68,8 @@ function getPatch(command: PreferencesCommand): Partial<typeof preferences.$infe
     case 'preferences.setFeatureFlags':
       return { featureFlags: command.featureFlags };
     case 'preferences.setLayoutProfile':
-      return { layoutProfileId: command.layoutProfileId };
+      // Product shell is classic-only; never persist floating/zen.
+      return { layoutProfileId: 'classic' };
     case 'preferences.setCssSnippet':
       return { cssSnippet: command.cssSnippet };
     case 'preferences.setCssSnippetEnabled':
