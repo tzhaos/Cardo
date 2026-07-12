@@ -85,6 +85,13 @@ export const SETTINGS_SEARCH_CATALOG: readonly SettingsSearchEntry[] = [
     keywords: { en: ['restore', 'default colors'], zh: ['恢复默认', '重置颜色'] },
   },
   {
+    id: 'workspace-backup',
+    section: 'data',
+    titleKey: 'settings.workspaceBackup',
+    descriptionKey: 'settings.workspaceBackupDescription',
+    keywords: { en: ['backup', 'workspace', 'import', 'export'], zh: ['备份', '工作区', '导入', '导出'] },
+  },
+  {
     id: 'export-data',
     section: 'data',
     titleKey: 'settings.exportData',
@@ -97,6 +104,13 @@ export const SETTINGS_SEARCH_CATALOG: readonly SettingsSearchEntry[] = [
     titleKey: 'settings.importData',
     descriptionKey: 'settings.importDataDescription',
     keywords: { en: ['restore', 'upload json'], zh: ['导入', '恢复', '上传'] },
+  },
+  {
+    id: 'operation-log',
+    section: 'data',
+    titleKey: 'settings.operationLog',
+    descriptionKey: 'settings.operationLogDescription',
+    keywords: { en: ['history', 'operations', 'audit'], zh: ['操作日志', '历史', '审计'] },
   },
   {
     id: 'export-log',

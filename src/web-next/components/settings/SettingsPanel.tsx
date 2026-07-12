@@ -290,6 +290,11 @@ function DataSettings() {
   return (
     <>
       <SettingsHeading title={t('settings.data')} description={t('settings.dataDescription')} />
+
+      <div className="cardo-settings-subheading">
+        <span>{t('settings.workspaceBackup')}</span>
+        <small>{t('settings.workspaceBackupDescription')}</small>
+      </div>
       <div className="cardo-settings-list-group">
         <div className="cardo-settings-card">
           <div className="cardo-settings-card-copy">
@@ -327,25 +332,6 @@ function DataSettings() {
             onClick={() => inputRef.current?.click()}
           >
             {t('settings.importDataAction')}
-          </Button>
-        </div>
-        <div className="cardo-settings-card">
-          <div className="cardo-settings-card-copy">
-            <IconFrame>
-              <ThemeIcon name="fileDown" size={16} />
-            </IconFrame>
-            <span>
-              {t('settings.exportLog')}
-              <small>{t('settings.exportLogDescription')}</small>
-            </span>
-          </div>
-          <Button
-            type="button"
-            variant="ghost"
-            className="cardo-settings-secondary-button"
-            onClick={() => void exportOperationLog()}
-          >
-            {t('settings.exportLogAction')}
           </Button>
         </div>
       </div>
@@ -392,6 +378,32 @@ function DataSettings() {
           </motion.div>
         ) : null}
       </AnimatePresence>
+
+      <div className="cardo-settings-subheading">
+        <span>{t('settings.operationLog')}</span>
+        <small>{t('settings.operationLogDescription')}</small>
+      </div>
+      <div className="cardo-settings-list-group">
+        <div className="cardo-settings-card">
+          <div className="cardo-settings-card-copy">
+            <IconFrame>
+              <ThemeIcon name="fileDown" size={16} />
+            </IconFrame>
+            <span>
+              {t('settings.exportLog')}
+              <small>{t('settings.exportLogDescription')}</small>
+            </span>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            className="cardo-settings-secondary-button"
+            onClick={() => void exportOperationLog()}
+          >
+            {t('settings.exportLogAction')}
+          </Button>
+        </div>
+      </div>
     </>
   );
 }
