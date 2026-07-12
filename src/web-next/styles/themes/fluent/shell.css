@@ -38,13 +38,13 @@
   padding-left: 72px;
 }
 
-/* Leading spacer | Collection + pages + Recycle + | canvas tools */
+/* Leading spacer | centered tabs | trailing tools (equal side flex keeps center true) */
 [data-cardo-theme='fluent'] .cardo-top-inner {
   display: flex;
   width: 100%;
   min-height: 44px;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 8px;
 }
 

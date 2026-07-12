@@ -43,12 +43,13 @@
   padding-left: 72px;
 }
 
+/* Leading spacer | centered tabs | trailing (equal side flex keeps center true) */
 [data-cardo-theme='material'] .cardo-top-inner {
   display: flex;
   width: 100%;
   min-height: 48px;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 8px;
 }
 

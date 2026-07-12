@@ -52,6 +52,7 @@
 [data-cardo-theme='swiftui'] .cardo-top-center {
   flex: 0 1 auto;
   justify-content: center;
+  max-width: 100%;
 }
 
 [data-cardo-theme='swiftui'] .cardo-tabs {

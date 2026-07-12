@@ -27,39 +27,52 @@
   overflow: hidden;
 }
 
+/* Page tabs (center) are the subject; leading/trailing balance around them. */
 .cardo-top-inner {
   display: flex;
+  width: 100%;
   align-items: center;
+  justify-content: center;
   gap: 2px;
 }
 
 .cardo-top-leading {
   display: none;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .cardo-top-center {
   display: flex;
+  flex: 0 1 auto;
   min-width: 0;
+  max-width: 100%;
   align-items: center;
+  justify-content: center;
 }
 
-/* Confirming: center band may grow so dialog text fits without full-bar stretch */
+/* Confirming: allow center band to use free space for dialog text */
 .cardo-top-bar-confirming .cardo-top-center {
   flex: 1 1 auto;
+  min-width: 0;
   max-width: 100%;
 }
 
-/* Tabs + add stay grouped so delete confirm can replace only this band */
+/* Tabs + add as a shrink-wrapped group so parent can center them */
 .cardo-top-center-tabs {
   display: flex;
-  width: 100%;
+  width: max-content;
+  max-width: 100%;
   min-width: 0;
   align-items: center;
+  justify-content: center;
 }
 
 .cardo-top-trailing {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
+  justify-content: flex-end;
   gap: 2px;
 }
 
@@ -221,10 +234,15 @@
   position: relative;
   z-index: 4;
   display: flex;
-  width: 100%;
-  min-width: 0;
+  width: max-content;
   max-width: 100%;
+  min-width: 0;
   align-items: center;
+  justify-content: center;
+}
+
+.cardo-top-bar-confirming .cardo-tab-confirm-layer {
+  width: 100%;
 }
 
 .cardo-tab-confirm > span {
