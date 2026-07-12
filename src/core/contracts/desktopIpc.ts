@@ -1,4 +1,12 @@
 import { z } from 'zod';
+export {
+  desktopUpdateCheckResultSchema,
+  desktopUpdateDownloadResultSchema,
+  desktopUpdateInstallResultSchema,
+  desktopUpdateStateSchema,
+  type DesktopUpdateInstallResult,
+  type DesktopUpdateState,
+} from './desktopUpdate';
 
 export const desktopVoidResponseSchema = z.undefined();
 export const desktopBooleanResponseSchema = z.boolean();

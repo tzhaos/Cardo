@@ -32,13 +32,17 @@ import {
   desktopRuntimeConfigSchema,
   desktopSaveFileRequestSchema,
   desktopTextResponseSchema,
+  desktopUpdateInstallResultSchema,
+  desktopUpdateStateSchema,
   desktopUrlRequestSchema,
   desktopVoidResponseSchema,
   desktopWebsiteIconResponseSchema,
   type DesktopRuntimeConfig,
 } from '../core/contracts/desktopIpc';
+import { DesktopUpdater } from './update/desktopUpdater';
 
 declare const __CARDO_DEBUG_PACKAGE__: boolean;
+declare const __APP_VERSION__: string;
 
 // Align Electron userData with shared path resolver (`cardo`), not productName casing.
 // Must run before getPath('userData') / single-instance.
@@ -53,6 +57,8 @@ let isQuitting = false;
 /** Attach-first Runtime connection for preload injection (design §6.6). */
 let runtimeConnection: DesktopRuntimeConnection | null = null;
 let runtimeConfigForRenderer: DesktopRuntimeConfig | null = null;
+const desktopUpdater = new DesktopUpdater();
+let unsubscribeUpdater: (() => void) | null = null;
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -450,6 +456,37 @@ function registerIpcHandlers() {
     await fsPromises.writeFile(result.filePath, payload, 'utf8');
     return desktopVoidResponseSchema.parse(undefined);
   });
+
+  ipcMain.handle('update:get-state', () =>
+    desktopUpdateStateSchema.parse(desktopUpdater.getState()),
+  );
+  ipcMain.handle('update:check', async () =>
+    desktopUpdateStateSchema.parse(await desktopUpdater.checkForUpdates()),
+  );
+  ipcMain.handle('update:download', async () =>
+    desktopUpdateStateSchema.parse(await desktopUpdater.downloadUpdate()),
+  );
+  ipcMain.handle('update:cancel-download', () =>
+    desktopUpdateStateSchema.parse(desktopUpdater.cancelDownload()),
+  );
+  ipcMain.handle('update:install', async () =>
+    desktopUpdateInstallResultSchema.parse(await desktopUpdater.installUpdate()),
+  );
+  ipcMain.handle('update:open-release-page', async () => {
+    await desktopUpdater.openReleasePage();
+    return desktopVoidResponseSchema.parse(undefined);
+  });
+}
+
+function broadcastUpdateState() {
+  unsubscribeUpdater?.();
+  unsubscribeUpdater = desktopUpdater.subscribe((state) => {
+    for (const win of BrowserWindow.getAllWindows()) {
+      if (!win.isDestroyed()) {
+        win.webContents.send('update:state', state);
+      }
+    }
+  });
 }
 
 async function createWindow() {
@@ -534,6 +571,8 @@ if (!singleInstanceLock) {
 
       await createWindow();
       createTray();
+      broadcastUpdateState();
+      desktopUpdater.scheduleStartupCheck();
 
       app.on('activate', () => {
         showMainWindow();
@@ -559,6 +598,9 @@ if (!singleInstanceLock) {
 
   app.on('before-quit', () => {
     isQuitting = true;
+    desktopUpdater.dispose();
+    unsubscribeUpdater?.();
+    unsubscribeUpdater = null;
   });
 
   app.on('will-quit', () => {

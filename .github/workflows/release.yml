@@ -1,15 +1,24 @@
+# Milestone Desktop release only.
+# CI on main/PR never publishes. Trigger with a stable tag vX.Y.Z or workflow_dispatch.
 name: Release
 
 on:
   push:
     tags:
-      - 'v*'
+      # Stable product semver only (no -rc / -beta).
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Milestone version X.Y.Z (without v). Creates tag if missing.'
+        required: true
+        type: string
 
 permissions:
   contents: write
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: false
 
 jobs:
@@ -25,6 +34,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -40,13 +51,24 @@ jobs:
 
       - name: Resolve release version
         id: version
+        env:
+          DISPATCH_VERSION: ${{ inputs.version }}
         run: |
-          $version = $env:GITHUB_REF_NAME -replace '^v', ''
-          if ($version -notmatch '^\d+\.\d+\.\d+$') {
-            throw "Release tags must use the vX.Y.Z format. Received: $env:GITHUB_REF_NAME"
+          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -match '^v\d+\.\d+\.\d+$') {
+            $version = $env:GITHUB_REF_NAME -replace '^v', ''
+          } elseif ($env:DISPATCH_VERSION -and $env:DISPATCH_VERSION.Trim().Length -gt 0) {
+            $version = $env:DISPATCH_VERSION.Trim() -replace '^v', ''
+          } else {
+            throw "Provide a stable version X.Y.Z via tag vX.Y.Z or workflow_dispatch input."
           }
+
+          if ($version -notmatch '^\d+\.\d+\.\d+$') {
+            throw "Release version must be X.Y.Z (no prerelease). Received: $version"
+          }
+
           "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          Write-Host "Release version: $version"
+          "tag=v$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          Write-Host "Release version: $version (tag v$version)"
 
       - name: Apply release version
         run: |
@@ -56,11 +78,35 @@ jobs:
             throw "Failed to update the package version."
           }
 
+      - name: Ensure git tag exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ steps.version.outputs.tag }}"
+          $version = "${{ steps.version.outputs.version }}"
+
+          git rev-parse "refs/tags/$tag" *> $null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "Tag $tag already exists."
+            exit 0
+          }
+
+          if ($env:GITHUB_EVENT_NAME -ne 'workflow_dispatch') {
+            throw "Tag $tag is missing and this run is not workflow_dispatch."
+          }
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a $tag -m "Cardo $version"
+          git push origin $tag
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to create/push tag $tag."
+          }
+
       - name: Run Desktop release build
         env:
           CARDO_BUILD_PROXY: ''
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-          # Explicit official Electron CDN (do not use regional npm mirrors on GHA).
           ELECTRON_MIRROR: https://github.com/electron/electron/releases/download/
         run: npm run release:build
 
@@ -70,14 +116,22 @@ jobs:
           $releaseDir = "artifacts/release"
           New-Item -ItemType Directory -Force $releaseDir | Out-Null
 
-          Copy-Item `
-            "artifacts/desktop-dist/Cardo Setup $version.exe" `
-            "$releaseDir/Cardo-$version-Setup-x64.exe"
-          Copy-Item `
-            "artifacts/desktop-dist/Cardo $version.exe" `
-            "$releaseDir/Cardo-$version-Portable-x64.exe"
+          $setupSrc = "artifacts/desktop-dist/Cardo-$version-Setup-x64.exe"
+          $portableSrc = "artifacts/desktop-dist/Cardo-$version-Portable-x64.exe"
+          if (-not (Test-Path $setupSrc)) { throw "Missing setup artifact: $setupSrc" }
+          if (-not (Test-Path $portableSrc)) { throw "Missing portable artifact: $portableSrc" }
+
+          Copy-Item $setupSrc "$releaseDir/Cardo-$version-Setup-x64.exe"
+          Copy-Item $portableSrc "$releaseDir/Cardo-$version-Portable-x64.exe"
+
+          # Optional blockmap for delta tools / future electron-updater.
+          $setupBlockmap = "artifacts/desktop-dist/Cardo-$version-Setup-x64.exe.blockmap"
+          if (Test-Path $setupBlockmap) {
+            Copy-Item $setupBlockmap "$releaseDir/Cardo-$version-Setup-x64.exe.blockmap"
+          }
 
           $checksumLines = Get-ChildItem $releaseDir -File |
+            Where-Object { $_.Name -ne 'SHA256SUMS.txt' } |
             Sort-Object Name |
             ForEach-Object {
               $hash = (Get-FileHash -Algorithm SHA256 $_.FullName).Hash.ToLowerInvariant()
@@ -97,13 +151,13 @@ jobs:
           name: Cardo-v${{ steps.version.outputs.version }}-Desktop
           path: artifacts/release/*
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 30
 
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $tag = $env:GITHUB_REF_NAME
+          $tag = "${{ steps.version.outputs.tag }}"
           $version = "${{ steps.version.outputs.version }}"
           $assets = Get-ChildItem "artifacts/release" -File |
             Sort-Object Name |
@@ -112,16 +166,15 @@ jobs:
           $notes = @"
           ## Cardo $version
 
-          Windows Desktop packages for this release:
+          Milestone Desktop build (not produced by regular CI).
 
-          - ``Cardo-$version-Setup-x64.exe`` — NSIS installer
+          - ``Cardo-$version-Setup-x64.exe`` — NSIS installer (in-app updater uses this)
           - ``Cardo-$version-Portable-x64.exe`` — portable executable
-          - ``SHA256SUMS.txt`` — checksums
+          - ``SHA256SUMS.txt`` — checksums for verification
 
-          CLI / extension / other surfaces will ship via npm and stores later.
+          Install from Setup for auto-update support. CLI / extension ship later via npm / stores.
           "@
 
-          # Always recreate so only Desktop assets remain (no stale CLI/extension zips).
           gh release view $tag *> $null
           if ($LASTEXITCODE -eq 0) {
             gh release delete $tag --yes
@@ -133,7 +186,8 @@ jobs:
           gh release create $tag @assets `
             --verify-tag `
             --title "Cardo $version" `
-            --notes $notes
+            --notes $notes `
+            --latest
 
           if ($LASTEXITCODE -ne 0) {
             throw "Failed to publish GitHub Release $tag."

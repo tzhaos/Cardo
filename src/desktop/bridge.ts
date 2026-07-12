@@ -1,6 +1,8 @@
 import type {
   DesktopLocalResourceResponse,
   DesktopRuntimeConfig,
+  DesktopUpdateInstallResult,
+  DesktopUpdateState,
 } from '../core/contracts/desktopIpc';
 
 export interface DesktopBridge {
@@ -18,6 +20,14 @@ export interface DesktopBridge {
   saveJson(filename: string, payload: string): Promise<void>;
   saveText(filename: string, payload: string): Promise<void>;
   resolveWebsiteIcon(url: string): Promise<string | null>;
+  /** Desktop GitHub Release updater (packaged builds only). */
+  getUpdateState(): Promise<DesktopUpdateState>;
+  checkForUpdates(): Promise<DesktopUpdateState>;
+  downloadUpdate(): Promise<DesktopUpdateState>;
+  cancelUpdateDownload(): Promise<DesktopUpdateState>;
+  installUpdate(): Promise<DesktopUpdateInstallResult>;
+  openUpdateReleasePage(): Promise<void>;
+  onUpdateStateChange(callback: (state: DesktopUpdateState) => void): () => void;
 }
 
 declare global {
