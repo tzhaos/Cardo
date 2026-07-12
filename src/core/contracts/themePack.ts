@@ -322,13 +322,13 @@ export const THEME_FILE_EXTENSION = '.cardo-theme.json';
 
 /**
  * Official built-in Theme Pack ids — frozen, never overwritten by disk/import.
- * Classic = product default glass; Fluent = Win11; Material = M3 / AI Studio.
- * Order is product display order.
+ * classic | fluent | material | apple — product display order.
  */
 export const OFFICIAL_BUILT_IN_THEME_IDS: ReadonlySet<string> = new Set([
   'classic',
   'fluent',
   'material',
+  'apple',
 ]);
 
 /**
@@ -339,6 +339,7 @@ export const OFFICIAL_THEME_RECIPE_ENTRIES: Readonly<Record<string, string>> = {
   classic: 'src/web-next/styles/themes/classic.css',
   fluent: 'src/web-next/styles/themes/fluent/index.css',
   material: 'src/web-next/styles/themes/material/index.css',
+  apple: 'src/web-next/styles/themes/apple/index.css',
 };
 
 /** CSS custom property names written by the Theme Runtime. */

@@ -1,0 +1,86 @@
+/**
+ * Apple SwiftUI — menus / select (system pop-up & context menu).
+ */
+
+[data-cardo-theme='apple'] .cardo-ui-select-trigger {
+  min-height: 28px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--cardo-neutral-button);
+  box-shadow: none;
+  backdrop-filter: none;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 0 10px;
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='apple'] .cardo-ui-select-trigger:hover {
+  background: var(--cardo-neutral-button-hover);
+}
+
+[data-cardo-theme='apple'] .cardo-ui-select-trigger[data-state='open'],
+[data-cardo-theme='apple'] .cardo-ui-select-trigger:focus-visible {
+  background: var(--cardo-panel);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cardo-blue) 28%, transparent);
+}
+
+[data-cardo-theme='apple'] .cardo-ui-select-content {
+  border: 0;
+  border-radius: 10px;
+  padding: 4px;
+  background: color-mix(in srgb, var(--cardo-panel) 92%, transparent);
+  box-shadow: var(--cardo-shadow-hover);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+[data-cardo-theme='apple'] .cardo-ui-select-item {
+  min-height: 28px;
+  border-radius: 6px;
+  padding: 0 10px;
+  font-size: 13px;
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='apple'] .cardo-ui-select-item[data-highlighted] {
+  background: var(--cardo-blue);
+  color: #ffffff;
+}
+
+[data-cardo-theme='apple'] .cardo-ui-select-item[data-state='checked'] {
+  font-weight: 500;
+}
+
+[data-cardo-theme='apple'] .cardo-floating-menu,
+[data-cardo-theme='apple'] .cardo-ui-dropdown-content {
+  border: 0;
+  border-radius: 10px;
+  padding: 4px;
+  background: color-mix(in srgb, var(--cardo-panel) 92%, transparent);
+  box-shadow: var(--cardo-shadow-hover);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+[data-cardo-theme='apple'] .cardo-menu-row {
+  border-radius: 6px;
+  min-height: 28px;
+  font-size: 13px;
+}
+
+[data-cardo-theme='apple'] .cardo-menu-row:hover:not(:disabled),
+[data-cardo-theme='apple'] .cardo-menu-row[data-highlighted] {
+  background: var(--cardo-blue);
+  color: #ffffff;
+}
+
+[data-cardo-theme='apple'] .cardo-ui-tooltip-content {
+  border: 0;
+  border-radius: 6px;
+  background: color-mix(in srgb, #1d1d1f 92%, transparent);
+  color: #f5f5f7;
+  box-shadow: var(--cardo-shadow);
+  font-size: 11px;
+  backdrop-filter: blur(12px);
+}

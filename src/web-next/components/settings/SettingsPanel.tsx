@@ -94,8 +94,10 @@ export function SettingsPanel({
   const setCustomSearchTemplate = usePreferencesStore((state) => state.setCustomSearchTemplate);
   const themeId = usePreferencesStore((state) => state.themeId);
   const isFluent = themeId === 'fluent';
-  /** Soft static nav pill — avoid Motion layoutId under Material/Fluent text shells. */
-  const useStaticNavIndicator = themeId === 'fluent' || themeId === 'material';
+  const isApple = themeId === 'apple';
+  /** Soft static nav pill — avoid Motion layoutId under themed text shells. */
+  const useStaticNavIndicator =
+    themeId === 'fluent' || themeId === 'material' || themeId === 'apple';
   const { t, locale: i18nLocale } = useI18n();
   const sections = [
     {
@@ -135,10 +137,24 @@ export function SettingsPanel({
   return (
     <div className="cardo-settings-panel" role="dialog" aria-label={t('settings.title')}>
       <header className="cardo-settings-header" onPointerDown={onHeaderPointerDown}>
+        {isApple ? (
+          <span className="cardo-settings-traffic-lights" data-no-menu-drag aria-hidden="true">
+            <button
+              type="button"
+              className="cardo-tl-close"
+              aria-label={t('common.close')}
+              onClick={onClose}
+            />
+            <i className="cardo-tl-min" />
+            <i className="cardo-tl-max" />
+          </span>
+        ) : null}
         <div className="cardo-settings-header-title">
-          <IconFrame>
-            <Settings size={17} />
-          </IconFrame>
+          {isApple ? null : (
+            <IconFrame>
+              <Settings size={17} />
+            </IconFrame>
+          )}
           <span>{t('settings.title')}</span>
         </div>
         <div className="cardo-settings-header-drag-space" aria-hidden="true" />
@@ -173,9 +189,11 @@ export function SettingsPanel({
               </button>
             ) : null}
           </label>
-          <IconButton data-no-menu-drag onClick={onClose} aria-label={t('common.close')}>
-            <X size={16} />
-          </IconButton>
+          {isApple ? null : (
+            <IconButton data-no-menu-drag onClick={onClose} aria-label={t('common.close')}>
+              <X size={16} />
+            </IconButton>
+          )}
         </div>
       </header>
       <Tabs

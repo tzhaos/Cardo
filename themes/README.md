@@ -25,8 +25,9 @@ src/web-next/styles/themes/<id>…             ← 该包结构方言 recipe
 | id | 名称 | material | 语言 |
 | --- | --- | --- | --- |
 | `classic` | Classic（默认） | glass | 玻璃壳、居中胶囊顶栏 |
-| `fluent` | Windows Fluent | solid | 全宽顶栏、下划线 tab、扁平卡片、设置侧栏 |
-| `material` | Material | solid | AI Studio 白底细线风格 |
+| `fluent` | Windows Fluent | solid | Microsoft Windows 11 设计风格 |
+| `material` | Material | solid | Google AI Studio 设计风格 |
+| `apple` | Apple | glass | Apple SwiftUI 设计风格 |
 
 ### 包文件
 
@@ -35,6 +36,7 @@ themes/builtin/
   classic/theme.cardo-theme.json
   fluent/theme.cardo-theme.json
   material/theme.cardo-theme.json
+  apple/theme.cardo-theme.json
 ```
 
 ### Recipe 文件
@@ -51,6 +53,11 @@ src/web-next/styles/themes/
     settings.css
     overlays.css
   material/
+    index.css
+    shell.css
+    settings.css
+    overlays.css
+  apple/
     index.css
     shell.css
     settings.css

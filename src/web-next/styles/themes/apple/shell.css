@@ -1,0 +1,268 @@
+/**
+ * Apple SwiftUI — shell chrome.
+ * Cold gray field, white cards, soft system shadow, SF blue accents.
+ */
+
+[data-cardo-theme='apple'] .cardo-app {
+  background-color: var(--cardo-canvas);
+  background-image: none;
+}
+
+[data-cardo-theme='apple'] .cardo-canvas-boundary {
+  background-image: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* Thin floating title strip — page pills centered */
+[data-cardo-theme='apple'] .cardo-top-bar {
+  top: 10px;
+  left: 50%;
+  right: auto;
+  width: min(560px, calc(100vw - 200px));
+  max-width: none;
+  transform: translateX(-50%);
+  border: 0;
+  border-radius: 999px;
+  padding: 3px 6px;
+  background: color-mix(in srgb, var(--cardo-panel) 78%, transparent) !important;
+  box-shadow: var(--cardo-shadow) !important;
+  backdrop-filter: blur(var(--cardo-chrome-blur)) !important;
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur)) !important;
+}
+
+[data-cardo-theme='apple'] .cardo-app-desktop .cardo-top-bar {
+  top: 50px;
+}
+
+[data-cardo-theme='apple'] .cardo-top-inner {
+  display: flex;
+  width: 100%;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+[data-cardo-theme='apple'] .cardo-top-leading,
+[data-cardo-theme='apple'] .cardo-top-trailing {
+  display: none;
+}
+
+[data-cardo-theme='apple'] .cardo-top-center {
+  flex: 0 1 auto;
+  justify-content: center;
+}
+
+[data-cardo-theme='apple'] .cardo-tabs {
+  gap: 2px;
+}
+
+[data-cardo-theme='apple'] .cardo-tab-pill,
+[data-cardo-theme='apple'] .cardo-tab-pill button {
+  border-radius: 999px !important;
+}
+
+[data-cardo-theme='apple'] .cardo-tab-pill button {
+  min-height: 28px;
+  padding: 0 12px;
+  color: var(--cardo-secondary-text);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+[data-cardo-theme='apple'] .cardo-tab-pill-active button {
+  color: var(--cardo-text);
+  font-weight: 600;
+}
+
+[data-cardo-theme='apple'] .cardo-active-tab-indicator {
+  inset: 1px;
+  border-radius: 999px;
+  background: var(--cardo-panel);
+  box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.08);
+  height: auto;
+}
+
+[data-cardo-theme='apple'] .cardo-tab-pill-system button {
+  width: 28px;
+  padding: 0;
+}
+
+[data-cardo-theme='apple'] .cardo-history-controls {
+  top: 10px;
+  left: 14px;
+  border: 0 !important;
+  border-radius: 999px !important;
+  padding: 2px !important;
+  background: color-mix(in srgb, var(--cardo-panel) 70%, transparent) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(20px) !important;
+  gap: 0;
+}
+
+[data-cardo-theme='apple'] .cardo-app-desktop .cardo-history-controls {
+  top: 50px;
+}
+
+[data-cardo-theme='apple'] .cardo-history-controls button {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px !important;
+  color: var(--cardo-secondary-text);
+}
+
+/* White system card */
+[data-cardo-theme='apple'] .cardo-box,
+[data-cardo-theme='apple'] .cardo-collection-box {
+  border: 0;
+  --cardo-box-radius: 14px;
+  border-radius: var(--cardo-box-radius);
+  background-color: var(--cardo-panel);
+  background-image: none;
+  box-shadow: var(--cardo-shadow);
+}
+
+[data-cardo-theme='apple'] .cardo-box-header,
+[data-cardo-theme='apple'] .cardo-collection-box-header,
+[data-cardo-theme='apple'] .cardo-temporary-box-header {
+  border-bottom: 0;
+  background: transparent;
+  padding: 12px 14px 4px;
+}
+
+[data-cardo-theme='apple'] .cardo-box-controls .cardo-icon-button,
+[data-cardo-theme='apple'] .cardo-box-view-toggle,
+[data-cardo-theme='apple'] .cardo-box-delete {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px !important;
+  color: var(--cardo-secondary-text);
+}
+
+[data-cardo-theme='apple'] .cardo-box-content,
+[data-cardo-theme='apple'] .cardo-collection-box-content {
+  padding: 4px 12px 8px;
+}
+
+[data-cardo-theme='apple'] .cardo-item-row {
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+}
+
+[data-cardo-theme='apple'] .cardo-box-footer {
+  border-top: 0;
+  padding: 4px 12px 12px;
+  background: transparent;
+}
+
+/* Tinted secondary CTA — light blue fill, blue label (SwiftUI style) */
+[data-cardo-theme='apple'] .cardo-box-footer button,
+[data-cardo-theme='apple'] .cardo-box-footer .cardo-ui-button-default {
+  width: 100%;
+  min-height: 34px;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: color-mix(in srgb, var(--cardo-blue) 12%, var(--cardo-panel)) !important;
+  color: var(--cardo-blue) !important;
+  font-weight: 500;
+  font-size: 13px;
+  box-shadow: none !important;
+}
+
+[data-cardo-theme='apple'] .cardo-box-footer button:hover {
+  background: color-mix(in srgb, var(--cardo-blue) 18%, var(--cardo-panel)) !important;
+  filter: none;
+}
+
+[data-cardo-theme='apple'] button.cardo-box-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px !important;
+  border: 0;
+  background: var(--cardo-blue);
+  color: #ffffff;
+  box-shadow: none;
+}
+
+[data-cardo-theme='apple'] .cardo-box-title,
+[data-cardo-theme='apple'] .cardo-collection-box-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Dock-like bottom toolbar */
+[data-cardo-theme='apple'] .cardo-bottom-shell {
+  bottom: 18px;
+}
+
+[data-cardo-theme='apple'] .cardo-bottom-toolbar {
+  gap: 4px;
+  border: 0 !important;
+  border-radius: 18px !important;
+  padding: 5px !important;
+  background: color-mix(in srgb, var(--cardo-panel) 82%, transparent) !important;
+  box-shadow: var(--cardo-shadow) !important;
+  backdrop-filter: blur(var(--cardo-chrome-blur)) !important;
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur)) !important;
+}
+
+[data-cardo-theme='apple'] .cardo-bottom-toolbar .cardo-toolbar-divider {
+  display: none;
+}
+
+[data-cardo-theme='apple'] .cardo-bottom-toolbar button {
+  width: 36px;
+  height: 36px;
+  border: 0 !important;
+  border-radius: 12px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--cardo-secondary-text);
+  transform: none !important;
+}
+
+[data-cardo-theme='apple'] .cardo-bottom-toolbar button:hover {
+  background: var(--cardo-hover) !important;
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='apple'] .cardo-bottom-toolbar .cardo-toolbar-button-active {
+  background: var(--cardo-hover) !important;
+  color: var(--cardo-blue) !important;
+}
+
+[data-cardo-theme='apple'] .cardo-bottom-toolbar .cardo-toolbar-create {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 12px !important;
+  background: var(--cardo-blue) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+[data-cardo-theme='apple'] .cardo-bottom-toolbar .cardo-toolbar-create:hover {
+  filter: brightness(1.06);
+  background: var(--cardo-blue) !important;
+}
+
+[data-cardo-theme='apple'] .cardo-canvas-tools {
+  border: 0 !important;
+  border-radius: 14px !important;
+  background: color-mix(in srgb, var(--cardo-panel) 85%, transparent) !important;
+  box-shadow: var(--cardo-shadow) !important;
+  backdrop-filter: blur(24px) !important;
+}
+
+[data-cardo-theme='apple'] .cardo-search-pill {
+  border: 0;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--cardo-panel) 88%, transparent);
+  box-shadow: var(--cardo-shadow);
+  backdrop-filter: blur(24px);
+}
+
+[data-cardo-theme='apple'] .cardo-resize-grip {
+  opacity: 0.3;
+}

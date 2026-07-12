@@ -1,0 +1,137 @@
+{
+  "format": "cardo-theme",
+  "version": 1,
+  "pack": {
+    "id": "apple",
+    "version": "1.0.0",
+    "name": {
+      "en": "Apple",
+      "zh": "Apple"
+    },
+    "description": {
+      "en": "Apple SwiftUI design language.",
+      "zh": "Apple SwiftUI 设计风格。"
+    },
+    "tokens": {
+      "colors": {
+        "light": {
+          "canvas": "#ececf0",
+          "surface": "rgba(255, 255, 255, 0.72)",
+          "surfaceStrong": "#ffffff",
+          "panel": "#ffffff",
+          "panelBottom": "#f7f7f8",
+          "panelContent": "#ffffff",
+          "panelChrome": "#f5f5f7",
+          "border": "rgba(0, 0, 0, 0.08)",
+          "borderSubtle": "rgba(0, 0, 0, 0.05)",
+          "divider": "rgba(0, 0, 0, 0.08)",
+          "text": "#1d1d1f",
+          "softText": "#3a3a3c",
+          "secondaryText": "#6e6e73",
+          "muted": "#8e8e93",
+          "hover": "rgba(0, 0, 0, 0.04)",
+          "active": "rgba(0, 122, 255, 0.12)",
+          "input": "#ffffff",
+          "itemHover": "#f5f5f7",
+          "glyph": "#f2f2f7",
+          "neutralButton": "#e5e5ea",
+          "neutralButtonHover": "#d1d1d6",
+          "createBackground": "#007aff",
+          "createText": "#ffffff",
+          "scrollbar": "rgba(0, 0, 0, 0.18)",
+          "scrollbarHover": "rgba(0, 0, 0, 0.28)",
+          "selectionRing": "rgba(0, 122, 255, 0.28)",
+          "settingsChrome": "#f5f5f7",
+          "settingsHover": "#e8e8ed",
+          "blue": "#007aff",
+          "orange": "#ff9500",
+          "purple": "#af52de",
+          "emerald": "#34c759",
+          "red": "#ff3b30"
+        },
+        "dark": {
+          "canvas": "#1c1c1e",
+          "surface": "rgba(44, 44, 46, 0.78)",
+          "surfaceStrong": "#2c2c2e",
+          "panel": "#2c2c2e",
+          "panelBottom": "#1c1c1e",
+          "panelContent": "#2c2c2e",
+          "panelChrome": "#3a3a3c",
+          "border": "rgba(255, 255, 255, 0.1)",
+          "borderSubtle": "rgba(255, 255, 255, 0.06)",
+          "divider": "rgba(255, 255, 255, 0.1)",
+          "text": "#f5f5f7",
+          "softText": "#e5e5ea",
+          "secondaryText": "#98989d",
+          "muted": "#636366",
+          "hover": "rgba(255, 255, 255, 0.06)",
+          "active": "rgba(10, 132, 255, 0.22)",
+          "input": "#3a3a3c",
+          "itemHover": "#3a3a3c",
+          "glyph": "#3a3a3c",
+          "neutralButton": "#48484a",
+          "neutralButtonHover": "#636366",
+          "createBackground": "#0a84ff",
+          "createText": "#ffffff",
+          "scrollbar": "rgba(255, 255, 255, 0.2)",
+          "scrollbarHover": "rgba(255, 255, 255, 0.32)",
+          "selectionRing": "rgba(10, 132, 255, 0.34)",
+          "settingsChrome": "#1c1c1e",
+          "settingsHover": "#2c2c2e",
+          "blue": "#0a84ff",
+          "orange": "#ff9f0a",
+          "purple": "#bf5af2",
+          "emerald": "#30d158",
+          "red": "#ff453a"
+        }
+      },
+      "fonts": {
+        "sans": "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei UI', 'Noto Sans SC', sans-serif",
+        "mono": "ui-monospace, 'SF Mono', Menlo, Monaco, Consolas, monospace",
+        "sizeBase": "13px",
+        "lineHeightBase": "1.4"
+      },
+      "radii": {
+        "xs": "6px",
+        "sm": "8px",
+        "md": "10px",
+        "lg": "12px",
+        "xl": "14px",
+        "pill": "999px"
+      },
+      "space": {
+        "1": "4px",
+        "2": "8px",
+        "3": "12px",
+        "4": "16px",
+        "5": "20px",
+        "6": "24px",
+        "7": "32px",
+        "8": "40px"
+      },
+      "elevation": {
+        "light": {
+          "shadow": "0 0 0 0.5px rgba(0,0,0,.04), 0 8px 28px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06)",
+          "shadowHover": "0 0 0 0.5px rgba(0,0,0,.05), 0 12px 36px rgba(0,0,0,.14), 0 4px 12px rgba(0,0,0,.08)",
+          "insetShadow": "inset 0 0.5px 0 rgba(255,255,255,.8)"
+        },
+        "dark": {
+          "shadow": "0 0 0 0.5px rgba(255,255,255,.06), 0 12px 36px rgba(0,0,0,.55)",
+          "shadowHover": "0 0 0 0.5px rgba(255,255,255,.08), 0 16px 44px rgba(0,0,0,.6)",
+          "insetShadow": "inset 0 0.5px 0 rgba(255,255,255,.08)"
+        }
+      },
+      "motion": {
+        "durationFast": "120ms",
+        "durationNormal": "200ms",
+        "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+      },
+      "chrome": {
+        "blur": "40px",
+        "topbarOffset": "12px",
+        "material": "glass"
+      }
+    },
+    "layoutProfileId": "classic"
+  }
+}
