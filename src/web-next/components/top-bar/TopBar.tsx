@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import { ThemeIcon } from '../../ui/icons/ThemeIcon';
 import { AnimatePresence, motion, Reorder } from 'motion/react';
@@ -42,6 +42,12 @@ export function TopBar() {
   const boxDropRelease = useUiStore((state) => state.boxDropRelease);
   const [deletePageId, setDeletePageId] = useState<string | null>(null);
   const [renamePageId, setRenamePageId] = useState<string | null>(null);
+  /**
+   * Width of the full center strip (collection + pages + recycle + add).
+   * Delete confirm reuses this so the bar does not shrink/jump on enter.
+   */
+  const [centerBandWidth, setCenterBandWidth] = useState<number | null>(null);
+  const centerTabsRef = useRef<HTMLDivElement | null>(null);
   const contextMenu = useContextMenu();
   const { t } = useI18n();
 
@@ -97,6 +103,16 @@ export function TopBar() {
     (state) => state.projection.boxes.filter((box) => box.pageId === deletePageId).length,
   );
 
+  useLayoutEffect(() => {
+    if (deletePageId) return;
+    const node = centerTabsRef.current;
+    if (!node) return;
+    const width = Math.ceil(node.getBoundingClientRect().width);
+    if (width > 0) {
+      setCenterBandWidth(width);
+    }
+  }, [deletePageId, stripPageIds, multiPage, showCollection, showRecycleBin, themeId]);
+
   useEffect(() => {
     if (!deletePageId) {
       return;
@@ -121,6 +137,20 @@ export function TopBar() {
       window.removeEventListener('pointerdown', onPointerDown, true);
     };
   }, [deletePageId]);
+
+  const requestDeletePage = (pageId: string) => {
+    const node = centerTabsRef.current;
+    if (node) {
+      const width = Math.ceil(node.getBoundingClientRect().width);
+      if (width > 0) setCenterBandWidth(width);
+    }
+    setDeletePageId(pageId);
+  };
+
+  const centerBandStyle =
+    centerBandWidth && centerBandWidth > 0
+      ? ({ width: centerBandWidth, minWidth: centerBandWidth, maxWidth: '100%' } as const)
+      : undefined;
 
   const topBarClassName = [
     'cardo-top-bar',
@@ -171,7 +201,7 @@ export function TopBar() {
                     icon: <ThemeIcon name="trash" size={16} />,
                     danger: true,
                     disabled: workspacePages.length <= 1,
-                    onSelect: () => setDeletePageId(page.id),
+                    onSelect: () => requestDeletePage(page.id),
                   },
                 ]
               : []),
@@ -271,6 +301,7 @@ export function TopBar() {
               <motion.div
                 className="cardo-tab-confirm-layer"
                 key={`confirm-${pageToDelete.id}`}
+                style={centerBandStyle}
                 initial={{ opacity: 0, x: 8 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -6, transition: { duration: 0.12, ease: 'easeIn' } }}
@@ -290,6 +321,8 @@ export function TopBar() {
               <motion.div
                 className="cardo-top-center-tabs"
                 key="tabs"
+                ref={centerTabsRef}
+                style={centerBandStyle}
                 initial={{ opacity: 0, x: -6 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -6, transition: { duration: 0.12, ease: 'easeIn' } }}

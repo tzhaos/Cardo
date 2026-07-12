@@ -51,13 +51,6 @@
   justify-content: center;
 }
 
-/* Confirming: allow center band to use free space for dialog text */
-.cardo-top-bar-confirming .cardo-top-center {
-  flex: 1 1 auto;
-  min-width: 0;
-  max-width: 100%;
-}
-
 /* Tabs + add as a shrink-wrapped group so parent can center them */
 .cardo-top-center-tabs {
   display: flex;
@@ -216,7 +209,6 @@
   display: flex;
   width: 100%;
   min-width: 0;
-  max-width: min(560px, 100%);
   align-items: center;
   justify-content: space-between;
   gap: 12px;
@@ -227,22 +219,18 @@
 }
 
 /*
- * In-flow layer inside .cardo-top-center — same band as page tabs.
- * Not absolute inset over the whole header (full-width Fluent/Material bars).
+ * Same footprint as .cardo-top-center-tabs (collection + pages + recycle + add).
+ * Width is locked from measured tab strip so enter does not reflow the bar.
  */
 .cardo-tab-confirm-layer {
   position: relative;
   z-index: 4;
   display: flex;
-  width: max-content;
+  box-sizing: border-box;
   max-width: 100%;
   min-width: 0;
   align-items: center;
   justify-content: center;
-}
-
-.cardo-top-bar-confirming .cardo-tab-confirm-layer {
-  width: 100%;
 }
 
 .cardo-tab-confirm > span {
