@@ -252,7 +252,15 @@ async function handleAuthenticated(
       ...(body && typeof body === 'object' ? body : {}),
     });
     if (!parsed.success) {
-      sendJson(res, 400, errorBody('invalid_payload', 'Invalid command payload.'));
+      const detail = parsed.error.issues
+        .slice(0, 3)
+        .map((issue) => `${issue.path.join('.') || 'root'}: ${issue.message}`)
+        .join('; ');
+      sendJson(
+        res,
+        400,
+        errorBody('invalid_payload', detail ? `Invalid command payload. ${detail}` : 'Invalid command payload.'),
+      );
       return;
     }
     const sourceClientId = requireRegisteredClientId(ctx, req, res);
