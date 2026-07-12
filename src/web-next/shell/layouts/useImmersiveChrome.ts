@@ -6,22 +6,32 @@ const HIDE_DELAY_MS = 900;
 
 /**
  * Floating profile: reveal shell chrome when the pointer approaches edges
- * or presses Alt+` (backtick). Classic/zen leave data-chrome-reveal unset
- * (zen stays fully hidden; exit is a dedicated floating control).
+ * or presses Alt+` (backtick). Settings / menus do not keep shell chrome pinned.
  */
 export function useImmersiveChrome(layoutProfileId: LayoutProfileId) {
   useEffect(() => {
     const root = document.documentElement;
     if (layoutProfileId !== 'floating') {
       delete root.dataset.chromeReveal;
+      root.removeAttribute('data-chrome-reveal');
       return;
     }
 
     let hideTimer: number | null = null;
     let pinned = false;
 
+    const setReveal = (revealed: boolean) => {
+      if (revealed) {
+        root.dataset.chromeReveal = 'true';
+        root.setAttribute('data-chrome-reveal', 'true');
+      } else {
+        delete root.dataset.chromeReveal;
+        root.removeAttribute('data-chrome-reveal');
+      }
+    };
+
     const reveal = () => {
-      root.dataset.chromeReveal = 'true';
+      setReveal(true);
       if (hideTimer !== null) {
         window.clearTimeout(hideTimer);
         hideTimer = null;
@@ -32,7 +42,7 @@ export function useImmersiveChrome(layoutProfileId: LayoutProfileId) {
       if (pinned) return;
       if (hideTimer !== null) window.clearTimeout(hideTimer);
       hideTimer = window.setTimeout(() => {
-        if (!pinned) delete root.dataset.chromeReveal;
+        if (!pinned) setReveal(false);
         hideTimer = null;
       }, HIDE_DELAY_MS);
     };
@@ -41,14 +51,15 @@ export function useImmersiveChrome(layoutProfileId: LayoutProfileId) {
       const nearTop = event.clientY <= EDGE_PX;
       const nearBottom = event.clientY >= window.innerHeight - EDGE_PX;
       const nearLeft = event.clientX <= EDGE_PX;
-      const overChrome = Boolean(
+      // Only pin while pointer is over shell chrome — not settings/menus.
+      const overShellChrome = Boolean(
         (event.target as Element | null)?.closest?.(
-          '.cardo-top-bar, .cardo-history-controls, .cardo-bottom-shell, .cardo-canvas-tools, .cardo-settings-window, .cardo-independent-menu, .cardo-zen-exit',
+          '.cardo-top-bar, .cardo-history-controls, .cardo-bottom-shell, .cardo-canvas-tools, .cardo-immersive-edge',
         ),
       );
-      if (nearTop || nearBottom || nearLeft || overChrome) {
+      if (nearTop || nearBottom || nearLeft || overShellChrome) {
         reveal();
-        if (overChrome) pinned = true;
+        pinned = overShellChrome;
       } else {
         pinned = false;
         scheduleHide();
@@ -60,7 +71,7 @@ export function useImmersiveChrome(layoutProfileId: LayoutProfileId) {
         event.preventDefault();
         if (root.dataset.chromeReveal === 'true') {
           pinned = false;
-          delete root.dataset.chromeReveal;
+          setReveal(false);
         } else {
           pinned = true;
           reveal();
@@ -68,15 +79,17 @@ export function useImmersiveChrome(layoutProfileId: LayoutProfileId) {
       }
     };
 
+    // Enter floating hidden so the mode change is obvious.
+    setReveal(false);
     window.addEventListener('pointermove', onMove, { passive: true });
     window.addEventListener('keydown', onKeyDown);
-    scheduleHide();
 
     return () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('keydown', onKeyDown);
       if (hideTimer !== null) window.clearTimeout(hideTimer);
       delete root.dataset.chromeReveal;
+      root.removeAttribute('data-chrome-reveal');
     };
   }, [layoutProfileId]);
 }

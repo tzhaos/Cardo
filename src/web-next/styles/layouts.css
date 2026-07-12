@@ -1,45 +1,80 @@
 /* Layout profiles — classic is identity (official Cardo shell). */
 
-/* Floating: chrome fades; reveal when pointer nears edges or focuses inside. */
+/* Floating: chrome fades; reveal when pointer nears edges. */
 [data-layout-profile='floating'] .cardo-top-bar,
 [data-layout-profile='floating'] .cardo-history-controls,
 [data-layout-profile='floating'] .cardo-bottom-shell,
 [data-layout-profile='floating'] .cardo-canvas-tools {
   transition:
     opacity var(--cardo-duration-normal) var(--cardo-easing),
-    transform var(--cardo-duration-normal) var(--cardo-easing);
+    transform var(--cardo-duration-normal) var(--cardo-easing),
+    visibility var(--cardo-duration-normal) var(--cardo-easing);
 }
 
 [data-layout-profile='floating']:not([data-chrome-reveal='true']) .cardo-top-bar {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-8px);
+  opacity: 0 !important;
+  visibility: hidden;
+  pointer-events: none !important;
+  transform: translateX(-50%) translateY(-8px) !important;
 }
 
 [data-layout-profile='floating']:not([data-chrome-reveal='true']) .cardo-history-controls {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-6px);
+  opacity: 0 !important;
+  visibility: hidden;
+  pointer-events: none !important;
+  transform: translateY(-6px) !important;
 }
 
 [data-layout-profile='floating']:not([data-chrome-reveal='true']) .cardo-bottom-shell {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(10px);
+  opacity: 0 !important;
+  visibility: hidden;
+  pointer-events: none !important;
+  transform: translateX(-50%) translateY(10px) !important;
 }
 
 [data-layout-profile='floating']:not([data-chrome-reveal='true']) .cardo-canvas-tools {
-  opacity: 0;
-  pointer-events: none;
+  opacity: 0 !important;
+  visibility: hidden;
+  pointer-events: none !important;
 }
 
-[data-layout-profile='floating'][data-chrome-reveal='true'] .cardo-top-bar,
-[data-layout-profile='floating'][data-chrome-reveal='true'] .cardo-history-controls,
-[data-layout-profile='floating'][data-chrome-reveal='true'] .cardo-bottom-shell,
+[data-layout-profile='floating'][data-chrome-reveal='true'] .cardo-top-bar {
+  opacity: 1 !important;
+  visibility: visible;
+  pointer-events: auto !important;
+  transform: translateX(-50%) !important;
+}
+
+[data-layout-profile='floating'][data-chrome-reveal='true'] .cardo-history-controls {
+  opacity: 1 !important;
+  visibility: visible;
+  pointer-events: auto !important;
+  transform: none !important;
+}
+
+[data-layout-profile='floating'][data-chrome-reveal='true'] .cardo-bottom-shell {
+  opacity: 1 !important;
+  visibility: visible;
+  pointer-events: auto !important;
+  transform: translateX(-50%) !important;
+}
+
 [data-layout-profile='floating'][data-chrome-reveal='true'] .cardo-canvas-tools {
-  opacity: 1;
-  pointer-events: auto;
-  transform: none;
+  opacity: 1 !important;
+  visibility: visible;
+  pointer-events: auto !important;
+  transform: none !important;
+}
+
+/* Fluent / Material full-width top bars do not use translateX(-50%). */
+[data-cardo-theme='fluent'][data-layout-profile='floating']:not([data-chrome-reveal='true']) .cardo-top-bar,
+[data-cardo-theme='material'][data-layout-profile='floating']:not([data-chrome-reveal='true']) .cardo-top-bar {
+  transform: translateY(-8px) !important;
+}
+
+[data-cardo-theme='fluent'][data-layout-profile='floating'][data-chrome-reveal='true'] .cardo-top-bar,
+[data-cardo-theme='material'][data-layout-profile='floating'][data-chrome-reveal='true'] .cardo-top-bar {
+  transform: none !important;
 }
 
 /* Edge hit bands to reveal chrome without permanently covering the canvas. */
@@ -72,15 +107,15 @@
 
 /*
  * Zen: hide all product chrome. Canvas + zen exit stay interactive.
- * Settings / menus still mount when opened from elsewhere (e.g. shortcut).
+ * Settings / menus still mount when opened.
  */
 [data-layout-profile='zen'] .cardo-top-bar,
 [data-layout-profile='zen'] .cardo-history-controls,
 [data-layout-profile='zen'] .cardo-bottom-shell,
 [data-layout-profile='zen'] .cardo-canvas-tools {
   opacity: 0 !important;
+  visibility: hidden !important;
   pointer-events: none !important;
-  visibility: hidden;
 }
 
 .cardo-zen-exit {

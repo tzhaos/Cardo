@@ -225,7 +225,9 @@ const actions = {
   },
   setLayoutProfileId: (layoutProfileId: LayoutProfileId) => {
     const next = layoutProfileIdSchema.parse(layoutProfileId);
-    // Immediate root marker so chrome modes apply before Runtime ack / layout effect.
+    // Local state first so controlled tabs update even if Runtime is slow.
+    patchPreferences({ layoutProfileId: next });
+    // Immediate root marker so chrome modes apply before layout effects.
     if (typeof document !== 'undefined') {
       applyLayoutProfile(document.documentElement, next);
     }

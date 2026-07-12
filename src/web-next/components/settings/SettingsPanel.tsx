@@ -511,36 +511,27 @@ function LayoutProfileSettings() {
       <div className="cardo-settings-subheading">
         <span>{t('settings.layout')}</span>
       </div>
-      <div
-        className="cardo-layout-profile-tabs cardo-segmented-control"
-        role="tablist"
+      <ToggleGroup
         aria-label={t('settings.layout')}
+        className="cardo-layout-profile-tabs"
+        type="single"
+        value={layoutProfileId}
+        onValueChange={(value) => {
+          if (value === 'classic' || value === 'floating' || value === 'zen') {
+            setLayoutProfileId(value);
+          }
+        }}
       >
-        {LAYOUT_PROFILES.map((profile) => {
-          const active = layoutProfileId === profile.id;
-          return (
-            <button
-              key={profile.id}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              className={active ? 'cardo-layout-profile-tab-active' : undefined}
-              onClick={() => setLayoutProfileId(profile.id as LayoutProfileId)}
-            >
-              <span
-                className={[
-                  'cardo-segment-indicator',
-                  active ? 'cardo-segment-indicator-active' : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-                aria-hidden
-              />
-              <span>{t(profile.labelKey as WebNextMessageKey)}</span>
-            </button>
-          );
-        })}
-      </div>
+        {LAYOUT_PROFILES.map((profile) => (
+          <SegmentButton
+            key={profile.id}
+            active={layoutProfileId === profile.id}
+            value={profile.id}
+          >
+            {t(profile.labelKey as WebNextMessageKey)}
+          </SegmentButton>
+        ))}
+      </ToggleGroup>
     </>
   );
 }
