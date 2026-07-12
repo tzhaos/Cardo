@@ -151,30 +151,29 @@ export const THEME_LOOK_PRESETS: Record<string, readonly ThemeLookPreset[]> = {
     {
       id: 'default',
       name: { en: 'Default', zh: '默认' },
+      // Pack default is already Google blue — no extra "Blue" look (would duplicate).
       colors: { light: {}, dark: {} },
-    },
-    {
-      id: 'baseline',
-      name: { en: 'Blue', zh: '蓝色' },
-      // Google blue primary on AI Studio neutrals (shell unchanged).
-      colors: accentOnly(
-        { blue: '#1a73e8', create: '#1a73e8', hover: '#e8f0fe' },
-        { blue: '#8ab4f8', create: '#8ab4f8', hover: '#2a3441' },
-      ),
     },
     {
       id: 'tonal',
       name: { en: 'Green', zh: '绿色' },
-      // Material green primary.
       colors: accentOnly(
         { blue: '#188038', create: '#137333', hover: '#e6f4ea' },
         { blue: '#81c995', create: '#81c995', hover: '#1f3a28' },
       ),
     },
     {
+      id: 'orchid',
+      name: { en: 'Purple', zh: '紫色' },
+      // Pack purple accent — distinct from default blue.
+      colors: accentOnly(
+        { blue: '#9334e6', create: '#7c2fd0', hover: '#f3e8fd' },
+        { blue: '#c58af9', create: '#c58af9', hover: '#3a2452' },
+      ),
+    },
+    {
       id: 'dynamic',
       name: { en: 'Coral', zh: '珊瑚红' },
-      // Material red primary — text/surfaces stay pack default.
       colors: accentOnly(
         { blue: '#d93025', create: '#c5221f', hover: '#fce8e6' },
         { blue: '#f28b82', create: '#f28b82', hover: '#3d2422' },
