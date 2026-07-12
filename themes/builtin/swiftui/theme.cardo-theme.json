@@ -2,15 +2,15 @@
   "format": "cardo-theme",
   "version": 1,
   "pack": {
-    "id": "apple",
+    "id": "swiftui",
     "version": "1.0.0",
     "name": {
-      "en": "Apple",
-      "zh": "Apple"
+      "en": "SwiftUI",
+      "zh": "SwiftUI"
     },
     "description": {
-      "en": "Apple SwiftUI design language.",
-      "zh": "Apple SwiftUI 设计风格。"
+      "en": "App design language.",
+      "zh": "App 设计风格。"
     },
     "tokens": {
       "colors": {

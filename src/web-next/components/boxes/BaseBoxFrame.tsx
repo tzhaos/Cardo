@@ -51,7 +51,8 @@ const BOX_CORNER_RADIUS = {
   classic: { idle: 16, compact: 24 },
   fluent: { idle: 6, compact: 8 },
   material: { idle: 16, compact: 20 },
-  apple: { idle: 14, compact: 18 },
+  glass: { idle: 22, compact: 26 },
+  swiftui: { idle: 14, compact: 18 },
 } as const;
 
 interface BaseBoxFrameProps {
@@ -314,9 +315,11 @@ export function BaseBoxFrame({
       ? BOX_CORNER_RADIUS.fluent
       : themeId === 'material'
         ? BOX_CORNER_RADIUS.material
-        : themeId === 'apple'
-          ? BOX_CORNER_RADIUS.apple
-          : BOX_CORNER_RADIUS.classic;
+        : themeId === 'glass'
+          ? BOX_CORNER_RADIUS.glass
+          : themeId === 'swiftui'
+            ? BOX_CORNER_RADIUS.swiftui
+            : BOX_CORNER_RADIUS.classic;
   // Classic: soft 16/24. Fluent: restrained 6/8 (matches --cardo-box-radius).
   const boxCornerRadius = draggingOverTopBar ? cornerRadiusSteps.compact : cornerRadiusSteps.idle;
   const visualScale = draggingOverTopBar

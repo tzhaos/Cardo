@@ -322,13 +322,14 @@ export const THEME_FILE_EXTENSION = '.cardo-theme.json';
 
 /**
  * Official built-in Theme Pack ids — frozen, never overwritten by disk/import.
- * classic | fluent | material | apple — product display order.
+ * classic | glass | fluent | material | swiftui — product display order.
  */
 export const OFFICIAL_BUILT_IN_THEME_IDS: ReadonlySet<string> = new Set([
   'classic',
+  'glass',
   'fluent',
   'material',
-  'apple',
+  'swiftui',
 ]);
 
 /**
@@ -337,9 +338,10 @@ export const OFFICIAL_BUILT_IN_THEME_IDS: ReadonlySet<string> = new Set([
  */
 export const OFFICIAL_THEME_RECIPE_ENTRIES: Readonly<Record<string, string>> = {
   classic: 'src/web-next/styles/themes/classic.css',
+  glass: 'src/web-next/styles/themes/glass/index.css',
   fluent: 'src/web-next/styles/themes/fluent/index.css',
   material: 'src/web-next/styles/themes/material/index.css',
-  apple: 'src/web-next/styles/themes/apple/index.css',
+  swiftui: 'src/web-next/styles/themes/swiftui/index.css',
 };
 
 /** CSS custom property names written by the Theme Runtime. */

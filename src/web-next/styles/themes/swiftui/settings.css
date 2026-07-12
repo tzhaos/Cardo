@@ -1,10 +1,10 @@
 /**
- * Apple SwiftUI — Preferences sheet.
+ * SwiftUI — Preferences sheet.
  * Traffic lights, centered title, solid blue nav selection, grouped form rows.
  */
 
-[data-cardo-theme='apple'] .cardo-independent-menu.cardo-settings-window,
-[data-cardo-theme='apple'] .cardo-settings-window {
+[data-cardo-theme='swiftui'] .cardo-independent-menu.cardo-settings-window,
+[data-cardo-theme='swiftui'] .cardo-settings-window {
   border: 0;
   border-radius: 12px;
   background: var(--cardo-settings-chrome);
@@ -12,13 +12,13 @@
   overflow: hidden;
 }
 
-[data-cardo-theme='apple'] .cardo-settings-panel {
+[data-cardo-theme='swiftui'] .cardo-settings-panel {
   border-radius: 12px;
   background: var(--cardo-settings-chrome);
 }
 
 /* Title bar: traffic lights left, title centered, actions right */
-[data-cardo-theme='apple'] .cardo-settings-header {
+[data-cardo-theme='swiftui'] .cardo-settings-header {
   position: relative;
   min-height: 48px;
   border-bottom: 1px solid var(--cardo-border);
@@ -27,7 +27,7 @@
   gap: 8px;
 }
 
-[data-cardo-theme='apple'] .cardo-settings-traffic-lights {
+[data-cardo-theme='swiftui'] .cardo-settings-traffic-lights {
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
@@ -36,8 +36,8 @@
   z-index: 2;
 }
 
-[data-cardo-theme='apple'] .cardo-settings-traffic-lights > i,
-[data-cardo-theme='apple'] .cardo-settings-traffic-lights > button {
+[data-cardo-theme='swiftui'] .cardo-settings-traffic-lights > i,
+[data-cardo-theme='swiftui'] .cardo-settings-traffic-lights > button {
   display: block;
   width: 12px;
   height: 12px;
@@ -47,23 +47,23 @@
   cursor: default;
 }
 
-[data-cardo-theme='apple'] .cardo-tl-close {
+[data-cardo-theme='swiftui'] .cardo-tl-close {
   background: #ff5f57;
   box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.12);
   cursor: pointer;
 }
 
-[data-cardo-theme='apple'] .cardo-tl-min {
+[data-cardo-theme='swiftui'] .cardo-tl-min {
   background: #febc2e;
   box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.12);
 }
 
-[data-cardo-theme='apple'] .cardo-tl-max {
+[data-cardo-theme='swiftui'] .cardo-tl-max {
   background: #28c840;
   box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.12);
 }
 
-[data-cardo-theme='apple'] .cardo-settings-header-title {
+[data-cardo-theme='swiftui'] .cardo-settings-header-title {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
@@ -75,26 +75,26 @@
   letter-spacing: -0.01em;
 }
 
-[data-cardo-theme='apple'] .cardo-settings-header-title .cardo-icon-frame {
+[data-cardo-theme='swiftui'] .cardo-settings-header-title .cardo-icon-frame {
   display: none;
 }
 
-[data-cardo-theme='apple'] .cardo-settings-header-drag-space {
+[data-cardo-theme='swiftui'] .cardo-settings-header-drag-space {
   flex: 1 1 auto;
 }
 
-[data-cardo-theme='apple'] .cardo-settings-header-actions {
+[data-cardo-theme='swiftui'] .cardo-settings-header-actions {
   z-index: 2;
   gap: 6px;
 }
 
 /* Hide X — close is traffic-light red */
-[data-cardo-theme='apple'] .cardo-settings-header-actions > .cardo-icon-button,
-[data-cardo-theme='apple'] .cardo-settings-header-actions > button.cardo-ui-button-icon {
+[data-cardo-theme='swiftui'] .cardo-settings-header-actions > .cardo-icon-button,
+[data-cardo-theme='swiftui'] .cardo-settings-header-actions > button.cardo-ui-button-icon {
   display: none;
 }
 
-[data-cardo-theme='apple'] .cardo-settings-search {
+[data-cardo-theme='swiftui'] .cardo-settings-search {
   width: min(200px, 32vw);
   height: 28px;
   gap: 6px;
@@ -106,26 +106,26 @@
   box-shadow: none;
 }
 
-[data-cardo-theme='apple'] .cardo-settings-search:focus-within {
+[data-cardo-theme='swiftui'] .cardo-settings-search:focus-within {
   background: var(--cardo-panel);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--cardo-blue) 28%, transparent);
   color: var(--cardo-text);
 }
 
-[data-cardo-theme='apple'] .cardo-settings-search input {
+[data-cardo-theme='swiftui'] .cardo-settings-search input {
   font-size: 12px;
   background: transparent;
   color: var(--cardo-text);
 }
 
-[data-cardo-theme='apple'] .cardo-settings-layout {
+[data-cardo-theme='swiftui'] .cardo-settings-layout {
   gap: 0;
   padding: 0;
   background: var(--cardo-settings-chrome);
 }
 
 /* Sidebar */
-[data-cardo-theme='apple'] .cardo-settings-nav {
+[data-cardo-theme='swiftui'] .cardo-settings-nav {
   width: 176px;
   padding: 10px 8px 16px;
   background: var(--cardo-settings-chrome);
@@ -133,7 +133,7 @@
   gap: 1px;
 }
 
-[data-cardo-theme='apple'] .cardo-settings-nav button {
+[data-cardo-theme='swiftui'] .cardo-settings-nav button {
   min-height: 28px;
   gap: 8px;
   border-radius: 6px;
@@ -143,12 +143,12 @@
   font-weight: 400;
 }
 
-[data-cardo-theme='apple'] .cardo-settings-nav button:hover {
+[data-cardo-theme='swiftui'] .cardo-settings-nav button:hover {
   background: var(--cardo-hover);
 }
 
 /* Solid system-blue selection pill */
-[data-cardo-theme='apple'] .cardo-settings-nav-indicator {
+[data-cardo-theme='swiftui'] .cardo-settings-nav-indicator {
   border-radius: 6px;
   background: var(--cardo-blue);
   box-shadow: none;
@@ -157,38 +157,38 @@
   filter: none;
 }
 
-[data-cardo-theme='apple'] .cardo-settings-nav [data-state='active']::before {
+[data-cardo-theme='swiftui'] .cardo-settings-nav [data-state='active']::before {
   display: none;
 }
 
-[data-cardo-theme='apple'] .cardo-settings-nav [data-state='active'] {
+[data-cardo-theme='swiftui'] .cardo-settings-nav [data-state='active'] {
   color: #ffffff !important;
   font-weight: 500;
 }
 
-[data-cardo-theme='apple'] .cardo-settings-nav-mono-icon,
-[data-cardo-theme='apple'] .cardo-settings-nav-icon {
+[data-cardo-theme='swiftui'] .cardo-settings-nav-mono-icon,
+[data-cardo-theme='swiftui'] .cardo-settings-nav-icon {
   width: 16px;
   height: 16px;
   color: var(--cardo-secondary-text);
   filter: none !important;
 }
 
-[data-cardo-theme='apple'] .cardo-settings-nav [data-state='active'] .cardo-settings-nav-mono-icon,
-[data-cardo-theme='apple'] .cardo-settings-nav [data-state='active'] .cardo-settings-nav-icon {
+[data-cardo-theme='swiftui'] .cardo-settings-nav [data-state='active'] .cardo-settings-nav-mono-icon,
+[data-cardo-theme='swiftui'] .cardo-settings-nav [data-state='active'] .cardo-settings-nav-icon {
   color: #ffffff;
 }
 
-[data-cardo-theme='apple'] .cardo-settings-content {
+[data-cardo-theme='swiftui'] .cardo-settings-content {
   background: var(--cardo-settings-chrome);
   padding: 18px 22px 28px;
 }
 
-[data-cardo-theme='apple'] .cardo-settings-heading {
+[data-cardo-theme='swiftui'] .cardo-settings-heading {
   margin-bottom: 14px;
 }
 
-[data-cardo-theme='apple'] .cardo-settings-heading h2 {
+[data-cardo-theme='swiftui'] .cardo-settings-heading h2 {
   margin: 0;
   color: var(--cardo-muted);
   font-size: 11px;
@@ -198,14 +198,14 @@
   line-height: 1.3;
 }
 
-[data-cardo-theme='apple'] .cardo-settings-heading p {
+[data-cardo-theme='swiftui'] .cardo-settings-heading p {
   display: none;
 }
 
 /* Grouped inset list — white rounded stack */
-[data-cardo-theme='apple'] .cardo-settings-list-group,
-[data-cardo-theme='apple'] .cardo-theme-color-list,
-[data-cardo-theme='apple'] .cardo-settings-search-results {
+[data-cardo-theme='swiftui'] .cardo-settings-list-group,
+[data-cardo-theme='swiftui'] .cardo-theme-color-list,
+[data-cardo-theme='swiftui'] .cardo-settings-search-results {
   gap: 0;
   overflow: hidden;
   border: 0;
@@ -214,17 +214,17 @@
   box-shadow: none;
 }
 
-[data-cardo-theme='apple'] .cardo-theme-pack-card,
-[data-cardo-theme='apple'] .cardo-about-card,
-[data-cardo-theme='apple'] .cardo-custom-search-template,
-[data-cardo-theme='apple'] .cardo-data-actions > button {
+[data-cardo-theme='swiftui'] .cardo-theme-pack-card,
+[data-cardo-theme='swiftui'] .cardo-about-card,
+[data-cardo-theme='swiftui'] .cardo-custom-search-template,
+[data-cardo-theme='swiftui'] .cardo-data-actions > button {
   border: 0;
   border-radius: 10px;
   background: var(--cardo-panel);
   box-shadow: none;
 }
 
-[data-cardo-theme='apple'] .cardo-settings-card {
+[data-cardo-theme='swiftui'] .cardo-settings-card {
   border: 0;
   border-radius: 0;
   padding: 11px 14px;
@@ -232,25 +232,25 @@
   min-height: 44px;
 }
 
-[data-cardo-theme='apple'] .cardo-settings-list-group .cardo-settings-card + .cardo-settings-card {
+[data-cardo-theme='swiftui'] .cardo-settings-list-group .cardo-settings-card + .cardo-settings-card {
   border-top: 1px solid var(--cardo-border);
 }
 
-[data-cardo-theme='apple'] .cardo-settings-card-copy > span:last-child {
+[data-cardo-theme='swiftui'] .cardo-settings-card-copy > span:last-child {
   gap: 2px;
   color: var(--cardo-text);
   font-size: 13px;
   font-weight: 400;
 }
 
-[data-cardo-theme='apple'] .cardo-settings-card-copy small {
+[data-cardo-theme='swiftui'] .cardo-settings-card-copy small {
   color: var(--cardo-secondary-text);
   font-size: 11px;
   font-weight: 400;
 }
 
 /* Segmented control */
-[data-cardo-theme='apple'] .cardo-segmented-control {
+[data-cardo-theme='swiftui'] .cardo-segmented-control {
   border: 0;
   border-radius: 8px;
   padding: 2px;
@@ -258,7 +258,7 @@
   gap: 0;
 }
 
-[data-cardo-theme='apple'] .cardo-segmented-control button {
+[data-cardo-theme='swiftui'] .cardo-segmented-control button {
   border-radius: 6px;
   min-height: 24px;
   font-size: 12px;
@@ -266,70 +266,70 @@
   color: var(--cardo-text);
 }
 
-[data-cardo-theme='apple'] .cardo-segment-indicator {
+[data-cardo-theme='swiftui'] .cardo-segment-indicator {
   border-radius: 6px;
   box-shadow: none;
 }
 
-[data-cardo-theme='apple'] .cardo-segment-indicator-active {
+[data-cardo-theme='swiftui'] .cardo-segment-indicator-active {
   border-color: transparent;
   background: var(--cardo-panel);
   box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.12);
 }
 
-[data-cardo-theme='apple'] .cardo-theme-pack-grid {
+[data-cardo-theme='swiftui'] .cardo-theme-pack-grid {
   gap: 10px;
 }
 
-[data-cardo-theme='apple'] .cardo-theme-pack-card {
+[data-cardo-theme='swiftui'] .cardo-theme-pack-card {
   padding: 10px;
 }
 
-[data-cardo-theme='apple'] .cardo-theme-pack-card-selected {
+[data-cardo-theme='swiftui'] .cardo-theme-pack-card-selected {
   box-shadow: 0 0 0 2px var(--cardo-blue);
 }
 
-[data-cardo-theme='apple'] .cardo-theme-pack-preview {
+[data-cardo-theme='swiftui'] .cardo-theme-pack-preview {
   border-radius: 8px;
   overflow: hidden;
 }
 
-[data-cardo-theme='apple'] .cardo-about-card {
+[data-cardo-theme='swiftui'] .cardo-about-card {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 14px;
 }
 
-[data-cardo-theme='apple'] .cardo-about-logo {
+[data-cardo-theme='swiftui'] .cardo-about-logo {
   border-radius: 10px;
   box-shadow: none;
 }
 
-[data-cardo-theme='apple'] .cardo-about-name {
+[data-cardo-theme='swiftui'] .cardo-about-name {
   font-size: 15px;
   font-weight: 600;
 }
 
-[data-cardo-theme='apple'] .cardo-about-details {
+[data-cardo-theme='swiftui'] .cardo-about-details {
   margin-top: 10px;
   border: 0;
   border-radius: 10px;
   background: var(--cardo-panel);
 }
 
-[data-cardo-theme='apple'] .cardo-theme-color-row {
+[data-cardo-theme='swiftui'] .cardo-theme-color-row {
   border: 0;
   border-radius: 0;
   padding: 10px 14px;
   background: transparent;
 }
 
-[data-cardo-theme='apple'] .cardo-theme-color-list .cardo-theme-color-row + .cardo-theme-color-row {
+[data-cardo-theme='swiftui'] .cardo-theme-color-list .cardo-theme-color-row + .cardo-theme-color-row {
   border-top: 1px solid var(--cardo-border);
 }
 
-[data-cardo-theme='apple'] .cardo-settings-secondary-button {
+[data-cardo-theme='swiftui'] .cardo-settings-secondary-button {
   min-height: 28px;
   border: 0;
   border-radius: 8px;
@@ -341,7 +341,7 @@
   box-shadow: none;
 }
 
-[data-cardo-theme='apple'] .cardo-settings-subheading {
+[data-cardo-theme='swiftui'] .cardo-settings-subheading {
   margin: 18px 0 8px;
   color: var(--cardo-muted);
   font-size: 11px;
@@ -350,7 +350,7 @@
   text-transform: uppercase;
 }
 
-[data-cardo-theme='apple'] .cardo-ui-button-default:not(.cardo-box-icon):not(.cardo-resize-handle) {
+[data-cardo-theme='swiftui'] .cardo-ui-button-default:not(.cardo-box-icon):not(.cardo-resize-handle) {
   border-radius: 8px;
   background: var(--cardo-blue);
   color: #ffffff;

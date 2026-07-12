@@ -94,13 +94,13 @@ export function SettingsPanel({
   const setCustomSearchTemplate = usePreferencesStore((state) => state.setCustomSearchTemplate);
   const themeId = usePreferencesStore((state) => state.themeId);
   const isFluent = themeId === 'fluent';
-  const isApple = themeId === 'apple';
-  /** Static nav pill under glass/OS shells — avoids layoutId soft text. */
+  const isSwiftUI = themeId === 'swiftui';
+  /** Static nav pill under themed shells — avoids layoutId soft text. */
   const useStaticNavIndicator =
-    themeId === 'classic' ||
+    themeId === 'glass' ||
     themeId === 'fluent' ||
     themeId === 'material' ||
-    themeId === 'apple';
+    themeId === 'swiftui';
   const { t, locale: i18nLocale } = useI18n();
   const sections = [
     {
@@ -140,7 +140,7 @@ export function SettingsPanel({
   return (
     <div className="cardo-settings-panel" role="dialog" aria-label={t('settings.title')}>
       <header className="cardo-settings-header" onPointerDown={onHeaderPointerDown}>
-        {isApple ? (
+        {isSwiftUI ? (
           <span className="cardo-settings-traffic-lights" data-no-menu-drag aria-hidden="true">
             <button
               type="button"
@@ -153,7 +153,7 @@ export function SettingsPanel({
           </span>
         ) : null}
         <div className="cardo-settings-header-title">
-          {isApple ? null : (
+          {isSwiftUI ? null : (
             <IconFrame>
               <Settings size={17} />
             </IconFrame>
@@ -192,7 +192,7 @@ export function SettingsPanel({
               </button>
             ) : null}
           </label>
-          {isApple ? null : (
+          {isSwiftUI ? null : (
             <IconButton data-no-menu-drag onClick={onClose} aria-label={t('common.close')}>
               <X size={16} />
             </IconButton>

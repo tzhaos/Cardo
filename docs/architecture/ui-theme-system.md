@@ -348,5 +348,5 @@ effective = basePack.tokens
 1. Token 表达「看起来像什么色/多圆/多密」；Recipe 表达「壳怎么摆」。
 2. 材质（glass/solid）是 token + data 属性，不是每个 recipe 复制粘贴 filter 开关。
 3. 文字壳清晰度是产品约束，不是主题可选特效：整数几何、无 scale、settings 不透明。
-4. 官方包：classic、fluent、material、apple；退休主题不留兼容双读。
+4. 官方包：classic、glass、fluent、material、swiftui；退休主题不留兼容双读。
 5. 校验脚本是官方包的门禁，不是可选文档。

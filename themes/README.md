@@ -24,51 +24,42 @@ src/web-next/styles/themes/<id>…             ← 该包结构方言 recipe
 
 | id | 名称 | material | 语言 |
 | --- | --- | --- | --- |
-| `classic` | Glass（默认） | glass | 柔和浮动半透明层（浅色 Ethereal / 深色 Dark Glass） |
+| `classic` | Classic（默认） | glass | 柔和玻璃壳层 |
+| `glass` | Glass | glass | 柔和浮动半透明层（浅 Ethereal / 深 Dark Glass） |
 | `fluent` | Windows Fluent | solid | Microsoft Windows 11 设计风格 |
 | `material` | Material | solid | Google AI Studio 设计风格 |
-| `apple` | Apple | glass | Apple SwiftUI 设计风格 |
+| `swiftui` | SwiftUI | glass | App 设计风格 |
 
 ### 包文件
 
 ```text
 themes/builtin/
   classic/theme.cardo-theme.json
+  glass/theme.cardo-theme.json
   fluent/theme.cardo-theme.json
   material/theme.cardo-theme.json
-  apple/theme.cardo-theme.json
+  swiftui/theme.cardo-theme.json
 ```
 
 ### Recipe 文件
 
 ```text
 src/web-next/styles/themes/
-  index.css              ← 聚合入口
-  shared.css             ← 各包共用 transition
-  chrome-material.css    ← glass | solid 浮动壳
+  index.css
+  shared.css
+  chrome-material.css
   classic.css
-  fluent/
-    index.css
-    shell.css
-    settings.css
-    overlays.css
-  material/
-    index.css
-    shell.css
-    settings.css
-    overlays.css
-  apple/
-    index.css
-    shell.css
-    settings.css
-    overlays.css
+  glass/index.css
+  fluent/{index,shell,settings,overlays}.css
+  material/{index,shell,settings,overlays}.css
+  swiftui/{index,shell,settings,overlays}.css
 ```
 
 ### 新增官方主题
 
-1. `OFFICIAL_BUILT_IN_THEME_IDS` 登记 id（`src/core/contracts/themePack.ts`）
+1. `OFFICIAL_BUILT_IN_THEME_IDS` 登记 id
 2. `OFFICIAL_THEME_RECIPE_ENTRIES` 登记 recipe 路径
-3. `themes/builtin/<id>/theme.cardo-theme.json`（含 light/dark、`settingsChrome` 不透明、`chrome.material`）
+3. `themes/builtin/<id>/theme.cardo-theme.json`
 4. recipe CSS + `styles/themes/index.css` import
 5. `npx tsx scripts/validate-builtin-themes.ts`
 6. `npm run build` 与 `npm run desktop:build`
