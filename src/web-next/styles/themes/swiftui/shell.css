@@ -159,20 +159,20 @@
 }
 
 /*
- * Item cells share the same soft-blue family as the footer CTA and box icon chip —
- * not cold #f2f2f7 glyph gray (reads purple and fights the SF blue accent).
- * Idle is quieter than the add button; hover approaches the CTA wash.
+ * Item cells: neutral system gray on white box (not soft-blue idle).
+ * glyph (#f2f2f7) is iOS systemGray6 — reads as gray, still distinct from panel white.
+ * Hover only picks up a light SF-blue wash.
  */
 [data-cardo-theme='swiftui'] .cardo-item-row {
   border: 0 !important;
   border-radius: 10px;
-  background: color-mix(in srgb, var(--cardo-blue) 5.5%, var(--cardo-panel)) !important;
+  background: var(--cardo-glyph) !important;
   box-shadow: none;
 }
 
 [data-cardo-theme='swiftui'] .cardo-item-row:hover {
   border-color: transparent !important;
-  background: color-mix(in srgb, var(--cardo-blue) 10%, var(--cardo-panel)) !important;
+  background: color-mix(in srgb, var(--cardo-blue) 9%, var(--cardo-panel)) !important;
   box-shadow: none;
 }
 
@@ -182,19 +182,28 @@
 }
 
 [data-cardo-theme='swiftui'] .cardo-item-list-grid .cardo-item-row {
-  background: color-mix(in srgb, var(--cardo-blue) 5.5%, var(--cardo-panel)) !important;
+  background: var(--cardo-glyph) !important;
 }
 
 [data-cardo-theme='swiftui'] .cardo-item-list-grid .cardo-item-row:hover {
-  background: color-mix(in srgb, var(--cardo-blue) 10%, var(--cardo-panel)) !important;
+  background: color-mix(in srgb, var(--cardo-blue) 9%, var(--cardo-panel)) !important;
 }
 
+/* Dark: glyph chip (#3a3a3c) on panel; hover still light blue wash */
 [data-color-mode='dark'][data-cardo-theme='swiftui'] .cardo-item-row {
-  background: color-mix(in srgb, var(--cardo-blue) 14%, var(--cardo-panel)) !important;
+  background: var(--cardo-glyph) !important;
 }
 
 [data-color-mode='dark'][data-cardo-theme='swiftui'] .cardo-item-row:hover {
-  background: color-mix(in srgb, var(--cardo-blue) 20%, var(--cardo-panel)) !important;
+  background: color-mix(in srgb, var(--cardo-blue) 16%, var(--cardo-panel)) !important;
+}
+
+[data-color-mode='dark'][data-cardo-theme='swiftui'] .cardo-item-list-grid .cardo-item-row {
+  background: var(--cardo-glyph) !important;
+}
+
+[data-color-mode='dark'][data-cardo-theme='swiftui'] .cardo-item-list-grid .cardo-item-row:hover {
+  background: color-mix(in srgb, var(--cardo-blue) 16%, var(--cardo-panel)) !important;
 }
 
 [data-color-mode='dark'][data-cardo-theme='swiftui'] .cardo-item-row.cardo-item-pinned {
