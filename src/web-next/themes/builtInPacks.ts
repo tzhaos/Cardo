@@ -24,7 +24,7 @@ export const BUILT_IN_THEME_IDS = OFFICIAL_BUILT_IN_THEME_IDS;
 const builtinThemeModules = import.meta.glob('../../../themes/builtin/*/theme.cardo-theme.json', {
   eager: true,
   import: 'default',
-}) as Record<string, unknown>;
+});
 
 function loadBuiltInThemePacks(): ThemePack[] {
   const byId = new Map<string, ThemePack>();

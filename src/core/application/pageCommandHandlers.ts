@@ -222,14 +222,20 @@ async function deletePage(transaction: DatabaseTransaction, pageId: string) {
     }
   }
 
+  let defaultPageId = stateBefore.defaultPageId;
+  if (defaultPageId === pageId) {
+    const nextDefault = remainingNormalPages[0];
+    if (!nextDefault) {
+      throw new Error('Cannot delete the last normal page while it is the default.');
+    }
+    defaultPageId = nextDefault.id;
+  }
+
   const stateAfter = {
     ...stateBefore,
     activePageId:
       stateBefore.activePageId === pageId ? COLLECTION_PAGE_ID : stateBefore.activePageId,
-    defaultPageId:
-      stateBefore.defaultPageId === pageId
-        ? remainingNormalPages[0]!.id
-        : stateBefore.defaultPageId,
+    defaultPageId,
   };
   await transaction
     .update(appState)

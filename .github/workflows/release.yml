@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   release:
-    name: Build and publish release
+    name: Build and publish Desktop release
     runs-on: windows-latest
     timeout-minutes: 60
 
@@ -51,19 +51,12 @@ jobs:
       - name: Apply release version
         run: |
           $version = "${{ steps.version.outputs.version }}"
-
           npm version $version --no-git-tag-version --allow-same-version
           if ($LASTEXITCODE -ne 0) {
             throw "Failed to update the package version."
           }
 
-          $manifestPath = "assets/extension-shell/manifest.json"
-          $manifest = Get-Content -Raw $manifestPath | ConvertFrom-Json
-          $manifest.version = $version
-          $manifestJson = $manifest | ConvertTo-Json -Depth 100
-          Set-Content -Path $manifestPath -Value $manifestJson -Encoding utf8NoBOM -NoNewline
-
-      - name: Run release build pipeline
+      - name: Run Desktop release build
         env:
           CARDO_BUILD_PROXY: ''
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
@@ -75,25 +68,6 @@ jobs:
           $releaseDir = "artifacts/release"
           New-Item -ItemType Directory -Force $releaseDir | Out-Null
 
-          Compress-Archive `
-            -Path "artifacts/extension/unpacked/*" `
-            -DestinationPath "$releaseDir/Cardo-$version-Extension.zip" `
-            -CompressionLevel Optimal
-
-          # CLI entry + co-located web-runtime (cardo.js resolves ../web-runtime).
-          $cliStage = Join-Path $env:RUNNER_TEMP "cardo-cli-$version"
-          if (Test-Path $cliStage) { Remove-Item -Recurse -Force $cliStage }
-          New-Item -ItemType Directory -Force $cliStage | Out-Null
-          Copy-Item "artifacts/cli/cardo.js" (Join-Path $cliStage "cardo.js")
-          Copy-Item "artifacts/web-runtime" (Join-Path $cliStage "web-runtime") -Recurse
-          Compress-Archive `
-            -Path "$cliStage/*" `
-            -DestinationPath "$releaseDir/Cardo-$version-CLI.zip" `
-            -CompressionLevel Optimal
-
-          Copy-Item `
-            "artifacts/native-host/cardo-native-host.exe" `
-            "$releaseDir/Cardo-$version-NativeHost-x64.exe"
           Copy-Item `
             "artifacts/desktop-dist/Cardo Setup $version.exe" `
             "$releaseDir/Cardo-$version-Setup-x64.exe"
@@ -118,7 +92,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Cardo-v${{ steps.version.outputs.version }}
+          name: Cardo-v${{ steps.version.outputs.version }}-Desktop
           path: artifacts/release/*
           if-no-files-found: error
           retention-days: 14
@@ -133,15 +107,31 @@ jobs:
             Sort-Object Name |
             Select-Object -ExpandProperty FullName
 
+          $notes = @"
+          ## Cardo $version
+
+          Windows Desktop packages for this release:
+
+          - ``Cardo-$version-Setup-x64.exe`` — NSIS installer
+          - ``Cardo-$version-Portable-x64.exe`` — portable executable
+          - ``SHA256SUMS.txt`` — checksums
+
+          CLI / extension / other surfaces will ship via npm and stores later.
+          "@
+
+          # Always recreate so only Desktop assets remain (no stale CLI/extension zips).
           gh release view $tag *> $null
           if ($LASTEXITCODE -eq 0) {
-            gh release upload $tag @assets --clobber
-          } else {
-            gh release create $tag @assets `
-              --verify-tag `
-              --generate-notes `
-              --title "Cardo $version"
+            gh release delete $tag --yes
+            if ($LASTEXITCODE -ne 0) {
+              throw "Failed to delete existing GitHub Release $tag."
+            }
           }
+
+          gh release create $tag @assets `
+            --verify-tag `
+            --title "Cardo $version" `
+            --notes $notes
 
           if ($LASTEXITCODE -ne 0) {
             throw "Failed to publish GitHub Release $tag."

@@ -44,14 +44,11 @@ const buildEnvironment: NodeJS.ProcessEnv = {
 if (proxy) {
   buildEnvironment.HTTP_PROXY = process.env.HTTP_PROXY ?? process.env.http_proxy ?? proxy;
   buildEnvironment.HTTPS_PROXY = process.env.HTTPS_PROXY ?? process.env.https_proxy ?? proxy;
-} else {
-  // Ensure empty override wins over ambient shell proxies when explicitly disabled.
-  if (Object.prototype.hasOwnProperty.call(process.env, 'CARDO_BUILD_PROXY')) {
-    delete buildEnvironment.HTTP_PROXY;
-    delete buildEnvironment.HTTPS_PROXY;
-    delete buildEnvironment.http_proxy;
-    delete buildEnvironment.https_proxy;
-  }
+} else if (Object.prototype.hasOwnProperty.call(process.env, 'CARDO_BUILD_PROXY')) {
+  delete buildEnvironment.HTTP_PROXY;
+  delete buildEnvironment.HTTPS_PROXY;
+  delete buildEnvironment.http_proxy;
+  delete buildEnvironment.https_proxy;
 }
 
 const desktopArtifacts = [
@@ -59,25 +56,10 @@ const desktopArtifacts = [
   `artifacts/desktop-dist/Cardo ${rootPackage.version}.exe`,
 ];
 
+// Release focuses on Desktop installers. CLI / extension / native-host ship via npm or other channels later.
 const stages: BuildStage[] = [
   { name: '停止 Cardo 实例', command: ['run', 'cardo:stop'], artifacts: [] },
   { name: '校验', command: ['run', 'check'], artifacts: [] },
-  {
-    name: 'CLI + Web Runtime 构建',
-    command: ['run', 'cardo:build'],
-    // flatten plugin writes index.html at static root (not assets/web-runtime/).
-    artifacts: ['artifacts/cli/cardo.js', 'artifacts/web-runtime/index.html'],
-  },
-  {
-    name: '浏览器扩展构建',
-    command: ['run', 'build'],
-    artifacts: ['artifacts/extension/unpacked/manifest.json'],
-  },
-  {
-    name: 'Native Host 出包',
-    command: ['run', 'native-host:build'],
-    artifacts: ['artifacts/native-host/cardo-native-host.exe'],
-  },
   {
     name: 'Electron Windows 出包',
     command: ['run', 'desktop:package'],
@@ -109,4 +91,4 @@ for (const stage of stages) {
   }
 }
 
-console.log('\n完整构建流水线已完成。');
+console.log('\nDesktop release 构建流水线已完成。');

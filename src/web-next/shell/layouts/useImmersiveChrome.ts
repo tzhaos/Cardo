@@ -40,7 +40,8 @@ export function useImmersiveChrome(layoutProfileId: LayoutProfileId) {
     const onMove = (event: PointerEvent) => {
       const { clientX: x, clientY: y } = event;
       for (const selector of selectors) {
-        const el = document.querySelector(selector) as HTMLElement | null;
+        const node = document.querySelector(selector);
+        const el = node instanceof HTMLElement ? node : null;
         if (!el) continue;
         const rect = el.getBoundingClientRect();
         const near =

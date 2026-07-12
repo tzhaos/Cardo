@@ -19,7 +19,8 @@ export function applyLayoutProfile(
   }
 
   // Mirror on .cardo-app so rules match even if a host only scopes under the app node.
-  const app = root.querySelector?.('.cardo-app') as HTMLElement | null;
+  const appNode = root.querySelector?.('.cardo-app');
+  const app = appNode instanceof HTMLElement ? appNode : null;
   if (app) {
     app.dataset.layoutProfile = layoutProfileId;
     app.setAttribute('data-layout-profile', layoutProfileId);

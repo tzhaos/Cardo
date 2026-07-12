@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useIndependentMenuStore } from '../../app/stores/independentMenuStore';
 import { useCanvasStore } from '../../app/stores/canvasStore';
@@ -61,10 +61,10 @@ export function BottomToolbar() {
     createBox(frame, t('box.general'));
   };
 
-  const closeSearch = () => {
+  const closeSearch = useCallback(() => {
     setIsSearchActive(false);
     setSearchQuery('');
-  };
+  }, [setSearchQuery]);
 
   const webSearchUrl = createWebSearchUrl(searchEngine, customSearchTemplate, searchQuery);
   const runWebSearch = () => {
@@ -76,7 +76,7 @@ export function BottomToolbar() {
     if (!globalSearchEnabled && isSearchActive) {
       closeSearch();
     }
-  }, [globalSearchEnabled, isSearchActive]);
+  }, [globalSearchEnabled, isSearchActive, closeSearch]);
 
   return (
     <div className="cardo-bottom-shell">

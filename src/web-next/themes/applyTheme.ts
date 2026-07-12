@@ -99,11 +99,11 @@ export function applyTheme(root: HTMLElement, options: ApplyThemeOptions): Theme
   root.style.setProperty('--cardo-font-mono', resolved.fonts.mono ?? DEFAULT_FONT_TOKENS.mono);
   root.style.setProperty(
     '--cardo-font-size-base',
-    resolved.fonts.sizeBase ?? DEFAULT_FONT_TOKENS.sizeBase!,
+    resolved.fonts.sizeBase ?? DEFAULT_FONT_TOKENS.sizeBase,
   );
   root.style.setProperty(
     '--cardo-line-height-base',
-    resolved.fonts.lineHeightBase ?? DEFAULT_FONT_TOKENS.lineHeightBase!,
+    resolved.fonts.lineHeightBase ?? DEFAULT_FONT_TOKENS.lineHeightBase,
   );
   root.style.setProperty('--cardo-font-scale', String(FONT_SCALE_FACTORS[fontScale]));
   root.style.setProperty('--cardo-density', String(densityFactor));

@@ -37,13 +37,18 @@ for (const pack of BUILT_IN_THEME_PACKS) {
 }
 
 function toDefinition(pack: ThemePack): WebNextThemeDefinition {
+  const light = pack.tokens.colors.light;
+  const dark = pack.tokens.colors.dark;
+  if (!light || !dark) {
+    throw new Error(`Theme pack "${pack.id}" is missing light/dark palettes.`);
+  }
   return {
     id: pack.id,
     name: pack.name,
     description: pack.description ?? pack.name,
     palettes: {
-      light: pack.tokens.colors.light!,
-      dark: pack.tokens.colors.dark!,
+      light,
+      dark,
     },
     pack,
     official: BUILT_IN_THEME_IDS.has(pack.id),
@@ -112,11 +117,11 @@ export function getRegisteredWebNextThemes(): WebNextThemeDefinition[] {
 }
 
 export function getThemePack(themeId: string): ThemePack {
-  return (
-    themeRegistry.get(themeId) ??
-    themeRegistry.get(OFFICIAL_DEFAULT_THEME_ID) ??
-    BUILT_IN_THEME_PACKS[0]!
-  );
+  const fallback = BUILT_IN_THEME_PACKS[0];
+  if (!fallback) {
+    throw new Error('No built-in theme packs are registered.');
+  }
+  return themeRegistry.get(themeId) ?? themeRegistry.get(OFFICIAL_DEFAULT_THEME_ID) ?? fallback;
 }
 
 export function getWebNextTheme(themeId: string): WebNextThemeDefinition {

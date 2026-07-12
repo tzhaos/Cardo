@@ -86,8 +86,8 @@ function isPreferencesUnchanged(
   patch: Partial<typeof preferences.$inferInsert>,
 ): boolean {
   for (const key of Object.keys(patch) as Array<keyof typeof patch>) {
-    const left = before[key as keyof typeof before];
-    const right = after[key as keyof typeof after];
+    const left = before[key];
+    const right = after[key];
     if (typeof left === 'object' || typeof right === 'object') {
       if (JSON.stringify(left) !== JSON.stringify(right)) return false;
     } else if (left !== right) {

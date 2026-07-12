@@ -102,14 +102,14 @@ npm run desktop:start
 ## CI 与发布
 
 GitHub Actions 会在推送到 `main` 或向 `main` 提交 Pull Request 时执行格式、静态检查、测试，
-并验证浏览器扩展、桌面端和 Native Messaging Host 的构建。
+以及完整产品编译（`build:all`）。
 
-推送稳定语义版本标签即可发布 Windows 版本：
+推送稳定语义版本标签即可发布 Windows Desktop 版本：
 
 ```powershell
 git tag v0.1.0
 git push origin v0.1.0
 ```
 
-发布工作流会将扩展压缩包、Native Messaging Host、桌面安装版、便携版和 SHA-256 校验文件
-上传到对应的 GitHub Release。
+发布工作流只打包 Desktop（安装版、便携版与 SHA-256 校验文件）并上传到对应 GitHub Release。
+CLI 等其它入口计划后续通过 npm 分发。

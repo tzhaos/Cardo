@@ -102,15 +102,16 @@ Build output is written to `artifacts/desktop`. If Runtime is already up (for ex
 
 ## CI and releases
 
-GitHub Actions runs formatting, static checks, tests, and builds the browser extension, desktop
-application, and Native Messaging host for pushes and pull requests targeting `main`.
+GitHub Actions runs formatting, static checks, tests, and a full product compile (`build:all`) for
+pushes and pull requests targeting `main`.
 
-To publish a Windows release, push a stable semantic-version tag:
+To publish a Windows Desktop release, push a stable semantic-version tag:
 
 ```powershell
 git tag v0.1.0
 git push origin v0.1.0
 ```
 
-The release workflow builds and publishes the extension archive, Native Messaging host, desktop
-installer, portable executable, and SHA-256 checksums to the matching GitHub Release.
+The release workflow packages Desktop only (NSIS installer, portable exe, SHA-256 checksums) and
+uploads them to the matching GitHub Release. CLI and other clients are expected to ship via npm
+later.

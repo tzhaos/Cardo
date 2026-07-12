@@ -731,11 +731,11 @@ function AppearanceSettings({
       <div className="cardo-theme-look-grid" role="listbox" aria-label={t('settings.themeLooks')}>
         {lookPresets.map((look) => {
           const selected = activeLookId === look.id;
-          const lightCanvas = look.colors.light.canvas ?? pack.tokens.colors.light!.canvas;
-          const darkCanvas = look.colors.dark.canvas ?? pack.tokens.colors.dark!.canvas;
+          const lightCanvas = look.colors.light.canvas ?? pack.tokens.colors.light.canvas;
+          const darkCanvas = look.colors.dark.canvas ?? pack.tokens.colors.dark.canvas;
           const accent =
-            look.colors[colorMode].blue ?? pack.tokens.colors[colorMode]!.blue ?? '#3b82f6';
-          const panel = look.colors[colorMode].panel ?? pack.tokens.colors[colorMode]!.panel;
+            look.colors[colorMode].blue ?? pack.tokens.colors[colorMode].blue ?? '#3b82f6';
+          const panel = look.colors[colorMode].panel ?? pack.tokens.colors[colorMode].panel;
           const label = look.name[locale === 'zh' ? 'zh' : 'en'];
           return (
             <button
@@ -927,7 +927,7 @@ function cssColorToHexInput(value: string): string {
   );
   if (rgb) {
     const hex = (n: string) => Number(n).toString(16).padStart(2, '0');
-    return `#${hex(rgb[1]!)}${hex(rgb[2]!)}${hex(rgb[3]!)}`;
+    return `#${hex(rgb[1])}${hex(rgb[2])}${hex(rgb[3])}`;
   }
   return '#3b82f6';
 }
