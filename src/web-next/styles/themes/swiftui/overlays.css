@@ -3,6 +3,7 @@
  * Translucent elevated panels; highlighted rows use system blue + white label.
  */
 
+/* macOS pop-up button + menu */
 [data-cardo-theme='swiftui'] .cardo-ui-select-trigger {
   min-height: 28px;
   border: 0;
@@ -10,9 +11,9 @@
   background: var(--cardo-neutral-button);
   box-shadow: none;
   backdrop-filter: none;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 400;
+  padding: 0 8px 0 10px;
   color: var(--cardo-text);
 }
 
@@ -29,34 +30,42 @@
 [data-cardo-theme='swiftui'] .cardo-ui-select-content {
   border: 0;
   border-radius: 10px;
-  padding: 4px;
-  background: color-mix(in srgb, var(--cardo-panel) 92%, transparent);
-  box-shadow: var(--cardo-shadow-hover);
-  backdrop-filter: blur(24px) saturate(1.2);
-  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  padding: 5px;
+  background: color-mix(in srgb, var(--cardo-panel) 88%, transparent);
+  box-shadow:
+    0 0 0 0.5px color-mix(in srgb, var(--cardo-text) 12%, transparent),
+    0 12px 40px color-mix(in srgb, #000 18%, transparent);
+  backdrop-filter: blur(40px) saturate(1.4);
+  -webkit-backdrop-filter: blur(40px) saturate(1.4);
 }
 
 [data-cardo-theme='swiftui'] .cardo-ui-select-item {
   min-height: 28px;
   border-radius: 6px;
-  padding: 0 10px;
+  padding: 0 28px 0 10px;
   font-size: 13px;
+  font-weight: 400;
   color: var(--cardo-text);
 }
 
-/* macOS pop-up: blue highlight + white label */
+/* macOS: system blue row + white label; check stays visible on highlight */
 [data-cardo-theme='swiftui'] .cardo-ui-select-item[data-highlighted] {
   background: var(--cardo-blue);
   color: #ffffff;
 }
 
-[data-cardo-theme='swiftui'] .cardo-ui-select-item[data-state='checked'] {
+[data-cardo-theme='swiftui'] .cardo-ui-select-item[data-state='checked']:not([data-highlighted]) {
   font-weight: 500;
 }
 
 [data-cardo-theme='swiftui'] .cardo-ui-select-item[data-highlighted] .cardo-ui-select-check,
 [data-cardo-theme='swiftui'] .cardo-ui-select-item[data-highlighted] svg {
   color: #ffffff;
+}
+
+[data-cardo-theme='swiftui'] .cardo-ui-select-item[data-state='checked']:not([data-highlighted])
+  .cardo-ui-select-check {
+  color: var(--cardo-blue);
 }
 
 [data-cardo-theme='swiftui'] .cardo-floating-menu,

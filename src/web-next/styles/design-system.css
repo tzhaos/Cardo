@@ -62,15 +62,16 @@
 
 .cardo-ui-select-content {
   z-index: 1300;
-  min-width: var(--radix-select-trigger-width);
+  min-width: max(var(--radix-select-trigger-width), 148px);
   max-height: min(280px, var(--radix-select-content-available-height));
   overflow: hidden;
   border: 1px solid var(--cardo-border);
   border-radius: var(--cardo-radius-lg);
   padding: 5px;
   background: var(--cardo-surface-strong);
-  box-shadow: var(--cardo-shadow);
+  box-shadow: var(--cardo-shadow-hover, var(--cardo-shadow));
   backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   transform-origin: var(--radix-select-content-transform-origin);
   animation: cardo-ui-menu-in 140ms ease-out;
 }

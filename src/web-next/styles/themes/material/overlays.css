@@ -55,19 +55,19 @@
   color: var(--cardo-text);
 }
 
-/* Selected: stronger neutral surface + weight (Studio chip), not primary fill */
+/* Selected: tonal chip + primary check (Studio), not solid primary fill */
 [data-cardo-theme='material'] .cardo-ui-select-item[data-state='checked'] {
-  background: var(--cardo-neutral-button);
+  background: var(--cardo-settings-hover, var(--cardo-neutral-button));
   color: var(--cardo-text);
   font-weight: 500;
 }
 
 [data-cardo-theme='material'] .cardo-ui-select-item[data-state='checked'][data-highlighted] {
-  background: var(--cardo-neutral-button-hover);
+  background: color-mix(in srgb, var(--cardo-settings-hover) 70%, var(--cardo-hover));
 }
 
 [data-cardo-theme='material'] .cardo-ui-select-check {
-  color: var(--cardo-secondary-text);
+  color: var(--cardo-blue);
 }
 
 /* Context / account / create menu — Studio floating panel */
