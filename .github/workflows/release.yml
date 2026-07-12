@@ -58,6 +58,7 @@ jobs:
 
       - name: Run release build pipeline
         env:
+          CARDO_BUILD_PROXY: ''
           KHAOSBOX_BUILD_PROXY: ''
         run: npm run release:build
 
@@ -69,18 +70,25 @@ jobs:
 
           Compress-Archive `
             -Path "artifacts/extension/unpacked/*" `
-            -DestinationPath "$releaseDir/KhaosBox-$version-Extension.zip" `
+            -DestinationPath "$releaseDir/Cardo-$version-Extension.zip" `
             -CompressionLevel Optimal
 
+          if (Test-Path "artifacts/cli/cardo.js") {
+            Compress-Archive `
+              -Path "artifacts/cli/cardo.js" `
+              -DestinationPath "$releaseDir/Cardo-$version-CLI.zip" `
+              -CompressionLevel Optimal
+          }
+
           Copy-Item `
-            "artifacts/native-host/khaosbox-native-host.exe" `
-            "$releaseDir/KhaosBox-$version-NativeHost-x64.exe"
+            "artifacts/native-host/cardo-native-host.exe" `
+            "$releaseDir/Cardo-$version-NativeHost-x64.exe"
           Copy-Item `
-            "artifacts/desktop-dist/KhaosBox Setup $version.exe" `
-            "$releaseDir/KhaosBox-$version-Setup-x64.exe"
+            "artifacts/desktop-dist/Cardo Setup $version.exe" `
+            "$releaseDir/Cardo-$version-Setup-x64.exe"
           Copy-Item `
-            "artifacts/desktop-dist/KhaosBox $version.exe" `
-            "$releaseDir/KhaosBox-$version-Portable-x64.exe"
+            "artifacts/desktop-dist/Cardo $version.exe" `
+            "$releaseDir/Cardo-$version-Portable-x64.exe"
 
           $checksumLines = Get-ChildItem $releaseDir -File |
             Sort-Object Name |
@@ -97,7 +105,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: KhaosBox-${{ github.ref_name }}
+          name: Cardo-${{ github.ref_name }}
           path: artifacts/release/*
           if-no-files-found: error
           retention-days: 14
@@ -119,7 +127,7 @@ jobs:
             gh release create $tag @assets `
               --verify-tag `
               --generate-notes `
-              --title "KhaosBox $version"
+              --title "Cardo $version"
           }
 
           if ($LASTEXITCODE -ne 0) {
