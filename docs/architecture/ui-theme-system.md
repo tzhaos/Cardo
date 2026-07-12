@@ -2,11 +2,12 @@
 
 | Field | Value |
 | --- | --- |
-| Status | Design draft |
+| Status | Active (Phase A/B landed; lessons from Fluent polish) |
 | Date | 2026-07-12 |
-| Related | `AGENTS.md` UI 架构, `src/web-next/themes/themeRegistry.ts`, `src/web-next/styles/tokens.css`, `themes/README.md` |
+| Related | `AGENTS.md`, `theme-pack-authoring.md`, `themes/README.md`, `src/core/contracts/themePack.ts` |
 | Goal | 支持风格迥异的前端主题：配色/字体自定义、功能开关组合、样式可扩展 |
-| Recipes | 按包拆分：`src/web-next/styles/themes/<id>.css`（见 §4.4） |
+| Recipes | 按包拆分：`src/web-next/styles/themes/<id>…`（见 §4.4） |
+| Authoring | 制作清单与清晰度约束见 `docs/architecture/theme-pack-authoring.md` |
 
 ## 1. 可行性结论（先说清楚）
 
@@ -136,13 +137,27 @@ Token 放在 `themes/builtin/<id>/theme.cardo-theme.json`。当 tokens 不足以
 
 ```text
 src/web-next/styles/themes/
-  index.css      ← app/styles.css 导入
-  shared.css     ← 各包共用 transition 等
-  classic.css    ← [data-cardo-theme='classic']
-  fluent.css     ← [data-cardo-theme='fluent']
+  index.css
+  shared.css
+  chrome-material.css   ← data-cardo-chrome-material (glass|solid)
+  classic.css
+  fluent/
+    index.css
+    shell.css
+    settings.css
+    overlays.css
 ```
 
-新增官方主题时：登记 `OFFICIAL_BUILT_IN_THEME_IDS` → 加 JSON 包 → 加 `styles/themes/<id>.css` 并在 `index.css` 中 import。
+新增官方主题：`OFFICIAL_BUILT_IN_THEME_IDS` + `OFFICIAL_THEME_RECIPE_ENTRIES` → JSON 包 → recipe → `index.css` import → `validate-builtin-themes.ts`。
+
+### 4.5 Chrome material（玻璃 vs 实心）
+
+| material | blur | 用途 |
+| --- | --- | --- |
+| glass | > 0 | Classic 浮动玻璃；半透明 surface + backdrop-filter |
+| solid | 0 | Fluent / 设置长文壳；不透明 + 无 backdrop 模糊 |
+
+`applyTheme` 写入 `data-cardo-chrome-material`。设置窗背景一律 `--cardo-settings-chrome`（须不透明）。细节与清晰度硬约束见 `theme-pack-authoring.md`。
 
 ### 4.3 用户自定义
 
@@ -324,4 +339,14 @@ effective = basePack.tokens
 
 ## 15. 建议的下一步
 
-若认可本方向：先做 Phase A 详细 PR Plan（token 清单 + CSS 迁移批次 + preferences 字段），再实现。不要从 Snippet 或插件系统起手。
+1. 新增官方主题严格走 `theme-pack-authoring.md` 清单。
+2. 继续把通用 CSS 中的硬编码色/半径迁到 token（Phase A 残余）。
+3. Feature Catalog / Layout Profile 仍按 Phase C/D，不要从 Snippet 起手。
+
+## 16. Fluent 打磨后的架构定论
+
+1. Token 表达「看起来像什么色/多圆/多密」；Recipe 表达「壳怎么摆」。
+2. 材质（glass/solid）是 token + data 属性，不是每个 recipe 复制粘贴 filter 开关。
+3. 文字壳清晰度是产品约束，不是主题可选特效：整数几何、无 scale、settings 不透明。
+4. 官方只有 classic + fluent；退休主题不留兼容双读。
+5. 校验脚本是官方包的门禁，不是可选文档。

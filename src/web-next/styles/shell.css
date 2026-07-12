@@ -336,14 +336,13 @@
   border-radius: var(--cardo-radius-xl);
   background: var(--cardo-surface-strong);
   box-shadow: var(--cardo-shadow-hover);
-  backdrop-filter: blur(18px);
+  /* Material blur applied in themes/chrome-material.css via data-cardo-chrome-material. */
   /* Position via left/top (not transform) so shell text stays pixel-crisp. */
   transform: none;
 }
 
 body.cardo-independent-menu-dragging .cardo-independent-menu,
 body.cardo-independent-menu-resizing .cardo-independent-menu {
-  backdrop-filter: none;
   will-change: left, top, width, height;
 }
 

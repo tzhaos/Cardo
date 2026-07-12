@@ -1,0 +1,41 @@
+/**
+ * Chrome material — token-driven floating surface paint.
+ *
+ * applyTheme writes data-cardo-chrome-material from pack.tokens.chrome.material
+ * (or derives glass vs solid from chrome.blur).
+ *
+ * glass  — backdrop-filter + translucent surface tokens (Classic default)
+ * solid  — opaque floating chrome, no backdrop blur (Fluent default)
+ *
+ * Settings windows always use --cardo-settings-chrome so text stays readable.
+ * Do not put theme-id selectors here — material is the extension surface.
+ */
+
+.cardo-independent-menu.cardo-settings-window {
+  background: var(--cardo-settings-chrome);
+}
+
+[data-cardo-chrome-material='solid'] .cardo-independent-menu {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: none;
+  filter: none;
+}
+
+[data-cardo-chrome-material='solid'] .cardo-independent-menu.cardo-settings-window {
+  isolation: isolate;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+[data-cardo-chrome-material='glass'] .cardo-independent-menu {
+  backdrop-filter: blur(var(--cardo-chrome-blur));
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur));
+}
+
+/* Drag/resize: drop expensive filters while geometry is live */
+body.cardo-independent-menu-dragging .cardo-independent-menu,
+body.cardo-independent-menu-resizing .cardo-independent-menu {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}

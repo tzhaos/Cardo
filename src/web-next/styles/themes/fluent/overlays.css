@@ -1,0 +1,151 @@
+/**
+ * Fluent recipe — dropdowns, context menus, drag chrome.
+ * Tokens: themes/builtin/fluent/theme.cardo-theme.json
+ * Scoped under [data-cardo-theme="fluent"].
+ */
+
+/*
+ * Fluent DropDown / ComboBox (Win11):
+ * white flyout, soft elevation, 8px radius;
+ * selected row = light gray fill + left accent rail (no check glyph).
+ */
+[data-cardo-theme='fluent'] .cardo-ui-select-trigger {
+  min-height: 32px;
+  border: 1px solid var(--cardo-border);
+  border-radius: 4px;
+  background: var(--cardo-settings-chrome, var(--cardo-panel));
+  box-shadow: none;
+  backdrop-filter: none;
+  font-size: 13px;
+}
+
+[data-cardo-theme='fluent'] .cardo-ui-select-trigger:hover {
+  border-color: color-mix(in srgb, var(--cardo-text) 18%, var(--cardo-border));
+  background: var(--cardo-settings-chrome, var(--cardo-panel));
+  box-shadow: none;
+}
+
+[data-cardo-theme='fluent'] .cardo-ui-select-trigger[data-state='open'],
+[data-cardo-theme='fluent'] .cardo-ui-select-trigger:focus-visible {
+  border-color: var(--cardo-blue);
+  background: var(--cardo-settings-chrome, var(--cardo-panel));
+  box-shadow: none;
+}
+
+[data-cardo-theme='fluent'] .cardo-ui-select-content {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--cardo-border) 90%, transparent);
+  border-radius: 8px;
+  padding: 4px;
+  background: #ffffff;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, #000 2%, transparent),
+    0 8px 24px color-mix(in srgb, #000 12%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+[data-cardo-theme='fluent'][data-color-mode='dark'] .cardo-ui-select-content {
+  background: var(--cardo-panel);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, #fff 6%, transparent),
+    0 8px 24px color-mix(in srgb, #000 40%, transparent);
+}
+
+[data-cardo-theme='fluent'] .cardo-ui-select-viewport {
+  gap: 0;
+}
+
+[data-cardo-theme='fluent'] .cardo-ui-select-item {
+  position: relative;
+  min-height: 36px;
+  border-radius: 4px;
+  padding: 0 12px 0 14px;
+  color: var(--cardo-text);
+  font-size: 14px;
+  font-weight: 400;
+}
+
+/* Win11: highlight / selected = soft gray + left blue rail */
+[data-cardo-theme='fluent'] .cardo-ui-select-item[data-highlighted],
+[data-cardo-theme='fluent'] .cardo-ui-select-item[data-state='checked'] {
+  background: var(--cardo-settings-hover, #f0f0f0);
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='fluent'] .cardo-ui-select-item[data-highlighted]::before,
+[data-cardo-theme='fluent'] .cardo-ui-select-item[data-state='checked']::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: var(--cardo-blue);
+}
+
+/* Hide check glyph — rail is the selection affordance */
+[data-cardo-theme='fluent'] .cardo-ui-select-check {
+  display: none;
+}
+
+[data-cardo-theme='fluent'] .cardo-theme-color-text,
+[data-cardo-theme='fluent'] .cardo-custom-search-template input {
+  background: color-mix(in srgb, var(--cardo-settings-hover) 35%, var(--cardo-settings-chrome));
+}
+
+/* Context / floating menus match the same flyout language */
+[data-cardo-theme='fluent'] .cardo-floating-menu {
+  gap: 0;
+  border: 1px solid color-mix(in srgb, var(--cardo-border) 90%, transparent);
+  border-radius: 8px;
+  padding: 4px;
+  background: #ffffff;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, #000 2%, transparent),
+    0 8px 24px color-mix(in srgb, #000 12%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+[data-cardo-theme='fluent'][data-color-mode='dark'] .cardo-floating-menu {
+  background: var(--cardo-panel);
+}
+
+[data-cardo-theme='fluent'] .cardo-menu-row {
+  position: relative;
+  min-height: 36px;
+  border-radius: 4px;
+  padding: 8px 12px 8px 14px;
+  color: var(--cardo-text);
+  font-size: 14px;
+  font-weight: 400;
+}
+
+[data-cardo-theme='fluent'] .cardo-menu-row:hover:not(:disabled),
+[data-cardo-theme='fluent'] .cardo-menu-row[data-highlighted],
+[data-cardo-theme='fluent'] .cardo-menu-row[data-state='open'] {
+  background: var(--cardo-settings-hover, #f0f0f0);
+}
+
+[data-cardo-theme='fluent'] .cardo-menu-row:hover:not(:disabled)::before,
+[data-cardo-theme='fluent'] .cardo-menu-row[data-highlighted]::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: var(--cardo-blue);
+}
+
+/* Drop / drag chrome stays neutral under Fluent too */
+[data-cardo-theme='fluent'] .cardo-top-bar-drop-mode,
+[data-cardo-theme='fluent'] .cardo-top-bar-drag-over {
+  border-color: var(--cardo-border);
+  background: var(--cardo-panel) !important;
+  box-shadow: none !important;
+}
+

@@ -128,7 +128,8 @@
       },
       "chrome": {
         "blur": "0px",
-        "topbarOffset": "0px"
+        "topbarOffset": "0px",
+        "material": "solid"
       }
     },
     "layoutProfileId": "classic"

@@ -128,7 +128,8 @@
       },
       "chrome": {
         "blur": "18px",
-        "topbarOffset": "12px"
+        "topbarOffset": "12px",
+        "material": "glass"
       }
     },
     "options": [
@@ -174,7 +175,8 @@
                 }
               },
               "chrome": {
-                "blur": "0px"
+                "blur": "0px",
+                "material": "solid"
               }
             }
           }

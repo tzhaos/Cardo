@@ -164,10 +164,25 @@ export const motionTokenMapSchema = z
 
 export type MotionTokenMap = z.infer<typeof motionTokenMapSchema>;
 
+/**
+ * Floating chrome material.
+ * glass — backdrop-filter + translucent surfaces (Classic).
+ * solid — opaque surfaces, no backdrop blur (Fluent / readable text shells).
+ */
+export const chromeMaterialSchema = z.enum(['glass', 'solid']);
+export type ChromeMaterial = z.infer<typeof chromeMaterialSchema>;
+
 export const chromeTokenMapSchema = z
   .object({
+    /** Backdrop blur radius for glass chrome (e.g. "18px"). Use "0px" with solid. */
     blur: z.string().min(1).optional(),
+    /** Offset for floating top bar (Classic). Edge-to-edge shells use "0px". */
     topbarOffset: z.string().min(1).optional(),
+    /**
+     * Floating surface material. When omitted, applyTheme derives:
+     * blur 0 → solid, otherwise glass.
+     */
+    material: chromeMaterialSchema.optional(),
   })
   .strict();
 
@@ -308,8 +323,18 @@ export const THEME_FILE_EXTENSION = '.cardo-theme.json';
 /**
  * Official built-in Theme Pack ids — frozen, never overwritten by disk/import.
  * Classic = product default; Fluent = Win11 Mica language from product prototype.
+ * Order is product display order.
  */
 export const OFFICIAL_BUILT_IN_THEME_IDS: ReadonlySet<string> = new Set(['classic', 'fluent']);
+
+/**
+ * Recipe CSS entry relative to repo root for each official pack.
+ * Tokens alone cannot express shell topology; every official id needs a recipe.
+ */
+export const OFFICIAL_THEME_RECIPE_ENTRIES: Readonly<Record<string, string>> = {
+  classic: 'src/web-next/styles/themes/classic.css',
+  fluent: 'src/web-next/styles/themes/fluent/index.css',
+};
 
 /** CSS custom property names written by the Theme Runtime. */
 export const colorCssVariableNames = {

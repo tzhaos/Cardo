@@ -46,12 +46,18 @@ export function applyTheme(root: HTMLElement, options: ApplyThemeOptions): Theme
   const fontScale = options.fontScale ?? 'md';
   const density = options.density ?? 'comfortable';
 
+  const chromeBlur = resolved.chrome.blur ?? '18px';
+  const chromeMaterial =
+    resolved.chrome.material ??
+    (isZeroCssLength(chromeBlur) ? 'solid' : 'glass');
+
   root.dataset.cardoTheme = pack.id;
   root.dataset.theme = pack.id;
   root.dataset.colorMode = colorMode;
   root.dataset.fontFamily = fontFamilyId;
   root.dataset.fontScale = fontScale;
   root.dataset.density = density;
+  root.dataset.cardoChromeMaterial = chromeMaterial;
   root.classList.toggle('dark', colorMode === 'dark');
   root.style.colorScheme = colorMode;
 
@@ -102,8 +108,13 @@ export function applyTheme(root: HTMLElement, options: ApplyThemeOptions): Theme
   );
   root.style.setProperty('--cardo-font-scale', String(FONT_SCALE_FACTORS[fontScale]));
   root.style.setProperty('--cardo-density', String(densityFactor));
-  root.style.setProperty('--cardo-chrome-blur', resolved.chrome.blur ?? '18px');
+  root.style.setProperty('--cardo-chrome-blur', chromeBlur);
   root.style.setProperty('--cardo-topbar-offset', resolved.chrome.topbarOffset ?? '12px');
 
   return pack;
+}
+
+function isZeroCssLength(value: string): boolean {
+  const trimmed = value.trim().toLowerCase();
+  return trimmed === '0' || trimmed === '0px' || trimmed === '0rem' || trimmed === '0em';
 }
