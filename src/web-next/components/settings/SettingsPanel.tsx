@@ -510,7 +510,6 @@ function AppearanceSettings({
 
       <div className="cardo-settings-subheading">
         <span>{t('settings.theme')}</span>
-        <small>{t('settings.themeDescription')}</small>
       </div>
       <ToggleGroup
         className="cardo-theme-pack-grid"
