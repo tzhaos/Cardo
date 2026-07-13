@@ -553,6 +553,23 @@ export class RuntimeClient {
     );
   }
 
+  /**
+   * Run an HTTP attempt; if the server rejects an expired/unknown client id,
+   * re-hello once and retry the attempt once. Never retries more than once
+   * (avoids infinite loops when rebind fails or the second attempt still fails).
+   */
+  private async withInvalidClientIdRetry<T>(attempt: () => Promise<T>): Promise<T> {
+    try {
+      return await attempt();
+    } catch (error) {
+      if (this.closed || !this.isInvalidClientIdError(error)) {
+        throw error;
+      }
+      await this.rebindSession();
+      return await attempt();
+    }
+  }
+
   // --- event stream (fetch + ReadableStream, not EventSource) ---
 
   private async runSubscribeLoop(): Promise<void> {
@@ -675,12 +692,17 @@ export class RuntimeClient {
   }
 
   private async getJson(path: string): Promise<unknown> {
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      method: 'GET',
-      headers: this.buildHeaders({ requireClientId: false }),
+    // Queries/export do not require a registered client id (requireClientId: false).
+    // Still rebind+retry once if the server ever rejects a stale X-Cardo-Client-Id
+    // header that was attached because selfClientId is set.
+    return this.withInvalidClientIdRetry(async () => {
+      const response = await fetch(`${this.baseUrl}${path}`, {
+        method: 'GET',
+        headers: this.buildHeaders({ requireClientId: false }),
+      });
+      if (!response.ok) throw await this.toError(response);
+      return (await response.json()) as unknown;
     });
-    if (!response.ok) throw await this.toError(response);
-    return response.json();
   }
 
   private async postJson(
@@ -688,16 +710,27 @@ export class RuntimeClient {
     body: unknown,
     options?: { requireClientId?: boolean },
   ): Promise<unknown> {
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      method: 'POST',
-      headers: this.buildHeaders({
-        requireClientId: options?.requireClientId ?? false,
-        json: true,
-      }),
-      body: JSON.stringify(body),
-    });
-    if (!response.ok) throw await this.toError(response);
-    return response.json();
+    const requireClientId = options?.requireClientId ?? false;
+    const attempt = async (): Promise<unknown> => {
+      const response = await fetch(`${this.baseUrl}${path}`, {
+        method: 'POST',
+        headers: this.buildHeaders({
+          requireClientId,
+          json: true,
+        }),
+        body: JSON.stringify(body),
+      });
+      if (!response.ok) throw await this.toError(response);
+      return (await response.json()) as unknown;
+    };
+
+    // hello / auth-adjacent posts never require a bound client id — do not rebind
+    // on their failures (would recurse: rebindSession → hello → postJson).
+    if (!requireClientId) {
+      return attempt();
+    }
+
+    return this.withInvalidClientIdRetry(attempt);
   }
 
   private buildHeaders(options: {
