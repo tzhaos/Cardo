@@ -62,7 +62,7 @@ function loadBuiltInThemePacks(): ThemePack[] {
     );
   }
 
-  // Stable product order: classic first, then remaining official ids.
+  // Stable product order: official ids only (currently codex).
   const order = [...OFFICIAL_BUILT_IN_THEME_IDS];
   return order.map((id) => byId.get(id)!);
 }

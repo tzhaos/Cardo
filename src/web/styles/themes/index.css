@@ -10,9 +10,4 @@
 
 @import './shared.css';
 @import './chrome-material.css';
-@import './classic.css';
-@import './glass/index.css';
-@import './fluent/index.css';
-@import './material/index.css';
-@import './swiftui/index.css';
 @import './codex/index.css';

@@ -224,17 +224,17 @@ Cardo Runtime 是本机唯一权威 SQLite 持有者与业务写路径。CLI、W
 4. 设置行动作钮必须 `cardo-settings-secondary-button`（同导出数据），禁止未加该类的 default/ghost 裸按钮。
 5. 实现前打开同页语言/搜索引擎/导出抄 DOM；完成后目视：标题无卡片底、按钮与导出一致、主机端口在 list-group 内。
 
-### 2. 官方主题适配（classic / glass / fluent / material / swiftui / codex）
+### 2. 官方主题适配（唯一官方：codex）
 
-1. 官方 id SoT：`OFFICIAL_BUILT_IN_THEME_IDS`（`src/core/contracts/themePack.ts`）。换皮唯一路径：Theme Pack JSON token + `[data-cardo-theme="<id>"]` recipe。
-2. 新增或改官方主题必须：登记 id → 登记 recipe 入口 → `themes/builtin/<id>/…` 双色 JSON → recipe CSS → `npm run validate:themes`（与 CI check 一致）。
+1. 官方 id SoT：`OFFICIAL_BUILT_IN_THEME_IDS` 仅 `codex`；默认 `OFFICIAL_DEFAULT_THEME_ID = 'codex'`（`src/core/contracts/themePack.ts` / `themePaths.ts`）。换皮唯一路径：Theme Pack JSON token + `[data-cardo-theme="codex"]` recipe。用户可导入第三方 pack，但不得覆盖官方 id。
+2. 改官方主题必须：登记 id → 登记 recipe 入口 → `themes/builtin/codex/…` 双色 JSON → recipe CSS → `npm run validate:themes`（与 CI check 一致）。
 3. 通用 CSS / 业务组件只消费 `--cardo-*` 变量；禁止在共享 CSS 写死品牌色、危险色、状态色 hex（如 CTA 蓝、删除红、横幅橙）而绕过 token——否则换肤无效（历史事故：add-views / delete / banner / selection ring）。
-4. 设置等长文壳背景必须 `var(--cardo-settings-chrome)` / `settingsHover`，且接近不透明；禁止 recipe 用 `#fff` / 半透明 surface / 硬编码 hex 覆盖（Glass 曾踩坑）。
-5. 材质用 pack `chrome.material` → `data-cardo-chrome-material`；禁止每个主题复制一套 `backdrop-filter` 业务分叉。
-6. 禁止在业务组件用 `themeId === 'fluent' | 'glass' | …` 写样式分支（几何/chip 尺寸等）；允许极少数壳能力分支且必须注释理由。方言进 recipe 或 token。
+4. 设置等长文壳背景必须 `var(--cardo-settings-chrome)` / `settingsHover`，且接近不透明；禁止 recipe 用 `#fff` / 半透明 surface / 硬编码 hex 覆盖。
+5. 材质用 pack `chrome.material` → `data-cardo-chrome-material`；禁止业务分叉 `backdrop-filter`。
+6. 禁止在业务组件用 `themeId === '…'` 写样式分支（几何/chip 尺寸等）；方言进 recipe 或 token。
 7. Motion 几何若绑定圆角，用与 token 同步的数值，禁止 Motion 里写 pill `9999` 或未解析的 CSS 变量导致圆角丢失。
 8. 改主题 CSS 后必须重建相关 surface 再目视；禁止把「未 rebuild / 装错旧 Programs\Cardo」误判为代码回归。
-9. 明暗两套 + 设置窗 / 顶栏 / 底栏 / 盒子 / 下拉至少各看一眼再合入；仅 classic 通过不算主题完成。
+9. 明暗两套 + 设置 / 侧栏 / 主面板 / 盒子 / 下拉至少各看一眼再合入。
 
 ### 3. 动效与视觉所有权
 
@@ -269,7 +269,7 @@ Cardo Runtime 是本机唯一权威 SQLite 持有者与业务写路径。CLI、W
 
 | 项 | 检查 |
 | --- | --- |
-| 主题 | classic/glass/fluent/material/swiftui/codex 是否未被硬编码色破坏；设置底是否 token |
+| 主题 | codex 是否未被硬编码色破坏；设置底是否 token |
 | i18n | 新字符串是否 en+zh；有无硬编码；有无架构黑话 |
 | 动效 | 文字壳有无 scale；拖拽帧有无写库；属性所有者是否唯一 |
 | 双轨 | 有无旧组件/旧 CSS/旧 class 前缀并存 |

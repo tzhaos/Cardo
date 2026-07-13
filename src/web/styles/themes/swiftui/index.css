@@ -1,7 +1,0 @@
-/**
- * SwiftUI Theme Pack recipes — SwiftUI / macOS Settings language.
- * Tokens: themes/builtin/swiftui/theme.cardo-theme.json
- */
-@import './shell.css';
-@import './settings.css';
-@import './overlays.css';

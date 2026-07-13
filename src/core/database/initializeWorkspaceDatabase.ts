@@ -106,11 +106,11 @@ export async function initializeWorkspaceDatabase(
       id: PREFERENCES_ID,
       locale: initialPreferences.locale,
       colorMode: initialPreferences.colorMode,
-      themeId: 'classic',
+      themeId: 'codex',
       fontFamily: DEFAULT_FONT_FAMILY_ID,
       fontScale: DEFAULT_FONT_SCALE,
       density: DEFAULT_DENSITY,
-      // Empty customization keeps the official classic pack pixel-identical.
+      // Empty customization keeps the official codex pack pixel-identical.
       themeColorOverrides: {},
       themeOptionValues: {},
       importedThemePacks: [],

@@ -323,28 +323,15 @@ export const THEME_FILE_EXTENSION = '.cardo-theme.json';
 
 /**
  * Official built-in Theme Pack ids — frozen, never overwritten by disk/import.
- * classic | glass | fluent | material | swiftui | codex — product display order
- * (codex last; default remains classic).
+ * Product ships a single official dialect: codex (default).
  */
-export const OFFICIAL_BUILT_IN_THEME_IDS: ReadonlySet<string> = new Set([
-  'classic',
-  'glass',
-  'fluent',
-  'material',
-  'swiftui',
-  'codex',
-]);
+export const OFFICIAL_BUILT_IN_THEME_IDS: ReadonlySet<string> = new Set(['codex']);
 
 /**
  * Recipe CSS entry relative to repo root for each official pack.
  * Tokens alone cannot express shell topology; every official id needs a recipe.
  */
 export const OFFICIAL_THEME_RECIPE_ENTRIES: Readonly<Record<string, string>> = {
-  classic: 'src/web/styles/themes/classic.css',
-  glass: 'src/web/styles/themes/glass/index.css',
-  fluent: 'src/web/styles/themes/fluent/index.css',
-  material: 'src/web/styles/themes/material/index.css',
-  swiftui: 'src/web/styles/themes/swiftui/index.css',
   codex: 'src/web/styles/themes/codex/index.css',
 };
 

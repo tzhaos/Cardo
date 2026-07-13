@@ -39,5 +39,5 @@ export const THEME_DIRECTORY_RELATIVE = 'themes';
 /** Repo-relative root for shipped built-in packs. */
 export const BUILTIN_THEMES_REPO_RELATIVE = 'themes/builtin';
 
-/** Official product default theme id (must exist under themes/builtin/classic/). */
-export const OFFICIAL_DEFAULT_THEME_ID = 'classic' as const;
+/** Official product default theme id (must exist under themes/builtin/codex/). */
+export const OFFICIAL_DEFAULT_THEME_ID = 'codex' as const;

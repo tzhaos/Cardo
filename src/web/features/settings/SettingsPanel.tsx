@@ -188,11 +188,6 @@ export function SettingsPanel({
     else setInternalQuery(next);
   };
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const themeId = usePreferencesStore((state) => state.themeId);
-  const isSwiftUI = themeId === 'swiftui';
-  /** Static nav pill under themed shells — avoids layoutId soft text. */
-  const useStaticNavIndicator =
-    themeId === 'glass' || themeId === 'fluent' || themeId === 'material' || themeId === 'swiftui';
   const { t } = useI18n();
   const sections = [
     { id: 'general' as const, label: t('settings.general') },
@@ -226,24 +221,10 @@ export function SettingsPanel({
   return (
     <div className="cardo-settings-panel" role="dialog" aria-label={t('settings.title')}>
       <header className="cardo-settings-header" onPointerDown={onHeaderPointerDown}>
-        {isSwiftUI ? (
-          <span className="cardo-settings-traffic-lights" data-no-menu-drag aria-hidden="true">
-            <button
-              type="button"
-              className="cardo-tl-close"
-              aria-label={t('common.close')}
-              onClick={onClose}
-            />
-            <i className="cardo-tl-min" />
-            <i className="cardo-tl-max" />
-          </span>
-        ) : null}
         <div className="cardo-settings-header-title">
-          {isSwiftUI ? null : (
-            <IconFrame>
-              <ThemeIcon name="settings" size={17} />
-            </IconFrame>
-          )}
+          <IconFrame>
+            <ThemeIcon name="settings" size={17} />
+          </IconFrame>
           <span>{t('settings.title')}</span>
         </div>
         <div className="cardo-settings-header-drag-space" aria-hidden="true" />
@@ -278,11 +259,9 @@ export function SettingsPanel({
               </button>
             ) : null}
           </label>
-          {isSwiftUI ? null : (
-            <IconButton data-no-menu-drag onClick={onClose} aria-label={t('common.close')}>
-              <ThemeIcon name="close" size={16} />
-            </IconButton>
-          )}
+          <IconButton data-no-menu-drag onClick={onClose} aria-label={t('common.close')}>
+            <ThemeIcon name="close" size={16} />
+          </IconButton>
         </div>
       </header>
       <Tabs
@@ -296,17 +275,8 @@ export function SettingsPanel({
         <TabsList className="cardo-settings-nav" aria-label={t('settings.sections')}>
           {sections.map(({ id, label }) => (
             <TabsTrigger key={id} value={id}>
-              {/* Classic: layoutId pill. Themed shells: static CSS indicator (crisper). */}
               {section === id && !isSearching ? (
-                useStaticNavIndicator ? (
-                  <span className="cardo-settings-nav-indicator" aria-hidden />
-                ) : (
-                  <motion.span
-                    className="cardo-settings-nav-indicator"
-                    layoutId="settings-nav-indicator"
-                    transition={{ type: 'spring', bounce: 0.12, duration: 0.42 }}
-                  />
-                )
+                <span className="cardo-settings-nav-indicator" aria-hidden />
               ) : null}
               <SettingsNavIcon id={id} />
               <span>{label}</span>

@@ -45,7 +45,7 @@ export const SETTINGS_SEARCH_CATALOG: readonly SettingsSearchEntry[] = [
     section: 'appearance',
     titleKey: 'settings.theme',
     descriptionKey: 'settings.themeDescription',
-    keywords: { en: ['classic', 'fluent', 'pack'], zh: ['经典', 'fluent', '主题包'] },
+    keywords: { en: ['codex', 'theme', 'pack'], zh: ['codex', '主题', '主题包'] },
   },
   {
     id: 'mode',

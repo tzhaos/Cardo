@@ -3,7 +3,6 @@ import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { animate as animateMotion, motion, useMotionValue, useSpring } from 'motion/react';
 import type { MotionStyle } from 'motion/react';
 import { useCanvasStore } from '../../app/stores/canvasStore';
-import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { getPageDropElement, registerBoxElement } from '../../app/interactionElementRegistry';
@@ -32,14 +31,8 @@ import { useI18n } from '../../i18n/useI18n';
 import { useFeatureEnabled } from '../../shell/FeatureGate';
 import { BoxAppearanceView } from './BoxAppearancePopover';
 
-/** Motion borderRadius must be numeric per theme dialect. */
-const BOX_CORNER_RADIUS = {
-  classic: { idle: 16, compact: 24 },
-  fluent: { idle: 6, compact: 8 },
-  material: { idle: 16, compact: 20 },
-  glass: { idle: 22, compact: 26 },
-  swiftui: { idle: 14, compact: 18 },
-} as const;
+/** Motion borderRadius for the sole official dialect (codex). */
+const BOX_CORNER_RADIUS = { idle: 16, compact: 24 } as const;
 
 interface BaseBoxFrameProps {
   box: WorkspaceBox;
@@ -304,19 +297,7 @@ export function BaseBoxFrame({
   const isTemporary = box.kind === 'temporary';
   const viewMode = isTemporary ? 'list' : box.viewMode;
   const detailMode = isTemporary ? 'detailed' : box.detailMode;
-  const themeId = usePreferencesStore((state) => state.themeId);
-  const cornerRadiusSteps =
-    themeId === 'fluent'
-      ? BOX_CORNER_RADIUS.fluent
-      : themeId === 'material'
-        ? BOX_CORNER_RADIUS.material
-        : themeId === 'glass'
-          ? BOX_CORNER_RADIUS.glass
-          : themeId === 'swiftui'
-            ? BOX_CORNER_RADIUS.swiftui
-            : BOX_CORNER_RADIUS.classic;
-  // Classic: soft 16/24. Fluent: restrained 6/8 (matches --cardo-box-radius).
-  const boxCornerRadius = draggingOverTopBar ? cornerRadiusSteps.compact : cornerRadiusSteps.idle;
+  const boxCornerRadius = draggingOverTopBar ? BOX_CORNER_RADIUS.compact : BOX_CORNER_RADIUS.idle;
   const visualScale = draggingOverTopBar
     ? compactScale * (draggingOverTab ? 0.9 : 1)
     : dragging
@@ -435,7 +416,7 @@ export function BaseBoxFrame({
         y: 8,
         scale: 0.82,
         opacity: 0,
-        borderRadius: cornerRadiusSteps.idle,
+        borderRadius: BOX_CORNER_RADIUS.idle,
         permanent: true,
       });
       return;
@@ -456,7 +437,7 @@ export function BaseBoxFrame({
         : 8,
       scale: compactScale * 0.9,
       opacity: targetRect ? 0.18 : 0,
-      borderRadius: cornerRadiusSteps.compact,
+      borderRadius: BOX_CORNER_RADIUS.compact,
       permanent: false,
     });
   };
