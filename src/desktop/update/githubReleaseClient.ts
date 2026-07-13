@@ -111,15 +111,13 @@ function pickAssetForChannel(
   version: string,
   installChannel: DesktopInstallChannel,
 ): { asset: GitHubRelease['assets'][number]; assetKind: DesktopUpdateAssetKind } | null {
-  // dev uses setup assets only for manual testing of download paths if ever packaged wrongly
+  // Portable never falls back to Setup — that would silently migrate install channel.
   if (installChannel === 'portable') {
     const portable = pickPortableAsset(assets, version);
-    if (portable) return { asset: portable, assetKind: 'portable' };
-    // Fall back to Setup only if Portable asset missing (still better than no update).
-    const setup = pickSetupAsset(assets, version);
-    return setup ? { asset: setup, assetKind: 'setup' } : null;
+    return portable ? { asset: portable, assetKind: 'portable' } : null;
   }
 
+  // setup (and dev if ever used) only accept Setup assets
   const setup = pickSetupAsset(assets, version);
   if (setup) return { asset: setup, assetKind: 'setup' };
   return null;
@@ -184,29 +182,41 @@ export async function fetchLatestStableUpdate(options: {
     throw new UpdateFetchError(
       'missing_installer',
       options.installChannel === 'portable'
-        ? `Release v${version} has no Desktop Portable (or Setup) asset.`
+        ? `Release v${version} has no Desktop Portable asset.`
         : `Release v${version} has no Desktop Setup installer asset.`,
     );
   }
 
   const { asset, assetKind } = picked;
 
-  let sha256: string | null = null;
   const checksumAsset = pickChecksumAsset(release.assets);
-  if (checksumAsset) {
-    try {
-      const checksumResponse = await fetch(checksumAsset.browser_download_url, {
-        headers: { 'User-Agent': userAgent(current) },
-        signal: AbortSignal.timeout(20_000),
-        redirect: 'follow',
-      });
-      if (checksumResponse.ok) {
-        const text = await checksumResponse.text();
-        sha256 = parseSha256Sums(text, asset.name);
-      }
-    } catch {
-      sha256 = null;
+  if (!checksumAsset) {
+    throw new UpdateFetchError(
+      'missing_checksum',
+      `Release v${version} has no SHA256SUMS asset; refusing update without integrity metadata.`,
+    );
+  }
+
+  let sha256: string | null = null;
+  try {
+    const checksumResponse = await fetch(checksumAsset.browser_download_url, {
+      headers: { 'User-Agent': userAgent(current) },
+      signal: AbortSignal.timeout(20_000),
+      redirect: 'follow',
+    });
+    if (checksumResponse.ok) {
+      const text = await checksumResponse.text();
+      sha256 = parseSha256Sums(text, asset.name);
     }
+  } catch {
+    sha256 = null;
+  }
+
+  if (!sha256) {
+    throw new UpdateFetchError(
+      'missing_checksum',
+      `Release v${version} SHA256SUMS has no entry for "${asset.name}"; refusing update.`,
+    );
   }
 
   const tag = release.tag_name.startsWith('v') ? release.tag_name : `v${version}`;
@@ -227,7 +237,7 @@ export async function fetchLatestStableUpdate(options: {
 export async function downloadInstaller(options: {
   url: string;
   destinationPath: string;
-  expectedSha256: string | null;
+  expectedSha256: string;
   expectedSizeBytes: number | null;
   currentVersion: string;
   onProgress?: (progress: {
@@ -237,6 +247,14 @@ export async function downloadInstaller(options: {
   }) => void;
   signal?: AbortSignal;
 }): Promise<{ path: string; sha256: string; bytes: number }> {
+  const expectedSha256 = options.expectedSha256?.trim() ?? '';
+  if (!expectedSha256) {
+    throw new UpdateFetchError(
+      'missing_checksum',
+      'Installer download refused: expected SHA-256 is missing.',
+    );
+  }
+
   await fs.mkdir(path.dirname(options.destinationPath), { recursive: true });
   const partialPath = `${options.destinationPath}.partial`;
 
@@ -283,7 +301,7 @@ export async function downloadInstaller(options: {
   await pipeline(nodeStream, fileStream);
 
   const sha256 = hash.digest('hex');
-  if (options.expectedSha256 && sha256.toLowerCase() !== options.expectedSha256.toLowerCase()) {
+  if (sha256.toLowerCase() !== expectedSha256.toLowerCase()) {
     await fs.rm(partialPath, { force: true });
     throw new UpdateFetchError(
       'checksum_mismatch',
@@ -291,8 +309,8 @@ export async function downloadInstaller(options: {
     );
   }
 
+  // Size is a secondary check after integrity hash.
   if (
-    !options.expectedSha256 &&
     options.expectedSizeBytes != null &&
     options.expectedSizeBytes > 0 &&
     downloadedBytes !== options.expectedSizeBytes

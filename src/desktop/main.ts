@@ -17,6 +17,7 @@ import fs from 'node:fs';
 import fsPromises from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { DATABASE_SCHEMA_VERSION } from '../core/database/version';
 import { normalizeLocalResourcePath } from '../core/services/localResourcePath';
 import { CARDO_USER_DATA_DIR_NAME } from '../runtime/paths';
 import {
@@ -182,16 +183,35 @@ function initializeDebugLogging() {
   openDebugLogTerminal(debugLogPath);
 }
 
-function registerDebugProcessHandlers() {
-  if (!isDebugPackage) {
-    return;
-  }
+/**
+ * Process-level crash surfaces for all Desktop builds (packaged production + debug).
+ * Debug package still patches console → userData/logs/debug.log; production also
+ * appends crash lines to userData/logs/main.log when possible.
+ */
+function registerProcessHandlers() {
+  const writeCrashLog = (label: string, value: unknown) => {
+    console.error(label, value);
+
+    try {
+      const logDirectory = path.join(app.getPath('userData'), 'logs');
+      fs.mkdirSync(logDirectory, { recursive: true });
+      const crashLogPath = path.join(logDirectory, 'main.log');
+      const message =
+        value instanceof Error ? (value.stack ?? `${value.name}: ${value.message}`) : String(value);
+      fs.appendFileSync(
+        crashLogPath,
+        `[${new Date().toISOString()}] [ERROR] [main] ${label}: ${message}\n`,
+      );
+    } catch {
+      // ignore log write failures
+    }
+  };
 
   process.on('uncaughtExceptionMonitor', (error) => {
-    console.error('Uncaught exception', error);
+    writeCrashLog('Uncaught exception', error);
   });
   process.on('unhandledRejection', (reason) => {
-    console.error('Unhandled rejection', reason);
+    writeCrashLog('Unhandled rejection', reason);
   });
 }
 
@@ -556,7 +576,7 @@ if (!singleInstanceLock) {
     .whenReady()
     .then(async () => {
       initializeDebugLogging();
-      registerDebugProcessHandlers();
+      registerProcessHandlers();
 
       // Attach-first, embed-if-missing before any renderer load (design §6.6).
       runtimeConnection = await ensureDesktopRuntime({ desktopAppRoot });
@@ -589,7 +609,7 @@ if (!singleInstanceLock) {
           'Typical fixes:\n' +
           '1. Stop any stale Runtime: node artifacts/cli/cardo.js stop\n' +
           '2. Rebuild from this checkout: npm run desktop:build\n' +
-          '3. Confirm %APPDATA%\\cardo\\discovery.json schemaVersion is 9\n' +
+          `3. Confirm %APPDATA%\\cardo\\discovery.json schemaVersion is ${DATABASE_SCHEMA_VERSION}\n` +
           '4. Check %APPDATA%\\cardo\\runtime.log\n\n' +
           detail,
       );

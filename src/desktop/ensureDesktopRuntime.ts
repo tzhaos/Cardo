@@ -14,7 +14,7 @@ import { spawn, type ChildProcess } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DATABASE_SCHEMA_VERSION } from '../core/database/version';
+import { assertRuntimeCompatible } from '../core/runtimeCompatibility';
 import { probeRuntimeHealth, readDiscoveryFile, resolveCardoDataPaths } from '../runtime/index';
 
 export interface DesktopRuntimeConnection {
@@ -109,14 +109,14 @@ async function tryAttachExisting(discoveryPath: string): Promise<DesktopRuntimeC
   if (!healthy) {
     return null;
   }
-  if (discovery.schemaVersion < DATABASE_SCHEMA_VERSION) {
-    console.warn(
-      `[Cardo] Runtime schema ${discovery.schemaVersion} < required ${DATABASE_SCHEMA_VERSION}; not attaching`,
-    );
-    return null;
-  }
-  if (!(await runtimeServesAppUi(discovery.baseUrl))) {
-    console.warn(`[Cardo] Runtime at ${discovery.baseUrl} has no /app UI; not attaching`);
+  const servesAppUi = await runtimeServesAppUi(discovery.baseUrl);
+  const compat = assertRuntimeCompatible({
+    schemaVersion: discovery.schemaVersion,
+    requireAppUi: true,
+    servesAppUi,
+  });
+  if (!compat.ok) {
+    console.warn(`[Cardo] ${compat.message}; not attaching`);
     return null;
   }
   return {
@@ -138,15 +138,19 @@ async function retireIncompatibleRuntime(discoveryPath: string): Promise<void> {
   if (!healthy) {
     return;
   }
-  const schemaOk = discovery.schemaVersion >= DATABASE_SCHEMA_VERSION;
-  const uiOk = await runtimeServesAppUi(discovery.baseUrl);
-  if (schemaOk && uiOk) {
+  const servesAppUi = await runtimeServesAppUi(discovery.baseUrl);
+  const compat = assertRuntimeCompatible({
+    schemaVersion: discovery.schemaVersion,
+    requireAppUi: true,
+    servesAppUi,
+  });
+  if (compat.ok) {
     return;
   }
 
   console.warn(
     `[Cardo] Retiring incompatible Runtime at ${discovery.baseUrl} ` +
-      `(schema=${discovery.schemaVersion}, appUi=${uiOk})`,
+      `(${compat.code}: ${compat.message})`,
   );
   await requestRuntimeShutdown(discovery.baseUrl, discovery.token);
   await waitForRuntimeGone(discoveryPath, discovery.baseUrl, WAIT_SHUTDOWN_TIMEOUT_MS);
@@ -328,7 +332,10 @@ async function waitForHealthyDiscovery(
     const discovery = readDiscoveryFile(discoveryPath);
     if (discovery?.baseUrl && discovery.token) {
       const healthy = await probeRuntimeHealth(discovery.baseUrl);
-      if (healthy && discovery.schemaVersion >= DATABASE_SCHEMA_VERSION) {
+      const schemaOk = assertRuntimeCompatible({
+        schemaVersion: discovery.schemaVersion,
+      }).ok;
+      if (healthy && schemaOk) {
         return { baseUrl: discovery.baseUrl, token: discovery.token };
       }
     }

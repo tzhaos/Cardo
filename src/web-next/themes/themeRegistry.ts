@@ -13,9 +13,6 @@ import {
 
 export type WebNextColorMode = ColorMode;
 
-/** @deprecated Use ColorTokenMap from themePack; kept for Settings preview typing. */
-export type WebNextThemePalette = ColorTokenMap;
-
 /**
  * Presentation view of a registered pack used by Settings theme cards.
  * Prefer ThemePack for new code.
@@ -103,11 +100,6 @@ export function unregisterImportedThemePack(themeId: string) {
   importedThemeIds.delete(themeId);
 }
 
-/** @deprecated Use registerThemePack */
-export function registerWebNextTheme(theme: WebNextThemeDefinition) {
-  registerThemePack(theme.pack);
-}
-
 export function getRegisteredThemePacks(): ThemePack[] {
   return [...themeRegistry.values()];
 }
@@ -124,20 +116,8 @@ export function getThemePack(themeId: string): ThemePack {
   return themeRegistry.get(themeId) ?? themeRegistry.get(OFFICIAL_DEFAULT_THEME_ID) ?? fallback;
 }
 
-export function getWebNextTheme(themeId: string): WebNextThemeDefinition {
-  return toDefinition(getThemePack(themeId));
-}
-
-export function hasRegisteredWebNextTheme(themeId: string) {
-  return themeRegistry.has(themeId);
-}
-
 export function hasRegisteredThemePack(themeId: string) {
   return themeRegistry.has(themeId);
-}
-
-export function isOfficialThemePack(themeId: string) {
-  return BUILT_IN_THEME_IDS.has(themeId);
 }
 
 /**

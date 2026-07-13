@@ -47,6 +47,8 @@ export const databaseCommandResultSchema = z
   })
   .strict();
 
+export type DatabaseCommandResult = z.infer<typeof databaseCommandResultSchema>;
+
 export const historyStateQuerySchema = z
   .object({
     canUndo: z.boolean(),

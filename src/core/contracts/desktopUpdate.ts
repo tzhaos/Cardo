@@ -34,10 +34,8 @@ export const desktopUpdateAvailableInfoSchema = z
     installerName: z.string().min(1),
     installerUrl: z.string().url(),
     installerSizeBytes: z.number().int().nonnegative().nullable(),
-    sha256: z
-      .string()
-      .regex(/^[a-f0-9]{64}$/i)
-      .nullable(),
+    // Stable channel requires a checksum; fetch fails closed without SHA256SUMS entry.
+    sha256: z.string().regex(/^[a-f0-9]{64}$/i),
   })
   .strict();
 

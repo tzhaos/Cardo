@@ -15,7 +15,6 @@ import themePreferencesMigrationSql from '../../../drizzle/0003_theme_preference
 import themeCustomizationMigrationSql from '../../../drizzle/0004_theme_customization.sql?raw';
 import featureFlagsMigrationSql from '../../../drizzle/0005_feature_flags.sql?raw';
 import layoutSnippetMigrationSql from '../../../drizzle/0006_layout_snippet.sql?raw';
-import { ensurePreferencesThemeColumns } from './ensurePreferencesColumns';
 import { BASELINE_SCHEMA_VERSION, DATABASE_SCHEMA_VERSION } from './version';
 
 export interface MigratorAdapter {
@@ -82,17 +81,6 @@ export function applyMigrations(adapter: MigratorAdapter): void {
     });
     version = nextVersion;
   }
-
-  // Repair preferences columns if user_version advanced without columns
-  // (interrupted install / older Runtime held the file).
-  ensurePreferencesThemeColumns({
-    listPreferenceColumns: () => listPreferenceColumns(adapter),
-    exec: (sql) => adapter.exec(sql),
-  });
-
-  if (adapter.getUserVersion() < DATABASE_SCHEMA_VERSION) {
-    adapter.setUserVersion(DATABASE_SCHEMA_VERSION);
-  }
 }
 
 /** Split drizzle SQL on statement-breakpoint markers and exec each statement. */
@@ -104,18 +92,6 @@ function execMigrationSql(adapter: MigratorAdapter, sql: string): void {
   for (const statement of statements.length > 0 ? statements : [sql]) {
     adapter.exec(statement);
   }
-}
-
-function listPreferenceColumns(adapter: MigratorAdapter): string[] {
-  // MigratorAdapter only exposes exec — Runtime adapter uses a richer get path via openRuntimeDatabase.
-  // Prefer optional hook when present (set by createSqlExecMigratorAdapter below).
-  const extended = adapter as MigratorAdapter & {
-    listPreferenceColumns?: () => string[];
-  };
-  if (typeof extended.listPreferenceColumns === 'function') {
-    return extended.listPreferenceColumns();
-  }
-  return [];
 }
 
 function runInTransaction(adapter: MigratorAdapter, fn: () => void): void {
@@ -149,12 +125,10 @@ function runInTransaction(adapter: MigratorAdapter, fn: () => void): void {
 export function createSqlExecMigratorAdapter(options: {
   exec: (sql: string) => void;
   getUserVersion: () => number;
-  /** Optional: PRAGMA table_info(preferences) names for column repair. */
-  listPreferenceColumns?: () => string[];
   beginSql?: string;
 }): MigratorAdapter {
   const beginSql = options.beginSql ?? 'BEGIN IMMEDIATE';
-  const adapter: MigratorAdapter & { listPreferenceColumns?: () => string[] } = {
+  return {
     getUserVersion: options.getUserVersion,
     setUserVersion(version: number) {
       if (!Number.isInteger(version) || version < 0) {
@@ -173,8 +147,4 @@ export function createSqlExecMigratorAdapter(options: {
       options.exec('ROLLBACK');
     },
   };
-  if (options.listPreferenceColumns) {
-    adapter.listPreferenceColumns = options.listPreferenceColumns;
-  }
-  return adapter;
 }

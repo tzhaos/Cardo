@@ -58,6 +58,7 @@ import {
 import { openLocalResourceViaHooks } from './capabilities';
 import { scanLocalThemePacks } from './localThemePacks';
 import { CARDO_THEMES_DIRNAME } from './paths';
+import { DomainCommandError } from '../core/application/domainError';
 
 export interface RuntimeHttpContext {
   config: RuntimeHostConfig;
@@ -174,6 +175,10 @@ async function handleRequest(
       sendJson(res, 400, errorBody('invalid_payload', error.message));
       return;
     }
+    if (error instanceof DomainCommandError) {
+      sendJson(res, error.httpStatus, errorBody(error.code, error.message));
+      return;
+    }
     sendJson(
       res,
       500,
@@ -218,7 +223,7 @@ async function handleAuthenticated(
       return;
     }
     const client = ctx.clients.register(parsed.data.client);
-    const revision = await getRevision(ctx.database);
+    const revision = await ctx.queue.enqueue(() => getRevision(ctx.database));
     sendJson(
       res,
       200,
@@ -389,7 +394,7 @@ async function handleAuthenticated(
   }
 
   if (method === 'GET' && pathname === '/v1/workspace/export') {
-    const workspace = await getWorkspaceProjection(ctx.database);
+    const workspace = await ctx.queue.enqueue(() => getWorkspaceProjection(ctx.database));
     const document = workspaceTransferDocumentSchema.parse({
       format: 'cardo-workspace',
       version: WORKSPACE_TRANSFER_VERSION,
@@ -404,7 +409,7 @@ async function handleAuthenticated(
     (method === 'GET' || method === 'POST') &&
     pathname === '/v1/workspace/export-operation-log'
   ) {
-    const entries = await getOperationLogEntries(ctx.database);
+    const entries = await ctx.queue.enqueue(() => getOperationLogEntries(ctx.database));
     sendJson(res, 200, { type: 'workspace.exportOperationLog.ok', entries });
     return;
   }
@@ -430,7 +435,7 @@ async function handleAuthenticated(
   }
 
   if (method === 'GET' && pathname === '/v1/diagnostics') {
-    const revision = await getRevision(ctx.database);
+    const revision = await ctx.queue.enqueue(() => getRevision(ctx.database));
     sendJson(res, 200, {
       type: 'diagnostics.ok',
       revision,
@@ -547,65 +552,74 @@ async function dispatchQuery(
   res: ServerResponse,
   query: ReturnType<typeof queryRequestSchema.parse>,
 ): Promise<void> {
-  switch (query.type) {
-    case 'query.workspaceProjection': {
-      const data = await getWorkspaceProjection(ctx.database);
-      sendJson(res, 200, { type: 'query.workspaceProjection.ok', data });
-      return;
-    }
-    case 'query.workspaceState': {
-      const data = await getWorkspaceState(ctx.database);
-      sendJson(res, 200, { type: 'query.workspaceState.ok', data });
-      return;
-    }
-    case 'query.pageTabs': {
-      const data = await getPageTabs(ctx.database);
-      sendJson(res, 200, { type: 'query.pageTabs.ok', data });
-      return;
-    }
-    case 'query.pageBoxes': {
-      const data = await getPageBoxes(ctx.database, query.pageId);
-      sendJson(res, 200, { type: 'query.pageBoxes.ok', data });
-      return;
-    }
-    case 'query.boxItems': {
-      const data = await getBoxItems(ctx.database, query.boxId);
-      sendJson(res, 200, { type: 'query.boxItems.ok', data });
-      return;
-    }
-    case 'query.preferences': {
-      const data = await getPreferences(ctx.database);
-      sendJson(res, 200, { type: 'query.preferences.ok', data });
-      return;
-    }
-    case 'query.historyState': {
-      const data = await getDatabaseHistoryState(ctx.database);
-      sendJson(res, 200, { type: 'query.historyState.ok', data });
-      return;
-    }
-    case 'query.globalSearch': {
-      const data = await searchWorkspaceDatabase(ctx.database, query.query);
-      sendJson(res, 200, { type: 'query.globalSearch.ok', data });
-      return;
-    }
-    case 'query.operationLog': {
-      const data = await getOperationLogEntries(ctx.database, query.limit);
-      sendJson(res, 200, { type: 'query.operationLog.ok', data });
-      return;
-    }
-    case 'query.localThemePacks': {
-      const themesDir = path.join(ctx.config.dataDir, CARDO_THEMES_DIRNAME);
-      const entries = scanLocalThemePacks(themesDir);
-      sendJson(res, 200, {
-        type: 'query.localThemePacks.ok',
-        data: entries.map((entry) => entry.pack),
-      });
-      return;
-    }
-    default: {
-      sendJson(res, 400, errorBody('invalid_payload', 'Unknown query type.'));
-    }
+  // FS-only scan; no SQLite access.
+  if (query.type === 'query.localThemePacks') {
+    const themesDir = path.join(ctx.config.dataDir, CARDO_THEMES_DIRNAME);
+    const entries = scanLocalThemePacks(themesDir);
+    sendJson(res, 200, {
+      type: 'query.localThemePacks.ok',
+      data: entries.map((entry) => entry.pack),
+    });
+    return;
   }
+
+  const payload = await ctx.queue.enqueue(async () => {
+    switch (query.type) {
+      case 'query.workspaceProjection':
+        return {
+          type: 'query.workspaceProjection.ok' as const,
+          data: await getWorkspaceProjection(ctx.database),
+        };
+      case 'query.workspaceState':
+        return {
+          type: 'query.workspaceState.ok' as const,
+          data: await getWorkspaceState(ctx.database),
+        };
+      case 'query.pageTabs':
+        return {
+          type: 'query.pageTabs.ok' as const,
+          data: await getPageTabs(ctx.database),
+        };
+      case 'query.pageBoxes':
+        return {
+          type: 'query.pageBoxes.ok' as const,
+          data: await getPageBoxes(ctx.database, query.pageId),
+        };
+      case 'query.boxItems':
+        return {
+          type: 'query.boxItems.ok' as const,
+          data: await getBoxItems(ctx.database, query.boxId),
+        };
+      case 'query.preferences':
+        return {
+          type: 'query.preferences.ok' as const,
+          data: await getPreferences(ctx.database),
+        };
+      case 'query.historyState':
+        return {
+          type: 'query.historyState.ok' as const,
+          data: await getDatabaseHistoryState(ctx.database),
+        };
+      case 'query.globalSearch':
+        return {
+          type: 'query.globalSearch.ok' as const,
+          data: await searchWorkspaceDatabase(ctx.database, query.query),
+        };
+      case 'query.operationLog':
+        return {
+          type: 'query.operationLog.ok' as const,
+          data: await getOperationLogEntries(ctx.database, query.limit),
+        };
+      default:
+        return null;
+    }
+  });
+
+  if (!payload) {
+    sendJson(res, 400, errorBody('invalid_payload', 'Unknown query type.'));
+    return;
+  }
+  sendJson(res, 200, payload);
 }
 
 async function handleEvents(
@@ -618,7 +632,7 @@ async function handleEvents(
 
   ctx.clients.setStreaming(clientId, true);
 
-  const revision = await getRevision(ctx.database);
+  const revision = await ctx.queue.enqueue(() => getRevision(ctx.database));
   const ready: RuntimeEvent = { type: 'ready', revision };
 
   const subscriberId = ctx.events.subscribe({

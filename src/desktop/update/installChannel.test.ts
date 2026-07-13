@@ -1,24 +1,6 @@
 import assert from 'node:assert/strict';
-import path from 'node:path';
 import { describe, it } from 'node:test';
-
-/**
- * Pure helpers mirrored for unit tests (detectInstallChannel needs electron app).
- * Keep heuristics in sync with installChannel.ts.
- */
-function isTypicalInstallDirectory(dir: string, env: NodeJS.ProcessEnv): boolean {
-  const normalized = path.resolve(dir).toLowerCase();
-  const candidates = [
-    env.ProgramFiles,
-    env['ProgramFiles(x86)'],
-    env.LOCALAPPDATA ? path.join(env.LOCALAPPDATA, 'Programs') : null,
-  ].filter((value): value is string => Boolean(value));
-
-  return candidates.some((root) => {
-    const rootNorm = path.resolve(root).toLowerCase();
-    return normalized === rootNorm || normalized.startsWith(rootNorm + path.sep);
-  });
-}
+import { isTypicalInstallDirectory } from './installChannelHeuristics';
 
 describe('install channel heuristics', () => {
   it('treats LocalAppData Programs as setup', () => {

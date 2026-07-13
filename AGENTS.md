@@ -1,10 +1,60 @@
 # Cardo 开发约束
 
 1. 输出的 Markdown 内容未经允许禁止使用加粗。
-2. 不运行测试，只执行用户指定的浏览器插件和桌面端构建。
-3. 每个独立 Feature 或 Fix 在合并前执行 `npm run build:all`（会先 `cardo:stop` 清掉本机 Runtime/Desktop/CLI 实例，再构建 extension + CLI + web-runtime + desktop + native-host）。局部验证可用 `npm run build` / `npm run desktop:build`（二者也会先停实例）。
+2. 默认不主动跑单元测试（`npm run test` / `test:ts`），只执行用户指定的浏览器插件与桌面端构建；但下方「CI 与本地门禁」中的 format / lint / eslint / validate:themes / build:all 为强制，不得省略。若 CI 因测试失败，则必须本地复现并修复后再推。
+3. 每个独立 Feature 或 Fix 在合并前必须通过完整本地门禁（见「CI 与本地门禁」），其中 `npm run build:all` 会先 `cardo:stop` 再构建 extension + CLI + web-runtime + desktop + native-host。局部验证可用 `npm run build` / `npm run desktop:build`（二者也会先停实例），但局部成功不能代替完整门禁。
 4. 项目禁止旧 Schema、旧字段、旧持久化格式和退休机制的兼容代码。
 5. Git 协作与发版必须遵守下方「分支、合并与发布」；AI 默认不得在 `main` 上直接堆功能提交。
+6. 多 agent / 并行改码结束后，必须再跑一轮 format（或 format:check）；禁止假设「能编译 = CI 会绿」。
+
+## CI 与本地门禁
+
+GitHub Actions `CI`（`.github/workflows/ci.yml`）在 push/PR 到 `main` 时顺序执行，任一步失败整单失败。本地推送 PR 前必须用同一顺序自检，避免「本机构建过了、CI 第一关 format 就挂」类返工。
+
+### CI 实际顺序（权威）
+
+| 顺序 | CI step | 本地等价命令 | 失败含义 |
+| --- | --- | --- | --- |
+| 1 | Check formatting | `npm run format:check` | Prettier 未对齐；先 `npm run format` 再 check |
+| 2 | Run static checks and tests | `npm run check`（= `lint` + `lint:eslint` + `test:ts` + `validate:themes`） | 类型 / ESLint / 单测 / 官方主题校验失败 |
+| 3 | Full product build | `npm run build:all` | 某一 surface 无法产出 artifacts |
+
+Release 工作流（tag / workflow_dispatch）会 format:check 并打安装包，不重复跑完整 `check` 的部分逻辑可能因版本而变化；合并进 main 的代码仍以 CI 三关为准。
+
+### 强制本地门禁（AI / 贡献者在 push PR 或请求合并前）
+
+按顺序执行，前一步失败不得跳过后一步「碰运气」：
+
+```text
+npm run format          # 或确认无改动后仅 format:check
+npm run format:check    # 必须 exit 0；与 CI 第 1 关完全一致
+npm run lint            # tsc --noEmit
+npm run lint:eslint
+npm run validate:themes
+npm run build:all       # 合并前完整产物；用户若只要局部验证可先 desktop:build，但 PR 前仍须 build:all
+```
+
+说明：
+
+1. `format:check` 与 `build:all` 正交：`build:all` 成功不代表 Prettier 通过。历史事故：多 agent 并行改 TS 后只跑了 build，CI 在 Check formatting 失败。
+2. 多 agent / subagent 并行改同一批文件后，编排者负责最终 `npm run format` + `format:check`，不得把「各 agent 自称完成」当作格式正确。
+3. 仅改 `docs/**` 且 CI 仍会跑 format（若文档不在 format 路径内）时，仍须保证触及的 `src` / `scripts` / README / eslint 配置已 format；有代码改动一律完整门禁。
+4. AI 默认不跑 `test:ts`（见约束第 2 条）；CI 会跑。若用户要求「开 PR / 合并」，推送前至少完成 format:check + lint + lint:eslint + validate:themes + build:all。CI 测挂后再补跑 `npm run test:ts` 修复。
+5. 禁止用 `--no-verify`、跳过 hook、或改 CI yml 来「先合再修」除非用户书面要求且仅限当次。
+6. 禁止在已知 format:check 或 lint 失败时仍 push 并宣称可合并。
+7. Windows 与 GHA windows-latest 对齐：本机门禁优先在 Windows 跑；路径与行尾以仓库 Prettier / .gitattributes 为准，勿手改 CRLF 对抗 CI。
+
+### 合并与 CI 红灯
+
+1. PR 合并前：`Verify and build`（或等价 CI job）必须为 success；`mergeable_state` 非 clean 时先处理冲突与红灯。
+2. CI 红灯处理流程：读失败 step 日志 → 本地复现同一命令 → 在同一 PR 分支上 commit 修复 → push → 等绿 → 再合并。
+3. 常见红灯与处置：
+   - Check formatting → `npm run format` && `npm run format:check`
+   - tsc / ESLint → `npm run lint` / `npm run lint:eslint`，修类型与 import 边界
+   - validate:themes → `npm run validate:themes`，修官方主题登记 / recipe / settingsChrome
+   - test:ts → `npm run test:ts`，修断言或实现
+   - build:all → 本机 `npm run build:all`，查缺入口 / asar 路径 / 编译错误
+4. 合并后若用户要求发版：仍须在已合入 main 的 tip 上打 tag；不得在红 CI 的 tip 上打发版 tag。
 
 ## 分支、合并与发布
 
@@ -27,22 +77,24 @@
    - `fix/desktop-runtime-attach`
    - `chore/agents-git-rules`
 2. 在任务分支上开发与提交；一个逻辑变更一个 commit 为佳；消息用 conventional commits（`feat` / `fix` / `chore` / `docs` / `ci` / `refactor` 等）。
-3. 完成后在该分支推送远程，并打开 Pull Request 申请合并到 `main`（或开发线）。
-4. PR 描述写清：动机、主要改动、风险、验证方式（例如是否跑过 `build:all` / Desktop 打包）。
-5. 等待 CI 通过与审查；需要时在同一 PR 分支上继续推送修复，不另开无关分支搅乱历史。
-6. 未经用户明确要求，禁止：
+3. 推送 PR 前完成本地门禁（「CI 与本地门禁」）；多 agent 收尾必须含 `format` / `format:check`。
+4. 完成后在该分支推送远程，并打开 Pull Request 申请合并到 `main`（或开发线）。
+5. PR 描述写清：动机、主要改动、风险、验证方式（必须写明是否已跑 `format:check`、`lint`、`lint:eslint`、`validate:themes`、`build:all`）。
+6. 等待 CI 全部 success 与审查；红灯只在同一 PR 分支上继续推送修复，不另开无关分支搅乱历史。
+7. 未经用户明确要求，禁止：
    - 直接向 `main` push 功能/修复提交
    - `--force` push 到 `main` 或他人分支
    - 自行创建/推送 `v*` 发版 tag
    - 自行触发或改写会对外发包的 Release（除非用户要求处理发版）
    - 合并他人 PR 或关闭 issue（除非用户明确授权）
+   - 在 CI 非绿时合并 PR 或打发版 tag
 
-用户若明确说「直接提交到 main / 推 main」，才可在 `main` 上提交并推送；该授权仅对当次指令有效。
+用户若明确说「直接提交到 main / 推 main」，才可在 `main` 上提交并推送；该授权仅对当次指令有效。用户说「开 PR / 合并 / 发版」时，仍须遵守 CI 绿灯与本地门禁，不得用口头授权跳过 format 或 lint。
 
 ### 合并策略
 
 1. 默认 Squash merge 或 Rebase 后 merge 均可；保持 `main` 历史可读。
-2. 合并前确认：与目标分支无冲突、CI 绿、无秘密与生成物误入（`artifacts/`、`node_modules/`、`.orca/`、`mcps/` 等已 ignore）。
+2. 合并前确认：与目标分支无冲突、CI job 全部 success、无秘密与生成物误入（`artifacts/`、`node_modules/`、`.orca/`、`mcps/` 等已 ignore）。
 3. 合并后删除已合入的远程任务分支（可选，推荐）。
 
 ### 版本与里程碑发布
@@ -65,16 +117,24 @@ git checkout main
 git pull
 git checkout -b feature/short-topic
 
-# 收工
+# 收工（顺序固定；与 CI 对齐）
+npm run format
+npm run format:check
+npm run lint
+npm run lint:eslint
+npm run validate:themes
 npm run build:all
 git add …
 git commit -m "feat(scope): …"
+# 若多 agent 改过代码：再次 format + format:check 后再 push
 git push -u origin HEAD
 # 然后 gh pr create 或由用户在托管平台开 PR 合入 main
+# 等 CI 全绿后再 merge
 
 # 里程碑发版（仅维护者 / 用户要求时）
-# 1) 确认 main 已包含发版内容且 version 已对齐
-# 2) git tag vX.Y.Z && git push origin vX.Y.Z
+# 1) 确认 main tip CI 绿、已包含发版内容
+# 2) 按需对齐 package.json version 与 tag
+# 3) git tag -a vX.Y.Z -m "Cardo X.Y.Z" && git push origin vX.Y.Z
 ```
 
 ## Cardo 架构

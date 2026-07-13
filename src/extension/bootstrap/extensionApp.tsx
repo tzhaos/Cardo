@@ -18,6 +18,8 @@ import { renderRuntimeGuide } from './runtimeGuide';
 let bootstrapInFlight = false;
 
 async function injectRuntimeFromNativeMessaging(): Promise<void> {
+  // discoverRuntimeViaNativeMessaging asserts schema equality (requireAppUi: false).
+  // schema_mismatch → RuntimeDiscoverError → runtimeGuide.
   const discovery = await discoverRuntimeViaNativeMessaging();
   // Memory only — never put long-lived token in URL or localStorage (design §6.5).
   window.__CARDO_RUNTIME__ = {
