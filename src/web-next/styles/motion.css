@@ -1,6 +1,6 @@
 @keyframes cardo-enter-item {
   from {
-    background: rgba(78, 143, 255, 0.18);
+    background: color-mix(in srgb, var(--cardo-blue) 18%, transparent);
     opacity: 0;
     transform: translateY(8px);
   }

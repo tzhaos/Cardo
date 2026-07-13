@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 import { handleNativeHostRequest } from './handleNativeHostRequest';
-import { encodeNativeMessage, tryDecodeNativeMessage } from './messageCodec';
+import {
+  encodeNativeMessage,
+  NativeMessageTooLargeError,
+  tryDecodeNativeMessage,
+} from './messageCodec';
 import { writeNativeHostDiagnostic } from './diagnostics';
 
 function writeResponse(response: unknown) {
@@ -10,6 +14,8 @@ function writeResponse(response: unknown) {
 let pending = Buffer.alloc(0);
 /** Serialize async handlers so responses stay ordered. */
 let handleChain: Promise<void> = Promise.resolve();
+/** Avoid flooding diagnostics if stdin keeps advertising oversize frames. */
+let loggedMessageTooLarge = false;
 
 writeNativeHostDiagnostic('started');
 
@@ -41,13 +47,26 @@ process.stdin.on('data', (chunk: Buffer) => {
           });
         });
     } catch (error) {
-      writeNativeHostDiagnostic(
-        `invalid-message ${error instanceof Error ? error.message : 'unknown-error'}`,
-      );
-      writeResponse({
-        ok: false,
-        errorMessage: error instanceof Error ? error.message : 'Invalid native host message.',
-      });
+      if (error instanceof NativeMessageTooLargeError) {
+        if (!loggedMessageTooLarge) {
+          loggedMessageTooLarge = true;
+          writeNativeHostDiagnostic(
+            `message-too-large bodyLength=${error.bodyLength} code=${error.code}`,
+          );
+        }
+        writeResponse({
+          ok: false,
+          errorMessage: error.message,
+        });
+      } else {
+        writeNativeHostDiagnostic(
+          `invalid-message ${error instanceof Error ? error.message : 'unknown-error'}`,
+        );
+        writeResponse({
+          ok: false,
+          errorMessage: error instanceof Error ? error.message : 'Invalid native host message.',
+        });
+      }
       pending = Buffer.alloc(0);
     }
   }

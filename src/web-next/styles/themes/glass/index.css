@@ -136,8 +136,8 @@
 [data-cardo-theme='glass'] .cardo-settings-window {
   border: 1px solid color-mix(in srgb, #ffffff 55%, var(--cardo-border));
   border-radius: 22px;
-  /* Single continuous field: base + one soft multi-stop wash (not per-region fills). */
-  background-color: #f9fafd;
+  /* Opaque settings field from pack token; wash is decorative only. */
+  background-color: var(--cardo-settings-chrome);
   background-image: radial-gradient(
     120% 100% at 18% 0%,
     color-mix(in srgb, var(--cardo-blue) 11%, transparent) 0%,
@@ -157,7 +157,7 @@
 
 [data-color-mode='dark'][data-cardo-theme='glass'] .cardo-independent-menu.cardo-settings-window,
 [data-color-mode='dark'][data-cardo-theme='glass'] .cardo-settings-window {
-  background-color: #12131c;
+  background-color: var(--cardo-settings-chrome);
   background-image: radial-gradient(
     120% 100% at 16% 0%,
     color-mix(in srgb, var(--cardo-purple) 16%, transparent) 0%,

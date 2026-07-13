@@ -1,23 +1,24 @@
-import type { HTMLAttributes, ReactNode } from 'react';
+import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
 import type { HTMLMotionProps } from 'motion/react';
 import { MotionButton } from '../primitives/motion-button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../primitives/tooltip';
+import { HoverTip, type HoverTipSide } from './hover-tip';
 import { cn } from '../lib/cn';
 
 export interface IconButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'> {
   children: ReactNode;
+  /** Speech-bubble hover tip label (Cardo HoverTip). */
   tooltip?: ReactNode;
+  tooltipSide?: HoverTipSide;
 }
 
-function IconButtonControl({
-  children,
-  className,
-  type = 'button',
-  ...props
-}: Omit<IconButtonProps, 'tooltip'>) {
+const IconButtonControl = forwardRef<
+  HTMLButtonElement,
+  Omit<IconButtonProps, 'tooltip' | 'tooltipSide'>
+>(function IconButtonControl({ children, className, type = 'button', ...props }, ref) {
   return (
     <MotionButton
       {...props}
+      ref={ref}
       variant="icon"
       size="icon"
       className={className}
@@ -28,20 +29,17 @@ function IconButtonControl({
       {children}
     </MotionButton>
   );
-}
+});
 
-export function IconButton({ tooltip, ...props }: IconButtonProps) {
+export function IconButton({ tooltip, tooltipSide = 'top', ...props }: IconButtonProps) {
   if (!tooltip) {
     return <IconButtonControl {...props} />;
   }
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <IconButtonControl {...props} />
-      </TooltipTrigger>
-      <TooltipContent>{tooltip}</TooltipContent>
-    </Tooltip>
+    <HoverTip label={tooltip} side={tooltipSide}>
+      <IconButtonControl {...props} />
+    </HoverTip>
   );
 }
 

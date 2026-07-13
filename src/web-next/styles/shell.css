@@ -241,12 +241,12 @@
 }
 
 .cardo-runtime-connection-banner--reconnecting .cardo-runtime-connection-banner-dot {
-  background: #d97706;
+  background: var(--cardo-orange);
   animation: cardo-runtime-pulse 1.1s ease-in-out infinite;
 }
 
 .cardo-runtime-connection-banner--disconnected .cardo-runtime-connection-banner-dot {
-  background: #dc2626;
+  background: var(--cardo-red);
 }
 
 @keyframes cardo-runtime-pulse {

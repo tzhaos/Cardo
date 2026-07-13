@@ -93,7 +93,7 @@ export function BottomToolbar() {
           onClick={() => {
             toggleIndependentMenu('settings');
           }}
-          title={t('toolbar.settings')}
+          tooltip={t('toolbar.settings')}
           aria-label={t('toolbar.settings')}
         >
           <motion.span
@@ -119,6 +119,7 @@ export function BottomToolbar() {
                 if (isSearchActive) closeSearch();
                 else setIsSearchActive(true);
               }}
+              tooltip={t('toolbar.search')}
               aria-label={t('toolbar.search')}
             >
               <ThemeIcon name="search" size={TOOLBAR_ICON_SIZE} />
@@ -142,8 +143,8 @@ export function BottomToolbar() {
               className="cardo-search-web-trigger"
               disabled={!webSearchUrl}
               onClick={runWebSearch}
+              tooltip={t('search.web')}
               aria-label={t('search.web')}
-              title={t('search.web')}
             >
               <ThemeIcon name="globe" size={TOOLBAR_ICON_SIZE} />
             </IconButton>
@@ -157,8 +158,8 @@ export function BottomToolbar() {
                 .filter(Boolean)
                 .join(' ')}
               onClick={handleAdd}
+              tooltip={t('toolbar.newBox')}
               aria-label={t('toolbar.newBox')}
-              title={t('toolbar.newBox')}
             >
               <motion.span className="cardo-icon-frame" whileTap={{ scale: 0.82, rotate: 90 }}>
                 <ThemeIcon name="add" size={TOOLBAR_ICON_SIZE} />

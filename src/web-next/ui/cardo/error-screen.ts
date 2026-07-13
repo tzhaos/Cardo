@@ -3,6 +3,8 @@
  * Self-contained styles so it still works when app CSS failed to load.
  */
 
+import { DATABASE_SCHEMA_VERSION } from '../../../core/database/version';
+
 export type CardoErrorSurface = 'web' | 'extension' | 'desktop' | 'unknown';
 
 export interface CardoErrorAction {
@@ -57,7 +59,7 @@ export function classifyCardoError(
     { id: 'copy', label: zh ? '复制详情' : 'Copy details', kind: 'secondary', builtin: 'copy' },
   ];
 
-  // Preferences / Zod schema mismatch (stale Runtime or unmigrated DB).
+  // Preferences / Zod schema mismatch (stale local service or unmigrated DB).
   if (
     /fontFamily|fontScale|density|themeColorOverrides|layoutProfileId|cssSnippet|featureFlags|importedThemePacks|invalid_value|invalid_union/i.test(
       raw,
@@ -66,34 +68,32 @@ export function classifyCardoError(
     return {
       title: zh ? '工作区数据需要升级' : 'Workspace data needs an upgrade',
       summary: zh
-        ? '当前 Cardo Runtime 返回的设置数据与本版本不匹配（常见于旧 Runtime 仍在运行，或数据库尚未迁移到主题系统字段）。'
-        : 'Preferences from Runtime do not match this Cardo build (often a stale Runtime or a database that has not migrated theme fields yet).',
+        ? '本机服务返回的设置与当前 Cardo 版本不一致。常见原因是仍有旧版在后台运行，或各端版本不一致。'
+        : 'Settings from the local service do not match this Cardo version. Often a leftover older process is still running, or surfaces are on different versions.',
       detail: raw,
       code: 'PREFERENCES_SCHEMA_MISMATCH',
       surface,
       steps: zh
         ? [
-            '关闭所有 Cardo 窗口。',
-            '在终端执行：node artifacts/cli/cardo.js stop（或 cardo stop）。',
-            '在本仓库执行：npm run desktop:build（或 npm run cardo:build）。',
-            '再启动 Desktop（npm run desktop:start）或 cardo serve / cardo open。',
-            '若仍失败，查看 %APPDATA%\\cardo\\runtime.log，并确认 discovery 中 schemaVersion 为 9。',
+            '关闭所有 Cardo 窗口，并完全退出应用。',
+            '重新启动同一版本的 Cardo。',
+            '若仍失败，重新安装与当前版本一致的 Cardo。',
+            '确认电脑上没有混用不同版本的安装。',
           ]
         : [
-            'Close all Cardo windows.',
-            'Run: node artifacts/cli/cardo.js stop (or cardo stop).',
-            'From this repo: npm run desktop:build (or npm run cardo:build).',
-            'Start Desktop again (npm run desktop:start) or cardo serve / cardo open.',
-            'If it still fails, check %APPDATA%\\cardo\\runtime.log and ensure discovery schemaVersion is 9.',
+            'Close all Cardo windows and quit the app completely.',
+            'Start the same version of Cardo again.',
+            'If it still fails, reinstall Cardo at the matching version.',
+            'Avoid mixing different Cardo installs on the same machine.',
           ],
       hints: zh
         ? [
-            '不要混用主仓库与 ui-system 工作区的旧 Runtime 产物。',
-            '升级后首次启动会自动迁移 preferences 列。',
+            `开发者：cardo stop 后重启；核对 %APPDATA%\\cardo\\discovery.json 中 schemaVersion 为 ${DATABASE_SCHEMA_VERSION}。`,
+            '排查时可查看 %APPDATA%\\cardo\\runtime.log。',
           ]
         : [
-            'Do not mix an older Runtime from another checkout with this UI build.',
-            'The first launch after upgrade migrates preferences columns automatically.',
+            `For developers: cardo stop, then restart; confirm discovery.json schemaVersion is ${DATABASE_SCHEMA_VERSION}.`,
+            'Support logs: %APPDATA%\\cardo\\runtime.log.',
           ],
       actions: baseActions,
     };
@@ -101,26 +101,27 @@ export function classifyCardoError(
 
   if (/does not serve \/app|\/app\/ UI|web-runtime static|serveStaticDir/i.test(raw)) {
     return {
-      title: zh ? '找不到 Cardo 界面资源' : 'Cardo UI assets missing',
+      title: zh ? '找不到 Cardo 界面' : 'Cardo interface missing',
       summary: zh
-        ? 'Runtime 已启动，但没有提供 /app 静态页面。Desktop 需要与当前构建一致的 web-runtime 产物。'
-        : 'Runtime is up but is not serving the /app static UI. Desktop needs a web-runtime build that matches this app.',
+        ? '本机服务已启动，但没有提供可用界面。请使用与本机服务相同版本的 Cardo。'
+        : 'The local service is running but is not providing a usable interface. Use a Cardo install that matches the local service version.',
       detail: raw,
       code: 'RUNTIME_NO_APP_UI',
       surface,
       steps: zh
         ? [
-            '执行 npm run desktop:build（会构建 web-runtime + Desktop）。',
-            'cardo stop 停掉旧 Runtime。',
-            '重新 npm run desktop:start。',
-            '确认 artifacts/web-runtime/index.html 存在。',
+            '完全退出后重新启动 Cardo。',
+            '重新安装同一版本的 Cardo。',
+            '确认桌面端与本机服务来自同一次安装或升级。',
           ]
         : [
-            'Run npm run desktop:build (builds web-runtime + Desktop).',
-            'cardo stop to quit any old Runtime.',
-            'Start again with npm run desktop:start.',
-            'Confirm artifacts/web-runtime/index.html exists.',
+            'Quit completely, then start Cardo again.',
+            'Reinstall the same version of Cardo.',
+            'Make sure Desktop and the local service come from the same install or update.',
           ],
+      hints: zh
+        ? ['开发者：重新构建并启动桌面端，确认界面资源已随构建产出。']
+        : ['For developers: rebuild and start Desktop; confirm UI assets ship with that build.'],
       actions: baseActions,
     };
   }
@@ -131,10 +132,10 @@ export function classifyCardoError(
     )
   ) {
     return {
-      title: zh ? '无法连接 Cardo Runtime' : 'Cannot connect to Cardo Runtime',
+      title: zh ? '无法连接本机服务' : 'Cannot connect to the local service',
       summary: zh
-        ? '界面需要本机 Cardo Runtime 作为数据权威。当前未发现健康的 Runtime，或连接配置缺失。'
-        : 'The UI needs a local Cardo Runtime as the data authority. No healthy Runtime was found, or connection config is missing.',
+        ? '界面需要本机 Cardo 服务才能读写数据。当前未发现可用服务，或连接配置缺失。'
+        : 'The interface needs the local Cardo service for data. No healthy service was found, or connection settings are missing.',
       detail: raw,
       code: 'RUNTIME_UNAVAILABLE',
       surface,
@@ -142,38 +143,41 @@ export function classifyCardoError(
         surface === 'extension'
           ? zh
             ? [
-                '启动 Cardo Desktop，或运行 cardo serve / cardo open。',
-                '如使用扩展：npm run native-host:install 安装 Native Messaging Host。',
-                '点击重试或重新加载扩展页。',
+                '先启动 Cardo 桌面版。',
+                '确认浏览器扩展与桌面版配套安装。',
+                '点击重试，或重新打开扩展页。',
               ]
             : [
-                'Start Cardo Desktop, or run cardo serve / cardo open.',
-                'For the extension: npm run native-host:install for Native Messaging.',
-                'Retry or reload the extension page.',
+                'Start Cardo Desktop first.',
+                'Confirm the browser extension is installed with that Desktop version.',
+                'Retry, or reopen the extension page.',
               ]
           : surface === 'desktop'
             ? zh
               ? [
-                  'npm run desktop:build 后重新启动 Desktop。',
-                  '若日志提示旧 Runtime：cardo stop 后再开。',
-                  '查看 %APPDATA%\\cardo\\runtime.log。',
+                  '完全退出后重新启动 Cardo。',
+                  '若刚升级过，先关闭所有窗口再开一次。',
+                  '若仍失败，重新安装同一版本。',
                 ]
               : [
-                  'Rebuild with npm run desktop:build, then restart Desktop.',
-                  'If logs mention a stale Runtime: cardo stop, then start again.',
-                  'Check %APPDATA%\\cardo\\runtime.log.',
+                  'Quit completely, then start Cardo again.',
+                  'After an upgrade, close every window and open once more.',
+                  'If it still fails, reinstall the same version.',
                 ]
             : zh
               ? [
-                  '使用 cardo open 重新打开（会交换一次性连接码）。',
-                  '或先 cardo serve，再访问 Runtime 提供的 /app 地址。',
-                  '不要把长期 token 粘贴进 URL。',
+                  '用 Cardo 提供的方式重新打开（例如桌面版或 cardo open）。',
+                  '确认本机服务已启动后再访问界面。',
+                  '不要把长期密钥粘贴进地址栏。',
                 ]
               : [
-                  'Use cardo open again (exchanges a one-time connection code).',
-                  'Or cardo serve, then open the Runtime /app URL.',
-                  'Do not paste long-lived tokens into the URL.',
+                  'Open Cardo again from the desktop app or cardo open.',
+                  'Confirm the local service is running before opening the UI.',
+                  'Do not paste long-lived secrets into the address bar.',
                 ],
+      hints: zh
+        ? ['排查时可查看 %APPDATA%\\cardo\\runtime.log。']
+        : ['Support logs: %APPDATA%\\cardo\\runtime.log.'],
       actions: baseActions,
     };
   }
@@ -182,22 +186,25 @@ export function classifyCardoError(
     return {
       title: zh ? '工作区初始化失败' : 'Workspace failed to initialize',
       summary: zh
-        ? '已连上 Runtime，但创建或加载工作区时出错。'
-        : 'Connected to Runtime, but creating or loading the workspace failed.',
+        ? '已连上本机服务，但创建或加载工作区时出错。'
+        : 'Connected to the local service, but creating or loading the workspace failed.',
       detail: raw,
       code: 'WORKSPACE_INIT_FAILED',
       surface,
       steps: zh
         ? [
-            '重试一次。',
-            '确认 Runtime 日志无数据库锁定或迁移错误。',
-            '如刚升级版本，先 cardo stop 再启动，让迁移跑完。',
+            '点击重试一次。',
+            '完全退出 Cardo 后再启动。',
+            '若刚完成升级，等待首次启动完成后再打开。',
           ]
         : [
-            'Retry once.',
-            'Check Runtime logs for DB lock or migration errors.',
-            'After an upgrade, cardo stop then start so migrations can finish.',
+            'Click Retry once.',
+            'Quit Cardo completely, then start again.',
+            'After an upgrade, let the first launch finish before reopening.',
           ],
+      hints: zh
+        ? ['排查时可查看 %APPDATA%\\cardo\\runtime.log 是否有锁定或迁移错误。']
+        : ['Support logs: %APPDATA%\\cardo\\runtime.log for lock or migration errors.'],
       actions: baseActions,
     };
   }
@@ -209,8 +216,11 @@ export function classifyCardoError(
     code: 'UNKNOWN',
     surface,
     steps: zh
-      ? ['点击重试。', '若反复出现，复制详情并附上 runtime.log 排查。']
-      : ['Click Retry.', 'If it keeps happening, copy details and include runtime.log.'],
+      ? ['点击重试。', '若反复出现，复制详情并保留本地日志以便排查。']
+      : ['Click Retry.', 'If it keeps happening, copy details and keep local logs for support.'],
+    hints: zh
+      ? ['日志位置：%APPDATA%\\cardo\\runtime.log。']
+      : ['Log location: %APPDATA%\\cardo\\runtime.log.'],
     actions: baseActions,
   };
 }
@@ -361,8 +371,8 @@ export function renderCardoErrorScreen(options: RenderCardoErrorScreenOptions): 
   const footer = el('p', 'cardo-error-footer');
   footer.textContent =
     locale === 'zh'
-      ? '日志：%APPDATA%\\cardo\\runtime.log · discovery.json'
-      : 'Logs: %APPDATA%\\cardo\\runtime.log · discovery.json';
+      ? '需要帮助时，可复制上方技术详情，并附上本机 Cardo 日志。'
+      : 'If you need help, copy the technical details above and include your local Cardo logs.';
   card.append(footer);
 
   shell.append(card);

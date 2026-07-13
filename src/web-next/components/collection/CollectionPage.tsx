@@ -274,9 +274,9 @@ function CollectionBox({
           zIndex: 10 + view.order,
         } as MotionStyle & { '--box-accent': string }
       }
-      initial={{ opacity: 0, scale: 0.97 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.96 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       onContextMenu={onOpenMenu}
     >
       <header
