@@ -1,11 +1,12 @@
 # Cardo 开发约束
 
 1. 输出的 Markdown 内容未经允许禁止使用加粗。
-2. 默认不主动跑单元测试（`npm run test` / `test:ts`），只执行用户指定的浏览器插件与桌面端构建；但下方「CI 与本地门禁」中的 format / lint / eslint / validate:themes / build:all 为强制，不得省略。若 CI 因测试失败，则必须本地复现并修复后再推。
-3. 每个独立 Feature 或 Fix 在合并前必须通过完整本地门禁（见「CI 与本地门禁」），其中 `npm run build:all` 会先 `cardo:stop` 再构建 extension + CLI + web-runtime + desktop + native-host。局部验证可用 `npm run build` / `npm run desktop:build`（二者也会先停实例），但局部成功不能代替完整门禁。
-4. 项目禁止旧 Schema、旧字段、旧持久化格式和退休机制的兼容代码。
-5. Git 协作与发版必须遵守下方「分支、合并与发布」；AI 默认不得在 `main` 上直接堆功能提交。
-6. 多 agent / 并行改码结束后，必须再跑一轮 format（或 format:check）；禁止假设「能编译 = CI 会绿」。
+2. 默认不主动跑单元测试（`npm run test` / `test:ts`）；但下方「CI 与本地门禁」中的 format / lint / eslint / validate:themes / build:all 为强制，不得省略。若 CI 因测试失败，则必须本地复现并修复后再推。
+3. 每个独立 Feature 或 Fix 完成后必须在本机执行完整构建，不得等用户再提醒：默认 `npm run build:all`（先 `cardo:stop`，再 extension + CLI + web-runtime + desktop + native-host）。仅改单一 surface 且用户只要快速验证时，可用 `npm run build` / `npm run desktop:build` 作中间检查，但任务收尾与开 PR / 合并前仍须 `build:all` 成功后再汇报完成。
+4. 涉及 Desktop（含其托管的设置/Web UI）、Main、更新、Native Host 时：`build:all` 不够——它只编 vite 产物，不跑 electron-builder。收尾必须再跑 `npm run desktop:package`（Setup + Portable → `artifacts/desktop-dist/`），汇报写清安装包路径；调试壳用 `desktop:package:debug`。默认一律打安装包，不得只报 `desktop:build` / `build:all` 当作桌面端完成。
+5. 项目禁止旧 Schema、旧字段、旧持久化格式和退休机制的兼容代码。
+6. Git 协作与发版必须遵守下方「分支、合并与发布」；AI 默认不得在 `main` 上直接堆功能提交。
+7. 多 agent / 并行改码结束后，必须再跑一轮 format（或 format:check）；禁止假设「能编译 = CI 会绿」。
 
 ## CI 与本地门禁
 
@@ -197,6 +198,32 @@ Cardo Runtime 是本机唯一权威 SQLite 持有者与业务写路径。CLI、W
 7. 结构基线：收藏 | 页面 | 回收站 | +；主题方言不擅自换 IA。
 8. 缺控件先扩 `kit/components`（并加路径 re-export），禁止业务手写「临时好看按钮」。
 
+### 1.1 设置页与表单布局（强制 — 禁止「先堆控件再 inline style」）
+
+历史事故：更新下载代理区把模式/主机/端口塞进 `cardo-settings-card-copy`，并用未定义的 `cardo-settings-field` + 原生 `<select>` + 内联 flex，导致标签贴输入、「保存代理」竖排断行。根因不是 token 失效，而是用错结构槽位。
+
+写设置（或任何「列表行 + 表单」）前，必须先打开同页已有区块（语言、搜索引擎、功能开关、自定义搜索模板）抄结构，禁止从零发明横排表单。
+
+#### 槽位与方言（SoT：`src/web/features/settings/SettingsPanel.tsx` + `src/web/styles/settings.css`）
+
+| 场景 | 必须用的结构 | 禁止 |
+| --- | --- | --- |
+| 单行设置 | `list-group` > `settings-card`：左 `card-copy` > `span`(+`small`)，右 `Select` / `Switch` / `ToggleGroup` / `Button.cardo-settings-secondary-button` / `Input.cardo-settings-inline-field` | 多控件塞进 `card-copy`；布局用 inline style |
+| 多字段（主机、端口） | 同一 `list-group` 里多行 card（左标题、右控件），抄语言/导出 | 主机端口漂在 list-group 外；左右文案与按钮同词 |
+| 展开模板 | card 下 `cardo-custom-search-template` | 与行内控件混槽 |
+| 右侧多按钮 | `cardo-settings-card-actions` + 每个按钮 `variant="ghost"` + `className="cardo-settings-secondary-button"`（与导出/导入一致） | 裸 `Button` 默认灰边框、不合主题 |
+| 下拉 | kit `Select` | 原生 `<select>` |
+| 分组标题 | 仅 `cardo-settings-subheading`（span+small） | 用 `cardo-settings-group` 包 subheading——group 在 content 下有 item 表面，标题会像带背景卡片（事故：更新「检查…官方更新」） |
+| 可展开合并面板 | 仅自定义色等内部用 `cardo-settings-group` | 普通「标题 + list-group」误套 group |
+
+#### 硬规则
+
+1. `.cardo-settings-card` 是横向控制条，不是通用表单容器；`card-copy` 只放文案树。
+2. 新增 class 必须先写 CSS 再引用；禁止布局 inline style。
+3. 表面只走 `--cardo-settings-item-*`；subheading 不得落在带 item 表面的容器内。
+4. 设置行动作钮必须 `cardo-settings-secondary-button`（同导出数据），禁止未加该类的 default/ghost 裸按钮。
+5. 实现前打开同页语言/搜索引擎/导出抄 DOM；完成后目视：标题无卡片底、按钮与导出一致、主机端口在 list-group 内。
+
 ### 2. 官方主题适配（classic / glass / fluent / material / swiftui / codex）
 
 1. 官方 id SoT：`OFFICIAL_BUILT_IN_THEME_IDS`（`src/core/contracts/themePack.ts`）。换皮唯一路径：Theme Pack JSON token + `[data-cardo-theme="<id>"]` recipe。
@@ -240,16 +267,17 @@ Cardo Runtime 是本机唯一权威 SQLite 持有者与业务写路径。CLI、W
 
 提交或宣称完成前，自查：
 
-| 项        | 检查                                                                         |
-| --------- | ---------------------------------------------------------------------------- |
-| 主题      | classic/glass/fluent/material/swiftui 是否未被硬编码色破坏；设置底是否 token |
-| i18n      | 新字符串是否 en+zh；有无硬编码；有无架构黑话                                 |
-| 动效      | 文字壳有无 scale；拖拽帧有无写库；属性所有者是否唯一                         |
-| 双轨      | 有无旧组件/旧 CSS/旧 class 前缀并存                                          |
-| 无障碍    | 图标按钮有 aria-label；焦点是否仍走 Radix                                    |
-| 安装/构建 | 目视是否用新构建产物与正确安装路径，而非旧 Programs\Cardo                    |
-| 格式      | `format:check`（前端改动同样触发 CI 第一关）                                 |
-| 主题校验  | 动过官方主题则 `validate:themes`                                             |
+| 项 | 检查 |
+| --- | --- |
+| 主题 | classic/glass/fluent/material/swiftui/codex 是否未被硬编码色破坏；设置底是否 token |
+| i18n | 新字符串是否 en+zh；有无硬编码；有无架构黑话 |
+| 动效 | 文字壳有无 scale；拖拽帧有无写库；属性所有者是否唯一 |
+| 双轨 | 有无旧组件/旧 CSS/旧 class 前缀并存 |
+| 结构方言 | 设置/列表行是否抄同页结构；有无把表单塞进 `cardo-settings-card-copy`；有无未定义 class / 布局 inline style；Select 是否用 kit |
+| 无障碍 | 图标按钮有 aria-label；焦点是否仍走 Radix |
+| 安装/构建 | 目视是否用新构建产物与正确安装路径，而非旧 Programs\Cardo |
+| 格式 | `format:check`（前端改动同样触发 CI 第一关） |
+| 主题校验 | 动过官方主题则 `validate:themes` |
 
 ### 6. 常见误判（先排环境再改布局）
 
