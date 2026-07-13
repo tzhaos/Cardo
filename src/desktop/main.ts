@@ -41,6 +41,7 @@ import {
   type DesktopRuntimeConfig,
 } from '../core/contracts/desktopIpc';
 import { DesktopUpdater } from './update/desktopUpdater';
+import { ensurePackagedNativeHostRegistered } from './registerNativeHost';
 
 declare const __CARDO_DEBUG_PACKAGE__: boolean;
 declare const __APP_VERSION__: string;
@@ -577,6 +578,8 @@ function registerIpcHandlers() {
   });
 }
 
+let forceUpdatePromptInFlight = false;
+
 function broadcastUpdateState() {
   unsubscribeUpdater?.();
   unsubscribeUpdater = desktopUpdater.subscribe((state) => {
@@ -585,7 +588,49 @@ function broadcastUpdateState() {
         win.webContents.send('update:state', state);
       }
     }
+    void maybePromptForceUpdate(state);
   });
+}
+
+async function maybePromptForceUpdate(state: {
+  forceUpdate: boolean;
+  phase: string;
+  available: { version: string } | null;
+}): Promise<void> {
+  if (!state.forceUpdate || state.phase !== 'available' || !state.available) return;
+  if (forceUpdatePromptInFlight) return;
+  forceUpdatePromptInFlight = true;
+  try {
+    const zh = isChineseLocale();
+    const result = await dialog.showMessageBox({
+      type: 'warning',
+      buttons: [
+        zh ? '下载并安装更新' : 'Download and install',
+        zh ? '稍后（仍须更新）' : 'Later (still required)',
+      ],
+      defaultId: 0,
+      cancelId: 1,
+      noLink: true,
+      title: zh ? '必须更新 Cardo' : 'Cardo update required',
+      message: zh
+        ? '当前版本已不再受支持，请安装更新后继续使用。'
+        : 'This version is no longer supported. Install the update to continue.',
+      detail: zh
+        ? `可用版本：v${state.available.version}`
+        : `Available version: v${state.available.version}`,
+    });
+    if (result.response === 0) {
+      void desktopUpdater.downloadUpdate().catch((error: unknown) => {
+        console.warn(
+          '[Cardo] Force update download failed:',
+          error instanceof Error ? error.message : String(error),
+        );
+      });
+    }
+  } finally {
+    // Allow re-prompt after user dismisses if they still have not updated.
+    forceUpdatePromptInFlight = false;
+  }
 }
 
 async function createWindow() {
@@ -667,6 +712,9 @@ if (!singleInstanceLock) {
       console.info(
         `[Cardo] Desktop Runtime mode=${runtimeConnection.mode} baseUrl=${runtimeConnection.baseUrl}`,
       );
+
+      const nativeHost = ensurePackagedNativeHostRegistered();
+      console.info(`[Cardo] Native host: ${nativeHost.message}`);
 
       await createWindow();
       createTray();
