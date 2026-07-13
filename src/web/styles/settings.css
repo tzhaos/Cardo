@@ -328,18 +328,21 @@
  * .cardo-settings-content — not individual component classes — so one change
  * paints language rows, data import/export buttons, about cards, looks, packs.
  */
+/*
+ * Standalone item surface (single card outside a list-group).
+ * Nested rows live inside .cardo-settings-list-group and strip this chrome.
+ */
 .cardo-settings-content
   :is(
     .cardo-settings-card,
     .cardo-theme-pack-card,
     .cardo-theme-look-card,
     .cardo-about-card,
-    .cardo-about-details,
     .cardo-settings-disclosure,
     .cardo-settings-group,
     .cardo-data-import-confirm,
     .cardo-settings-search-result
-  ) {
+  ):not(.cardo-settings-list-group > *) {
   border: 1px solid var(--cardo-settings-item-border);
   border-radius: var(--cardo-settings-item-radius);
   background: var(--cardo-settings-item-bg);
@@ -359,7 +362,7 @@
     .cardo-theme-look-card,
     .cardo-settings-disclosure:not(.cardo-settings-group-header),
     .cardo-settings-search-result
-  ):hover {
+  ):not(.cardo-settings-list-group > *):hover {
   border-color: var(--cardo-settings-item-border-hover);
   background: var(--cardo-settings-item-bg-hover);
   box-shadow: var(--cardo-settings-item-inset), var(--cardo-settings-item-shadow-hover);
@@ -1471,11 +1474,16 @@
   line-height: 1.4;
 }
 
+/* About meta: same continuous group dialect as list-group. */
 .cardo-about-details {
   display: grid;
   gap: 0;
   margin: 16px 0 0;
-  /* surface paint: shared token group under .cardo-settings-content */
+  overflow: hidden;
+  border: 1px solid var(--cardo-settings-item-border, var(--cardo-border));
+  border-radius: var(--cardo-settings-item-radius, var(--cardo-radius-xl));
+  background: var(--cardo-settings-item-bg, var(--cardo-panel-content));
+  box-shadow: none;
 }
 
 .cardo-about-details div {
@@ -1485,6 +1493,9 @@
   justify-content: space-between;
   gap: 16px;
   padding: 0 14px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .cardo-about-details div + div {
@@ -1510,16 +1521,107 @@
   transform-origin: center;
 }
 
-/* Shared list grouping (Fluent uses this heavily; other themes keep simple stack). */
+/*
+ * List group = continuous item surface (about-details dialect):
+ * one outer radius + border, zero gap, dividers between children.
+ * Prefer this for related settings instead of loose floating cards.
+ */
 .cardo-settings-list-group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--cardo-settings-item-border, var(--cardo-border));
+  border-radius: var(--cardo-settings-item-radius, var(--cardo-radius-xl));
+  background: var(--cardo-settings-item-bg, var(--cardo-panel-content));
+  box-shadow: var(--cardo-settings-item-inset, none), var(--cardo-settings-item-shadow, none);
+}
+
+/* Children sit inside the group shell — no second card chrome. */
+.cardo-settings-list-group > .cardo-settings-card,
+.cardo-settings-list-group > .cardo-theme-pack-card,
+.cardo-settings-list-group > .cardo-theme-look-card,
+.cardo-settings-list-group > .cardo-theme-choice-row {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.cardo-settings-list-group > * + * {
+  border-top: 1px solid var(--cardo-border) !important;
+}
+
+.cardo-settings-list-group > .cardo-settings-card:hover,
+.cardo-settings-list-group > .cardo-theme-choice-row:hover {
+  background: var(--cardo-settings-item-bg-hover, var(--cardo-hover)) !important;
 }
 
 .cardo-settings-list-group-spaced,
 .cardo-settings-group.cardo-settings-list-group-spaced {
   margin-top: 16px;
+}
+
+/* Theme / look choice: horizontal row inside list-group (not mini marketing cards). */
+.cardo-theme-choice-row {
+  display: flex;
+  width: 100%;
+  min-height: 52px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cardo-space-4);
+  padding: 10px 14px;
+  color: var(--cardo-text);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.cardo-theme-choice-row-custom {
+  cursor: default;
+  opacity: 0.92;
+}
+
+.cardo-theme-choice-row-selected {
+  background: color-mix(in srgb, var(--cardo-blue) 8%, transparent) !important;
+}
+
+.cardo-theme-choice-preview {
+  position: relative;
+  display: block;
+  width: 48px;
+  height: 32px;
+  flex: 0 0 48px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.cardo-theme-choice-preview > i {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 10px;
+  height: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 999px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.cardo-theme-choice-check {
+  flex: 0 0 auto;
+  color: var(--cardo-blue);
+}
+
+.cardo-theme-look-swatches-inline {
+  width: 72px;
+  height: 20px;
+  flex: 0 0 72px;
+}
+
+.cardo-theme-look-swatches-inline > i {
+  border-radius: 4px;
 }
 
 @media (max-width: 600px) {

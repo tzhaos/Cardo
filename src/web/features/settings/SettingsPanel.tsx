@@ -634,65 +634,52 @@ function AppearanceSettings({
         description={t('settings.appearanceDescription')}
       />
 
-      <div className="cardo-settings-subheading">
-        <span>{t('settings.theme')}</span>
-      </div>
-      <ToggleGroup
-        className="cardo-theme-pack-grid"
-        type="single"
-        variant="plain"
-        value={themeId}
-        onValueChange={(value) => value && setThemeId(value)}
-        aria-label={t('settings.theme')}
-      >
+      {/* Theme packs + looks: list-group rows (same dialect as about-details), not loose cards. */}
+      <SettingsCard head={t('settings.theme')}>
         {themes.map((theme) => {
           const selected = theme.id === themeId;
           return (
-            <ToggleGroupItem asChild key={theme.id} value={theme.id}>
-              <Button
-                variant="card"
-                className={
-                  selected
-                    ? 'cardo-theme-pack-card cardo-theme-pack-card-selected'
-                    : 'cardo-theme-pack-card'
-                }
-                type="button"
-              >
-                <span className="cardo-theme-pack-preview" aria-hidden="true">
-                  <span style={{ background: theme.palettes.light.canvas }} />
-                  <span style={{ background: theme.palettes.dark.canvas }} />
-                  <i
-                    style={{
-                      background: theme.palettes[colorMode].panel,
-                      borderColor:
-                        theme.palettes[colorMode].blue ?? theme.palettes[colorMode].border,
-                      boxShadow: `inset 0 0 0 1px ${theme.palettes[colorMode].border}, 0 2px 6px rgba(0,0,0,0.12)`,
-                    }}
-                  />
-                  <em
-                    className="cardo-theme-pack-preview-accent"
-                    style={{ background: theme.palettes[colorMode].blue ?? '#3b82f6' }}
-                  />
+            <button
+              key={theme.id}
+              type="button"
+              className={[
+                'cardo-settings-card',
+                'cardo-theme-choice-row',
+                selected ? 'cardo-theme-choice-row-selected' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              aria-pressed={selected}
+              onClick={() => setThemeId(theme.id)}
+            >
+              <div className="cardo-settings-card-copy">
+                <span
+                  className="cardo-theme-choice-preview"
+                  aria-hidden="true"
+                  style={{
+                    background: `linear-gradient(90deg, ${theme.palettes.light.canvas} 50%, ${theme.palettes.dark.canvas} 50%)`,
+                    boxShadow: `inset 0 0 0 1px ${theme.palettes[colorMode].border}`,
+                  }}
+                >
+                  <i style={{ background: theme.palettes[colorMode].blue ?? '#3b82f6' }} />
                 </span>
-                <span className="cardo-theme-pack-card-copy">
-                  <span>
-                    {theme.name[locale === 'zh' ? 'zh' : 'en']}
-                    {theme.official ? (
-                      <em className="cardo-theme-official-badge">{t('settings.themeOfficial')}</em>
-                    ) : null}
-                  </span>
+                <span>
+                  {theme.name[locale === 'zh' ? 'zh' : 'en']}
+                  {theme.official ? (
+                    <em className="cardo-theme-official-badge">{t('settings.themeOfficial')}</em>
+                  ) : null}
                   <small>{theme.description[locale === 'zh' ? 'zh' : 'en']}</small>
                 </span>
-                {selected ? (
-                  <IconFrame className="cardo-theme-check">
-                    <ThemeIcon name="check" size={12} />
-                  </IconFrame>
-                ) : null}
-              </Button>
-            </ToggleGroupItem>
+              </div>
+              {selected ? (
+                <IconFrame className="cardo-theme-choice-check">
+                  <ThemeIcon name="check" size={14} />
+                </IconFrame>
+              ) : null}
+            </button>
           );
         })}
-      </ToggleGroup>
+      </SettingsCard>
 
       <SettingsCard spaced>
         <SettingsRow
@@ -718,11 +705,11 @@ function AppearanceSettings({
         />
       </SettingsCard>
 
-      <div className="cardo-settings-subheading">
-        <span>{t('settings.themeLooks')}</span>
-        <small>{t('settings.themeLooksDescription')}</small>
-      </div>
-      <div className="cardo-theme-look-grid" role="listbox" aria-label={t('settings.themeLooks')}>
+      <SettingsCard
+        spaced
+        head={t('settings.themeLooks')}
+        description={t('settings.themeLooksDescription')}
+      >
         {lookPresets.map((look) => {
           const selected = activeLookId === look.id;
           const lightCanvas = look.colors.light.canvas ?? pack.tokens.colors.light.canvas;
@@ -738,21 +725,30 @@ function AppearanceSettings({
               role="option"
               aria-selected={selected}
               aria-label={label}
-              className={['cardo-theme-look-card', selected ? 'cardo-theme-look-card-selected' : '']
+              className={[
+                'cardo-settings-card',
+                'cardo-theme-choice-row',
+                selected ? 'cardo-theme-choice-row-selected' : '',
+              ]
                 .filter(Boolean)
                 .join(' ')}
               onClick={() => applyLook(look)}
             >
-              <span className="cardo-theme-look-swatches" aria-hidden="true">
-                <i style={{ background: lightCanvas }} />
-                <i style={{ background: darkCanvas }} />
-                <i style={{ background: panel }} />
-                <i style={{ background: accent }} />
-              </span>
-              <span className="cardo-theme-look-name">{label}</span>
+              <div className="cardo-settings-card-copy">
+                <span
+                  className="cardo-theme-look-swatches cardo-theme-look-swatches-inline"
+                  aria-hidden="true"
+                >
+                  <i style={{ background: lightCanvas }} />
+                  <i style={{ background: darkCanvas }} />
+                  <i style={{ background: panel }} />
+                  <i style={{ background: accent }} />
+                </span>
+                <span>{label}</span>
+              </div>
               {selected ? (
-                <IconFrame className="cardo-theme-look-check">
-                  <ThemeIcon name="check" size={11} />
+                <IconFrame className="cardo-theme-choice-check">
+                  <ThemeIcon name="check" size={14} />
                 </IconFrame>
               ) : null}
             </button>
@@ -760,25 +756,30 @@ function AppearanceSettings({
         })}
         {activeLookId === null && hasAnyOverrides ? (
           <div
-            className="cardo-theme-look-card cardo-theme-look-card-custom"
+            className="cardo-settings-card cardo-theme-choice-row cardo-theme-choice-row-custom"
             role="option"
             aria-selected
             aria-label={t('settings.themeLookCustom')}
           >
-            <span className="cardo-theme-look-swatches" aria-hidden="true">
-              <i style={{ background: effectiveColors.canvas }} />
-              <i
-                style={{
-                  background:
-                    effectiveColors.panel ?? effectiveColors.surface ?? effectiveColors.canvas,
-                }}
-              />
-              <i style={{ background: effectiveColors.blue ?? '#3b82f6' }} />
-            </span>
-            <span className="cardo-theme-look-name">{t('settings.themeLookCustom')}</span>
+            <div className="cardo-settings-card-copy">
+              <span
+                className="cardo-theme-look-swatches cardo-theme-look-swatches-inline"
+                aria-hidden="true"
+              >
+                <i style={{ background: effectiveColors.canvas }} />
+                <i
+                  style={{
+                    background:
+                      effectiveColors.panel ?? effectiveColors.surface ?? effectiveColors.canvas,
+                  }}
+                />
+                <i style={{ background: effectiveColors.blue ?? '#3b82f6' }} />
+              </span>
+              <span>{t('settings.themeLookCustom')}</span>
+            </div>
           </div>
         ) : null}
-      </div>
+      </SettingsCard>
 
       <div className="cardo-settings-group cardo-settings-list-group-spaced">
         <button
