@@ -98,9 +98,10 @@ export const FEATURE_CATALOG: readonly FeatureDefinition[] = [
   },
   {
     id: 'chrome.globalSearch',
-    slot: 'shell.modal',
+    slot: 'nav.item',
     defaultEnabled: true,
-    dependsOn: ['chrome.bottomToolbar'],
+    // Sidebar text entry only — independent of bottom toolbar create-box control.
+    dependsOn: ['chrome.sidebar'],
     labelKey: 'settings.feature.chrome.globalSearch',
     descriptionKey: 'settings.feature.chrome.globalSearchDescription',
   },

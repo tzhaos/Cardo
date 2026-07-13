@@ -10,8 +10,8 @@
  *
  * Feature gates (PR9 / KD-8 / KD-19):
  * - chrome.sidebar wraps product nav only; SettingsFoot stays outside and always on.
- * - chrome.bottomToolbar wraps BottomActionBar; search UI is chrome.globalSearch
- *   (dependsOn bottomToolbar in the catalog).
+ * - chrome.bottomToolbar wraps BottomActionBar (create box only).
+ * - chrome.globalSearch: sidebar text nav entry opens SearchPage (local workspace only).
  */
 
 import '@fontsource-variable/inter';
@@ -36,6 +36,7 @@ import { PanelHeader } from '../shell/PanelHeader';
 import { SettingsFoot } from '../shell/SettingsFoot';
 import { SettingsShell } from '../shell/SettingsShell';
 import { SidebarNav } from '../shell/SidebarNav';
+import { SearchPage } from '../features/global-search/SearchPage';
 import { ContextMenuHost } from '../kit/context-menu';
 import { TooltipProvider } from '../kit/tooltip';
 import {
@@ -43,6 +44,8 @@ import {
   sidebarNavRootRef,
   useSidebarBoxDropUi,
 } from '../shell/SidebarPageDropBridge';
+import { useUiStore } from './stores/uiStore';
+import { useFeatureEnabled } from '../shell/FeatureGate';
 import './styles.css';
 
 export default function CardoApp() {
@@ -52,6 +55,8 @@ export default function CardoApp() {
 
   const [mode, setMode] = useState<'workspace' | 'settings'>('workspace');
   const [settingsSection, setSettingsSection] = useState<SettingsSectionId>('general');
+  const searchOpen = useUiStore((state) => state.searchOpen);
+  const globalSearchEnabled = useFeatureEnabled('chrome.globalSearch');
 
   const colorMode = usePreferencesStore((state) => state.colorMode);
   const locale = usePreferencesStore((state) => state.locale);
@@ -138,11 +143,13 @@ export default function CardoApp() {
               main={
                 <MainStage
                   header={<PanelHeader />}
-                  canvas={<WorkspaceCanvas />}
+                  canvas={globalSearchEnabled && searchOpen ? <SearchPage /> : <WorkspaceCanvas />}
                   bottomBar={
-                    <FeatureGate feature="chrome.bottomToolbar">
-                      <BottomActionBar />
-                    </FeatureGate>
+                    searchOpen ? null : (
+                      <FeatureGate feature="chrome.bottomToolbar">
+                        <BottomActionBar />
+                      </FeatureGate>
+                    )
                   }
                 />
               }

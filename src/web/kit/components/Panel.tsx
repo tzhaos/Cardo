@@ -7,18 +7,24 @@ export function Panel({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
 
 export function PanelHeader({
   title,
+  leading,
   tools,
   className,
   titleClassName,
 }: {
   title: ReactNode;
+  /** Left of title (e.g. search entry). */
+  leading?: ReactNode;
   tools?: ReactNode;
   className?: string;
   titleClassName?: string;
 }) {
   return (
     <header data-cardo-ui="panel-header" className={cn('cardo-surface-header', className)}>
-      <h1 className={cn('cardo-surface-title', titleClassName)}>{title}</h1>
+      <div className="cardo-surface-header-start">
+        {leading ? <div className="cardo-surface-leading">{leading}</div> : null}
+        <h1 className={cn('cardo-surface-title', titleClassName)}>{title}</h1>
+      </div>
       {tools ? <div className="cardo-surface-tools">{tools}</div> : null}
     </header>
   );

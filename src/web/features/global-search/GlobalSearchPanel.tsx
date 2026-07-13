@@ -16,7 +16,18 @@ import {
   writeClipboardText,
 } from '../../platform/hostPlatform';
 
-export function GlobalSearchPanel({ query }: { query: string }) {
+/**
+ * Local workspace search results body for SearchPage.
+ * No web/engine search — groups, boxes, and items only.
+ */
+export function GlobalSearchPanel({
+  query,
+  onActivate,
+}: {
+  query: string;
+  /** Called after a result is activated (e.g. close search page). */
+  onActivate?: () => void;
+}) {
   const setActivePage = useWorkspaceStore((state) => state.setActivePage);
   const selectBox = useUiStore((state) => state.selectBox);
   const highlightBox = useUiStore((state) => state.highlightBox);
@@ -24,7 +35,14 @@ export function GlobalSearchPanel({ query }: { query: string }) {
   const [results, setResults] = useState<GlobalSearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [copiedResultId, setCopiedResultId] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
   const copiedTimeoutRef = useRef<number | null>(null);
+  const resultsRef = useRef(results);
+  const selectedIndexRef = useRef(selectedIndex);
+  const onActivateRef = useRef(onActivate);
+  resultsRef.current = results;
+  selectedIndexRef.current = selectedIndex;
+  onActivateRef.current = onActivate;
   const { t } = useI18n();
 
   useEffect(() => setSelectedIndex(0), [query]);
@@ -34,19 +52,25 @@ export function GlobalSearchPanel({ query }: { query: string }) {
     const trimmed = query.trim();
     if (!trimmed) {
       setResults([]);
+      setPending(false);
       return () => {
         active = false;
       };
     }
+    setPending(true);
     const timer = window.setTimeout(() => {
       void queryGlobalSearch(trimmed)
         .then((nextResults) => {
-          if (active) setResults(nextResults);
+          if (active) {
+            setResults(nextResults);
+            setPending(false);
+          }
         })
         .catch((error: unknown) => {
           if (active) {
             console.error('Global search failed', error);
             setResults([]);
+            setPending(false);
           }
         });
     }, 200);
@@ -61,23 +85,6 @@ export function GlobalSearchPanel({ query }: { query: string }) {
     },
     [],
   );
-
-  const activateResult = async (result: GlobalSearchResult) => {
-    if (result.kind === 'page') {
-      setActivePage(result.page.id, 'search');
-      selectBox(null);
-      return;
-    }
-    if (result.kind === 'box') {
-      recordBoxActivity(result.box.id, 'box.open', { origin: 'search' });
-      setActivePage(result.page.id, 'search');
-      focusFrame(result.page.id, result.box.frame);
-      selectBox(result.box.id);
-      highlightBox(result.box.id);
-      return;
-    }
-    await activateItem(result.item, result.id, result.box.id);
-  };
 
   const activateItem = async (item: BoxItem, resultId: string, boxId: string) => {
     try {
@@ -101,20 +108,54 @@ export function GlobalSearchPanel({ query }: { query: string }) {
     }
   };
 
+  const activateResult = async (result: GlobalSearchResult) => {
+    if (result.kind === 'page') {
+      setActivePage(result.page.id, 'search');
+      selectBox(null);
+      onActivateRef.current?.();
+      return;
+    }
+    if (result.kind === 'box') {
+      recordBoxActivity(result.box.id, 'box.open', { origin: 'search' });
+      setActivePage(result.page.id, 'search');
+      focusFrame(result.page.id, result.box.frame);
+      selectBox(result.box.id);
+      highlightBox(result.box.id);
+      onActivateRef.current?.();
+      return;
+    }
+    await activateItem(result.item, result.id, result.box.id);
+    // Keep page open for clipboard copy feedback; navigate types already close above.
+    if (result.item.type !== 'clipboard') {
+      onActivateRef.current?.();
+    }
+  };
+
+  const activateResultRef = useRef(activateResult);
+  activateResultRef.current = activateResult;
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (!results.length) return;
+      const list = resultsRef.current;
+      if (!list.length) return;
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
         event.preventDefault();
         setSelectedIndex((current) => {
           const delta = event.key === 'ArrowDown' ? 1 : -1;
-          return (current + delta + results.length) % results.length;
+          return (current + delta + list.length) % list.length;
         });
+        return;
+      }
+      if (event.key === 'Enter') {
+        const target = list[selectedIndexRef.current];
+        if (!target) return;
+        event.preventDefault();
+        void activateResultRef.current(target);
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [results.length]);
+  }, []);
 
   return (
     <div className="cardo-global-search-panel-wrap">
@@ -159,7 +200,7 @@ export function GlobalSearchPanel({ query }: { query: string }) {
         ) : (
           <div className="cardo-global-search-empty">
             <ThemeIcon name="search" size={20} />
-            <span>{t('search.noGlobalResults')}</span>
+            <span>{pending ? t('shell.searchPlaceholder') : t('search.noGlobalResults')}</span>
           </div>
         )}
       </motion.div>

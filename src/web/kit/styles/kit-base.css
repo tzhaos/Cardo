@@ -354,6 +354,20 @@
   padding: 0 12px 0 14px;
 }
 
+.cardo-surface-header-start {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 6px;
+}
+
+.cardo-surface-leading {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+}
+
 .cardo-surface-title {
   margin: 0;
   min-width: 0;

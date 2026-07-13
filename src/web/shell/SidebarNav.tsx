@@ -44,6 +44,10 @@ export function SidebarNav() {
   const deletePage = useWorkspaceStore((state) => state.deletePage);
   const setActivePage = useWorkspaceStore((state) => state.setActivePage);
   const setDefaultPage = useWorkspaceStore((state) => state.setDefaultPage);
+  const globalSearchEnabled = useFeatureEnabled('chrome.globalSearch');
+  const searchOpen = useUiStore((state) => state.searchOpen);
+  const openSearch = useUiStore((state) => state.openSearch);
+  const closeSearch = useUiStore((state) => state.closeSearch);
   const { dropPageId } = useSidebarBoxDropUi();
   const [deletePageId, setDeletePageId] = useState<string | null>(null);
   const [renamePageId, setRenamePageId] = useState<string | null>(null);
@@ -101,6 +105,9 @@ export function SidebarNav() {
 
   const activatePage = (pageId: string) => {
     useUiStore.getState().selectBox(null);
+    if (useUiStore.getState().searchOpen) {
+      useUiStore.getState().closeSearch();
+    }
     setActivePage(pageId);
   };
 
@@ -166,15 +173,34 @@ export function SidebarNav() {
         </div>
       ) : (
         <>
-          {multiPage ? (
+          {globalSearchEnabled || multiPage ? (
             <div className="cardo-v2-nav-block">
-              <NavItem
-                icon={<ThemeIcon name="add" size={16} />}
-                onClick={openNewPage}
-                aria-label={t('shell.newPage')}
-              >
-                {t('shell.newPage')}
-              </NavItem>
+              {globalSearchEnabled ? (
+                <NavItem
+                  icon={<ThemeIcon name="search" size={16} />}
+                  active={searchOpen}
+                  onClick={() => {
+                    if (searchOpen) closeSearch();
+                    else openSearch();
+                  }}
+                  aria-label={t('toolbar.search')}
+                  aria-pressed={searchOpen}
+                >
+                  {t('toolbar.search')}
+                </NavItem>
+              ) : null}
+              {multiPage ? (
+                <NavItem
+                  icon={<ThemeIcon name="add" size={16} />}
+                  onClick={() => {
+                    if (searchOpen) closeSearch();
+                    openNewPage();
+                  }}
+                  aria-label={t('shell.newPage')}
+                >
+                  {t('shell.newPage')}
+                </NavItem>
+              ) : null}
             </div>
           ) : null}
 
@@ -182,7 +208,7 @@ export function SidebarNav() {
             <div className="cardo-v2-nav-block">
               <NavRow
                 pageId={collectionPage.id}
-                active={collectionPage.id === activePageId}
+                active={!searchOpen && collectionPage.id === activePageId}
                 dropPageId={dropPageId}
                 icon={<ThemeIcon name="star" size={16} />}
                 label={t('shell.favorites')}
@@ -199,7 +225,7 @@ export function SidebarNav() {
                 <PageNavRow
                   key={page.id}
                   page={page}
-                  active={page.id === activePageId}
+                  active={!searchOpen && page.id === activePageId}
                   dropPageId={dropPageId}
                   renameRequested={renamePageId === page.id}
                   onActivate={() => activatePage(page.id)}
@@ -215,7 +241,7 @@ export function SidebarNav() {
             <div className="cardo-v2-nav-block">
               <NavRow
                 pageId={recycleBinPage.id}
-                active={recycleBinPage.id === activePageId}
+                active={!searchOpen && recycleBinPage.id === activePageId}
                 dropPageId={dropPageId}
                 icon={<ThemeIcon name="trash" size={16} />}
                 label={t('shell.recycleBin')}

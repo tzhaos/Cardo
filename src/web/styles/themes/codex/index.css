@@ -122,11 +122,6 @@
   border-radius: 50%;
 }
 
-[data-cardo-theme='codex'] .cardo-v2-search-pill {
-  border-radius: var(--cardo-radius-pill);
-  background: var(--cardo-hover);
-}
-
 /* —— full-shell settings —— */
 [data-cardo-theme='codex'] .cardo-v2-settings-shell {
   background: var(--cardo-shell);
@@ -217,7 +212,6 @@
 
 [data-cardo-theme='codex'] .cardo-history-controls,
 [data-cardo-theme='codex'] .cardo-bottom-toolbar,
-[data-cardo-theme='codex'] .cardo-search-pill,
 [data-cardo-theme='codex'] .cardo-canvas-tools {
   border: 1px solid var(--cardo-border);
   background: var(--cardo-surface-strong);
