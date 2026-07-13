@@ -13,11 +13,11 @@ GitHub Actions `CI`（`.github/workflows/ci.yml`）在 push/PR 到 `main` 时顺
 
 ### CI 实际顺序（权威）
 
-| 顺序 | CI step | 本地等价命令 | 失败含义 |
-| --- | --- | --- | --- |
-| 1 | Check formatting | `npm run format:check` | Prettier 未对齐；先 `npm run format` 再 check |
-| 2 | Run static checks and tests | `npm run check`（= `lint` + `lint:eslint` + `test:ts` + `validate:themes`） | 类型 / ESLint / 单测 / 官方主题校验失败 |
-| 3 | Full product build | `npm run build:all` | 某一 surface 无法产出 artifacts |
+| 顺序 | CI step                     | 本地等价命令                                                                | 失败含义                                      |
+| ---- | --------------------------- | --------------------------------------------------------------------------- | --------------------------------------------- |
+| 1    | Check formatting            | `npm run format:check`                                                      | Prettier 未对齐；先 `npm run format` 再 check |
+| 2    | Run static checks and tests | `npm run check`（= `lint` + `lint:eslint` + `test:ts` + `validate:themes`） | 类型 / ESLint / 单测 / 官方主题校验失败       |
+| 3    | Full product build          | `npm run build:all`                                                         | 某一 surface 无法产出 artifacts               |
 
 Release 工作流（tag / workflow_dispatch）会 format:check 并打安装包，不重复跑完整 `check` 的部分逻辑可能因版本而变化；合并进 main 的代码仍以 CI 三关为准。
 
@@ -62,11 +62,11 @@ npm run build:all       # 合并前完整产物；用户若只要局部验证可
 
 ### 分支角色
 
-| 分支 | 角色 |
-| --- | --- |
-| `main` | 默认主干；只接受已审查的合并；CI 做校验与 `build:all`，不发布安装包 |
-| `feature/*` / `fix/*` / `chore/*` / `docs/*` | 任务分支；贡献者与 AI 的日常工作区 |
-| `vX.Y.Z` tag | 里程碑发版节点；仅稳定 semver；触发 Desktop Release 工作流 |
+| 分支                                         | 角色                                                                |
+| -------------------------------------------- | ------------------------------------------------------------------- |
+| `main`                                       | 默认主干；只接受已审查的合并；CI 做校验与 `build:all`，不发布安装包 |
+| `feature/*` / `fix/*` / `chore/*` / `docs/*` | 任务分支；贡献者与 AI 的日常工作区                                  |
+| `vX.Y.Z` tag                                 | 里程碑发版节点；仅稳定 semver；触发 Desktop Release 工作流          |
 
 不强制维护长期 `dev` 分支。若仓库另有 `dev`/`develop` 开发线，则任务分支先合入该线，再由里程碑 PR 合入 `main`；规则与下表相同，仅把「目标主干」替换为实际开发线。
 
@@ -195,6 +195,35 @@ Cardo Runtime 是本机唯一权威 SQLite 持有者与业务写路径。CLI、W
 6. 结构基线：系统页邻接与 classic 信息架构一致（收藏 | 页面 | 回收站 | +）；主题方言只改材质与装饰，不得擅自换 IA（除非产品明确批准）。
 7. 同一功能禁止双轨 UI（旧组件 + 新组件长期共存）；落地后删旧实现与旧 CSS。
 
+### 1.1 设置页与表单布局（强制 — 禁止「先堆控件再 inline style」）
+
+历史事故：更新下载代理区把模式/主机/端口塞进 `cardo-settings-card-copy`，并用未定义的 `cardo-settings-field` + 原生 `<select>` + 内联 flex，导致标签贴输入、「保存代理」竖排断行。根因不是 token 失效，而是**用错结构槽位**。
+
+写设置（或任何「列表行 + 表单」）前，必须先打开同页已有区块（语言、搜索引擎、功能开关、自定义搜索模板）抄结构，禁止从零发明横排表单。
+
+#### 槽位与方言（SoT：`SettingsPanel.tsx` + `styles/settings.css`）
+
+| 场景                                | 必须用的结构                                                                                                                                                         | 禁止                                                                                                      |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 单行设置（标题+说明 + 一个控件）    | `.cardo-settings-list-group` > `.cardo-settings-card`：左 `.cardo-settings-card-copy` > `span`（内嵌 `small`），右 `Select` / `Switch` / `ToggleGroup` / 单 `Button` | 把多个 label/input 塞进 `cardo-settings-card-copy`；在 copy 上写 `style={{ width:'100%' }}` 对抗横向 flex |
+| 多字段表单（主机、端口、模板 URL…） | card **外** 的 `.cardo-settings-field` 或历史别名 `.cardo-custom-search-template`（竖排：label span → Input → small）；并排用 `.cardo-settings-field-grid`           | 未在 CSS 注册的 class；`style={{ display:'flex', flex:'1 1 140px' }}` 手搓栅格                            |
+| 右侧多按钮                          | `.cardo-settings-card-actions`（允许 wrap；子项 `flex: 0 0 auto`）                                                                                                   | 与多字段表单抢同一条 card 的右侧窄缝导致按钮被压成竖排                                                    |
+| 下拉                                | `ui/primitives` 的 `Select` / `SelectTrigger` / `SelectContent` / `SelectItem`                                                                                       | 原生 `<select>` / `<option>` 作产品主路径（与全页观感不一致）                                             |
+| 分组标题                            | `.cardo-settings-subheading`（span + small）                                                                                                                         | 用 heading 冒充 card 行                                                                                   |
+
+#### 硬规则
+
+1. `.cardo-settings-card` 是**横向控制条**（`display:flex; align-items:center; justify-content:space-between`），不是通用表单容器。`cardo-settings-card-copy` 只放标题文案树，不放输入控件。
+2. 新增 class 必须先在 `settings.css`（或主题 recipe）写好规则再引用；禁止「先写 className 再靠浏览器默认 + inline style 救命」。
+3. 禁止用 inline `style` 承担布局职责（flex/grid/width/gap 作为主布局）；例外仅动态值（如 progress %）。布局一律进 CSS class。
+4. 表面样式走 `.cardo-settings-content` 下共享 item token（`--cardo-settings-item-*`），不要为新行另起一套 border/background 绕过主题。
+5. 实现新设置项时的自检：
+   - 是否复制了同页相邻卡片的 DOM 形状（copy 内是否只有 `span` + `small`）？
+   - 多字段是否在 card 外、是否复用 `cardo-settings-field` / `field-grid`？
+   - 控件是否来自 primitives（Select/Input/Switch/Button）？
+   - 有无未定义 class、有无布局用 inline style？
+   - 窄宽度下按钮文案是否仍可横排（不竖断）？
+
 ### 2. 官方主题适配（classic / glass / fluent / material / swiftui）
 
 1. 官方 id SoT：`OFFICIAL_BUILT_IN_THEME_IDS`（`src/core/contracts/themePack.ts`）。换皮唯一路径：Theme Pack JSON token + `[data-cardo-theme="<id>"]` recipe。
@@ -238,16 +267,17 @@ Cardo Runtime 是本机唯一权威 SQLite 持有者与业务写路径。CLI、W
 
 提交或宣称完成前，自查：
 
-| 项 | 检查 |
-| --- | --- |
-| 主题 | classic/glass/fluent/material/swiftui 是否未被硬编码色破坏；设置底是否 token |
-| i18n | 新字符串是否 en+zh；有无硬编码；有无架构黑话 |
-| 动效 | 文字壳有无 scale；拖拽帧有无写库；属性所有者是否唯一 |
-| 双轨 | 有无旧组件/旧 CSS/旧 class 前缀并存 |
-| 无障碍 | 图标按钮有 aria-label；焦点是否仍走 Radix |
-| 安装/构建 | 目视是否用新构建产物与正确安装路径，而非旧 Programs\Cardo |
-| 格式 | `format:check`（前端改动同样触发 CI 第一关） |
-| 主题校验 | 动过官方主题则 `validate:themes` |
+| 项        | 检查                                                                                                                                 |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 主题      | classic/glass/fluent/material/swiftui 是否未被硬编码色破坏；设置底是否 token                                                         |
+| i18n      | 新字符串是否 en+zh；有无硬编码；有无架构黑话                                                                                         |
+| 动效      | 文字壳有无 scale；拖拽帧有无写库；属性所有者是否唯一                                                                                 |
+| 双轨      | 有无旧组件/旧 CSS/旧 class 前缀并存                                                                                                  |
+| 结构方言  | 设置/列表行是否抄同页结构；有无把表单塞进 `cardo-settings-card-copy`；有无未定义 class / 布局 inline style；Select 是否用 primitives |
+| 无障碍    | 图标按钮有 aria-label；焦点是否仍走 Radix                                                                                            |
+| 安装/构建 | 目视是否用新构建产物与正确安装路径，而非旧 Programs\Cardo                                                                            |
+| 格式      | `format:check`（前端改动同样触发 CI 第一关）                                                                                         |
+| 主题校验  | 动过官方主题则 `validate:themes`                                                                                                     |
 
 ### 6. 常见误判（先排环境再改布局）
 
