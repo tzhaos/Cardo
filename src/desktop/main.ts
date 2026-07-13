@@ -292,29 +292,104 @@ function toggleMainWindow() {
   }
 }
 
+/** Pre-UI surfaces (tray, native dialogs) use OS locale; zh* → Chinese, else English. */
+function isChineseLocale(): boolean {
+  return app.getLocale().toLowerCase().startsWith('zh');
+}
+
+function getTrayLabels(windowVisible: boolean): {
+  toggle: string;
+  quit: string;
+  quitAndStop: string;
+} {
+  if (isChineseLocale()) {
+    return {
+      toggle: windowVisible ? '隐藏 Cardo' : '显示 Cardo',
+      quit: '退出',
+      quitAndStop: '退出并停止本机服务',
+    };
+  }
+
+  return {
+    toggle: windowVisible ? 'Hide Cardo' : 'Show Cardo',
+    quit: 'Quit',
+    quitAndStop: 'Quit and stop local service',
+  };
+}
+
+function isAllowedExternalUrl(urlValue: string): boolean {
+  try {
+    const protocol = new URL(urlValue).protocol;
+    return protocol === 'http:' || protocol === 'https:' || protocol === 'mailto:';
+  } catch {
+    return false;
+  }
+}
+
+function formatStartupFailureDialog(error: unknown): { title: string; body: string } {
+  const detail = error instanceof Error ? (error.stack ?? error.message) : String(error);
+  const schemaVersion = DATABASE_SCHEMA_VERSION;
+  const zh = isChineseLocale();
+
+  if (zh) {
+    const primary =
+      '建议：\n' +
+      '1. 完全退出其他 Cardo 窗口与托盘图标后重试\n' +
+      '2. 若问题持续，请重新安装同一版本的 Cardo\n' +
+      '3. 避免同时使用不同版本的安装\n';
+    const technical =
+      '\n技术详情：\n' +
+      `数据目录：%APPDATA%\\cardo\n` +
+      `discovery.json 的 schemaVersion 应为 ${schemaVersion}\n` +
+      '日志：%APPDATA%\\cardo\\runtime.log 与 logs\\main.log\n' +
+      (app.isPackaged
+        ? ''
+        : '开发环境可尝试：cardo stop（或 node artifacts/cli/cardo.js stop），然后 npm run desktop:build\n') +
+      `\n${detail}`;
+    return { title: 'Cardo 无法启动', body: primary + technical };
+  }
+
+  const primary =
+    'Try the following:\n' +
+    '1. Quit any other Cardo window or tray icon, then try again\n' +
+    '2. If the problem continues, reinstall the same version of Cardo\n' +
+    '3. Avoid mixing installs from different versions\n';
+  const technical =
+    '\nTechnical details:\n' +
+    `Data folder: %APPDATA%\\cardo\n` +
+    `discovery.json schemaVersion should be ${schemaVersion}\n` +
+    'Logs: %APPDATA%\\cardo\\runtime.log and logs\\main.log\n' +
+    (app.isPackaged
+      ? ''
+      : 'Dev recovery: cardo stop (or node artifacts/cli/cardo.js stop), then npm run desktop:build\n') +
+    `\n${detail}`;
+  return { title: 'Cardo could not start', body: primary + technical };
+}
+
 function updateTrayMenu() {
   if (!tray) {
     return;
   }
 
   const windowVisible = Boolean(mainWindow && !mainWindow.isDestroyed() && mainWindow.isVisible());
+  const labels = getTrayLabels(windowVisible);
   tray.setContextMenu(
     Menu.buildFromTemplate([
       {
-        label: windowVisible ? '隐藏 Cardo' : '显示 Cardo',
+        label: labels.toggle,
         click: () => toggleMainWindow(),
       },
       { type: 'separator' },
       {
-        // Design §6.6.1: default quit unregisters this client only; does not kill others' Runtime.
-        label: '退出',
+        // Design §6.6.1: default quit unregisters this client only; does not stop shared local service.
+        label: labels.quit,
         click: () => {
           isQuitting = true;
           app.quit();
         },
       },
       {
-        label: '退出并停止 Runtime',
+        label: labels.quitAndStop,
         click: () => {
           void (async () => {
             if (runtimeConnection) {
@@ -416,7 +491,11 @@ function registerIpcHandlers() {
     return desktopVoidResponseSchema.parse(undefined);
   });
   ipcMain.handle('shell:open-external', async (_event, input: unknown) => {
-    await shell.openExternal(desktopUrlRequestSchema.parse(input).url);
+    const { url } = desktopUrlRequestSchema.parse(input);
+    if (!isAllowedExternalUrl(url)) {
+      throw new Error('Only http:, https:, and mailto: URLs can be opened externally.');
+    }
+    await shell.openExternal(url);
     return desktopVoidResponseSchema.parse(undefined);
   });
   ipcMain.handle('website-icon:resolve', async (_event, input: unknown) =>
@@ -600,19 +679,8 @@ if (!singleInstanceLock) {
     })
     .catch(async (error: unknown) => {
       console.error(error);
-      const detail = error instanceof Error ? (error.stack ?? error.message) : String(error);
-      const message =
-        error instanceof Error ? error.message : 'Desktop failed before the UI could load.';
-      dialog.showErrorBox(
-        'Cardo failed to start',
-        `${message}\n\n` +
-          'Typical fixes:\n' +
-          '1. Stop any stale Runtime: node artifacts/cli/cardo.js stop\n' +
-          '2. Rebuild from this checkout: npm run desktop:build\n' +
-          `3. Confirm %APPDATA%\\cardo\\discovery.json schemaVersion is ${DATABASE_SCHEMA_VERSION}\n` +
-          '4. Check %APPDATA%\\cardo\\runtime.log\n\n' +
-          detail,
-      );
+      const { title, body } = formatStartupFailureDialog(error);
+      dialog.showErrorBox(title, body);
       app.quit();
     });
 
@@ -624,9 +692,9 @@ if (!singleInstanceLock) {
   });
 
   app.on('will-quit', () => {
-    // Attach / detached embed: never stop Runtime on quit (design §6.6.1).
+    // Attach / detached embed: never stop local service on quit (design §6.6.1).
     // Other clients may still be connected; auto lifetime + grace handles last-client stop.
-    // Force-stop is only via tray 「退出并停止 Runtime」 → /v1/shutdown.
+    // Force-stop is only via tray "Quit and stop local service" → /v1/shutdown.
     tray?.destroy();
     tray = null;
   });
