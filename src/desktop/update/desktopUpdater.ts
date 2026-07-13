@@ -16,6 +16,7 @@ import {
   UpdateFetchError,
 } from './githubReleaseClient';
 import { detectInstallChannel, type DesktopInstallChannelInfo } from './installChannel';
+import { shouldForceClientUpdate } from './releasePolicy';
 
 type StateListener = (state: DesktopUpdateState) => void;
 
@@ -57,6 +58,7 @@ export class DesktopUpdater {
       checkedAt: null,
       autoCheckEnabled: true,
       isPackaged: app.isPackaged,
+      forceUpdate: false,
     });
   }
 
@@ -142,9 +144,19 @@ export class DesktopUpdater {
           installerPath: null,
           checkedAt,
           errorMessage: null,
+          forceUpdate: false,
         });
         return this.state;
       }
+
+      const forceUpdate = shouldForceClientUpdate({
+        currentVersion: this.state.currentVersion,
+        availableVersion: available.version,
+        policy: {
+          minClientVersion: available.minClientVersion ?? null,
+          forceUpdateFlag: available.forceUpdateFromNotes === true,
+        },
+      });
 
       this.setState({
         phase: 'available',
@@ -152,6 +164,7 @@ export class DesktopUpdater {
         installerPath: null,
         checkedAt,
         errorMessage: null,
+        forceUpdate,
       });
       return this.state;
     } catch (error) {
@@ -165,6 +178,7 @@ export class DesktopUpdater {
         phase: 'error',
         errorMessage: message,
         checkedAt: new Date().toISOString(),
+        forceUpdate: this.state.forceUpdate,
       });
       return this.state;
     }
@@ -268,6 +282,10 @@ export class DesktopUpdater {
   }
 
   cancelDownload(): DesktopUpdateState {
+    // Forced updates cannot be cancelled mid-download.
+    if (this.state.forceUpdate) {
+      return this.state;
+    }
     this.downloadAbort?.abort();
     this.downloadAbort = null;
     if (this.state.phase === 'downloading') {

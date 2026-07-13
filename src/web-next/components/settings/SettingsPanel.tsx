@@ -965,9 +965,13 @@ function DesktopUpdatePanel() {
       case 'upToDate':
         return t('settings.updateUpToDate');
       case 'available':
-        return t('settings.updateAvailable', {
-          version: state.available?.version ?? '',
-        });
+        return state.forceUpdate
+          ? `${t('settings.updateForceRequired')} ${t('settings.updateAvailable', {
+              version: state.available?.version ?? '',
+            })}`
+          : t('settings.updateAvailable', {
+              version: state.available?.version ?? '',
+            });
       case 'downloading':
         return t('settings.updateDownloading', {
           percent: String(state.downloadPercent ?? 0),
@@ -1063,7 +1067,7 @@ function DesktopUpdatePanel() {
               {t('settings.updateDownload')}
             </Button>
           ) : null}
-          {state.phase === 'downloading' ? (
+          {state.phase === 'downloading' && !state.forceUpdate ? (
             <Button
               type="button"
               disabled={busy}

@@ -36,6 +36,13 @@ export const desktopUpdateAvailableInfoSchema = z
     installerSizeBytes: z.number().int().nonnegative().nullable(),
     // Stable channel requires a checksum; fetch fails closed without SHA256SUMS entry.
     sha256: z.string().regex(/^[a-f0-9]{64}$/i),
+    /**
+     * From release notes: Cardo-Min-Client: X.Y.Z
+     * Client must be at least this version (else forceUpdate).
+     */
+    minClientVersion: z.string().regex(PRODUCT_SEMVER_RE).nullable().optional(),
+    /** From release notes: Cardo-Force-Update: true */
+    forceUpdateFromNotes: z.boolean().optional(),
   })
   .strict();
 
@@ -57,6 +64,11 @@ export const desktopUpdateStateSchema = z
     checkedAt: z.string().nullable(),
     autoCheckEnabled: z.boolean(),
     isPackaged: z.boolean(),
+    /**
+     * True when this client must install the available update
+     * (min client floor or explicit force flag on the release).
+     */
+    forceUpdate: z.boolean(),
   })
   .strict();
 

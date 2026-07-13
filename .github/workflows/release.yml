@@ -49,6 +49,11 @@ jobs:
       - name: Check formatting
         run: npm run format:check
 
+      # Same static gate as CI (tsc, eslint, unit tests, official themes).
+      # Also re-run inside release:build via build-pipeline for local release:build.
+      - name: Static checks and tests
+        run: npm run check
+
       - name: Resolve release version
         id: version
         env:
