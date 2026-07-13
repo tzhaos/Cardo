@@ -1,7 +1,6 @@
 .cardo-top-actions button,
 .cardo-bottom-toolbar button,
 .cardo-toolbar-create,
-.cardo-search-pill button,
 .cardo-create-menu-button,
 .cardo-menu-row,
 .cardo-box-footer button,
@@ -17,7 +16,6 @@
 .cardo-top-actions button svg,
 .cardo-bottom-toolbar button svg,
 .cardo-toolbar-create svg,
-.cardo-search-pill button svg,
 .cardo-create-menu-button svg,
 .cardo-menu-row svg,
 .cardo-box-footer button svg,
@@ -64,31 +62,60 @@
   line-height: 20px;
 }
 
+/*
+ * Inline rename sits on kit Input (.cardo-input min-height 34 / width 100%).
+ * Beat kit so rename metrics match display title (no jump, no full-row underline).
+ */
+.cardo-input.cardo-inline-rename,
 .cardo-inline-rename {
-  width: auto;
+  box-sizing: border-box;
+  display: inline-block;
+  width: auto !important;
   min-width: 1ch;
   max-width: 100%;
+  min-height: 0 !important;
   field-sizing: content;
   border: 0 !important;
   border-radius: 0 !important;
   padding: 0 !important;
   background: transparent !important;
   box-shadow: inset 0 -2px 0 var(--cardo-blue) !important;
+  color: var(--cardo-soft-text);
   caret-color: currentColor;
   cursor: text;
   font-family: var(--cardo-font-sans);
   font-weight: 500;
   letter-spacing: 0;
-  outline: none;
+  outline: none !important;
   user-select: text;
   -webkit-user-select: text;
 }
 
+.cardo-input.cardo-inline-rename:focus,
+.cardo-inline-rename:focus {
+  border: 0 !important;
+  box-shadow: inset 0 -2px 0 var(--cardo-blue) !important;
+}
+
+/* Box header title — match .cardo-box-title (13 / 20). */
+.cardo-input.cardo-inline-rename.cardo-box-title-input,
 .cardo-box-title-input {
-  width: auto;
-  height: 20px;
+  width: auto !important;
+  height: 20px !important;
+  min-height: 20px !important;
   flex: 0 1 auto;
   color: var(--cardo-soft-text);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 13px !important;
+  line-height: 20px !important;
+}
+
+/* Item title — match .cardo-item-row strong (12 / ~15). */
+.cardo-input.cardo-inline-rename.cardo-item-title-input,
+.cardo-item-title-input {
+  width: auto !important;
+  height: 15px !important;
+  min-height: 15px !important;
+  color: var(--cardo-soft-text);
+  font-size: 12px !important;
+  line-height: 15px !important;
 }

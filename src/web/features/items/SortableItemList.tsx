@@ -134,7 +134,7 @@ function SortableItemEntry({
     const preview = dragPreviewRef.current;
     if (!preview) return;
     const offset = dragPreviewOffsetRef.current;
-    preview.style.transform = `translate3d(${point.x - offset.x}px, ${point.y - offset.y}px, 0) scale(1.018)`;
+    preview.style.transform = `translate3d(${point.x - offset.x}px, ${point.y - offset.y}px, 0)`;
   };
 
   useEffect(() => removeDragPreview, []);
@@ -152,18 +152,16 @@ function SortableItemEntry({
       dragMomentum={false}
       layout="position"
       layoutDependency={layoutDependency}
-      initial={{ opacity: 0, y: 8, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -6, scale: 0.97 }}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -4 }}
       whileDrag={{
-        scale: 1.018,
         zIndex: 30,
-        boxShadow: '0 14px 30px rgba(15, 23, 42, 0.14)',
       }}
       transition={{
         layout: { type: 'spring', stiffness: 360, damping: 30, mass: 0.72 },
-        opacity: { duration: 0.16 },
-        scale: { type: 'spring', stiffness: 520, damping: 38, mass: 0.62 },
+        opacity: { duration: 0.14 },
+        y: { duration: 0.14 },
       }}
       onDrag={(_event, info: PanInfo) => updateDragPreview(info.point)}
       onDragStart={(_event, info: PanInfo) => {

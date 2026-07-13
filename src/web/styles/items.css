@@ -4,9 +4,9 @@
 }
 
 .cardo-box-compact .cardo-item-row {
-  min-height: 28px;
+  min-height: 34px;
   gap: 6px;
-  padding: 2px 4px 2px 18px;
+  padding: 4px 4px 4px 18px;
 }
 
 .cardo-box-compact .cardo-item-view-content-row {
@@ -244,19 +244,23 @@
   background: var(--cardo-surface-strong);
 }
 
-.cardo-item-drag-handle {
+.cardo-item-drag-handle,
+button.cardo-item-drag-handle.cardo-button {
   position: absolute;
   z-index: 4;
   top: 50%;
   left: 1px;
   display: inline-flex;
-  width: 14px;
-  height: 20px;
+  width: 14px !important;
+  height: 20px !important;
+  min-height: 0 !important;
   align-items: center;
   justify-content: center;
-  border: 0;
-  border-radius: 3px;
-  background: transparent;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
   color: var(--cardo-muted);
   cursor: grab;
   opacity: 0;
@@ -264,8 +268,7 @@
   transform: translateY(-50%);
   transition:
     opacity 140ms ease,
-    color 140ms ease,
-    background 140ms ease;
+    color 140ms ease;
 }
 
 .cardo-item-reorder-entry:hover .cardo-item-drag-handle,
@@ -275,14 +278,27 @@
 }
 
 .cardo-item-drag-handle:hover,
-.cardo-item-drag-handle:focus-visible {
-  background: var(--cardo-hover);
+.cardo-item-drag-handle:focus-visible,
+button.cardo-item-drag-handle.cardo-button:hover:not(:disabled),
+button.cardo-item-drag-handle.cardo-button:focus-visible {
+  background: transparent !important;
   color: var(--cardo-soft-text);
   outline: none;
+  box-shadow: none !important;
 }
 
-.cardo-item-drag-handle:active {
+.cardo-item-drag-handle:active,
+button.cardo-item-drag-handle.cardo-button:active {
   cursor: grabbing;
+  background: transparent !important;
+}
+
+/* Dragging row: soft lift without circular chrome or heavy hover plate. */
+.cardo-item-reorder-entry-dragging > .cardo-item-row,
+.cardo-item-reorder-entry-dragging .cardo-item-row {
+  border-color: color-mix(in srgb, var(--box-accent) 22%, var(--cardo-border-subtle));
+  background: color-mix(in srgb, var(--box-accent) 4%, var(--cardo-panel-content));
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
 }
 
 .cardo-item-reorder-entry:has(.cardo-item-delete-state) .cardo-item-drag-handle,
@@ -295,12 +311,12 @@
   position: relative;
   display: flex;
   width: 100%;
-  min-height: 30px;
+  min-height: 40px;
   align-items: center;
   gap: 6px;
   border: 1px solid transparent;
   border-radius: 6px;
-  padding: 2px 6px 2px 18px;
+  padding: 5px 6px 5px 18px;
   background: transparent;
   color: inherit;
   text-decoration: none;
@@ -313,7 +329,7 @@
 .cardo-item-row:hover {
   border-color: var(--cardo-border-subtle);
   background: var(--cardo-item-hover);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  box-shadow: none;
 }
 
 .cardo-item-row.cardo-item-pinned {
@@ -420,7 +436,7 @@
 .cardo-item-row small,
 .cardo-item-row p {
   color: var(--cardo-muted);
-  font-size: 10px;
+  font-size: 10.5px;
   line-height: 1.25;
 }
 
@@ -572,22 +588,33 @@
   gap: 6px;
 }
 
-.cardo-item-edit-actions button {
-  min-height: 30px;
-  border: 0;
+/* Compact edit actions — beat kit secondary/primary so box-accent CTA stays visible. */
+.cardo-item-edit-actions .cardo-button {
+  min-height: 28px;
   border-radius: var(--cardo-radius-sm);
   padding: 0 10px;
-  background: var(--cardo-neutral-button);
-  color: var(--cardo-soft-text);
   font-size: 12px;
 }
 
-.cardo-item-edit-actions .cardo-item-edit-save {
+.cardo-item-edit-actions .cardo-button-ghost {
+  background: transparent;
+  color: var(--cardo-soft-text);
+}
+
+.cardo-item-edit-actions .cardo-button.cardo-item-edit-save,
+.cardo-item-edit-actions .cardo-button-primary.cardo-item-edit-save {
+  border-color: transparent;
   background: var(--box-accent);
   color: #ffffff;
 }
 
-.cardo-item-edit-actions button:disabled {
+.cardo-item-edit-actions .cardo-button.cardo-item-edit-save:hover:not(:disabled),
+.cardo-item-edit-actions .cardo-button-primary.cardo-item-edit-save:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--box-accent) 88%, #000000);
+  color: #ffffff;
+}
+
+.cardo-item-edit-actions .cardo-button:disabled {
   cursor: not-allowed;
   opacity: 0.46;
 }
@@ -624,19 +651,19 @@
 .cardo-item-subtitle-link {
   overflow: hidden;
   color: var(--cardo-muted) !important;
-  font-size: 12px;
+  font-size: 10.5px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .cardo-item-secondary {
   display: block;
-  min-height: 16px;
+  min-height: 14px;
   overflow: hidden;
   margin: 0;
   color: var(--cardo-muted) !important;
-  font-size: 12px;
-  line-height: 16px;
+  font-size: 10.5px;
+  line-height: 14px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -646,26 +673,32 @@
   font-weight: 400 !important;
 }
 
-.cardo-item-title-input {
-  width: auto;
-  height: 1lh;
-  color: var(--cardo-soft-text);
-  font-size: 14px;
-  line-height: normal;
-}
-
+/* Item rename metrics live with .cardo-inline-rename in alignment.css (match strong). */
+.cardo-box-compact .cardo-input.cardo-inline-rename.cardo-item-title-input,
 .cardo-box-compact .cardo-item-title-input {
-  height: 18px;
-  font-size: 13px;
-  line-height: 18px;
+  height: 14px !important;
+  min-height: 14px !important;
+  font-size: 11.5px !important;
+  line-height: 14px !important;
 }
 
+.cardo-item-list-grid .cardo-input.cardo-inline-rename.cardo-item-title-input,
 .cardo-item-list-grid .cardo-item-title-input {
-  height: 17px;
+  height: 14px !important;
+  min-height: 14px !important;
   max-width: 100%;
-  font-size: 12px;
-  line-height: 17px;
+  font-size: 11px !important;
+  line-height: 14px !important;
   text-align: center;
+}
+
+/* Keep item row height stable while renaming (same as idle min-height). */
+.cardo-item-row:has(.cardo-item-title-input) {
+  min-height: 40px;
+}
+
+.cardo-box-compact .cardo-item-row:has(.cardo-item-title-input) {
+  min-height: 34px;
 }
 
 .cardo-item-actions {
@@ -715,30 +748,30 @@
 }
 
 .cardo-clipboard-item {
-  min-height: 68px;
-  align-items: stretch;
-  padding: 12px 8px 10px 28px;
+  min-height: 42px;
+  align-items: center;
+  padding: 5px 6px 5px 18px;
   cursor: copy;
 }
 
 .cardo-clipboard-card-content {
   position: relative;
   display: flex;
-  min-height: 36px;
+  min-height: 0;
   align-items: center;
 }
 
 .cardo-clipboard-body {
   display: -webkit-box !important;
-  min-height: 36px;
+  min-height: 0;
   flex: 1 1 auto;
   overflow: hidden;
   margin: 0;
-  padding: 1px 94px 0 2px;
+  padding: 0 94px 0 2px;
   color: var(--cardo-soft-text) !important;
   cursor: copy;
-  font-size: 13px !important;
-  line-height: 18px;
+  font-size: 12px !important;
+  line-height: 16px;
   text-overflow: ellipsis;
   white-space: pre-wrap !important;
   overflow-wrap: anywhere;
@@ -775,13 +808,13 @@
 }
 
 .cardo-box-compact .cardo-clipboard-item {
-  min-height: 42px;
+  min-height: 34px;
   align-items: center;
-  padding: 8px 8px 8px 24px;
+  padding: 4px 4px 4px 18px;
 }
 
 .cardo-box-compact .cardo-clipboard-card-content {
-  min-height: 24px;
+  min-height: 0;
   align-items: center;
 }
 
