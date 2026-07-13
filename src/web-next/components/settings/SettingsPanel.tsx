@@ -1110,12 +1110,14 @@ function DesktopUpdatePanel() {
 
       <div className="cardo-settings-subheading">
         <span>{t('settings.updateProxy')}</span>
-        <small>{t('settings.updateProxyDescription')}</small>
       </div>
       <div className="cardo-settings-list-group">
         <div className="cardo-settings-card">
           <div className="cardo-settings-card-copy">
-            <span>{t('settings.updateProxyMode')}</span>
+            <span>
+              {t('settings.updateProxyMode')}
+              <small>{t('settings.updateProxyDescription')}</small>
+            </span>
           </div>
           <Select
             value={proxyMode}
