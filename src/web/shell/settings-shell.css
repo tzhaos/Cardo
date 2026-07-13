@@ -6,12 +6,8 @@
 .cardo-v2-settings-shell {
   --cardo-v2-settings-nav-width: var(--cardo-shell-sidebar-width, 236px);
   --cardo-v2-settings-panel-radius: var(--cardo-v2-panel-radius, var(--cardo-radius-xl, 16px));
-  /* Codex-like active pill; soft accent via shell/blue mix (not brand hex). */
-  --cardo-v2-pill-settings: color-mix(
-    in srgb,
-    var(--cardo-blue) 14%,
-    var(--cardo-shell, var(--cardo-settings-chrome, var(--cardo-canvas)))
-  );
+  /* Active section pill: emphasis blue on panel (readable, not gray). */
+  --cardo-v2-pill-settings: color-mix(in srgb, var(--cardo-blue) 18%, var(--cardo-panel, #fff));
 
   box-sizing: border-box;
   display: flex;

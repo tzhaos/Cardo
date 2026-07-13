@@ -131,7 +131,7 @@
 }
 
 [data-cardo-theme='classic'] .cardo-v2-sidebar-foot .cardo-v2-nav-item-active {
-  background: color-mix(in srgb, var(--cardo-blue) 14%, var(--cardo-active));
+  background: color-mix(in srgb, var(--cardo-blue) 18%, var(--cardo-panel));
 }
 
 [data-cardo-theme='classic'] .cardo-v2-panel {

@@ -293,9 +293,10 @@
   font-weight: 550;
 }
 
-/* Settings rail: product emphasis is blue (not emerald). */
+/* Settings rail: clear emphasis wash on panel (not gray-active mix). */
 .cardo-nav-item[data-tone='settings'][data-active='true'] {
-  background: color-mix(in srgb, var(--cardo-blue, #3b82f6) 14%, var(--cardo-active, #e2e5eb));
+  background: color-mix(in srgb, var(--cardo-blue, #3b82f6) 18%, var(--cardo-panel, #fff));
+  color: var(--cardo-text);
 }
 
 .cardo-nav-item[data-drop-target='true'] {

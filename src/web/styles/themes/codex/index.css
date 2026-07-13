@@ -54,9 +54,9 @@
   color: var(--cardo-text);
 }
 
-/* Settings foot active — soft blue wash (product emphasis token) */
+/* Settings foot active — emphasis blue wash */
 [data-cardo-theme='codex'] .cardo-v2-sidebar-foot .cardo-v2-nav-item-active {
-  background: color-mix(in srgb, var(--cardo-blue) 14%, var(--cardo-active));
+  background: color-mix(in srgb, var(--cardo-blue) 18%, var(--cardo-panel));
 }
 
 [data-cardo-theme='codex'] .cardo-v2-nav-drop-target {

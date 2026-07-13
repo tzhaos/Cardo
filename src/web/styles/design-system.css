@@ -1,26 +1,28 @@
 /**
- * Cardo hover tip — dark speech bubble with tail (product chrome).
- * Matches toolbar / icon help tips: solid fill, short label, no light panel chrome.
- * Text shells: opacity-only enter (no scale).
+ * Cardo hover tip — soft dark speech bubble (not create FAB black).
+ * Opacity-only enter (no scale). Arrow fill matches body (no double outline).
  */
 .cardo-ui-tooltip-content,
 .cardo-hover-tip {
+  /* Charcoal tip — not create FAB black (#111). Dark mode inverts via soft-text. */
+  --cardo-tip-bg: var(--cardo-soft-text, #374151);
+  --cardo-tip-fg: var(--cardo-panel, #ffffff);
   z-index: 1200;
   max-width: 260px;
-  padding: 7px 12px;
+  padding: 6px 10px;
   border: 0;
-  border-radius: 12px;
-  background: var(--cardo-create-background);
+  border-radius: 10px;
+  background: var(--cardo-tip-bg);
   box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.08),
-    0 6px 16px rgba(0, 0, 0, 0.14);
-  color: var(--cardo-create-text);
+    0 1px 2px color-mix(in srgb, var(--cardo-text) 12%, transparent),
+    0 8px 20px color-mix(in srgb, var(--cardo-text) 14%, transparent);
+  color: var(--cardo-tip-fg);
   font-size: 12px;
   font-weight: 500;
   line-height: 1.25;
   letter-spacing: 0.01em;
   text-align: center;
-  white-space: normal;
+  white-space: nowrap;
   user-select: none;
   pointer-events: none;
   animation: cardo-ui-tooltip-in var(--cardo-duration-fast) var(--cardo-easing) both;
@@ -33,8 +35,10 @@
 
 .cardo-ui-tooltip-arrow,
 .cardo-hover-tip-arrow {
-  fill: var(--cardo-create-background);
+  fill: var(--cardo-tip-bg, var(--cardo-soft-text));
   stroke: none;
+  /* Pull arrow into bubble so join is seamless (no halo gap). */
+  margin-top: -1px;
 }
 
 .cardo-ui-tabs-content:focus-visible {
