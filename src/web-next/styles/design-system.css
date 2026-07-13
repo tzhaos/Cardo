@@ -1,22 +1,40 @@
-.cardo-ui-tooltip-content {
+/**
+ * Cardo hover tip — dark speech bubble with tail (product chrome).
+ * Matches toolbar / icon help tips: solid fill, short label, no light panel chrome.
+ * Text shells: opacity-only enter (no scale).
+ */
+.cardo-ui-tooltip-content,
+.cardo-hover-tip {
   z-index: 1200;
   max-width: 260px;
-  padding: 6px 9px;
-  border: 1px solid var(--cardo-border);
-  border-radius: var(--cardo-radius-md);
-  background: var(--cardo-panel);
-  box-shadow: var(--cardo-shadow);
-  color: var(--cardo-text);
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--cardo-create-background);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.08),
+    0 6px 16px rgba(0, 0, 0, 0.14);
+  color: var(--cardo-create-text);
   font-size: 12px;
+  font-weight: 500;
   line-height: 1.25;
+  letter-spacing: 0.01em;
+  text-align: center;
+  white-space: normal;
   user-select: none;
-  animation: cardo-ui-tooltip-in var(--cardo-duration-fast) var(--cardo-easing)-out;
+  pointer-events: none;
+  animation: cardo-ui-tooltip-in var(--cardo-duration-fast) var(--cardo-easing) both;
 }
 
-.cardo-ui-tooltip-arrow {
-  fill: var(--cardo-panel);
-  stroke: var(--cardo-border);
-  stroke-width: 1px;
+.cardo-ui-tooltip-content[data-state='closed'],
+.cardo-hover-tip[data-state='closed'] {
+  animation: none;
+}
+
+.cardo-ui-tooltip-arrow,
+.cardo-hover-tip-arrow {
+  fill: var(--cardo-create-background);
+  stroke: none;
 }
 
 .cardo-ui-tabs-content:focus-visible {
@@ -149,11 +167,9 @@
 @keyframes cardo-ui-tooltip-in {
   from {
     opacity: 0;
-    transform: scale(0.96);
   }
   to {
     opacity: 1;
-    transform: scale(1);
   }
 }
 

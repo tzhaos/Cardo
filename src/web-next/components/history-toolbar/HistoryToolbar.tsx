@@ -16,7 +16,6 @@ export function HistoryToolbar() {
         disabled={!canUndo}
         onClick={undo}
         aria-label={t('history.undo')}
-        title={t('history.undo')}
         tooltip={t('history.undo')}
       >
         <ThemeIcon name="undo" size={17} />
@@ -25,7 +24,6 @@ export function HistoryToolbar() {
         disabled={!canRedo}
         onClick={redo}
         aria-label={t('history.redo')}
-        title={t('history.redo')}
         tooltip={t('history.redo')}
       >
         <ThemeIcon name="redo" size={17} />

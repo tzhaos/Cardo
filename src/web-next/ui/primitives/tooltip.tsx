@@ -3,8 +3,8 @@ import type { ComponentProps } from 'react';
 import { cn } from '../lib/cn';
 
 export function TooltipProvider({
-  delayDuration = 500,
-  skipDelayDuration = 180,
+  delayDuration = 320,
+  skipDelayDuration = 120,
   ...props
 }: ComponentProps<typeof TooltipPrimitive.Provider>) {
   return (
@@ -17,8 +17,8 @@ export function TooltipProvider({
   );
 }
 
-export function Tooltip(props: ComponentProps<typeof TooltipPrimitive.Root>) {
-  return <TooltipPrimitive.Root data-slot="tooltip" {...props} />;
+export function Tooltip({ delayDuration, ...props }: ComponentProps<typeof TooltipPrimitive.Root>) {
+  return <TooltipPrimitive.Root data-slot="tooltip" delayDuration={delayDuration} {...props} />;
 }
 
 export function TooltipTrigger(props: ComponentProps<typeof TooltipPrimitive.Trigger>) {
@@ -27,7 +27,8 @@ export function TooltipTrigger(props: ComponentProps<typeof TooltipPrimitive.Tri
 
 export function TooltipContent({
   className,
-  sideOffset = 6,
+  side = 'top',
+  sideOffset = 8,
   children,
   ...props
 }: ComponentProps<typeof TooltipPrimitive.Content>) {
@@ -35,12 +36,17 @@ export function TooltipContent({
     <TooltipPrimitive.Portal>
       <TooltipPrimitive.Content
         data-slot="tooltip-content"
-        className={cn('cardo-ui-tooltip-content', className)}
+        side={side}
         sideOffset={sideOffset}
+        className={cn('cardo-ui-tooltip-content cardo-hover-tip', className)}
         {...props}
       >
         {children}
-        <TooltipPrimitive.Arrow className="cardo-ui-tooltip-arrow" />
+        <TooltipPrimitive.Arrow
+          className="cardo-ui-tooltip-arrow cardo-hover-tip-arrow"
+          width={12}
+          height={7}
+        />
       </TooltipPrimitive.Content>
     </TooltipPrimitive.Portal>
   );
