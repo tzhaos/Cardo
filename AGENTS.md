@@ -1,8 +1,8 @@
 # Cardo 开发约束
 
 1. 输出的 Markdown 内容未经允许禁止使用加粗。
-2. 默认不主动跑单元测试（`npm run test` / `test:ts`），只执行用户指定的浏览器插件与桌面端构建；但下方「CI 与本地门禁」中的 format / lint / eslint / validate:themes / build:all 为强制，不得省略。若 CI 因测试失败，则必须本地复现并修复后再推。
-3. 每个独立 Feature 或 Fix 在合并前必须通过完整本地门禁（见「CI 与本地门禁」），其中 `npm run build:all` 会先 `cardo:stop` 再构建 extension + CLI + web-runtime + desktop + native-host。局部验证可用 `npm run build` / `npm run desktop:build`（二者也会先停实例），但局部成功不能代替完整门禁。
+2. 默认不主动跑单元测试（`npm run test` / `test:ts`）；但下方「CI 与本地门禁」中的 format / lint / eslint / validate:themes / build:all 为强制，不得省略。若 CI 因测试失败，则必须本地复现并修复后再推。
+3. 每个独立 Feature 或 Fix 完成后必须在本机执行完整构建，不得等用户再提醒：默认 `npm run build:all`（先 `cardo:stop`，再 extension + CLI + web-runtime + desktop + native-host）。仅改单一 surface 且用户只要快速验证时，可用 `npm run build` / `npm run desktop:build` 作中间检查，但任务收尾与开 PR / 合并前仍须 `build:all` 成功后再汇报完成。
 4. 项目禁止旧 Schema、旧字段、旧持久化格式和退休机制的兼容代码。
 5. Git 协作与发版必须遵守下方「分支、合并与发布」；AI 默认不得在 `main` 上直接堆功能提交。
 6. 多 agent / 并行改码结束后，必须再跑一轮 format（或 format:check）；禁止假设「能编译 = CI 会绿」。
