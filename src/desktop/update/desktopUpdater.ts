@@ -256,11 +256,12 @@ export class DesktopUpdater {
       return this.state;
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
+        // Keep partial + meta on disk for resume; UI can start download again.
         this.setState({
           phase: 'available',
-          errorMessage: 'Download cancelled.',
-          downloadPercent: null,
-          downloadedBytes: null,
+          errorMessage: 'Download paused. Progress is kept — download again to resume.',
+          downloadPercent: this.state.downloadPercent,
+          downloadedBytes: this.state.downloadedBytes,
           totalBytes: available.installerSizeBytes,
           installerPath: null,
         });
