@@ -54,9 +54,9 @@
   color: var(--cardo-text);
 }
 
-/* Settings foot active — soft emerald wash (prototype pill-settings) */
+/* Settings foot active — soft blue wash (product emphasis token) */
 [data-cardo-theme='codex'] .cardo-v2-sidebar-foot .cardo-v2-nav-item-active {
-  background: color-mix(in srgb, var(--cardo-emerald) 18%, var(--cardo-active));
+  background: color-mix(in srgb, var(--cardo-blue) 14%, var(--cardo-active));
 }
 
 [data-cardo-theme='codex'] .cardo-v2-nav-drop-target {

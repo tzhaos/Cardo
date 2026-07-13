@@ -26,7 +26,7 @@
 }
 
 [data-cardo-theme='codex'] .cardo-nav-item[data-tone='settings'][data-active='true'] {
-  background: color-mix(in srgb, var(--cardo-emerald, #10b981) 16%, var(--cardo-active));
+  background: color-mix(in srgb, var(--cardo-blue, #3b82f6) 14%, var(--cardo-active));
 }
 
 [data-cardo-theme='codex'] .cardo-surface {

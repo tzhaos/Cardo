@@ -557,8 +557,8 @@
 }
 
 [data-cardo-theme='glass'] .cardo-v2-sidebar-foot .cardo-v2-nav-item-active {
-  background: color-mix(in srgb, var(--cardo-emerald) 14%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cardo-emerald) 22%, transparent);
+  background: color-mix(in srgb, var(--cardo-blue) 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cardo-blue) 22%, transparent);
 }
 
 [data-cardo-theme='glass'] .cardo-v2-panel {

@@ -293,8 +293,9 @@
   font-weight: 550;
 }
 
+/* Settings rail: product emphasis is blue (not emerald). */
 .cardo-nav-item[data-tone='settings'][data-active='true'] {
-  background: color-mix(in srgb, var(--cardo-emerald, #10b981) 16%, var(--cardo-active, #e2e5eb));
+  background: color-mix(in srgb, var(--cardo-blue, #3b82f6) 14%, var(--cardo-active, #e2e5eb));
 }
 
 .cardo-nav-item[data-drop-target='true'] {
