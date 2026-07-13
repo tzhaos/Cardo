@@ -23,15 +23,15 @@ export function ItemActions({
         aria-pressed={pinned}
         onClick={onPin}
       >
-        {pinned ? <ThemeIcon name="pinOff" size={14} /> : <ThemeIcon name="pin" size={14} />}
+        {pinned ? <ThemeIcon name="pinOff" size={12} /> : <ThemeIcon name="pin" size={12} />}
       </IconButton>
       {onEdit ? (
         <IconButton aria-label={t('item.editContent')} onClick={onEdit}>
-          <ThemeIcon name="edit" size={14} />
+          <ThemeIcon name="edit" size={12} />
         </IconButton>
       ) : null}
       <IconButton className="cardo-item-delete" aria-label={t('item.delete')} onClick={onDelete}>
-        <ThemeIcon name="trash" size={14} />
+        <ThemeIcon name="trash" size={12} />
       </IconButton>
     </div>
   );

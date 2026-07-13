@@ -173,9 +173,9 @@
   flex: 0 0 auto;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
+  gap: 4px;
   border-bottom: 1px solid var(--cardo-border-subtle);
-  padding: 8px 12px;
+  padding: 5px 8px;
   background: var(--cardo-panel-chrome);
   cursor: grab;
   touch-action: none;
@@ -190,18 +190,18 @@
   min-width: 0;
   flex: 1;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .cardo-box-icon {
   display: inline-flex;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   color: var(--box-accent);
-  font-size: 15px;
+  font-size: 12px;
   line-height: 1;
 }
 
@@ -388,17 +388,17 @@ button.cardo-box-icon:focus-visible {
 .cardo-box-title {
   overflow: hidden;
   color: var(--cardo-soft-text);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
-  line-height: 1.25;
+  line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
   /* Selectable via shell.css content-label opt-in. */
 }
 
 .cardo-box-delete {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   flex: 0 0 auto;
   border: 0;
   border-radius: var(--cardo-radius-pill);
@@ -503,8 +503,8 @@ button.cardo-box-icon:focus-visible {
 .cardo-box-content-clipboard,
 .cardo-box-content-mixed {
   flex-direction: column;
-  gap: 2px;
-  padding: 6px;
+  gap: 0;
+  padding: 3px 4px;
 }
 
 .cardo-box-delete-view {
@@ -560,22 +560,22 @@ button.cardo-box-icon:focus-visible {
 .cardo-box-footer {
   flex: 0 0 auto;
   border-top: 1px solid var(--cardo-border-subtle);
-  padding: 4px 6px;
+  padding: 2px 4px;
   background: var(--cardo-panel-chrome);
 }
 
 .cardo-box-footer button {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   border: 0;
-  border-radius: var(--cardo-radius-sm);
-  padding: 4px 8px;
+  border-radius: 4px;
+  padding: 2px 6px;
   background: transparent;
   color: var(--cardo-secondary-text);
   cursor: pointer;
   caret-color: transparent;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   user-select: none;
   -webkit-user-select: none;

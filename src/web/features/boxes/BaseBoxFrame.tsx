@@ -593,7 +593,7 @@ export function BaseBoxFrame({
             title={t('box.promote')}
             aria-label={t('box.promote')}
           >
-            <ThemeIcon name="packageCheck" size={15} />
+            <ThemeIcon name="packageCheck" size={12} />
             <span>{t('box.keep')}</span>
           </Button>
         </header>
@@ -650,9 +650,9 @@ export function BaseBoxFrame({
               tooltip={t(box.isLocked ? 'box.unlock' : 'box.lock')}
             >
               {box.isLocked ? (
-                <ThemeIcon name="lock" size={15} />
+                <ThemeIcon name="lock" size={12} />
               ) : (
-                <ThemeIcon name="unlock" size={15} />
+                <ThemeIcon name="unlock" size={12} />
               )}
             </IconButton>
             <IconButton
@@ -670,9 +670,9 @@ export function BaseBoxFrame({
               )}
             >
               {detailMode === 'detailed' ? (
-                <ThemeIcon name="collapse" size={15} />
+                <ThemeIcon name="collapse" size={12} />
               ) : (
-                <ThemeIcon name="expand" size={15} />
+                <ThemeIcon name="expand" size={12} />
               )}
             </IconButton>
             <IconButton
@@ -684,9 +684,9 @@ export function BaseBoxFrame({
               tooltip={t(viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList')}
             >
               {viewMode === 'list' ? (
-                <ThemeIcon name="layoutGrid" size={15} />
+                <ThemeIcon name="layoutGrid" size={12} />
               ) : (
-                <ThemeIcon name="list" size={15} />
+                <ThemeIcon name="list" size={12} />
               )}
             </IconButton>
             <IconButton
@@ -715,7 +715,7 @@ export function BaseBoxFrame({
                     : t(isInRecycleBin ? 'menu.deletePermanently' : 'menu.moveToRecycleBin')
               }
             >
-              <ThemeIcon name="close" size={14} />
+              <ThemeIcon name="close" size={12} />
             </IconButton>
           </div>
         </header>
@@ -762,7 +762,7 @@ export function BaseBoxFrame({
       {!isTemporary && !addViewState?.mode && !appearanceView && !confirmDelete ? (
         <footer className="cardo-box-footer">
           <Button variant="ghost" onClick={onAddItem}>
-            <ThemeIcon name="add" size={14} />
+            <ThemeIcon name="add" size={12} />
             <span>{t('box.addItem')}</span>
           </Button>
         </footer>

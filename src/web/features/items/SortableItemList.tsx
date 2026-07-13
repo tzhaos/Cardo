@@ -187,7 +187,7 @@ function SortableItemEntry({
           controls.start(event);
         }}
       >
-        <ThemeIcon name="grip" size={14} />
+        <ThemeIcon name="grip" size={11} />
       </IconButton>
       {children}
     </Reorder.Item>

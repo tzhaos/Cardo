@@ -102,7 +102,7 @@ export function BookmarkItem({
               {item.favicon ? (
                 <img className="cardo-website-icon" src={item.favicon} alt="" />
               ) : (
-                <ThemeIcon name="globe" size={16} />
+                <ThemeIcon name="globe" size={12} />
               )}
             </IconFrame>
             <div className="cardo-item-main">

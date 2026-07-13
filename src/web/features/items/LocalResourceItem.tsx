@@ -97,7 +97,7 @@ export function LocalResourceItem({
                 }
               }}
             >
-              <ThemeIcon name={iconName} size={16} />
+              <ThemeIcon name={iconName} size={12} />
               {item.type === 'shortcut' ? <span className="cardo-shortcut-badge">↗</span> : null}
             </IconFrame>
             <div className="cardo-item-main">
