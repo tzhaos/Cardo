@@ -629,6 +629,15 @@
 
 .cardo-settings-card-actions > * {
   flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* Right-side control on a settings card must not shrink into vertical glyph wraps. */
+.cardo-settings-card > .cardo-ui-select-trigger,
+.cardo-settings-card > .cardo-ui-button,
+.cardo-settings-card > button {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .cardo-theme-grid {

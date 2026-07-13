@@ -1110,14 +1110,12 @@ function DesktopUpdatePanel() {
 
       <div className="cardo-settings-subheading">
         <span>{t('settings.updateProxy')}</span>
+        <small>{t('settings.updateProxyDescription')}</small>
       </div>
       <div className="cardo-settings-list-group">
         <div className="cardo-settings-card">
           <div className="cardo-settings-card-copy">
-            <span>
-              {t('settings.updateProxyMode')}
-              <small>{t('settings.updateProxyDescription')}</small>
-            </span>
+            <span>{t('settings.updateProxyMode')}</span>
           </div>
           <Select
             value={proxyMode}
@@ -1141,8 +1139,8 @@ function DesktopUpdatePanel() {
         </div>
       </div>
       {proxyMode !== 'off' ? (
-        <div className="cardo-settings-field-grid">
-          <label className="cardo-settings-field">
+        <>
+          <label className="cardo-custom-search-template">
             <span>{t('settings.updateProxyHost')}</span>
             <Input
               value={proxyHost}
@@ -1155,7 +1153,7 @@ function DesktopUpdatePanel() {
               autoComplete="off"
             />
           </label>
-          <label className="cardo-settings-field">
+          <label className="cardo-custom-search-template">
             <span>{t('settings.updateProxyPort')}</span>
             <Input
               value={proxyPort}
@@ -1169,7 +1167,7 @@ function DesktopUpdatePanel() {
               autoComplete="off"
             />
           </label>
-        </div>
+        </>
       ) : null}
       <div className="cardo-settings-list-group cardo-settings-list-group-spaced">
         <div className="cardo-settings-card">
@@ -1181,6 +1179,8 @@ function DesktopUpdatePanel() {
           </div>
           <Button
             type="button"
+            variant="ghost"
+            className="cardo-settings-secondary-button"
             disabled={busy}
             onClick={() =>
               void run(async () => {
