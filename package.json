@@ -2,7 +2,7 @@
   "name": "cardo",
   "productName": "Cardo",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.4",
   "description": "Cardo — local Runtime spatial workspace (CLI, Web, Extension, Desktop)",
   "license": "MIT",
   "homepage": "https://github.com/tzhaos/Cardo",
