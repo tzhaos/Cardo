@@ -23,6 +23,7 @@ export function openRuntimeDatabase(dbPath: string): RuntimeDatabaseHandle {
   const raw = new DatabaseSync(dbPath);
   raw.exec('PRAGMA foreign_keys = ON');
   raw.exec('PRAGMA journal_mode = WAL');
+  raw.exec('PRAGMA busy_timeout = 5000');
 
   try {
     applyMigrations(
@@ -34,14 +35,6 @@ export function openRuntimeDatabase(dbPath: string): RuntimeDatabaseHandle {
             | undefined;
           const value = versionRow?.user_version;
           return typeof value === 'number' && Number.isFinite(value) ? value : 0;
-        },
-        listPreferenceColumns: () => {
-          const rows = raw.prepare('PRAGMA table_info(preferences)').all() as Array<{
-            name?: string;
-          }>;
-          return rows
-            .map((row) => row.name)
-            .filter((name): name is string => typeof name === 'string' && name.length > 0);
         },
       }),
     );

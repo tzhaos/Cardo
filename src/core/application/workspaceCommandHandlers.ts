@@ -11,6 +11,7 @@ import {
 } from '../database/schema';
 import { DATABASE_SCHEMA_VERSION } from '../database/version';
 import type { DatabaseCommandMutation, DatabaseTransaction } from './commandTypes';
+import { DomainCommandError } from './domainError';
 import { rowChange } from './historyChanges';
 import {
   historyRowChangeSchema,
@@ -96,7 +97,12 @@ function projectWorkspaceRows(workspace: WorkspaceProjection) {
   });
   const collectionRows = workspace.collectionBoxIds.map((boxId, index) => {
     const view = workspace.collectionViews[boxId];
-    if (!view) throw new Error(`Collection view for Box ${boxId} is missing.`);
+    if (!view) {
+      throw new DomainCommandError(
+        'invalid_command',
+        `Collection view for Box ${boxId} is missing.`,
+      );
+    }
     return {
       boxId,
       x: view.frame.x,

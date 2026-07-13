@@ -3,6 +3,7 @@ import type { WorkspaceCommand } from '../contracts/workspaceCommands';
 import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID } from '../contracts/systemPages';
 import { APP_STATE_ID, appState, boxes, collectionBoxViews, pages } from '../database/schema';
 import type { DatabaseCommandMutation, DatabaseTransaction } from './commandTypes';
+import { DomainCommandError } from './domainError';
 import { rowChange } from './historyChanges';
 
 export type PageCommand = Extract<WorkspaceCommand, { type: `page.${string}` }>;
@@ -114,14 +115,20 @@ async function reorderPages(transaction: DatabaseTransaction, orderedPageIds: st
     orderedSet.size !== orderedPageIds.length ||
     orderedPageIds.some((pageId) => !currentIds.includes(pageId))
   ) {
-    throw new Error('Page reorder contains unknown or duplicate page ids.');
+    throw new DomainCommandError(
+      'invalid_command',
+      'Page reorder contains unknown or duplicate page ids.',
+    );
   }
 
   const normalIds = currentIds.filter(
     (pageId) => pageId !== COLLECTION_PAGE_ID && pageId !== RECYCLE_BIN_PAGE_ID,
   );
   if (normalIds.some((pageId) => !orderedSet.has(pageId))) {
-    throw new Error('Page reorder must include every workspace page.');
+    throw new DomainCommandError(
+      'invalid_command',
+      'Page reorder must include every workspace page.',
+    );
   }
 
   // System pages present in orderedPageIds keep their strip positions;
@@ -158,9 +165,16 @@ async function reorderPages(transaction: DatabaseTransaction, orderedPageIds: st
 async function deletePage(transaction: DatabaseTransaction, pageId: string) {
   assertNormalPageId(pageId);
   const normalPages = await selectNormalPages(transaction);
-  if (normalPages.length <= 1) throw new Error('The final normal page cannot be deleted.');
+  if (normalPages.length <= 1) {
+    throw new DomainCommandError(
+      'precondition_failed',
+      'The final normal page cannot be deleted.',
+    );
+  }
   const page = normalPages.find((candidate) => candidate.id === pageId);
-  if (!page) throw new Error(`Page ${pageId} does not exist.`);
+  if (!page) {
+    throw new DomainCommandError('not_found', `Page ${pageId} does not exist.`);
+  }
   const remainingNormalPages = normalPages.filter((candidate) => candidate.id !== pageId);
   const allPages = await selectAllPages(transaction);
   const remainingPages = allPages.filter((candidate) => candidate.id !== pageId);
@@ -226,7 +240,10 @@ async function deletePage(transaction: DatabaseTransaction, pageId: string) {
   if (defaultPageId === pageId) {
     const nextDefault = remainingNormalPages[0];
     if (!nextDefault) {
-      throw new Error('Cannot delete the last normal page while it is the default.');
+      throw new DomainCommandError(
+        'precondition_failed',
+        'Cannot delete the last normal page while it is the default.',
+      );
     }
     defaultPageId = nextDefault.id;
   }
@@ -251,7 +268,10 @@ async function deletePage(transaction: DatabaseTransaction, pageId: string) {
 
 function assertNormalPageId(pageId: string) {
   if (pageId === COLLECTION_PAGE_ID || pageId === RECYCLE_BIN_PAGE_ID) {
-    throw new Error('System pages cannot be mutated by normal Page commands.');
+    throw new DomainCommandError(
+      'precondition_failed',
+      'System pages cannot be mutated by normal Page commands.',
+    );
   }
 }
 
@@ -274,7 +294,9 @@ async function selectPage(transaction: DatabaseTransaction, pageId: string) {
 
 async function requirePage(transaction: DatabaseTransaction, pageId: string) {
   const page = await selectPage(transaction, pageId);
-  if (!page) throw new Error(`Page ${pageId} does not exist.`);
+  if (!page) {
+    throw new DomainCommandError('not_found', `Page ${pageId} does not exist.`);
+  }
   return page;
 }
 

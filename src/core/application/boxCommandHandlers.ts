@@ -12,6 +12,7 @@ import {
   pages,
 } from '../database/schema';
 import type { DatabaseCommandMutation, DatabaseTransaction } from './commandTypes';
+import { DomainCommandError } from './domainError';
 import { rowChange } from './historyChanges';
 import { chooseAvailableBoxAccent, DEFAULT_BOX_ICON } from '../domains/boxAppearance';
 
@@ -151,7 +152,12 @@ async function moveBoxToPage(
   pageId: string,
   frame?: BoxFrame,
 ) {
-  if (pageId === COLLECTION_PAGE_ID) throw new Error('Boxes cannot be moved into Collection.');
+  if (pageId === COLLECTION_PAGE_ID) {
+    throw new DomainCommandError(
+      'precondition_failed',
+      'Boxes cannot be moved into Collection.',
+    );
+  }
   await requirePage(transaction, pageId);
   const box = await requireBox(transaction, boxId);
   const targetBoxes = await transaction
@@ -183,7 +189,12 @@ async function moveBoxToPage(
 
 async function collectBox(transaction: DatabaseTransaction, boxId: string) {
   const box = await requireBox(transaction, boxId);
-  if (box.pageId === RECYCLE_BIN_PAGE_ID) throw new Error('Recycle Bin boxes cannot be collected.');
+  if (box.pageId === RECYCLE_BIN_PAGE_ID) {
+    throw new DomainCommandError(
+      'precondition_failed',
+      'Recycle Bin boxes cannot be collected.',
+    );
+  }
   const existing = await transaction
     .select()
     .from(collectionBoxViews)
@@ -437,20 +448,27 @@ async function getFollowingViewIds(transaction: DatabaseTransaction, sortOrder: 
 
 async function requireNormalPage(transaction: DatabaseTransaction, pageId: string) {
   if (pageId === COLLECTION_PAGE_ID || pageId === RECYCLE_BIN_PAGE_ID) {
-    throw new Error('Boxes can only be created on normal pages.');
+    throw new DomainCommandError(
+      'precondition_failed',
+      'Boxes can only be created on normal pages.',
+    );
   }
   return requirePage(transaction, pageId);
 }
 
 async function requirePage(transaction: DatabaseTransaction, pageId: string) {
   const page = await transaction.select().from(pages).where(eq(pages.id, pageId)).get();
-  if (!page) throw new Error(`Page ${pageId} does not exist.`);
+  if (!page) {
+    throw new DomainCommandError('not_found', `Page ${pageId} does not exist.`);
+  }
   return page;
 }
 
 async function requireBox(transaction: DatabaseTransaction, boxId: string) {
   const box = await transaction.select().from(boxes).where(eq(boxes.id, boxId)).get();
-  if (!box) throw new Error(`Box ${boxId} does not exist.`);
+  if (!box) {
+    throw new DomainCommandError('not_found', `Box ${boxId} does not exist.`);
+  }
   return box;
 }
 

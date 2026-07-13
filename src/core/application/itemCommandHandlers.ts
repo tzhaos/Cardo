@@ -4,6 +4,7 @@ import type { WorkspaceCommand } from '../contracts/workspaceCommands';
 import { APP_STATE_ID, appState, boxes, boxItems, items, pages } from '../database/schema';
 import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID } from '../contracts/systemPages';
 import type { DatabaseCommandMutation, DatabaseTransaction } from './commandTypes';
+import { DomainCommandError } from './domainError';
 import { rowChange } from './historyChanges';
 import { chooseAvailableBoxAccent, DEFAULT_BOX_ICON } from '../domains/boxAppearance';
 
@@ -51,7 +52,10 @@ async function pasteItem(
   command: Extract<ItemCommand, { type: 'item.paste' }>,
 ) {
   if (command.pageId === COLLECTION_PAGE_ID || command.pageId === RECYCLE_BIN_PAGE_ID) {
-    throw new Error('Items cannot be pasted into a system page.');
+    throw new DomainCommandError(
+      'precondition_failed',
+      'Items cannot be pasted into a system page.',
+    );
   }
   await requirePage(transaction, command.pageId);
   let targetBox = command.targetBoxId
@@ -60,7 +64,10 @@ async function pasteItem(
   const changes: DatabaseCommandMutation['changes'] = [];
 
   if (targetBox && targetBox.pageId !== command.pageId) {
-    throw new Error('Paste target must belong to the requested page.');
+    throw new DomainCommandError(
+      'invalid_command',
+      'Paste target must belong to the requested page.',
+    );
   }
 
   if (!targetBox) {
@@ -127,7 +134,12 @@ async function createItemInBox(
   draft: Record<string, string>,
 ) {
   const box = await requireBox(transaction, boxId);
-  if (box.pageId === RECYCLE_BIN_PAGE_ID) throw new Error('Items cannot be added in Recycle Bin.');
+  if (box.pageId === RECYCLE_BIN_PAGE_ID) {
+    throw new DomainCommandError(
+      'precondition_failed',
+      'Items cannot be added in Recycle Bin.',
+    );
+  }
   const item = createItemRow(type, draft);
   const placements = await selectPlacements(transaction, boxId);
   const insertionIndex = placements.filter((placement) => placement.isPinned).length;
@@ -190,7 +202,12 @@ async function setBookmarkFavicon(
   if (!favicon.startsWith('data:image/')) return noMutation();
   await requirePlacement(transaction, boxId, itemId);
   const item = await requireItem(transaction, itemId);
-  if (item.type !== 'bookmark') throw new Error('Only bookmark items can store favicons.');
+  if (item.type !== 'bookmark') {
+    throw new DomainCommandError(
+      'precondition_failed',
+      'Only bookmark items can store favicons.',
+    );
+  }
   const metadata: ItemMetadata = { type: 'bookmark', favicon };
   if (JSON.stringify(item.metadata) === JSON.stringify(metadata)) return noMutation();
   return updateItemAndBox(transaction, boxId, item, { metadata }, false);
@@ -226,7 +243,12 @@ async function setItemPinned(
 ) {
   const placements = await selectPlacements(transaction, boxId);
   const target = placements.find((placement) => placement.itemId === itemId);
-  if (!target) throw new Error(`Item ${itemId} is not placed in Box ${boxId}.`);
+  if (!target) {
+    throw new DomainCommandError(
+      'not_found',
+      `Item ${itemId} is not placed in Box ${boxId}.`,
+    );
+  }
   if (target.isPinned === isPinned) return noMutation();
   const pinState = new Map(placements.map((placement) => [placement.itemId, placement.isPinned]));
   pinState.set(itemId, isPinned);
@@ -273,7 +295,12 @@ async function moveItemBetweenBoxes(
   const sourcePlacements = await selectPlacements(transaction, sourceBox.id);
   const targetPlacements = await selectPlacements(transaction, targetBox.id);
   const sourcePlacement = sourcePlacements.find((placement) => placement.itemId === command.itemId);
-  if (!sourcePlacement) throw new Error('Source Box does not contain the requested Item.');
+  if (!sourcePlacement) {
+    throw new DomainCommandError(
+      'not_found',
+      'Source Box does not contain the requested Item.',
+    );
+  }
   const changes: DatabaseCommandMutation['changes'] = [];
 
   await transaction.delete(boxItems).where(eq(boxItems.itemId, command.itemId));
@@ -333,7 +360,12 @@ async function deleteItem(transaction: DatabaseTransaction, boxId: string, itemI
   const item = await requireItem(transaction, itemId);
   const placements = await selectPlacements(transaction, boxId);
   const placement = placements.find((candidate) => candidate.itemId === itemId);
-  if (!placement) throw new Error(`Item ${itemId} is not placed in Box ${boxId}.`);
+  if (!placement) {
+    throw new DomainCommandError(
+      'not_found',
+      `Item ${itemId} is not placed in Box ${boxId}.`,
+    );
+  }
   await transaction.delete(boxItems).where(eq(boxItems.itemId, itemId));
   await transaction.delete(items).where(eq(items.id, itemId));
   const changes: DatabaseCommandMutation['changes'] = [
@@ -442,26 +474,35 @@ async function requirePlacement(transaction: DatabaseTransaction, boxId: string,
     .where(eq(boxItems.itemId, itemId))
     .get();
   if (!placement || placement.boxId !== boxId) {
-    throw new Error(`Item ${itemId} is not placed in Box ${boxId}.`);
+    throw new DomainCommandError(
+      'not_found',
+      `Item ${itemId} is not placed in Box ${boxId}.`,
+    );
   }
   return placement;
 }
 
 async function requireItem(transaction: DatabaseTransaction, itemId: string) {
   const item = await transaction.select().from(items).where(eq(items.id, itemId)).get();
-  if (!item) throw new Error(`Item ${itemId} does not exist.`);
+  if (!item) {
+    throw new DomainCommandError('not_found', `Item ${itemId} does not exist.`);
+  }
   return item;
 }
 
 async function requireBox(transaction: DatabaseTransaction, boxId: string) {
   const box = await transaction.select().from(boxes).where(eq(boxes.id, boxId)).get();
-  if (!box) throw new Error(`Box ${boxId} does not exist.`);
+  if (!box) {
+    throw new DomainCommandError('not_found', `Box ${boxId} does not exist.`);
+  }
   return box;
 }
 
 async function requirePage(transaction: DatabaseTransaction, pageId: string) {
   const page = await transaction.select().from(pages).where(eq(pages.id, pageId)).get();
-  if (!page) throw new Error(`Page ${pageId} does not exist.`);
+  if (!page) {
+    throw new DomainCommandError('not_found', `Page ${pageId} does not exist.`);
+  }
   return page;
 }
 
@@ -477,7 +518,12 @@ async function requireAppState(transaction: DatabaseTransaction) {
 
 function createItemRow(type: WorkspaceItemType, draft: Record<string, string>) {
   const content = getDraftContent(type, draft).trim();
-  if (!content) throw new Error(`Item content is required for ${type}.`);
+  if (!content) {
+    throw new DomainCommandError(
+      'invalid_command',
+      `Item content is required for ${type}.`,
+    );
+  }
   const timestamp = new Date().toISOString();
   return {
     id: `item-${crypto.randomUUID()}`,
@@ -528,7 +574,10 @@ function validateCompleteOrder(
     new Set(orderedItemIds).size !== orderedItemIds.length ||
     orderedItemIds.some((itemId) => !currentIds.includes(itemId))
   ) {
-    throw new Error('Item reorder must contain every Box Item exactly once.');
+    throw new DomainCommandError(
+      'invalid_command',
+      'Item reorder must contain every Box Item exactly once.',
+    );
   }
 }
 
