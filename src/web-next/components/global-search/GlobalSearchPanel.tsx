@@ -120,9 +120,9 @@ export function GlobalSearchPanel({ query }: { query: string }) {
     <div className="cardo-global-search-panel-wrap">
       <motion.div
         className="cardo-global-search-panel"
-        initial={{ opacity: 0, y: 12, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 8, scale: 0.985 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
         transition={{ duration: 0.16 }}
       >
         {results.length ? (

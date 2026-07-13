@@ -27,9 +27,9 @@ import { useI18n } from '../../i18n/useI18n';
 import { useFeatureEnabled } from '../../shell/FeatureGate';
 import { useContextMenu } from '../../ui/cardo/context-menu';
 import { ThemeIcon } from '../../ui/icons/ThemeIcon';
+import { IconButton } from '../../ui/cardo/icon-button';
 import { Input } from '../../ui/primitives/input';
 import { Button } from '../../ui/primitives/button';
-import { MotionButton } from '../../ui/primitives/motion-button';
 import { BoxAppearanceView } from './BoxAppearancePopover';
 
 /** Motion borderRadius must be numeric per theme dialect. */
@@ -658,26 +658,22 @@ export function BaseBoxFrame({
             )}
           </div>
           <div className="cardo-box-controls">
-            <MotionButton
-              variant="icon"
+            <IconButton
               className="cardo-box-view-toggle cardo-box-lock-toggle cardo-icon-button"
-              type="button"
               data-no-drag
               onClick={() => setBoxLocked(box.id, !box.isLocked)}
               aria-label={t(box.isLocked ? 'box.unlock' : 'box.lock')}
               aria-pressed={Boolean(box.isLocked)}
-              title={t(box.isLocked ? 'box.unlock' : 'box.lock')}
+              tooltip={t(box.isLocked ? 'box.unlock' : 'box.lock')}
             >
               {box.isLocked ? (
                 <ThemeIcon name="lock" size={15} />
               ) : (
                 <ThemeIcon name="unlock" size={15} />
               )}
-            </MotionButton>
-            <MotionButton
-              variant="icon"
+            </IconButton>
+            <IconButton
               className="cardo-box-view-toggle cardo-icon-button"
-              type="button"
               data-no-drag
               onClick={() =>
                 setBoxDetailMode(box.id, detailMode === 'detailed' ? 'compact' : 'detailed')
@@ -686,34 +682,32 @@ export function BaseBoxFrame({
                 detailMode === 'detailed' ? 'box.switchToCompact' : 'box.switchToDetailed',
               )}
               aria-pressed={detailMode === 'compact'}
-              title={t(detailMode === 'detailed' ? 'box.switchToCompact' : 'box.switchToDetailed')}
+              tooltip={t(
+                detailMode === 'detailed' ? 'box.switchToCompact' : 'box.switchToDetailed',
+              )}
             >
               {detailMode === 'detailed' ? (
                 <ThemeIcon name="collapse" size={15} />
               ) : (
                 <ThemeIcon name="expand" size={15} />
               )}
-            </MotionButton>
-            <MotionButton
-              variant="icon"
+            </IconButton>
+            <IconButton
               className="cardo-box-view-toggle cardo-icon-button"
-              type="button"
               data-no-drag
               onClick={() => setBoxViewMode(box.id, viewMode === 'list' ? 'grid' : 'list')}
               aria-label={t(viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList')}
               aria-pressed={viewMode === 'grid'}
-              title={t(viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList')}
+              tooltip={t(viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList')}
             >
               {viewMode === 'list' ? (
                 <ThemeIcon name="layoutGrid" size={15} />
               ) : (
                 <ThemeIcon name="list" size={15} />
               )}
-            </MotionButton>
-            <MotionButton
-              variant="icon"
+            </IconButton>
+            <IconButton
               className="cardo-box-delete cardo-icon-button"
-              type="button"
               onClick={() => {
                 if (appearanceView) {
                   setAppearanceView(false);
@@ -730,9 +724,16 @@ export function BaseBoxFrame({
                     ? t('box.closeAddView')
                     : t(isInRecycleBin ? 'menu.deletePermanently' : 'menu.moveToRecycleBin')
               }
+              tooltip={
+                appearanceView
+                  ? t('box.closeAppearanceView')
+                  : addViewState?.mode
+                    ? t('box.closeAddView')
+                    : t(isInRecycleBin ? 'menu.deletePermanently' : 'menu.moveToRecycleBin')
+              }
             >
               <ThemeIcon name="close" size={14} />
-            </MotionButton>
+            </IconButton>
           </div>
         </header>
       )}

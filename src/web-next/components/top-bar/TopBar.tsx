@@ -372,7 +372,7 @@ export function TopBar() {
                   disabled={item.disabled}
                   aria-label={item.label}
                   aria-pressed={item.id === 'toggle-canvas-lock' ? isLocked : undefined}
-                  title={item.label}
+                  tooltip={item.label}
                   onClick={() => item.onSelect?.()}
                 >
                   {item.icon}
