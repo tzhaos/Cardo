@@ -109,7 +109,7 @@ All graphical surfaces share the same React UI (`src/web-next`) and talk to Runt
                                    └─────────────────┘
 ```
 
-Design pillars (see `docs/architecture/local-runtime-multi-client.md`):
+Design pillars (start with [`docs/architecture/overview.md`](./docs/architecture/overview.md); SoT: [`docs/architecture/local-runtime-multi-client.md`](./docs/architecture/local-runtime-multi-client.md)):
 
 1. Runtime is the only authority for business writes
 2. Zod is the sole runtime boundary for Command, IPC, settings, metadata, and protocol
@@ -289,7 +289,7 @@ npx tsx scripts/validate-builtin-themes.ts
 | Styling          | Tailwind CSS 4, design tokens, theme recipes                    |
 | Contracts        | Zod 4 (`z.infer` for types)                                     |
 | Persistence      | Drizzle ORM + SQLite                                            |
-| Runtime host     | Node HTTP server (CLI) or Desktop embed                         |
+| Runtime host     | Node HTTP (CLI serve / detached child; Desktop attach or spawn) |
 | Desktop shell    | Electron 42 + electron-builder                                  |
 | Extension        | Manifest V3                                                     |
 | Client transport | RuntimeClient over HTTP + fetch ReadableStream                  |
@@ -301,7 +301,10 @@ npx tsx scripts/validate-builtin-themes.ts
 
 | Document                                                                                                 | Topic                                   |
 | -------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| [`docs/architecture/README.md`](./docs/architecture/README.md)                                           | Architecture docs index                 |
+| [`docs/architecture/overview.md`](./docs/architecture/overview.md)                                       | Contributor executive overview          |
 | [`docs/architecture/local-runtime-multi-client.md`](./docs/architecture/local-runtime-multi-client.md)   | Runtime topology, paths, hard decisions |
+| [`docs/architecture/robustness-and-operations.md`](./docs/architecture/robustness-and-operations.md)     | Lock, logs, updates, recovery           |
 | [`docs/architecture/ui-theme-system.md`](./docs/architecture/ui-theme-system.md)                         | Theme system overview                   |
 | [`docs/architecture/theme-pack-authoring.md`](./docs/architecture/theme-pack-authoring.md)               | Writing official / user theme packs     |
 | [`docs/architecture/zod-drizzle-shadcn-refactor.md`](./docs/architecture/zod-drizzle-shadcn-refactor.md) | Contract and UI boundary refactor notes |

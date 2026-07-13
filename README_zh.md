@@ -109,7 +109,7 @@ Cardo（拉丁语 cardo：门枢 / 枢纽 / 轴线）是本机优先的空间工
                                    └─────────────────┘
 ```
 
-设计支柱（详见 `docs/architecture/local-runtime-multi-client.md`）：
+设计支柱（入门见 [`docs/architecture/overview.md`](./docs/architecture/overview.md)；SoT：[`docs/architecture/local-runtime-multi-client.md`](./docs/architecture/local-runtime-multi-client.md)）：
 
 1. Runtime 是业务写入的唯一权威
 2. Zod 是 Command、IPC、设置、metadata 与协议的唯一运行时边界
@@ -289,7 +289,7 @@ npx tsx scripts/validate-builtin-themes.ts
 | 样式         | Tailwind CSS 4、Design Token、主题 recipe              |
 | 契约         | Zod 4（类型用 `z.infer`）                              |
 | 持久化       | Drizzle ORM + SQLite                                   |
-| Runtime 宿主 | Node HTTP（CLI）或 Desktop embed                       |
+| Runtime 宿主 | Node HTTP（CLI serve / 分离子进程；Desktop attach 或 spawn） |
 | 桌面壳       | Electron 42 + electron-builder                         |
 | 扩展         | Manifest V3                                            |
 | 客户端传输   | RuntimeClient（HTTP + fetch ReadableStream）           |
@@ -301,7 +301,10 @@ npx tsx scripts/validate-builtin-themes.ts
 
 | 文档                                                                                                     | 主题                       |
 | -------------------------------------------------------------------------------------------------------- | -------------------------- |
+| [`docs/architecture/README.md`](./docs/architecture/README.md)                                           | 架构文档索引               |
+| [`docs/architecture/overview.md`](./docs/architecture/overview.md)                                       | 贡献者总览                 |
 | [`docs/architecture/local-runtime-multi-client.md`](./docs/architecture/local-runtime-multi-client.md)   | Runtime 拓扑、路径、硬决策 |
+| [`docs/architecture/robustness-and-operations.md`](./docs/architecture/robustness-and-operations.md)     | 锁、日志、更新与恢复       |
 | [`docs/architecture/ui-theme-system.md`](./docs/architecture/ui-theme-system.md)                         | 主题系统总览               |
 | [`docs/architecture/theme-pack-authoring.md`](./docs/architecture/theme-pack-authoring.md)               | 官方 / 用户主题包写作      |
 | [`docs/architecture/zod-drizzle-shadcn-refactor.md`](./docs/architecture/zod-drizzle-shadcn-refactor.md) | 契约与 UI 边界重构笔记     |
