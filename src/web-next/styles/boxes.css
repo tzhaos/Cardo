@@ -552,8 +552,8 @@ button.cardo-box-icon:focus-visible {
 }
 
 .cardo-box-delete-actions .cardo-box-delete-confirm-button {
-  background: #ff3045;
-  color: #ffffff;
+  background: var(--cardo-red);
+  color: var(--cardo-create-text);
 }
 
 .cardo-box-footer {

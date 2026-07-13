@@ -120,8 +120,8 @@
 }
 
 .cardo-add-primary {
-  background: #60a5fa;
-  color: #ffffff;
+  background: var(--cardo-blue);
+  color: var(--cardo-create-text);
 }
 
 .cardo-add-primary:disabled {

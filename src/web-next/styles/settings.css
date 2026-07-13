@@ -624,8 +624,8 @@
 }
 
 .cardo-layout-card-selected {
-  border-color: rgba(59, 130, 246, 0.36);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+  border-color: color-mix(in srgb, var(--cardo-blue) 36%, var(--cardo-border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cardo-blue) 8%, transparent);
 }
 
 .cardo-layout-card-copy {
@@ -1195,8 +1195,8 @@
 }
 
 .cardo-theme-card-selected {
-  border-color: rgba(59, 130, 246, 0.36);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+  border-color: color-mix(in srgb, var(--cardo-blue) 36%, var(--cardo-border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cardo-blue) 8%, transparent);
 }
 
 .cardo-theme-preview {
