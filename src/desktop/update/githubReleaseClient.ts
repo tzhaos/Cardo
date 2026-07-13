@@ -1,9 +1,4 @@
-import { createHash } from 'node:crypto';
-import { createWriteStream } from 'node:fs';
-import fs from 'node:fs/promises';
 import path from 'node:path';
-import { pipeline } from 'node:stream/promises';
-import { Readable } from 'node:stream';
 import { z } from 'zod';
 import type {
   DesktopInstallChannel,
@@ -16,7 +11,12 @@ import {
   resolveUpdateRepository,
 } from '../../core/version/releaseChannel';
 import { isNewerProductSemver, normalizeProductSemver } from '../../core/version/semver';
+import { downloadFileWithOptionalProxy, httpGetText } from './httpDownload';
 import { parseCardoReleasePolicy } from './releasePolicy';
+import { UpdateFetchError } from './updateErrors';
+import { resolveUpdateProxyUrl } from './updateProxySettings';
+
+export { UpdateFetchError } from './updateErrors';
 
 const githubAssetSchema = z
   .object({
@@ -41,40 +41,36 @@ const githubReleaseSchema = z
 
 export type GitHubRelease = z.infer<typeof githubReleaseSchema>;
 
-export class UpdateFetchError extends Error {
-  readonly code: string;
-
-  constructor(code: string, message: string) {
-    super(message);
-    this.name = 'UpdateFetchError';
-    this.code = code;
-  }
-}
-
 function userAgent(currentVersion: string): string {
   return `Cardo-Desktop/${currentVersion} (+https://github.com/tzhaos/Cardo)`;
 }
 
-async function githubGetJson(url: string, currentVersion: string): Promise<unknown> {
-  const response = await fetch(url, {
+async function githubGetJson(
+  url: string,
+  currentVersion: string,
+  proxyUrl: string | null,
+): Promise<unknown> {
+  const { status, text } = await httpGetText(url, {
+    userAgent: userAgent(currentVersion),
     headers: {
       Accept: 'application/vnd.github+json',
-      'User-Agent': userAgent(currentVersion),
       'X-GitHub-Api-Version': '2022-11-28',
     },
-    signal: AbortSignal.timeout(20_000),
+    proxyUrl,
+    signal: AbortSignal.timeout(25_000),
   });
 
-  if (response.status === 404) {
+  if (status === 404) {
     throw new UpdateFetchError('not_found', 'No published GitHub release found.');
   }
-  if (!response.ok) {
-    throw new UpdateFetchError(
-      'http_error',
-      `GitHub API ${response.status}: ${response.statusText || 'request failed'}`,
-    );
+  if (status < 200 || status >= 300) {
+    throw new UpdateFetchError('http_error', `GitHub API ${status}: request failed`);
   }
-  return (await response.json()) as unknown;
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    throw new UpdateFetchError('http_error', 'GitHub API returned invalid JSON.');
+  }
 }
 
 function pickSetupAsset(assets: GitHubRelease['assets'], version: string) {
@@ -159,7 +155,8 @@ export async function fetchLatestStableUpdate(options: {
     throw new UpdateFetchError('invalid_current_version', 'Current app version is not X.Y.Z.');
   }
 
-  const raw = await githubGetJson(githubLatestReleaseApiUrl(owner, repo), current);
+  const proxyUrl = await resolveUpdateProxyUrl();
+  const raw = await githubGetJson(githubLatestReleaseApiUrl(owner, repo), current, proxyUrl);
   const release = githubReleaseSchema.parse(raw);
 
   if (release.draft || release.prerelease) {
@@ -200,14 +197,13 @@ export async function fetchLatestStableUpdate(options: {
 
   let sha256: string | null = null;
   try {
-    const checksumResponse = await fetch(checksumAsset.browser_download_url, {
-      headers: { 'User-Agent': userAgent(current) },
-      signal: AbortSignal.timeout(20_000),
-      redirect: 'follow',
+    const checksum = await httpGetText(checksumAsset.browser_download_url, {
+      userAgent: userAgent(current),
+      proxyUrl,
+      signal: AbortSignal.timeout(25_000),
     });
-    if (checksumResponse.ok) {
-      const text = await checksumResponse.text();
-      sha256 = parseSha256Sums(text, asset.name);
+    if (checksum.status >= 200 && checksum.status < 300) {
+      sha256 = parseSha256Sums(checksum.text, asset.name);
     }
   } catch {
     sha256 = null;
@@ -252,88 +248,24 @@ export async function downloadInstaller(options: {
   }) => void;
   signal?: AbortSignal;
 }): Promise<{ path: string; sha256: string; bytes: number }> {
-  const expectedSha256 = options.expectedSha256?.trim() ?? '';
-  if (!expectedSha256) {
-    throw new UpdateFetchError(
-      'missing_checksum',
-      'Installer download refused: expected SHA-256 is missing.',
-    );
-  }
-
-  await fs.mkdir(path.dirname(options.destinationPath), { recursive: true });
-  const partialPath = `${options.destinationPath}.partial`;
-
-  try {
-    await fs.rm(partialPath, { force: true });
-  } catch {
-    // ignore
-  }
-
-  const response = await fetch(options.url, {
-    headers: { 'User-Agent': userAgent(options.currentVersion) },
+  const proxyUrl = await resolveUpdateProxyUrl();
+  const result = await downloadFileWithOptionalProxy({
+    url: options.url,
+    destinationPath: options.destinationPath,
+    expectedSha256: options.expectedSha256,
+    expectedSizeBytes: options.expectedSizeBytes,
+    userAgent: userAgent(options.currentVersion),
+    proxyUrl,
     signal: options.signal ?? AbortSignal.timeout(30 * 60_000),
-    redirect: 'follow',
+    onProgress: options.onProgress,
+    parts: 8,
   });
-  if (!response.ok || !response.body) {
-    throw new UpdateFetchError(
-      'download_failed',
-      `Installer download failed (${response.status} ${response.statusText}).`,
+  if (proxyUrl) {
+    console.info(
+      `[Cardo] Update download used proxy ${proxyUrl} (${result.parts} part(s), ${result.bytes} bytes)`,
     );
+  } else {
+    console.info(`[Cardo] Update download direct (${result.parts} part(s), ${result.bytes} bytes)`);
   }
-
-  const contentLengthHeader = response.headers.get('content-length');
-  const totalBytes =
-    contentLengthHeader && Number.isFinite(Number(contentLengthHeader))
-      ? Number(contentLengthHeader)
-      : options.expectedSizeBytes;
-
-  const hash = createHash('sha256');
-  let downloadedBytes = 0;
-  const nodeStream = Readable.fromWeb(response.body as import('node:stream/web').ReadableStream);
-  const fileStream = createWriteStream(partialPath);
-
-  nodeStream.on('data', (chunk: Buffer | string) => {
-    const buf = typeof chunk === 'string' ? Buffer.from(chunk) : chunk;
-    hash.update(buf);
-    downloadedBytes += buf.byteLength;
-    const percent =
-      totalBytes && totalBytes > 0
-        ? Math.min(100, Math.round((downloadedBytes / totalBytes) * 100))
-        : null;
-    options.onProgress?.({ percent, downloadedBytes, totalBytes });
-  });
-
-  await pipeline(nodeStream, fileStream);
-
-  const sha256 = hash.digest('hex');
-  if (sha256.toLowerCase() !== expectedSha256.toLowerCase()) {
-    await fs.rm(partialPath, { force: true });
-    throw new UpdateFetchError(
-      'checksum_mismatch',
-      'Downloaded installer failed SHA-256 verification.',
-    );
-  }
-
-  // Size is a secondary check after integrity hash.
-  if (
-    options.expectedSizeBytes != null &&
-    options.expectedSizeBytes > 0 &&
-    downloadedBytes !== options.expectedSizeBytes
-  ) {
-    await fs.rm(partialPath, { force: true });
-    throw new UpdateFetchError(
-      'size_mismatch',
-      `Downloaded size ${downloadedBytes} does not match expected ${options.expectedSizeBytes}.`,
-    );
-  }
-
-  await fs.rm(options.destinationPath, { force: true });
-  await fs.rename(partialPath, options.destinationPath);
-  options.onProgress?.({
-    percent: 100,
-    downloadedBytes,
-    totalBytes: totalBytes ?? downloadedBytes,
-  });
-
-  return { path: options.destinationPath, sha256, bytes: downloadedBytes };
+  return { path: result.path, sha256: result.sha256, bytes: result.bytes };
 }

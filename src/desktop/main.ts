@@ -38,10 +38,12 @@ import {
   desktopUrlRequestSchema,
   desktopVoidResponseSchema,
   desktopWebsiteIconResponseSchema,
+  updateProxySettingsSchema,
   type DesktopRuntimeConfig,
 } from '../core/contracts/desktopIpc';
 import { DesktopUpdater } from './update/desktopUpdater';
 import { ensurePackagedNativeHostRegistered } from './registerNativeHost';
+import { readUpdateProxySettings, writeUpdateProxySettings } from './update/updateProxySettings';
 
 declare const __CARDO_DEBUG_PACKAGE__: boolean;
 declare const __APP_VERSION__: string;
@@ -576,6 +578,12 @@ function registerIpcHandlers() {
     await desktopUpdater.openReleasePage();
     return desktopVoidResponseSchema.parse(undefined);
   });
+  ipcMain.handle('update:get-proxy-settings', () =>
+    updateProxySettingsSchema.parse(readUpdateProxySettings()),
+  );
+  ipcMain.handle('update:set-proxy-settings', (_event, payload: unknown) =>
+    updateProxySettingsSchema.parse(writeUpdateProxySettings(payload)),
+  );
 }
 
 let forceUpdatePromptInFlight = false;

@@ -8,6 +8,15 @@ export {
   type DesktopUpdateState,
 } from './desktopUpdate';
 
+export {
+  DEFAULT_UPDATE_PROXY_SETTINGS,
+  updateProxyModeSchema,
+  updateProxySettingsInputSchema,
+  updateProxySettingsSchema,
+  type UpdateProxyMode,
+  type UpdateProxySettings,
+} from './updateProxy';
+
 export const desktopVoidResponseSchema = z.undefined();
 export const desktopBooleanResponseSchema = z.boolean();
 export const desktopTextResponseSchema = z.string();
