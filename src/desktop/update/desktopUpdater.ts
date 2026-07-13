@@ -1,4 +1,5 @@
 import { app, shell } from 'electron';
+import { createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -203,10 +204,20 @@ export class DesktopUpdater {
     });
 
     try {
+      const expectedSha256 = available.sha256?.trim() ?? '';
+      if (!expectedSha256) {
+        this.setState({
+          phase: 'error',
+          errorMessage: 'Update has no SHA-256; refusing download without integrity metadata.',
+          installerPath: null,
+        });
+        return this.state;
+      }
+
       const result = await downloadInstaller({
         url: available.installerUrl,
         destinationPath,
-        expectedSha256: available.sha256,
+        expectedSha256,
         expectedSizeBytes: available.installerSizeBytes,
         currentVersion: this.state.currentVersion,
         signal: this.downloadAbort.signal,
@@ -280,13 +291,34 @@ export class DesktopUpdater {
       return { ok: false, errorMessage: 'Installer file is missing. Download again.' };
     }
 
+    if (this.install.channel === 'portable' && available.assetKind !== 'portable') {
+      const message =
+        'Refusing to install a non-portable update on a portable install (no silent channel migration).';
+      this.setState({ phase: 'readyToInstall', errorMessage: message });
+      return { ok: false, errorMessage: message };
+    }
+
+    const expectedSha256 = available.sha256?.trim() ?? '';
+    if (!expectedSha256) {
+      const message = 'Update has no SHA-256; refusing install without integrity metadata.';
+      this.setState({ phase: 'readyToInstall', errorMessage: message });
+      return { ok: false, errorMessage: message };
+    }
+
     this.setState({ phase: 'installing', errorMessage: null });
 
     try {
-      if (this.install.channel === 'portable' && available.assetKind === 'portable') {
+      const actualSha256 = await hashFileSha256(installerPath);
+      if (actualSha256.toLowerCase() !== expectedSha256.toLowerCase()) {
+        throw new Error(
+          'Installer file failed SHA-256 re-verification before install. Download again.',
+        );
+      }
+
+      if (this.install.channel === 'portable') {
         await this.applyPortableUpdate(installerPath);
       } else {
-        // Setup install (or portable fell back to Setup asset): run NSIS UI.
+        // Setup install: run NSIS UI.
         const child = spawn(installerPath, [], {
           detached: true,
           stdio: 'ignore',
@@ -374,4 +406,18 @@ export class DesktopUpdater {
     if (!url) return;
     await shell.openExternal(url);
   }
+}
+
+async function hashFileSha256(filePath: string): Promise<string> {
+  return await new Promise((resolve, reject) => {
+    const hash = createHash('sha256');
+    const stream = fs.createReadStream(filePath);
+    stream.on('data', (chunk: string | Buffer) => {
+      hash.update(chunk);
+    });
+    stream.on('error', reject);
+    stream.on('end', () => {
+      resolve(hash.digest('hex'));
+    });
+  });
 }
