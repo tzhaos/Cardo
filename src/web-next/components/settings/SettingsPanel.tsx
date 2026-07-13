@@ -939,6 +939,10 @@ function DesktopUpdatePanel() {
   const { t } = useI18n();
   const [state, setState] = useState<DesktopUpdateState | null>(null);
   const [busy, setBusy] = useState(false);
+  const [proxyMode, setProxyMode] = useState<'auto' | 'manual' | 'off'>('auto');
+  const [proxyHost, setProxyHost] = useState('127.0.0.1');
+  const [proxyPort, setProxyPort] = useState('7890');
+  const [proxyHint, setProxyHint] = useState<string | null>(null);
 
   useEffect(() => {
     const bridge = window.cardoDesktop;
@@ -946,6 +950,12 @@ function DesktopUpdatePanel() {
     let cancelled = false;
     void bridge.getUpdateState().then((next) => {
       if (!cancelled) setState(next);
+    });
+    void bridge.getUpdateProxySettings().then((settings) => {
+      if (cancelled) return;
+      setProxyMode(settings.mode);
+      setProxyHost(settings.host);
+      setProxyPort(String(settings.port));
     });
     const unsubscribe = bridge.onUpdateStateChange((next) => {
       setState(next);
@@ -1094,6 +1104,73 @@ function DesktopUpdatePanel() {
               {t('settings.updateOpenRelease')}
             </Button>
           ) : null}
+        </div>
+      </div>
+
+      <div className="cardo-settings-subheading" style={{ marginTop: 16 }}>
+        <span>{t('settings.updateProxy')}</span>
+        <small>{t('settings.updateProxyDescription')}</small>
+      </div>
+      <div className="cardo-settings-card">
+        <div className="cardo-settings-card-copy" style={{ gap: 10, width: '100%' }}>
+          <label className="cardo-settings-field">
+            <span>{t('settings.updateProxyMode')}</span>
+            <select
+              value={proxyMode}
+              onChange={(event) => setProxyMode(event.target.value as 'auto' | 'manual' | 'off')}
+              disabled={busy}
+            >
+              <option value="auto">{t('settings.updateProxyMode.auto')}</option>
+              <option value="manual">{t('settings.updateProxyMode.manual')}</option>
+              <option value="off">{t('settings.updateProxyMode.off')}</option>
+            </select>
+          </label>
+          {proxyMode !== 'off' ? (
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', width: '100%' }}>
+              <label className="cardo-settings-field" style={{ flex: '1 1 140px' }}>
+                <span>{t('settings.updateProxyHost')}</span>
+                <Input
+                  value={proxyHost}
+                  onChange={(event) => setProxyHost(event.target.value)}
+                  disabled={busy}
+                  placeholder="127.0.0.1"
+                />
+              </label>
+              <label className="cardo-settings-field" style={{ flex: '0 0 100px' }}>
+                <span>{t('settings.updateProxyPort')}</span>
+                <Input
+                  value={proxyPort}
+                  onChange={(event) => setProxyPort(event.target.value.replace(/[^\d]/g, ''))}
+                  disabled={busy}
+                  inputMode="numeric"
+                  placeholder="7890"
+                />
+              </label>
+            </div>
+          ) : null}
+          {proxyHint ? <small>{proxyHint}</small> : null}
+        </div>
+        <div className="cardo-settings-card-actions">
+          <Button
+            type="button"
+            disabled={busy}
+            onClick={() =>
+              void run(async () => {
+                const port = Number(proxyPort || '7890');
+                const saved = await bridge.setUpdateProxySettings({
+                  mode: proxyMode,
+                  host: proxyHost.trim() || '127.0.0.1',
+                  port: Number.isFinite(port) && port > 0 ? port : 7890,
+                });
+                setProxyMode(saved.mode);
+                setProxyHost(saved.host);
+                setProxyPort(String(saved.port));
+                setProxyHint(t('settings.updateProxySaved'));
+              })
+            }
+          >
+            {t('settings.updateProxySave')}
+          </Button>
         </div>
       </div>
     </div>

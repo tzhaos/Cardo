@@ -3,6 +3,7 @@ import type {
   DesktopRuntimeConfig,
   DesktopUpdateInstallResult,
   DesktopUpdateState,
+  UpdateProxySettings,
 } from '../core/contracts/desktopIpc';
 
 export interface DesktopBridge {
@@ -28,6 +29,8 @@ export interface DesktopBridge {
   installUpdate(): Promise<DesktopUpdateInstallResult>;
   openUpdateReleasePage(): Promise<void>;
   onUpdateStateChange(callback: (state: DesktopUpdateState) => void): () => void;
+  getUpdateProxySettings(): Promise<UpdateProxySettings>;
+  setUpdateProxySettings(settings: UpdateProxySettings): Promise<UpdateProxySettings>;
 }
 
 declare global {

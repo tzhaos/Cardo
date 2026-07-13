@@ -13,6 +13,7 @@ import {
   desktopUrlRequestSchema,
   desktopVoidResponseSchema,
   desktopWebsiteIconResponseSchema,
+  updateProxySettingsSchema,
 } from '../core/contracts/desktopIpc';
 
 /**
@@ -113,6 +114,12 @@ const bridge: DesktopBridge = {
     ipcRenderer.on('update:state', listener);
     return () => ipcRenderer.off('update:state', listener);
   },
+  getUpdateProxySettings: async () =>
+    updateProxySettingsSchema.parse(await ipcRenderer.invoke('update:get-proxy-settings')),
+  setUpdateProxySettings: async (settings) =>
+    updateProxySettingsSchema.parse(
+      await ipcRenderer.invoke('update:set-proxy-settings', settings),
+    ),
 };
 
 contextBridge.exposeInMainWorld('cardoDesktop', bridge);
