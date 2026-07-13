@@ -99,13 +99,15 @@ export class ClientRegistry {
     this.maybeStartGrace();
   }
 
-  /** Mark client inactive when event stream closes; unregister (design §6.6.1). */
+  /**
+   * Mark client non-streaming when the event stream ends.
+   * Stream end does not end session; idle sweep or session.bye unregisters.
+   */
   onStreamClose(clientId: string): void {
     const client = this.clients.get(clientId);
     if (!client) return;
     client.streaming = false;
     client.lastSeenAt = new Date().toISOString();
-    this.unregister(clientId);
   }
 
   /**

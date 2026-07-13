@@ -91,7 +91,10 @@ export class RuntimeClient {
    * Queries used inside apply stay off requestQueue to avoid deadlocks.
    */
   private applyQueue: Promise<unknown> = Promise.resolve();
-  private firstReadyWaiters: Array<() => void> = [];
+  private firstReadyWaiters: Array<{
+    resolve: () => void;
+    reject: (error: Error) => void;
+  }> = [];
   private firstReadySeen = false;
 
   constructor(options: RuntimeClientOptions) {
@@ -343,7 +346,9 @@ export class RuntimeClient {
     this.eventsAbort?.abort();
     this.eventsAbort = null;
     this.subscribeLoopActive = false;
-    this.resolveFirstReadyWaiters();
+    this.rejectFirstReadyWaiters(
+      new RuntimeClientError('client_closed', 'RuntimeClient is closed.'),
+    );
     await this.bye();
     this.selfClientId = null;
     this.onConnectionChange?.('disconnected');
@@ -491,16 +496,27 @@ export class RuntimeClient {
 
   private waitForFirstReady(timeoutMs: number): Promise<void> {
     if (this.firstReadySeen) return Promise.resolve();
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
-        this.firstReadyWaiters = this.firstReadyWaiters.filter((w) => w !== onReady);
-        resolve();
+        this.firstReadyWaiters = this.firstReadyWaiters.filter((w) => w !== waiter);
+        reject(
+          new RuntimeClientError(
+            'ready_timeout',
+            `Timed out waiting for first ready event after ${timeoutMs}ms.`,
+          ),
+        );
       }, timeoutMs);
-      const onReady = () => {
-        clearTimeout(timer);
-        resolve();
+      const waiter = {
+        resolve: () => {
+          clearTimeout(timer);
+          resolve();
+        },
+        reject: (error: Error) => {
+          clearTimeout(timer);
+          reject(error);
+        },
       };
-      this.firstReadyWaiters.push(onReady);
+      this.firstReadyWaiters.push(waiter);
     });
   }
 
@@ -508,7 +524,33 @@ export class RuntimeClient {
     this.firstReadySeen = true;
     const waiters = this.firstReadyWaiters;
     this.firstReadyWaiters = [];
-    for (const resolve of waiters) resolve();
+    for (const waiter of waiters) waiter.resolve();
+  }
+
+  private rejectFirstReadyWaiters(error: Error): void {
+    const waiters = this.firstReadyWaiters;
+    this.firstReadyWaiters = [];
+    for (const waiter of waiters) waiter.reject(error);
+  }
+
+  /**
+   * Re-register with Runtime after the previous client id is no longer valid
+   * (idle sweep, Runtime restart, etc.). Replaces selfClientId; does not reset
+   * revision watermarks beyond advancing from the new hello.
+   */
+  private async rebindSession(): Promise<void> {
+    const hello = await this.hello();
+    this.selfClientId = hello.clientId;
+    this.advanceRevision(hello.revision);
+  }
+
+  private isInvalidClientIdError(error: unknown): boolean {
+    return (
+      error instanceof RuntimeClientError &&
+      error.status === 400 &&
+      error.code === 'invalid_payload' &&
+      /X-Cardo-Client-Id|registered via/i.test(error.message)
+    );
   }
 
   // --- event stream (fetch + ReadableStream, not EventSource) ---
@@ -528,11 +570,34 @@ export class RuntimeClient {
         await this.subscribeEventsOnce();
         backoffMs = 250;
         everConnected = true;
-      } catch {
+      } catch (error) {
         if (this.closed) break;
         this.onConnectionChange?.('reconnecting');
-        // Ensure connect() is not stuck forever if stream fails before first ready.
-        this.resolveFirstReadyWaiters();
+
+        // Fail closed: never soft-succeed connect() without an actual ready event.
+        if (!this.firstReadySeen) {
+          this.rejectFirstReadyWaiters(
+            error instanceof RuntimeClientError
+              ? error
+              : new RuntimeClientError(
+                  'stream_error',
+                  'Event stream failed before first ready event.',
+                ),
+          );
+        }
+
+        // On reconnect (or any drop with a bound id): expired/unknown client → re-hello.
+        if (
+          (everConnected || this.selfClientId != null) &&
+          this.isInvalidClientIdError(error)
+        ) {
+          try {
+            await this.rebindSession();
+          } catch {
+            // Keep prior id; next loop attempt may fail again and rebind.
+          }
+        }
+
         await sleep(backoffMs);
         backoffMs = Math.min(backoffMs * 2, 8_000);
       }
