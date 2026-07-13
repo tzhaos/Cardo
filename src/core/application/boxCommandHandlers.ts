@@ -153,10 +153,7 @@ async function moveBoxToPage(
   frame?: BoxFrame,
 ) {
   if (pageId === COLLECTION_PAGE_ID) {
-    throw new DomainCommandError(
-      'precondition_failed',
-      'Boxes cannot be moved into Collection.',
-    );
+    throw new DomainCommandError('precondition_failed', 'Boxes cannot be moved into Collection.');
   }
   await requirePage(transaction, pageId);
   const box = await requireBox(transaction, boxId);
@@ -190,10 +187,7 @@ async function moveBoxToPage(
 async function collectBox(transaction: DatabaseTransaction, boxId: string) {
   const box = await requireBox(transaction, boxId);
   if (box.pageId === RECYCLE_BIN_PAGE_ID) {
-    throw new DomainCommandError(
-      'precondition_failed',
-      'Recycle Bin boxes cannot be collected.',
-    );
+    throw new DomainCommandError('precondition_failed', 'Recycle Bin boxes cannot be collected.');
   }
   const existing = await transaction
     .select()

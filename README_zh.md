@@ -282,18 +282,18 @@ npx tsx scripts/validate-builtin-themes.ts
 
 ## 技术栈
 
-| 层级         | 选型                                                   |
-| ------------ | ------------------------------------------------------ |
-| 语言         | TypeScript                                             |
-| UI           | React 19、Motion、Radix 基础件、产品级 `ui/cardo` 封装 |
-| 样式         | Tailwind CSS 4、Design Token、主题 recipe              |
-| 契约         | Zod 4（类型用 `z.infer`）                              |
-| 持久化       | Drizzle ORM + SQLite                                   |
+| 层级         | 选型                                                         |
+| ------------ | ------------------------------------------------------------ |
+| 语言         | TypeScript                                                   |
+| UI           | React 19、Motion、Radix 基础件、产品级 `ui/cardo` 封装       |
+| 样式         | Tailwind CSS 4、Design Token、主题 recipe                    |
+| 契约         | Zod 4（类型用 `z.infer`）                                    |
+| 持久化       | Drizzle ORM + SQLite                                         |
 | Runtime 宿主 | Node HTTP（CLI serve / 分离子进程；Desktop attach 或 spawn） |
-| 桌面壳       | Electron 42 + electron-builder                         |
-| 扩展         | Manifest V3                                            |
-| 客户端传输   | RuntimeClient（HTTP + fetch ReadableStream）           |
-| UI 状态      | Zustand（仅临时状态）                                  |
+| 桌面壳       | Electron 42 + electron-builder                               |
+| 扩展         | Manifest V3                                                  |
+| 客户端传输   | RuntimeClient（HTTP + fetch ReadableStream）                 |
+| UI 状态      | Zustand（仅临时状态）                                        |
 
 ---
 

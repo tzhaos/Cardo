@@ -11,7 +11,9 @@ export type RuntimeCompatibilityResult =
   | { ok: true }
   | { ok: false; code: 'schema_mismatch' | 'app_ui_missing'; message: string };
 
-export function assertRuntimeCompatible(input: RuntimeCompatibilityInput): RuntimeCompatibilityResult {
+export function assertRuntimeCompatible(
+  input: RuntimeCompatibilityInput,
+): RuntimeCompatibilityResult {
   if (input.schemaVersion !== DATABASE_SCHEMA_VERSION) {
     return {
       ok: false,
@@ -23,7 +25,8 @@ export function assertRuntimeCompatible(input: RuntimeCompatibilityInput): Runti
     return {
       ok: false,
       code: 'app_ui_missing',
-      message: 'Runtime is healthy but does not serve /app UI. Rebuild web-runtime or reinstall Cardo.',
+      message:
+        'Runtime is healthy but does not serve /app UI. Rebuild web-runtime or reinstall Cardo.',
     };
   }
   return { ok: true };

@@ -1,14 +1,8 @@
 import { app } from 'electron';
 import path from 'node:path';
-import {
-  isDirectoryWritable,
-  isTypicalInstallDirectory,
-} from './installChannelHeuristics';
+import { isDirectoryWritable, isTypicalInstallDirectory } from './installChannelHeuristics';
 
-export {
-  isDirectoryWritable,
-  isTypicalInstallDirectory,
-} from './installChannelHeuristics';
+export { isDirectoryWritable, isTypicalInstallDirectory } from './installChannelHeuristics';
 
 /**
  * How this Desktop binary was distributed.

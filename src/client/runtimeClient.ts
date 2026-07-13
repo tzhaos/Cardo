@@ -587,10 +587,7 @@ export class RuntimeClient {
         }
 
         // On reconnect (or any drop with a bound id): expired/unknown client → re-hello.
-        if (
-          (everConnected || this.selfClientId != null) &&
-          this.isInvalidClientIdError(error)
-        ) {
+        if ((everConnected || this.selfClientId != null) && this.isInvalidClientIdError(error)) {
           try {
             await this.rebindSession();
           } catch {

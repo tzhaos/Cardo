@@ -166,10 +166,7 @@ async function deletePage(transaction: DatabaseTransaction, pageId: string) {
   assertNormalPageId(pageId);
   const normalPages = await selectNormalPages(transaction);
   if (normalPages.length <= 1) {
-    throw new DomainCommandError(
-      'precondition_failed',
-      'The final normal page cannot be deleted.',
-    );
+    throw new DomainCommandError('precondition_failed', 'The final normal page cannot be deleted.');
   }
   const page = normalPages.find((candidate) => candidate.id === pageId);
   if (!page) {

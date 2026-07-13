@@ -135,10 +135,7 @@ async function createItemInBox(
 ) {
   const box = await requireBox(transaction, boxId);
   if (box.pageId === RECYCLE_BIN_PAGE_ID) {
-    throw new DomainCommandError(
-      'precondition_failed',
-      'Items cannot be added in Recycle Bin.',
-    );
+    throw new DomainCommandError('precondition_failed', 'Items cannot be added in Recycle Bin.');
   }
   const item = createItemRow(type, draft);
   const placements = await selectPlacements(transaction, boxId);
@@ -203,10 +200,7 @@ async function setBookmarkFavicon(
   await requirePlacement(transaction, boxId, itemId);
   const item = await requireItem(transaction, itemId);
   if (item.type !== 'bookmark') {
-    throw new DomainCommandError(
-      'precondition_failed',
-      'Only bookmark items can store favicons.',
-    );
+    throw new DomainCommandError('precondition_failed', 'Only bookmark items can store favicons.');
   }
   const metadata: ItemMetadata = { type: 'bookmark', favicon };
   if (JSON.stringify(item.metadata) === JSON.stringify(metadata)) return noMutation();
@@ -244,10 +238,7 @@ async function setItemPinned(
   const placements = await selectPlacements(transaction, boxId);
   const target = placements.find((placement) => placement.itemId === itemId);
   if (!target) {
-    throw new DomainCommandError(
-      'not_found',
-      `Item ${itemId} is not placed in Box ${boxId}.`,
-    );
+    throw new DomainCommandError('not_found', `Item ${itemId} is not placed in Box ${boxId}.`);
   }
   if (target.isPinned === isPinned) return noMutation();
   const pinState = new Map(placements.map((placement) => [placement.itemId, placement.isPinned]));
@@ -296,10 +287,7 @@ async function moveItemBetweenBoxes(
   const targetPlacements = await selectPlacements(transaction, targetBox.id);
   const sourcePlacement = sourcePlacements.find((placement) => placement.itemId === command.itemId);
   if (!sourcePlacement) {
-    throw new DomainCommandError(
-      'not_found',
-      'Source Box does not contain the requested Item.',
-    );
+    throw new DomainCommandError('not_found', 'Source Box does not contain the requested Item.');
   }
   const changes: DatabaseCommandMutation['changes'] = [];
 
@@ -361,10 +349,7 @@ async function deleteItem(transaction: DatabaseTransaction, boxId: string, itemI
   const placements = await selectPlacements(transaction, boxId);
   const placement = placements.find((candidate) => candidate.itemId === itemId);
   if (!placement) {
-    throw new DomainCommandError(
-      'not_found',
-      `Item ${itemId} is not placed in Box ${boxId}.`,
-    );
+    throw new DomainCommandError('not_found', `Item ${itemId} is not placed in Box ${boxId}.`);
   }
   await transaction.delete(boxItems).where(eq(boxItems.itemId, itemId));
   await transaction.delete(items).where(eq(items.id, itemId));
@@ -474,10 +459,7 @@ async function requirePlacement(transaction: DatabaseTransaction, boxId: string,
     .where(eq(boxItems.itemId, itemId))
     .get();
   if (!placement || placement.boxId !== boxId) {
-    throw new DomainCommandError(
-      'not_found',
-      `Item ${itemId} is not placed in Box ${boxId}.`,
-    );
+    throw new DomainCommandError('not_found', `Item ${itemId} is not placed in Box ${boxId}.`);
   }
   return placement;
 }
@@ -519,10 +501,7 @@ async function requireAppState(transaction: DatabaseTransaction) {
 function createItemRow(type: WorkspaceItemType, draft: Record<string, string>) {
   const content = getDraftContent(type, draft).trim();
   if (!content) {
-    throw new DomainCommandError(
-      'invalid_command',
-      `Item content is required for ${type}.`,
-    );
+    throw new DomainCommandError('invalid_command', `Item content is required for ${type}.`);
   }
   const timestamp = new Date().toISOString();
   return {

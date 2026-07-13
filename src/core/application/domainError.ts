@@ -1,8 +1,4 @@
-export type DomainErrorCode =
-  | 'not_found'
-  | 'precondition_failed'
-  | 'conflict'
-  | 'invalid_command';
+export type DomainErrorCode = 'not_found' | 'precondition_failed' | 'conflict' | 'invalid_command';
 
 export class DomainCommandError extends Error {
   readonly code: DomainErrorCode;

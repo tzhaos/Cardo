@@ -118,8 +118,7 @@ async function handleRuntimeFatal(event: string, reason: unknown): Promise<void>
     } catch (cleanupError) {
       runtimeLog('error', 'fatal_stop_failed', {
         pid: process.pid,
-        message:
-          cleanupError instanceof Error ? cleanupError.message : String(cleanupError),
+        message: cleanupError instanceof Error ? cleanupError.message : String(cleanupError),
       });
     }
 
