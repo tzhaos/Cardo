@@ -3,7 +3,7 @@ import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { animate as animateMotion, motion, useMotionValue, useSpring } from 'motion/react';
 import type { MotionStyle } from 'motion/react';
 import { useCanvasStore } from '../../app/stores/canvasStore';
-import { useUiStore } from '../../app/stores/uiStore';
+import { useUiStore, type BoxDragSession } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { getPageDropElement, registerBoxElement } from '../../app/interactionElementRegistry';
 import { useInlineRename } from '../../app/useInlineRename';
@@ -12,11 +12,7 @@ import { ThemeIcon } from '../../kit/icon';
 import { IconButton } from '../../kit/icon-button';
 import { Input } from '../../kit/input';
 import { Button } from '../../kit/button';
-import {
-  constrainBoxFrameToCanvas,
-  constrainBoxResizeToCanvas,
-  createCanvasWorldBounds,
-} from '../../domain/canvasGeometry';
+import { constrainBoxFrameToCanvas, createCanvasWorldBounds } from '../../domain/canvasGeometry';
 import {
   RECYCLE_BIN_PAGE_ID,
   isRecycleBinPageId,
@@ -42,6 +38,11 @@ interface BaseBoxFrameProps {
   children: ReactNode;
   onAddItem: () => void;
   skipEntryAnimation?: boolean;
+  /**
+   * Waterfall/list: placement is layout-managed (scroll document).
+   * Drag reorder + cross-page still allowed; free resize is off.
+   */
+  layoutLocked?: boolean;
 }
 
 interface BoxDeleteMotion {
@@ -65,8 +66,8 @@ export function BaseBoxFrame({
   children,
   onAddItem,
   skipEntryAnimation = false,
+  layoutLocked = false,
 }: BaseBoxFrameProps) {
-  const updateBoxFrame = useWorkspaceStore((state) => state.updateBoxFrame);
   const renameBox = useWorkspaceStore((state) => state.renameBox);
   const promoteTemporaryBox = useWorkspaceStore((state) => state.promoteTemporaryBox);
   const setBoxDetailMode = useWorkspaceStore((state) => state.setBoxDetailMode);
@@ -117,8 +118,11 @@ export function BaseBoxFrame({
   const deleteTargetRef = useRef<HTMLElement | null>(null);
   const deleteCommittedRef = useRef(false);
   const holdVisualUntilLandingRef = useRef(false);
-  const boxLeft = useMotionValue(box.frame.x);
-  const boxTop = useMotionValue(box.frame.y);
+  // Seed fixed-layer paint from lastClient when remounting mid-drag (excludeBoxId → DraggedBoxLayer).
+  // Using world frame here would flash the box at wrong fixed coords for one frame.
+  const seedPaint = resolveDragClientPaint(isDraggingThisBox ? boxDragSession : null, box.frame);
+  const boxLeft = useMotionValue(seedPaint.left);
+  const boxTop = useMotionValue(seedPaint.top);
   const boxWidth = useMotionValue(box.frame.width);
   const boxHeight = useMotionValue(box.frame.height);
   const dragTiltTarget = useMotionValue(0);
@@ -131,26 +135,21 @@ export function BaseBoxFrame({
   });
 
   const attachDragPointerSession = useCallback(
-    (session: {
-      pointerId: number;
-      startClientX: number;
-      startClientY: number;
-      startFrame: (typeof box)['frame'];
-      latestFrame?: (typeof box)['frame'];
-      transformOrigin: string;
-    }) => {
+    (session: BoxDragSession) => {
       pointerSessionRef.current?.dispose();
       setDragTransformOrigin(session.transformOrigin);
       // Prefer latestFrame so page-transfer rebases do not flash the pre-switch coords.
       const initialFrame = session.latestFrame ?? session.startFrame;
-      // Fixed-layer visual from transform origin — stable across remount into drag layer.
-      const originTokens = session.transformOrigin.trim().split(/\s+/);
-      const originXPct = Number.parseFloat(originTokens[0] ?? '50') || 50;
-      const originYPct = Number.parseFloat(originTokens[1] ?? '50') || 50;
-      const grabOffsetX = (initialFrame.width * originXPct) / 100;
-      const grabOffsetY = (initialFrame.height * originYPct) / 100;
-      boxLeft.set(session.startClientX - grabOffsetX);
-      boxTop.set(session.startClientY - grabOffsetY);
+      const { grabOffsetX, grabOffsetY } = resolveGrabOffset(
+        session.transformOrigin,
+        initialFrame.width,
+        initialFrame.height,
+      );
+      // Seed from lastClient (not only startClient) so remount after first move stays under finger.
+      const seedX = session.lastClientX;
+      const seedY = session.lastClientY;
+      boxLeft.set(seedX - grabOffsetX);
+      boxTop.set(seedY - grabOffsetY);
       let latestFrame = initialFrame;
       const pointerSession = startWindowPointerSession({
         pointerId: session.pointerId,
@@ -159,28 +158,34 @@ export function BaseBoxFrame({
           const baseFrame = activeSession?.startFrame ?? session.startFrame;
           const baseClientX = activeSession?.startClientX ?? session.startClientX;
           const baseClientY = activeSession?.startClientY ?? session.startClientY;
+          const width = activeSession?.latestFrame.width ?? initialFrame.width;
+          const height = activeSession?.latestFrame.height ?? initialFrame.height;
+          const offset = resolveGrabOffset(session.transformOrigin, width, height);
           dragTiltTarget.set(
             Math.max(-2.2, Math.min(2.2, (moveEvent.clientX - baseClientX) / 180)),
           );
           latestFrame = constrainBoxFrameToCanvas(
             {
               ...baseFrame,
+              width,
+              height,
               x: Math.round(baseFrame.x + moveEvent.clientX - baseClientX),
               y: Math.round(baseFrame.y + moveEvent.clientY - baseClientY),
             },
             createCanvasWorldBounds(useCanvasStore.getState().viewportSize),
           );
           // Client/fixed position — independent of page-scene slide and camera pan.
-          boxLeft.set(moveEvent.clientX - grabOffsetX);
-          boxTop.set(moveEvent.clientY - grabOffsetY);
-          updateBoxDragFrame(latestFrame);
+          boxLeft.set(moveEvent.clientX - offset.grabOffsetX);
+          boxTop.set(moveEvent.clientY - offset.grabOffsetY);
+          updateBoxDragFrame(latestFrame, moveEvent.clientX, moveEvent.clientY);
         },
         onEnd: () => {
           dragTiltTarget.set(0);
           // Hold world-space frame for remount into the page scene + landing.
           holdVisualUntilLandingRef.current = true;
-          boxLeft.set(latestFrame.x);
-          boxTop.set(latestFrame.y);
+          const world = useUiStore.getState().boxDragSession?.latestFrame ?? latestFrame;
+          boxLeft.set(world.x);
+          boxTop.set(world.y);
           if (pointerSessionRef.current === pointerSession) {
             pointerSessionRef.current = null;
           }
@@ -210,6 +215,8 @@ export function BaseBoxFrame({
     if (box.isLocked) {
       return;
     }
+    // Managed layouts (waterfall/list) still allow drag for reorder + cross-page;
+    // release reflows slots (see BoxPageDropController).
 
     if ((event.target as HTMLElement).closest('button,input,textarea,select,[data-no-drag]')) {
       return;
@@ -233,55 +240,29 @@ export function BaseBoxFrame({
       );
       transformOrigin = `${originX}% ${originY}%`;
     }
-    const session = {
+    const session: BoxDragSession = {
       boxId: box.id,
       pointerId: event.pointerId,
       startClientX: event.clientX,
       startClientY: event.clientY,
+      lastClientX: event.clientX,
+      lastClientY: event.clientY,
       startFrame: box.frame,
       latestFrame: box.frame,
       transformOrigin,
     };
+    // Seed paint on this instance before remount so the first fixed frame is correct
+    // if React reuses anything; DraggedBoxLayer remount seeds from session.lastClient*.
+    const { grabOffsetX, grabOffsetY } = resolveGrabOffset(
+      transformOrigin,
+      box.frame.width,
+      box.frame.height,
+    );
+    boxLeft.set(event.clientX - grabOffsetX);
+    boxTop.set(event.clientY - grabOffsetY);
+    holdVisualUntilLandingRef.current = false;
     beginBoxDrag(session);
     attachDragPointerSession(session);
-  };
-
-  const beginResize = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    if (box.isLocked) {
-      return;
-    }
-
-    event.stopPropagation();
-    event.preventDefault();
-    contextMenu.closeMenu();
-    pointerSessionRef.current?.end();
-    const startX = event.clientX;
-    const startY = event.clientY;
-    const startFrame = box.frame;
-    let latestFrame = startFrame;
-    const session = startWindowPointerSession({
-      pointerId: event.pointerId,
-      onMove: (moveEvent) => {
-        latestFrame = constrainBoxResizeToCanvas(
-          {
-            ...startFrame,
-            width: Math.max(240, Math.round(startFrame.width + moveEvent.clientX - startX)),
-            height: Math.max(170, Math.round(startFrame.height + moveEvent.clientY - startY)),
-          },
-          createCanvasWorldBounds(useCanvasStore.getState().viewportSize),
-          { width: 240, height: 170 },
-        );
-        boxWidth.set(latestFrame.width);
-        boxHeight.set(latestFrame.height);
-      },
-      onEnd: () => {
-        updateBoxFrame(box.id, latestFrame);
-        if (pointerSessionRef.current === session) {
-          pointerSessionRef.current = null;
-        }
-      },
-    });
-    pointerSessionRef.current = session;
   };
 
   const dragging = isDraggingThisBox;
@@ -298,11 +279,8 @@ export function BaseBoxFrame({
   const viewMode = isTemporary ? 'list' : box.viewMode;
   const detailMode = isTemporary ? 'detailed' : box.detailMode;
   const boxCornerRadius = draggingOverTopBar ? BOX_CORNER_RADIUS.compact : BOX_CORNER_RADIUS.idle;
-  const visualScale = draggingOverTopBar
-    ? compactScale * (draggingOverTab ? 0.9 : 1)
-    : dragging
-      ? 1.028
-      : 1;
+  // Keep idle scale while free-dragging so drop does not flash scale 1.028 → 1.
+  const visualScale = draggingOverTopBar ? compactScale * (draggingOverTab ? 0.9 : 1) : 1;
   const visualClassName = [
     'cardo-box',
     dragging || deleteMotion ? 'cardo-box-dragging' : '',
@@ -313,6 +291,7 @@ export function BaseBoxFrame({
     highlightedBoxId === box.id ? 'cardo-box-highlighted' : '',
     detailMode === 'compact' ? 'cardo-box-compact' : '',
     box.isLocked ? 'cardo-box-locked' : '',
+    layoutLocked ? 'cardo-box-layout-locked' : '',
     isTemporary ? 'cardo-box-temporary' : '',
     addViewState?.mode || (appearanceEnabled && appearanceView) || confirmDelete
       ? 'cardo-box-local-view'
@@ -350,6 +329,7 @@ export function BaseBoxFrame({
         boxTop.set(projectedFrame.y);
         return;
       } else {
+        // Wait for projection / landing — failsafe below clears stuck hold.
         return;
       }
     }
@@ -374,7 +354,7 @@ export function BaseBoxFrame({
 
     // Distance-aware landing: short hops stay snappy, cross-page tab place takes longer.
     const travel = Math.hypot(deltaX, deltaY);
-    const duration = Math.min(0.78, Math.max(0.48, 0.36 + travel / 1100));
+    const duration = Math.min(0.56, Math.max(0.28, 0.22 + travel / 1400));
     const positionTransition = {
       type: 'tween' as const,
       duration,
@@ -403,6 +383,19 @@ export function BaseBoxFrame({
     dragging,
     pendingBoxLanding,
   ]);
+
+  // Failsafe: never leave the box frozen after drop if projection/landing race stalls.
+  useEffect(() => {
+    if (dragging || !holdVisualUntilLandingRef.current) return;
+    const timer = window.setTimeout(() => {
+      if (!holdVisualUntilLandingRef.current) return;
+      holdVisualUntilLandingRef.current = false;
+      boxLeft.set(box.frame.x);
+      boxTop.set(box.frame.y);
+      clearPendingBoxLanding(box.id);
+    }, 160);
+    return () => window.clearTimeout(timer);
+  }, [box.frame.x, box.frame.y, box.id, boxLeft, boxTop, clearPendingBoxLanding, dragging]);
 
   const startDeleteMotion = () => {
     if (deleteMotion || deleteCommittedRef.current) return;
@@ -465,9 +458,9 @@ export function BaseBoxFrame({
       initial={skipEntryAnimation ? false : { scale: 0.8, opacity: 0 }}
       animate={{
         x: deleteMotion?.x ?? 0,
-        y: deleteMotion?.y ?? (dragging && !draggingOverTopBar ? -7 : 0),
+        y: deleteMotion?.y ?? 0,
         scale: deleteMotion?.scale ?? visualScale,
-        opacity: deleteMotion?.opacity ?? (draggingOverTopBar ? 0.94 : dragging ? 0.97 : 1),
+        opacity: deleteMotion?.opacity ?? (draggingOverTopBar ? 0.94 : 1),
         // Numbers only for Motion. Cross-page uses 24px (mini card), never pill/circle.
         borderRadius: deleteMotion?.borderRadius ?? boxCornerRadius,
       }}
@@ -475,29 +468,27 @@ export function BaseBoxFrame({
         deleteMotion
           ? deleteMotion.permanent
             ? { duration: 0.24, ease: [0.4, 0, 1, 1] }
-            : { duration: 0.52, ease: [0.22, 0.72, 0.18, 1] }
+            : { duration: 0.48, ease: [0.22, 0.72, 0.18, 1] }
           : dragging
             ? {
-                // Follow pointer / tab chrome — slightly slower shrink into mini-card.
-                y: { type: 'tween', duration: 0.2, ease: [0.2, 0.8, 0.2, 1] },
-                scale: { type: 'tween', duration: 0.24, ease: [0.2, 0.8, 0.2, 1] },
-                borderRadius: { duration: 0.2 },
-                opacity: { duration: 0.16 },
-              }
-            : {
-                // Match landing pace after tab release (compact → full size).
-                y: {
-                  type: 'tween',
-                  duration: pendingBoxLanding ? 0.58 : 0.2,
-                  ease: [0.22, 0.82, 0.2, 1],
-                },
+                // Nav mini-card only — freeform scale stays 1 (no release pop).
                 scale: {
                   type: 'tween',
-                  duration: pendingBoxLanding ? 0.62 : 0.2,
+                  duration: draggingOverTopBar ? 0.18 : 0,
+                  ease: [0.2, 0.8, 0.2, 1],
+                },
+                borderRadius: { duration: draggingOverTopBar ? 0.16 : 0.1 },
+                opacity: { duration: 0.12 },
+              }
+            : {
+                // Landing after cross-page / pull-in only.
+                scale: {
+                  type: 'tween',
+                  duration: pendingBoxLanding ? 0.36 : 0,
                   ease: [0.22, 0.82, 0.2, 1],
                 },
-                borderRadius: { duration: pendingBoxLanding ? 0.5 : 0.18 },
-                opacity: { duration: pendingBoxLanding ? 0.42 : 0.14 },
+                borderRadius: { duration: pendingBoxLanding ? 0.32 : 0.1 },
+                opacity: { duration: pendingBoxLanding ? 0.24 : 0.08 },
               }
       }
       onAnimationComplete={finishDeleteMotion}
@@ -650,9 +641,9 @@ export function BaseBoxFrame({
               tooltip={t(box.isLocked ? 'box.unlock' : 'box.lock')}
             >
               {box.isLocked ? (
-                <ThemeIcon name="lock" size={12} />
+                <ThemeIcon name="lock" size={15} strokeWidth={2.1} />
               ) : (
-                <ThemeIcon name="unlock" size={12} />
+                <ThemeIcon name="unlock" size={15} strokeWidth={2.1} />
               )}
             </IconButton>
             <IconButton
@@ -670,9 +661,9 @@ export function BaseBoxFrame({
               )}
             >
               {detailMode === 'detailed' ? (
-                <ThemeIcon name="collapse" size={12} />
+                <ThemeIcon name="collapse" size={15} strokeWidth={2.1} />
               ) : (
-                <ThemeIcon name="expand" size={12} />
+                <ThemeIcon name="expand" size={15} strokeWidth={2.1} />
               )}
             </IconButton>
             <IconButton
@@ -684,9 +675,9 @@ export function BaseBoxFrame({
               tooltip={t(viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList')}
             >
               {viewMode === 'list' ? (
-                <ThemeIcon name="layoutGrid" size={12} />
+                <ThemeIcon name="layoutGrid" size={15} strokeWidth={2.1} />
               ) : (
-                <ThemeIcon name="list" size={12} />
+                <ThemeIcon name="list" size={15} strokeWidth={2.1} />
               )}
             </IconButton>
             <IconButton
@@ -715,7 +706,7 @@ export function BaseBoxFrame({
                     : t(isInRecycleBin ? 'menu.deletePermanently' : 'menu.moveToRecycleBin')
               }
             >
-              <ThemeIcon name="close" size={12} />
+              <ThemeIcon name="close" size={15} strokeWidth={2.1} />
             </IconButton>
           </div>
         </header>
@@ -761,24 +752,41 @@ export function BaseBoxFrame({
       </div>
       {!isTemporary && !addViewState?.mode && !appearanceView && !confirmDelete ? (
         <footer className="cardo-box-footer">
-          <Button variant="ghost" onClick={onAddItem}>
+          <Button variant="ghost" className="cardo-box-add-item" onClick={onAddItem}>
             <ThemeIcon name="add" size={12} />
             <span>{t('box.addItem')}</span>
           </Button>
         </footer>
       ) : null}
-      {!isTemporary ? (
-        <Button
-          variant="ghost"
-          className="cardo-resize-handle"
-          type="button"
-          disabled={box.isLocked}
-          aria-label={t('box.resize', { title: box.title })}
-          onPointerDown={beginResize}
-        >
-          <span className="cardo-resize-grip" aria-hidden="true" />
-        </Button>
-      ) : null}
     </motion.article>
   );
+}
+
+function resolveGrabOffset(transformOrigin: string, width: number, height: number) {
+  const tokens = transformOrigin.trim().split(/\s+/);
+  const originXPct = Number.parseFloat(tokens[0] ?? '50') || 50;
+  const originYPct = Number.parseFloat(tokens[1] ?? '50') || 50;
+  return {
+    grabOffsetX: (width * originXPct) / 100,
+    grabOffsetY: (height * originYPct) / 100,
+  };
+}
+
+/** Fixed-layer left/top from last client + grab origin; world frame when idle. */
+function resolveDragClientPaint(
+  session: BoxDragSession | null,
+  frame: { x: number; y: number; width: number; height: number },
+) {
+  if (!session) {
+    return { left: frame.x, top: frame.y };
+  }
+  const { grabOffsetX, grabOffsetY } = resolveGrabOffset(
+    session.transformOrigin,
+    session.latestFrame.width,
+    session.latestFrame.height,
+  );
+  return {
+    left: session.lastClientX - grabOffsetX,
+    top: session.lastClientY - grabOffsetY,
+  };
 }

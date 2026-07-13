@@ -305,7 +305,14 @@
   pointer-events: none;
 }
 
+/*
+ * Layer children always paint in client space (fixed). Do not wait for
+ * .cardo-box-dragging class on remount — that one-frame gap caused world coords
+ * under absolute layout (flash at wrong place).
+ */
 .cardo-dragged-box-layer .cardo-box {
+  position: fixed !important;
+  z-index: 100 !important;
   pointer-events: auto;
 }
 
