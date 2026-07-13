@@ -2,6 +2,7 @@ import {
   nativeHostRuntimeDiscoverOkSchema,
   type NativeHostResponse,
 } from '../../core/protocols/nativeMessaging';
+import { assertRuntimeCompatible } from '../../core/runtimeCompatibility';
 import { sendNativeMessage } from './sendNativeMessage';
 
 export class RuntimeDiscoverError extends Error {
@@ -59,6 +60,16 @@ export async function discoverRuntimeViaNativeMessaging(): Promise<RuntimeDiscov
   }
 
   const ok = nativeHostRuntimeDiscoverOkSchema.parse(response);
+
+  // Extension does not need Runtime static /app UI; schema must match client contract.
+  const compat = assertRuntimeCompatible({
+    schemaVersion: ok.schemaVersion,
+    requireAppUi: false,
+  });
+  if (!compat.ok) {
+    throw new RuntimeDiscoverError(compat.code, compat.message);
+  }
+
   return {
     baseUrl: ok.baseUrl,
     token: ok.token,

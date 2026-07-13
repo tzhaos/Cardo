@@ -8,17 +8,20 @@ import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { issueBootstrapCode } from '../client/runtimeClient';
+import { assertRuntimeCompatible } from '../core/runtimeCompatibility';
 import {
   probeRuntimeHealth,
   readDiscoveryFile,
   readLockFile,
+  registerRuntimeProcessHandlers,
   resolveCardoDataPaths,
+  setRuntimeLogPath,
   startRuntime,
   stopRuntime,
   waitUntilRuntimeStopped,
 } from '../runtime/index';
 import { defaultOpenLocalResource } from '../runtime/openLocalResourceHook';
-import { issueBootstrapCode } from '../client/runtimeClient';
 
 const HELP = `cardo — Cardo local runtime steward
 
@@ -77,6 +80,10 @@ async function cmdServe(args: string[]): Promise<void> {
   const lifetimeMode = daemonChild ? 'auto' : 'foreground';
   const paths = resolveCardoDataPaths();
   const serveStaticDir = resolveServeStaticDir();
+
+  // Process crash surface for foreground serve and detached daemon-child.
+  setRuntimeLogPath(paths.logPath);
+  registerRuntimeProcessHandlers();
 
   if (daemonChild) {
     try {
@@ -310,6 +317,18 @@ async function cmdOpen(): Promise<void> {
     return;
   }
 
+  const servesAppUi = await probeRuntimeAppUi(discovery.baseUrl);
+  const compat = assertRuntimeCompatible({
+    schemaVersion: discovery.schemaVersion,
+    requireAppUi: true,
+    servesAppUi,
+  });
+  if (!compat.ok) {
+    process.stderr.write(`${compat.message}\n`);
+    process.exitCode = 1;
+    return;
+  }
+
   let oneTimeCode: string;
   try {
     const issued = await issueBootstrapCode(discovery.baseUrl, discovery.token);
@@ -405,6 +424,24 @@ async function waitForRuntime(
     await new Promise((r) => setTimeout(r, 200));
   }
   return null;
+}
+
+/** Probe Runtime-hosted Web UI required by `cardo open` (GET /app/). */
+async function probeRuntimeAppUi(baseUrl: string): Promise<boolean> {
+  const url = `${baseUrl.replace(/\/$/, '')}/app/`;
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 2_000);
+    const response = await fetch(url, {
+      method: 'GET',
+      signal: controller.signal,
+      redirect: 'follow',
+    });
+    clearTimeout(timer);
+    return response.ok;
+  } catch {
+    return false;
+  }
 }
 
 void main().catch((error: unknown) => {

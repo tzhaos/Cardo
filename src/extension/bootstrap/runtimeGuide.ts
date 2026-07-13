@@ -7,6 +7,7 @@ export type RuntimeGuideKind =
   | 'native_host_missing'
   | 'runtime_unavailable'
   | 'native_messaging_failed'
+  | 'schema_mismatch'
   | 'connect_failed'
   | 'unknown';
 
@@ -47,6 +48,11 @@ const COPY: Record<'en' | 'zh', GuideCopy> = {
         'Reinstall Cardo, then fully quit and reopen the browser.',
         'Click Retry.',
       ],
+      schema_mismatch: [
+        'Stop Cardo on this computer (quit Desktop or run cardo stop).',
+        'Update Cardo Desktop and the browser extension to the same version.',
+        'Start Cardo again, then Retry.',
+      ],
       connect_failed: ['Make sure Cardo is still open on this computer.', 'Click Retry.'],
     },
     retry: 'Retry',
@@ -55,6 +61,7 @@ const COPY: Record<'en' | 'zh', GuideCopy> = {
       native_host_missing: 'Cardo is not set up for this browser yet.',
       runtime_unavailable: 'Cardo is not running on this computer.',
       native_messaging_failed: 'This browser cannot reach Cardo.',
+      schema_mismatch: 'This extension does not match the Cardo version running on this computer.',
       connect_failed: 'Could not connect to Cardo.',
       unknown: 'Something went wrong. Please try again.',
     },
@@ -74,6 +81,11 @@ const COPY: Record<'en' | 'zh', GuideCopy> = {
         '请重新安装 Cardo，然后完全退出并重新打开浏览器。',
         '点击「重试」。',
       ],
+      schema_mismatch: [
+        '请先停止本机 Cardo（退出桌面端或执行 cardo stop）。',
+        '将 Cardo 桌面端与浏览器扩展升级到同一版本。',
+        '重新启动 Cardo 后点「重试」。',
+      ],
       connect_failed: ['请确认本机 Cardo 仍在运行。', '点击「重试」。'],
     },
     retry: '重试',
@@ -82,6 +94,7 @@ const COPY: Record<'en' | 'zh', GuideCopy> = {
       native_host_missing: '当前浏览器尚未完成 Cardo 设置。',
       runtime_unavailable: '本机未运行 Cardo。',
       native_messaging_failed: '浏览器无法连接 Cardo。',
+      schema_mismatch: '当前扩展与本机运行的 Cardo 版本不匹配。',
       connect_failed: '无法连接到 Cardo。',
       unknown: '出现问题，请重试。',
     },
@@ -106,6 +119,9 @@ export function classifyRuntimeGuideError(error: unknown): {
     }
     if (code === 'native_messaging_failed') {
       return { kind: 'native_messaging_failed', detail: message };
+    }
+    if (code === 'schema_mismatch' || code === 'app_ui_missing') {
+      return { kind: 'schema_mismatch', detail: message };
     }
     if (code === 'connect_failed') {
       return { kind: 'connect_failed', detail: message };
