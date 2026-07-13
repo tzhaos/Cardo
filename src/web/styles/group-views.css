@@ -1,0 +1,223 @@
+/* Managed group views: scroll document (not freeform pan canvas). */
+
+.cardo-group-scroll {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--cardo-canvas, #f3f4f7);
+  scrollbar-width: thin;
+  scrollbar-color: var(--cardo-scrollbar) transparent;
+}
+
+.cardo-group-scroll-empty {
+  display: flex;
+  min-height: 160px;
+  align-items: center;
+  justify-content: center;
+  color: var(--cardo-muted);
+  font-size: 13px;
+}
+
+/* —— Waterfall: card morphology —— */
+
+.cardo-group-waterfall-plane {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+  padding-bottom: 24px;
+}
+
+.cardo-waterfall-card {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--box-accent) 18%, var(--cardo-border));
+  border-radius: 14px;
+  background: var(--cardo-panel, #fff);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--cardo-text) 6%, transparent);
+}
+
+.cardo-waterfall-card-header {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--cardo-border-subtle);
+  padding: 8px 10px;
+  background: color-mix(in srgb, var(--box-accent) 6%, var(--cardo-panel-chrome, #f8f9fb));
+  cursor: grab;
+  touch-action: none;
+}
+
+.cardo-waterfall-card-header:active {
+  cursor: grabbing;
+}
+
+.cardo-waterfall-card-icon {
+  display: inline-flex;
+  color: var(--box-accent);
+}
+
+.cardo-waterfall-card-title {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  color: var(--cardo-soft-text);
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardo-waterfall-card-count {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 1px 7px;
+  background: color-mix(in srgb, var(--box-accent) 12%, transparent);
+  color: var(--cardo-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.cardo-waterfall-card-delete {
+  flex: 0 0 auto;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.cardo-waterfall-card:hover .cardo-waterfall-card-delete {
+  opacity: 1;
+}
+
+.cardo-waterfall-card-body {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  overflow: auto;
+  padding: 6px 8px 8px;
+}
+
+.cardo-waterfall-card-item {
+  min-width: 0;
+}
+
+.cardo-waterfall-card-item .cardo-item-row {
+  min-height: 32px;
+  padding: 3px 4px 3px 16px;
+}
+
+.cardo-waterfall-card-empty,
+.cardo-waterfall-card-more {
+  padding: 8px 4px;
+  color: var(--cardo-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* —— List: grouped items + item grid —— */
+
+.cardo-group-list-flow {
+  display: flex;
+  width: min(960px, 100%);
+  min-height: 100%;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0 auto;
+  padding: 16px 16px 28px;
+}
+
+.cardo-group-list-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--cardo-border-subtle);
+  border-radius: 12px;
+  padding: 8px 10px 10px;
+  background: var(--cardo-panel, #fff);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--cardo-text) 5%, transparent);
+}
+
+.cardo-group-list-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 2px 2px 2px 0;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.cardo-group-list-section-header:active {
+  cursor: grabbing;
+}
+
+.cardo-group-list-grip {
+  flex: 0 0 auto;
+  color: var(--cardo-muted);
+  opacity: 0.55;
+}
+
+.cardo-group-list-section-icon {
+  display: inline-flex;
+  color: var(--box-accent);
+}
+
+.cardo-group-list-section-title {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  color: var(--cardo-text);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardo-group-list-section-count {
+  flex: 0 0 auto;
+  color: var(--cardo-muted);
+  font-size: 12px;
+}
+
+.cardo-group-list-item-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 4px;
+}
+
+.cardo-group-list-item-cell {
+  min-width: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--cardo-canvas, #f3f4f7) 55%, var(--cardo-panel, #fff));
+}
+
+.cardo-group-list-item-cell .cardo-item-row {
+  min-height: 36px;
+  border-radius: 8px;
+  padding: 4px 6px 4px 16px;
+}
+
+.cardo-group-list-section-empty {
+  padding: 10px 8px;
+  color: var(--cardo-muted);
+  font-size: 12px;
+}
+
+/* Canvas host when managed scroll is active */
+.cardo-canvas-group-view-waterfall,
+.cardo-canvas-group-view-list {
+  overflow: hidden;
+}
+
+.cardo-canvas-group-view-waterfall .cardo-canvas-boundary,
+.cardo-canvas-group-view-list .cardo-canvas-boundary,
+.cardo-canvas-group-view-waterfall .cardo-canvas-edge-feedback,
+.cardo-canvas-group-view-list .cardo-canvas-edge-feedback {
+  display: none;
+}

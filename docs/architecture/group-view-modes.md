@@ -21,28 +21,28 @@ Sidebar “新建分组 / Groups list / 删除分组” copy lives in `src/web/i
 
 A group is a container of boxes. How those boxes are presented is a **view mode**, not a second shell:
 
-| Mode id | Product meaning | Interaction |
-| --- | --- | --- |
-| `freeform` | Canvas (default) | Absolute `frame`; free drag / resize; free overlap |
-| `waterfall` | Waterfall | Drag allowed; no free overlap; engine reflows columns and snaps frames |
-| `list` | List | Boxes as serial rows (menu-like item list); no free 2D placement |
+| Mode id | Product meaning | Morphology | Interaction |
+| --- | --- | --- | --- |
+| `freeform` | Canvas (default) | Box (`UniversalBox`) | Freeform pan canvas; free drag/resize/overlap |
+| `waterfall` | Waterfall | Card (`WaterfallCard`) | Scroll document; masonry cards; drag reorder + cross-page; reflow on drop |
+| `list` | List | Grouped items (`GroupListSection` + item grid) | Scroll document; section per box + item grid; drag reorder + cross-page |
 
 Contract SoT: `src/core/contracts/groupView.ts` (`groupViewModeSchema`).
 
 ```text
 Group (page row)
   └── viewMode: freeform | waterfall | list
-        ├── freeform → WorkspaceCanvas + absolute BoxFrame
-        ├── waterfall → layout engine + constrained drag (future)
-        └── list → serial Box rows (future)
+        ├── freeform → free canvas + box chrome
+        ├── waterfall → GroupScrollSurface + cards
+        └── list → GroupScrollSurface + grouped item grid
 ```
 
 ## 3. Implementation plan (incremental)
 
-1. Ship freeform as today (already production).
-2. Persist per-group `viewMode` via preferences or page metadata (Zod only; no dual-read of retired fields).
-3. Waterfall: column width + gap SoT; on drag end recompute frames; reject overlap permanently.
-4. List: ignore freeform x/y for paint; order by explicit rank or y then x; row chrome reuses item-list density.
+1. Freeform box morphology (production).
+2. Waterfall card + list grouped-item morphologies in scroll views (`src/web/features/group-views/*`).
+3. Persist per-group `viewMode` via page metadata (future; session uiStore for now).
+4. Drag reorder + cross-page for managed modes via `BoxPageDropController` reflow.
 
 ## 4. Non-goals (this milestone)
 

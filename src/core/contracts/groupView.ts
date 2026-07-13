@@ -4,9 +4,9 @@ import { z } from 'zod';
  * Group (product term; persistence still uses page ids) content layout mode.
  * Canvas is one view among several; new modes extend this enum only via code PR.
  *
- * - freeform: absolute frames, free drag/resize, free overlap (today's canvas)
- * - waterfall: free drag but no free overlap; layout engine snaps to columns
- * - list: serial vertical stack of boxes (menu-like rows)
+ * - freeform: absolute frames, free drag/resize, free overlap — box morphology
+ * - waterfall: scroll document; masonry cards — card morphology
+ * - list: scroll document; grouped items in a grid — item morphology
  */
 export const groupViewModeIds = ['freeform', 'waterfall', 'list'] as const;
 

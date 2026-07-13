@@ -17,11 +17,13 @@ import {
   getCanvasPanLimits,
 } from '../../domain/canvasGeometry';
 import { createBoxFrameCenteredAt } from '../../domain/placement';
-import { isCollectionPageId, isRecycleBinPageId } from '../../domain/workspace';
+import { isManagedGroupView, resolveGroupViewMode } from '../../domain/groupLayout';
+import { isCollectionPageId, isRecycleBinPageId, isSystemPageId } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { WorkspaceBoxRenderer } from './WorkspaceBoxRenderer';
 import { useCanvasTools } from './useCanvasTools';
 import { CollectionPage } from '../collection/CollectionPage';
+import { GroupScrollSurface } from '../group-views/GroupScrollSurface';
 
 export function WorkspaceCanvas() {
   const activePageId = useWorkspaceStore((state) => state.projection.activePageId);
@@ -49,6 +51,11 @@ export function WorkspaceCanvas() {
   const { t } = useI18n();
   const isRecycleBin = isRecycleBinPageId(activePageId);
   const isCollection = isCollectionPageId(activePageId);
+  const groupViewModes = useUiStore((state) => state.groupViewModes);
+  // Group layout modes only apply to user pages; collection/recycle stay freeform.
+  const activeGroupViewMode = isSystemPageId(activePageId)
+    ? 'freeform'
+    : resolveGroupViewMode(groupViewModes, activePageId);
   const systemPageEmpty =
     isRecycleBin && activePageBoxCount === 0
       ? {
@@ -83,12 +90,14 @@ export function WorkspaceCanvas() {
   const activePageIndex = pageOrder.findIndex((page) => page.id === activePageId);
   const pageTransitionDirection = activePageIndex < previousPageIndex ? -1 : 1;
   const isPageSwitch = previousActivePageIdRef.current !== activePageId;
+  const managedView = isManagedGroupView(activeGroupViewMode);
   const canvasClassName = [
     'cardo-canvas',
     isCollection ? 'cardo-canvas-collection' : '',
     isLocked ? 'cardo-canvas-locked' : '',
-    isPanModifierActive && !isLocked ? 'cardo-canvas-pan-ready' : '',
-    isPanning ? 'cardo-canvas-panning' : '',
+    !managedView && isPanModifierActive && !isLocked ? 'cardo-canvas-pan-ready' : '',
+    !managedView && isPanning ? 'cardo-canvas-panning' : '',
+    managedView ? `cardo-canvas-group-view-${activeGroupViewMode}` : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -107,8 +116,9 @@ export function WorkspaceCanvas() {
     <main
       className={canvasClassName}
       data-workspace-canvas
+      data-group-view-mode={activeGroupViewMode}
       ref={setCanvasElement}
-      onPointerDownCapture={handlePointerDownCapture}
+      onPointerDownCapture={managedView ? undefined : handlePointerDownCapture}
       onContextMenu={(event) => {
         if (event.target instanceof Element && event.target.closest('[data-canvas-box]')) {
           return;
@@ -117,7 +127,9 @@ export function WorkspaceCanvas() {
         event.preventDefault();
         const rect = event.currentTarget.getBoundingClientRect();
         const camera = getPageCanvasState(useCanvasStore.getState(), activePageId).camera;
-        const point = clientPointToCanvasWorld(event, rect, camera);
+        const point = managedView
+          ? { x: 40, y: 40 }
+          : clientPointToCanvasWorld(event, rect, camera);
         const canCreate = !isRecycleBin && !isCollection;
         const tools: ContextMenuItem[] = [
           ...(!isRecycleBin && !isCollection
@@ -131,7 +143,7 @@ export function WorkspaceCanvas() {
                 },
               ]
             : []),
-          ...canvasTools,
+          ...(managedView ? [] : canvasTools),
         ];
         contextMenu.openMenu(event.clientX, event.clientY, [
           ...(canCreate
@@ -176,12 +188,14 @@ export function WorkspaceCanvas() {
               <div className="cardo-canvas-boundary" style={boundaryStyle} />
               <CollectionPage />
             </CanvasWorld>
+          ) : managedView ? (
+            <GroupScrollSurface pageId={activePageId} excludeBoxId={draggedBoxId} />
           ) : (
             <CanvasWorld pageId={activePageId}>
               <div className="cardo-canvas-boundary" style={boundaryStyle} />
               <PageBoxes
                 pageId={activePageId}
-                skipEntryAnimation={isPageSwitch || Boolean(draggedBoxId)}
+                skipEntryAnimation={isPageSwitch}
                 excludeBoxId={draggedBoxId}
               />
             </CanvasWorld>
@@ -209,7 +223,7 @@ export function WorkspaceCanvas() {
         while the floating box stays under the pointer (fixed layer).
       */}
       <DraggedBoxLayer />
-      <CanvasBoundaryFeedback pageId={activePageId} />
+      {managedView ? null : <CanvasBoundaryFeedback pageId={activePageId} />}
     </main>
   );
 }
@@ -231,7 +245,12 @@ function PageBoxes({
   );
 
   return boxes.map((box) => (
-    <WorkspaceBoxRenderer box={box} key={box.id} skipEntryAnimation={skipEntryAnimation} />
+    <WorkspaceBoxRenderer
+      box={box}
+      key={box.id}
+      skipEntryAnimation={skipEntryAnimation}
+      layoutLocked={false}
+    />
   ));
 }
 

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { GroupViewMode } from '../../../core/contracts/groupView';
 import type { BoxFrame, WorkspaceItemType } from '../../domain/workspace';
 
 export type RuntimeConnectionStatus = 'connected' | 'reconnecting' | 'disconnected';
@@ -15,6 +16,9 @@ export interface BoxDragSession {
   pointerId: number;
   startClientX: number;
   startClientY: number;
+  /** Last pointer client position — used to seed fixed paint after remount (no flash). */
+  lastClientX: number;
+  lastClientY: number;
   startFrame: BoxFrame;
   latestFrame: BoxFrame;
   transformOrigin: string;
@@ -39,9 +43,20 @@ interface UiStore {
   selectedBoxId: string | null;
   highlightedBoxId: string | null;
   searchQuery: string;
+  /** Full search page open from sidebar entry (with new group). */
+  searchOpen: boolean;
+  /**
+   * Per-group layout mode (pageId → freeform|waterfall|list).
+   * Session SoT until page.viewMode is persisted in schema.
+   */
+  groupViewModes: Record<string, GroupViewMode>;
   /** Ephemeral Runtime event-stream status (not persisted). */
   runtimeConnectionStatus: RuntimeConnectionStatus;
   setSearchQuery: (query: string) => void;
+  setSearchOpen: (open: boolean) => void;
+  openSearch: () => void;
+  closeSearch: () => void;
+  setGroupViewMode: (pageId: string, mode: GroupViewMode) => void;
   setRuntimeConnectionStatus: (status: RuntimeConnectionStatus) => void;
   selectBox: (boxId: string | null) => void;
   highlightBox: (boxId: string) => void;
@@ -51,7 +66,8 @@ interface UiStore {
   closeAddView: (boxId: string) => void;
   markCreated: (boxId: string, itemId: string) => void;
   beginBoxDrag: (session: BoxDragSession) => void;
-  updateBoxDragFrame: (frame: BoxFrame) => void;
+  /** Pointer-rate world frame + last client; mutates session without React notify. */
+  updateBoxDragFrame: (frame: BoxFrame, clientX?: number, clientY?: number) => void;
   rebaseBoxDragSession: (frame: BoxFrame, clientX: number, clientY: number) => void;
   setBoxDragOverTopBar: (overTopBar: boolean) => void;
   setBoxDropPage: (pageId: string | null) => void;
@@ -82,8 +98,20 @@ export const useUiStore = create<UiStore>((set) => ({
   selectedBoxId: null,
   highlightedBoxId: null,
   searchQuery: '',
+  searchOpen: false,
+  groupViewModes: {},
   runtimeConnectionStatus: 'connected',
   setSearchQuery: (query) => set({ searchQuery: query }),
+  setSearchOpen: (open) =>
+    set((state) => (state.searchOpen === open ? state : { searchOpen: open })),
+  openSearch: () => set({ searchOpen: true }),
+  closeSearch: () => set({ searchOpen: false, searchQuery: '' }),
+  setGroupViewMode: (pageId, mode) =>
+    set((state) =>
+      state.groupViewModes[pageId] === mode
+        ? state
+        : { groupViewModes: { ...state.groupViewModes, [pageId]: mode } },
+    ),
   setRuntimeConnectionStatus: (status) =>
     set((state) =>
       state.runtimeConnectionStatus === status ? state : { runtimeConnectionStatus: status },
@@ -131,7 +159,11 @@ export const useUiStore = create<UiStore>((set) => ({
   beginBoxDrag: (session) =>
     set({
       draggedBoxId: session.boxId,
-      boxDragSession: session,
+      boxDragSession: {
+        ...session,
+        lastClientX: session.lastClientX ?? session.startClientX,
+        lastClientY: session.lastClientY ?? session.startClientY,
+      },
       boxDragOverTopBar: false,
       boxDropPageId: null,
       boxDropRelease: null,
@@ -139,23 +171,30 @@ export const useUiStore = create<UiStore>((set) => ({
       selectedBoxId: session.boxId,
     }),
   /**
-   * Pointer-rate frame while dragging. Mutate latestFrame in place and return the
-   * same state root so Zustand does not notify React subscribers. Visual position
-   * is owned by motion values; React only needs begin/rebase/end session identity.
+   * Pointer-rate frame while dragging. Mutate latestFrame (and last client) in place
+   * and return the same state root so Zustand does not notify React subscribers.
+   * Visual position is owned by motion values; React only needs begin/rebase/end.
    */
-  updateBoxDragFrame: (frame) =>
+  updateBoxDragFrame: (frame, clientX, clientY) =>
     set((state) => {
       if (!state.boxDragSession) return state;
       const prev = state.boxDragSession.latestFrame;
-      if (
+      const sameFrame =
         prev.x === frame.x &&
         prev.y === frame.y &&
         prev.width === frame.width &&
-        prev.height === frame.height
-      ) {
+        prev.height === frame.height;
+      const sameClient =
+        clientX === undefined ||
+        clientY === undefined ||
+        (state.boxDragSession.lastClientX === clientX &&
+          state.boxDragSession.lastClientY === clientY);
+      if (sameFrame && sameClient) {
         return state;
       }
       state.boxDragSession.latestFrame = frame;
+      if (clientX !== undefined) state.boxDragSession.lastClientX = clientX;
+      if (clientY !== undefined) state.boxDragSession.lastClientY = clientY;
       return state;
     }),
   rebaseBoxDragSession: (frame, clientX, clientY) =>
@@ -166,6 +205,8 @@ export const useUiStore = create<UiStore>((set) => ({
               ...state.boxDragSession,
               startClientX: clientX,
               startClientY: clientY,
+              lastClientX: clientX,
+              lastClientY: clientY,
               startFrame: frame,
               latestFrame: frame,
             },
