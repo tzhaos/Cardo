@@ -181,10 +181,85 @@ Cardo Runtime 是本机唯一权威 SQLite 持有者与业务写路径。CLI、W
 7. 迁移组件时先复现当前视觉与几何，不在同一提交中主动重新设计。
 8. 新实现落地后删除对应旧组件和旧 CSS，不长期保留双轨实现。
 
+## 前端实现规范（强制）
+
+历史教训来源：会话 compaction（Fluent 发糊 / 主题 token 失效 / 装错路径误判 UI 消失 / 文案与 i18n）、`docs/reviews` 硬编码与文案审查、`src/web-next` 现状扫描。细则与证据见 `docs/reviews/worklogs/frontend-history-*.md` 与 `docs/architecture/theme-pack-authoring.md`。下列条款对 AI 与贡献者同等强制。
+
+### 1. 风格与组件统一
+
+1. 业务 UI 只组合 `ui/primitives` + `ui/cardo` + 产品域组件；禁止再引入第二套组件库或复制 shadcn 默认皮肤。
+2. 类名与 CSS 变量前缀仅 `cardo-` / `--cardo-*`；禁止新增 `wbn-`、`khaos-` 或其它历史双轨前缀。
+3. 主题属性仅 `data-cardo-theme`（及材质 `data-cardo-chrome-material`）；禁止再挂第二套 `data-theme` 作为产品路径。
+4. 工具栏 / 图标 chrome 的悬停说明用产品 `HoverTip` 或 `IconButton.tooltip`（深色气泡 tip），禁止依赖浏览器原生 `title` 作为主路径（无障碍仍须 `aria-label`）。
+5. 用户可见品牌名只写 Cardo；禁止用户面出现 WebNext、Khaos、KhaosBox。内部模块名 `WebNext*` / 目录 `web-next` 不得泄漏到文案与 About。
+6. 结构基线：系统页邻接与 classic 信息架构一致（收藏 | 页面 | 回收站 | +）；主题方言只改材质与装饰，不得擅自换 IA（除非产品明确批准）。
+7. 同一功能禁止双轨 UI（旧组件 + 新组件长期共存）；落地后删旧实现与旧 CSS。
+
+### 2. 官方主题适配（classic / glass / fluent / material / swiftui）
+
+1. 官方 id SoT：`OFFICIAL_BUILT_IN_THEME_IDS`（`src/core/contracts/themePack.ts`）。换皮唯一路径：Theme Pack JSON token + `[data-cardo-theme="<id>"]` recipe。
+2. 新增或改官方主题必须：登记 id → 登记 recipe 入口 → `themes/builtin/<id>/…` 双色 JSON → recipe CSS → `npm run validate:themes`（与 CI check 一致）。
+3. 通用 CSS / 业务组件只消费 `--cardo-*` 变量；禁止在共享 CSS 写死品牌色、危险色、状态色 hex（如 CTA 蓝、删除红、横幅橙）而绕过 token——否则换肤无效（历史事故：add-views / delete / banner / selection ring）。
+4. 设置等长文壳背景必须 `var(--cardo-settings-chrome)` / `settingsHover`，且接近不透明；禁止 recipe 用 `#fff` / 半透明 surface / 硬编码 hex 覆盖（Glass 曾踩坑）。
+5. 材质用 pack `chrome.material` → `data-cardo-chrome-material`；禁止每个主题复制一套 `backdrop-filter` 业务分叉。
+6. 禁止在业务组件用 `themeId === 'fluent' | 'glass' | …` 写样式分支（几何/chip 尺寸等）；允许极少数壳能力分支且必须注释理由。方言进 recipe 或 token。
+7. Motion 几何若绑定圆角，用与 token 同步的数值，禁止 Motion 里写 pill `9999` 或未解析的 CSS 变量导致圆角丢失。
+8. 改主题 CSS 后必须重建相关 surface 再目视；禁止把「未 rebuild / 装错旧 Programs\Cardo」误判为代码回归。
+9. 明暗两套 + 设置窗 / 顶栏 / 底栏 / 盒子 / 下拉至少各看一眼再合入；仅 classic 通过不算主题完成。
+
+### 3. 动效与视觉所有权
+
+1. 所有权划分（不可混用抢同一属性）：
+   - Radix：焦点、键盘、Portal、a11y
+   - Motion：画布/盒子等连续空间动画
+   - CSS：颜色、边框、简单 hover
+   - Drag Controller：拖拽根节点 `transform`（独占）
+2. 同一 CSS 属性在同一状态下只能有一个动效所有者。
+3. 文字壳与设置壳：禁止 scale 进出场、禁止长期用 transform 做定位；进出场仅 opacity；几何 `left/top` 用整数像素（`Math.round`）。历史事故：Fluent 设置「整窗发糊」。
+4. 禁止对小图标 / 导航 glyph 叠 `filter: drop-shadow` + Motion scale + `layoutId` 弹簧（易糊）。
+5. 设置窗与长文壳默认不要 `backdrop-filter` 糊底；需要玻璃感时走 chrome.material，且正文衬底仍须可读。
+6. 盒子拖拽进行中冻结会与拖拽抢布局的 `layoutId` / layout 弹簧，避免指示条与 tab 错位。
+7. 悬停 tip、菜单、toast 类文字浮层：优先短时 opacity；勿对文案层做 scale 弹入。
+8. 拖拽 / Resize 的 pointer-move 帧：只更新本地 Zustand / motion 预览；禁止 `fireCommand` / `dispatchDatabaseCommand` / 全量 Workspace 提交；命令仅在 pointer up / 确认时提交。
+
+### 4. 文案与 i18n
+
+1. 应用内 React 产品文案唯一目录：`src/web-next/i18n/messages.ts`（en + zh 同 key）+ `useI18n().t` / `translateWebNext`。新增文案必须双语同时加。
+2. 禁止在 JSX 硬编码用户可见中文/英文句子（占位 debug 除外且不得合入）。
+3. 禁止草稿/过程体：路线图、「后续」「待定」、GitHub milestone、npm 命令、内部架构说明作为主 UI 文案。
+4. 禁止对用户暴露架构黑话作主文案：Runtime、Command、shell、Chrome（壳工程义）、Design Token、Theme Pack 引擎名、OPFS、schemaVersion 裸数字等。产品说法用「本机服务 / 连接状态 / 主题 / 更新」等。
+5. 错误页 / 托盘 / 启动对话框 / 更新失败：须有 locale 策略；主文案面向最终用户，技术细节可折叠或次要，禁止 monorepo 开发手册当默认步骤；schema 版本用 `DATABASE_SCHEMA_VERSION` 插值，禁止写死 `9`。
+6. 文案风格：正式、简短；设置项避免多余句号与解释性旁白；中英语气对等，忌中英夹生不专业。
+7. 产品词统一：收藏用 Favorites 体系（勿混用 Collected Items）；危险操作确认句式一致。
+8. 主题包名/描述、扩展 store 文案、welcome seed 等可不进 messages.ts，但须自备 en/zh 且正式；Desktop 托盘不得仅中文硬编码。
+9. 删除已下线能力的死 key（如 Zen 残留），勿在新代码引用。
+
+### 5. 缺陷审查清单（改 UI 必过）
+
+提交或宣称完成前，自查：
+
+| 项 | 检查 |
+| --- | --- |
+| 主题 | classic/glass/fluent/material/swiftui 是否未被硬编码色破坏；设置底是否 token |
+| i18n | 新字符串是否 en+zh；有无硬编码；有无架构黑话 |
+| 动效 | 文字壳有无 scale；拖拽帧有无写库；属性所有者是否唯一 |
+| 双轨 | 有无旧组件/旧 CSS/旧 class 前缀并存 |
+| 无障碍 | 图标按钮有 aria-label；焦点是否仍走 Radix |
+| 安装/构建 | 目视是否用新构建产物与正确安装路径，而非旧 Programs\Cardo |
+| 格式 | `format:check`（前端改动同样触发 CI 第一关） |
+| 主题校验 | 动过官方主题则 `validate:themes` |
+
+### 6. 常见误判（先排环境再改布局）
+
+1. 「界面空白」：先查 layout 是否被强制 classic、是否装到旧目录、打包是否含 web-runtime、Runtime schema 是否与 UI 匹配，再改布局代码。
+2. 「主题没变化」：先 rebuild surface，再查 CSS 是否硬编码、import 顺序、token 是否被 recipe 覆盖。
+3. 「拖拽错乱」：先查是否帧内提交 Command、是否 layoutId 与拖拽 transform 冲突。
+
 ## 主题包
 
 1. Design Token + Theme Pack 是唯一换皮扩展面；禁止第二套皮肤引擎或旧 token 双轨。
 2. JSON 只放可序列化 token；结构方言写在 `src/web-next/styles/themes/<id>…`，选择器挂 `[data-cardo-theme]`。
 3. 浮动壳材质用 `tokens.chrome.material`（glass|solid）与 `data-cardo-chrome-material`，设置壳背景用 `--cardo-settings-chrome`（须不透明）。
 4. 文字壳禁止 scale 进出场与长期 transform 定位；几何整数像素。详见 `docs/architecture/theme-pack-authoring.md`。
-5. 新增官方主题必须登记 id、recipe 映射，并跑 `npx tsx scripts/validate-builtin-themes.ts`。
+5. 新增官方主题必须登记 id、recipe 映射，并跑 `npm run validate:themes`（或 `npx tsx scripts/validate-builtin-themes.ts`）。
+6. 共享产品 CSS 禁止业务 hex 绕过 token；危险色/强调色/设置壳一律走 `--cardo-*`。
