@@ -71,5 +71,30 @@ export default tseslint.config(
       'react/prop-types': 'off',
     },
   },
+  {
+    // Product UI is a Runtime client: no Drizzle / schema imports (AGENTS UI boundary).
+    files: ['src/web-next/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'drizzle-orm',
+              message:
+                'web-next must not import drizzle-orm; use RuntimeClient queries/commands and core contracts.',
+            },
+          ],
+          patterns: [
+            {
+              group: ['**/database/schema', '**/database/schema.*', '**/core/database/schema'],
+              message:
+                'web-next must not import database schema; business I/O is Runtime-only via RuntimeClient.',
+            },
+          ],
+        },
+      ],
+    },
+  },
   eslintConfigPrettier,
 );
