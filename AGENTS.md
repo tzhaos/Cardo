@@ -204,26 +204,23 @@ Cardo Runtime 是本机唯一权威 SQLite 持有者与业务写路径。CLI、W
 
 #### 槽位与方言（SoT：`SettingsPanel.tsx` + `styles/settings.css`）
 
-| 场景                                | 必须用的结构                                                                                                                                                         | 禁止                                                                                                      |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 单行设置（标题+说明 + 一个控件）    | `.cardo-settings-list-group` > `.cardo-settings-card`：左 `.cardo-settings-card-copy` > `span`（内嵌 `small`），右 `Select` / `Switch` / `ToggleGroup` / 单 `Button` | 把多个 label/input 塞进 `cardo-settings-card-copy`；在 copy 上写 `style={{ width:'100%' }}` 对抗横向 flex |
-| 多字段表单（主机、端口、模板 URL…） | card **外** 的 `.cardo-settings-field` 或历史别名 `.cardo-custom-search-template`（竖排：label span → Input → small）；并排用 `.cardo-settings-field-grid`           | 未在 CSS 注册的 class；`style={{ display:'flex', flex:'1 1 140px' }}` 手搓栅格                            |
-| 右侧多按钮                          | `.cardo-settings-card-actions`（允许 wrap；子项 `flex: 0 0 auto`）                                                                                                   | 与多字段表单抢同一条 card 的右侧窄缝导致按钮被压成竖排                                                    |
-| 下拉                                | `ui/primitives` 的 `Select` / `SelectTrigger` / `SelectContent` / `SelectItem`                                                                                       | 原生 `<select>` / `<option>` 作产品主路径（与全页观感不一致）                                             |
-| 分组标题                            | `.cardo-settings-subheading`（span + small）                                                                                                                         | 用 heading 冒充 card 行                                                                                   |
+| 场景 | 必须用的结构 | 禁止 |
+| --- | --- | --- |
+| 单行设置 | `list-group` > `settings-card`：左 `card-copy` > `span`(+`small`)，右 `Select` / `Switch` / `ToggleGroup` / `Button.cardo-settings-secondary-button` / `Input.cardo-settings-inline-field` | 多控件塞进 `card-copy`；布局用 inline style |
+| 多字段（主机、端口） | **同一** `list-group` 里多行 card（左标题、右控件），抄语言/导出 | 主机端口漂在 list-group 外；左右文案与按钮同词 |
+| 展开模板 | card 下 `cardo-custom-search-template` | 与行内控件混槽 |
+| 右侧多按钮 | `cardo-settings-card-actions` + 每个按钮 `variant="ghost"` + `className="cardo-settings-secondary-button"`（与导出/导入一致） | 裸 `Button` 默认灰边框、不合主题 |
+| 下拉 | primitives `Select` | 原生 `<select>` |
+| 分组标题 | 仅 `cardo-settings-subheading`（span+small） | 用 `cardo-settings-group` 包 subheading——group 在 content 下有 item 表面，标题会像带背景卡片（事故：更新「检查…官方更新」） |
+| 可展开合并面板 | 仅自定义色等内部用 `cardo-settings-group` | 普通「标题 + list-group」误套 group |
 
 #### 硬规则
 
-1. `.cardo-settings-card` 是**横向控制条**（`display:flex; align-items:center; justify-content:space-between`），不是通用表单容器。`cardo-settings-card-copy` 只放标题文案树，不放输入控件。
-2. 新增 class 必须先在 `settings.css`（或主题 recipe）写好规则再引用；禁止「先写 className 再靠浏览器默认 + inline style 救命」。
-3. 禁止用 inline `style` 承担布局职责（flex/grid/width/gap 作为主布局）；例外仅动态值（如 progress %）。布局一律进 CSS class。
-4. 表面样式走 `.cardo-settings-content` 下共享 item token（`--cardo-settings-item-*`），不要为新行另起一套 border/background 绕过主题。
-5. 实现新设置项时的自检：
-   - 是否复制了同页相邻卡片的 DOM 形状（copy 内是否只有 `span` + `small`）？
-   - 多字段是否在 card 外、是否复用 `cardo-settings-field` / `field-grid`？
-   - 控件是否来自 primitives（Select/Input/Switch/Button）？
-   - 有无未定义 class、有无布局用 inline style？
-   - 窄宽度下按钮文案是否仍可横排（不竖断）？
+1. `.cardo-settings-card` 是横向控制条，不是通用表单容器；`card-copy` 只放文案树。
+2. 新增 class 必须先写 CSS 再引用；禁止布局 inline style。
+3. 表面只走 `--cardo-settings-item-*`；subheading 不得落在带 item 表面的容器内。
+4. 设置行动作钮必须 `cardo-settings-secondary-button`（同导出数据），禁止未加该类的 default/ghost 裸按钮。
+5. 实现前打开同页语言/搜索引擎/导出抄 DOM；完成后目视：标题无卡片底、按钮与导出一致、主机端口在 list-group 内。
 
 ### 2. 官方主题适配（classic / glass / fluent / material / swiftui）
 

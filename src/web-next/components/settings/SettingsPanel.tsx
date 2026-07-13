@@ -1036,9 +1036,12 @@ function DesktopUpdatePanel() {
   const bridge = window.cardoDesktop;
   if (!bridge) return null;
 
+  // Match language / search-engine / export rows: subheading (no surface) + list-group cards.
+  // Never wrap in .cardo-settings-group — that class paints the shared item surface and
+  // makes subheading copy look like it has a card background.
   return (
-    <div className="cardo-settings-group cardo-settings-list-group-spaced">
-      <div className="cardo-settings-subheading">
+    <>
+      <div className="cardo-settings-subheading cardo-settings-list-group-spaced">
         <span>{t('settings.update')}</span>
         <small>{t('settings.updateDescription')}</small>
       </div>
@@ -1063,6 +1066,8 @@ function DesktopUpdatePanel() {
           <div className="cardo-settings-card-actions">
             <Button
               type="button"
+              variant="ghost"
+              className="cardo-settings-secondary-button"
               disabled={busy || state.phase === 'checking' || state.phase === 'downloading'}
               onClick={() => void run(() => bridge.checkForUpdates())}
             >
@@ -1071,6 +1076,8 @@ function DesktopUpdatePanel() {
             {state.phase === 'available' || state.phase === 'error' ? (
               <Button
                 type="button"
+                variant="ghost"
+                className="cardo-settings-secondary-button"
                 disabled={busy || !state.available}
                 onClick={() => void run(() => bridge.downloadUpdate())}
               >
@@ -1080,6 +1087,8 @@ function DesktopUpdatePanel() {
             {state.phase === 'downloading' && !state.forceUpdate ? (
               <Button
                 type="button"
+                variant="ghost"
+                className="cardo-settings-secondary-button"
                 disabled={busy}
                 onClick={() => void run(() => bridge.cancelUpdateDownload())}
               >
@@ -1089,6 +1098,8 @@ function DesktopUpdatePanel() {
             {state.phase === 'readyToInstall' ? (
               <Button
                 type="button"
+                variant="ghost"
+                className="cardo-settings-secondary-button"
                 disabled={busy}
                 onClick={() => void run(() => bridge.installUpdate())}
               >
@@ -1098,6 +1109,8 @@ function DesktopUpdatePanel() {
             {state.available?.releaseUrl ? (
               <Button
                 type="button"
+                variant="ghost"
+                className="cardo-settings-secondary-button"
                 disabled={busy}
                 onClick={() => void run(() => bridge.openUpdateReleasePage())}
               >
@@ -1137,44 +1150,48 @@ function DesktopUpdatePanel() {
             </SelectContent>
           </Select>
         </div>
-      </div>
-      {proxyMode !== 'off' ? (
-        <>
-          <label className="cardo-custom-search-template">
-            <span>{t('settings.updateProxyHost')}</span>
-            <Input
-              value={proxyHost}
-              onChange={(event) => {
-                setProxyHost(event.target.value);
-                setProxyHint(null);
-              }}
-              disabled={busy}
-              placeholder="127.0.0.1"
-              autoComplete="off"
-            />
-          </label>
-          <label className="cardo-custom-search-template">
-            <span>{t('settings.updateProxyPort')}</span>
-            <Input
-              value={proxyPort}
-              onChange={(event) => {
-                setProxyPort(event.target.value.replace(/[^\d]/g, ''));
-                setProxyHint(null);
-              }}
-              disabled={busy}
-              inputMode="numeric"
-              placeholder="7890"
-              autoComplete="off"
-            />
-          </label>
-        </>
-      ) : null}
-      <div className="cardo-settings-list-group cardo-settings-list-group-spaced">
+        {proxyMode !== 'off' ? (
+          <>
+            <div className="cardo-settings-card">
+              <div className="cardo-settings-card-copy">
+                <span>{t('settings.updateProxyHost')}</span>
+              </div>
+              <Input
+                className="cardo-settings-inline-field"
+                value={proxyHost}
+                onChange={(event) => {
+                  setProxyHost(event.target.value);
+                  setProxyHint(null);
+                }}
+                disabled={busy}
+                placeholder="127.0.0.1"
+                autoComplete="off"
+              />
+            </div>
+            <div className="cardo-settings-card">
+              <div className="cardo-settings-card-copy">
+                <span>{t('settings.updateProxyPort')}</span>
+              </div>
+              <Input
+                className="cardo-settings-inline-field cardo-settings-inline-field-narrow"
+                value={proxyPort}
+                onChange={(event) => {
+                  setProxyPort(event.target.value.replace(/[^\d]/g, ''));
+                  setProxyHint(null);
+                }}
+                disabled={busy}
+                inputMode="numeric"
+                placeholder="7890"
+                autoComplete="off"
+              />
+            </div>
+          </>
+        ) : null}
         <div className="cardo-settings-card">
           <div className="cardo-settings-card-copy">
             <span>
-              {t('settings.updateProxySave')}
-              {proxyHint ? <small>{proxyHint}</small> : null}
+              {t('settings.updateProxyApply')}
+              <small>{proxyHint ?? t('settings.updateProxyApplyDescription')}</small>
             </span>
           </div>
           <Button
@@ -1201,7 +1218,7 @@ function DesktopUpdatePanel() {
           </Button>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
