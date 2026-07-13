@@ -15,7 +15,14 @@ const typeCheckedTsOnly = tseslint.configs.recommendedTypeChecked.map((config) =
 
 export default tseslint.config(
   {
-    ignores: ['artifacts/**', 'dist/**', 'node_modules/**', 'eslint.config.js', 'scripts/**/*.mjs'],
+    ignores: [
+      '.orca/**',
+      'artifacts/**',
+      'dist/**',
+      'node_modules/**',
+      'eslint.config.js',
+      'scripts/**/*.mjs',
+    ],
   },
   eslint.configs.recommended,
   {

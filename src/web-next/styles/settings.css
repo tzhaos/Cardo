@@ -454,6 +454,14 @@
   font-weight: 600;
 }
 
+.cardo-settings-card-copy > .cardo-update-status-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
 .cardo-settings-card-copy small,
 .cardo-settings-subheading small,
 .cardo-theme-card-copy small,

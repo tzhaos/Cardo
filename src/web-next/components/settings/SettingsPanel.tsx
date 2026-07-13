@@ -1048,7 +1048,7 @@ function DesktopUpdatePanel() {
       <div className="cardo-settings-list-group">
         <div className="cardo-settings-card">
           <div className="cardo-settings-card-copy">
-            <span>
+            <span className="cardo-update-status-copy">
               {statusText}
               <small>
                 {t('settings.updateInstallChannel')}: {installChannelLabel}
