@@ -1191,7 +1191,7 @@ function DesktopUpdatePanel() {
           <div className="cardo-settings-card-copy">
             <span>
               {t('settings.updateProxyApply')}
-              <small>{proxyHint ?? t('settings.updateProxyApplyDescription')}</small>
+              {proxyHint ? <small>{proxyHint}</small> : null}
             </span>
           </div>
           <Button
