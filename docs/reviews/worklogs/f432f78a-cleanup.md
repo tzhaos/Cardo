@@ -35,7 +35,7 @@ Comprehensive cleanup of redundant docs and dead weight without rewriting Runtim
 
 ### Dead theme aliases removed
 
-From `src/web-next/themes/themeRegistry.ts` (zero external references):
+From `src/web/themes/themeRegistry.ts` (zero external references):
 
 - `WebNextThemePalette`
 - `registerWebNextTheme`
@@ -69,7 +69,7 @@ No empty stub directories found under `src/`.
 
 ## ESLint
 
-- Added `src/web-next/**` rule `no-restricted-imports` forbidding:
+- Added `src/web/**` rule `no-restricted-imports` forbidding:
   - `drizzle-orm`
   - patterns `**/database/schema`, `**/database/schema.*`, `**/core/database/schema`
 - Rationale: AGENTS UI boundary; web-next currently has zero such imports (verified by grep).
@@ -92,7 +92,7 @@ No empty stub directories found under `src/`.
 
 - Grep: no remaining dual `isTypicalInstallDirectory` body in test file.
 - Grep: removed theme aliases have no external call sites.
-- Grep: `src/web-next` has no `drizzle-orm` / `database/schema` imports.
+- Grep: `src/web` has no `drizzle-orm` / `database/schema` imports.
 - Per AGENTS: did not run tests; user may run `npm run check` / `npm run build:all` on this branch before merge.
 
 ## Manual follow-up (no delete_file in this agent toolset)

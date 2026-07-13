@@ -384,4 +384,4 @@ Currently there is no automated check that (1)–(4) agree.
 - `scripts/build-pipeline.ts`
 - `package.json` (`scripts` + `build`)
 - `.github/workflows/release.yml`
-- Related UI: `src/web-next/components/settings/SettingsPanel.tsx` (DesktopUpdatePanel only)
+- Related UI: `src/web/features/settings/SettingsPanel.tsx` (DesktopUpdatePanel only)

@@ -1,14 +1,14 @@
 # Hardcode / i18n audit — web-next messages
 
 Date: 2026-07-13  
-Scope: read-only. Source of truth: `src/web-next/i18n/messages.ts`  
-Usage scan: `src/web-next/**/*.{ts,tsx}` plus dynamic label maps in `src/core/contracts/featureCatalog.ts`, `src/core/contracts/layoutProfile.ts`, and Desktop title bar (`src/desktop/DesktopTitleBar.tsx`).  
+Scope: read-only. Source of truth: `src/web/i18n/messages.ts`  
+Usage scan: `src/web/**/*.{ts,tsx}` plus dynamic label maps in `src/core/contracts/featureCatalog.ts`, `src/core/contracts/layoutProfile.ts`, and Desktop title bar (`src/desktop/DesktopTitleBar.tsx`).  
 No product code was changed.
 
 ## Method
 
 1. Parse `WEB_NEXT_MESSAGES.en` vs `.zh` key sets (string keys only).
-2. Grep every message key string under `src/web-next` (and note out-of-tree consumers).
+2. Grep every message key string under `src/web` (and note out-of-tree consumers).
 3. Collect all `t('…')` / `t(\`…\`)` call sites and map keys from feature catalog, color-override table, add-view titles, and item-type labels.
 4. Flag draft / retired / jargon user copy still present in messages.
 5. Cross-check Zen layout retirement (`layoutProfile.ts`, `applyLayoutProfile.ts`, preferences hydrate repair).
@@ -31,9 +31,9 @@ If a future zh key is omitted, users still see English via the runtime fallback;
 
 Reference means any of:
 
-- `t('key')` / conditional `t(cond ? 'a' : 'b')` under `src/web-next`
+- `t('key')` / conditional `t(cond ? 'a' : 'b')` under `src/web`
 - String constant later passed to `t` (feature catalog label keys, color override map, add-view title keys, item type labels, settings search catalog title/description keys)
-- Desktop title bar `t('desktop.*')` (outside `src/web-next`, but real consumer)
+- Desktop title bar `t('desktop.*')` (outside `src/web`, but real consumer)
 
 Dead keys below appear only in `messages.ts` (definition only). Full list.
 
@@ -164,7 +164,7 @@ Notes:
 | Menu / box / page / field | 12 |
 | Total dead message keys | 81 |
 
-### 2.7 Used outside `src/web-next` (not dead)
+### 2.7 Used outside `src/web` (not dead)
 
 | Key | Consumer |
 | --- | --- |
@@ -263,8 +263,8 @@ Flag: remove or archive.
 Evidence Zen is gone from product:
 
 1. `src/core/contracts/layoutProfile.ts` — “Floating / zen modes are retired — no dual-read, no settings switch.” Only `classic`.
-2. `src/web-next/shell/layouts/applyLayoutProfile.ts` — forces classic; comment clears leftover floating/zen markers.
-3. `src/web-next/app/stores/preferencesStore.ts` — one-way repair if stored profile is not classic.
+2. `src/web/shell/layouts/applyLayoutProfile.ts` — forces classic; comment clears leftover floating/zen markers.
+3. `src/web/app/stores/preferencesStore.ts` — one-way repair if stored profile is not classic.
 4. Grep for `layout.exitZen`: only `messages.ts` (en + zh). No component, menu, or shortcut references it.
 
 Action (when product edits are allowed): delete `layout.exitZen` from both locales; optionally delete unused `settings.layout.classic*` messages if layout settings UI will never return.
@@ -291,14 +291,14 @@ Action (when product edits are allowed): delete `layout.exitZen` from both local
 
 ## 8. Files consulted
 
-- `src/web-next/i18n/messages.ts`
-- `src/web-next/i18n/useI18n.ts`
-- `src/web-next/components/settings/SettingsPanel.tsx`
-- `src/web-next/components/settings/settingsSearchCatalog.ts`
-- `src/web-next/components/**` (all `useI18n` / `t(` call sites)
+- `src/web/i18n/messages.ts`
+- `src/web/i18n/useI18n.ts`
+- `src/web/features/settings/SettingsPanel.tsx`
+- `src/web/features/settings/settingsSearchCatalog.ts`
+- `src/web/features/**` (all `useI18n` / `t(` call sites)
 - `src/core/contracts/featureCatalog.ts`
 - `src/core/contracts/layoutProfile.ts`
 - `src/core/contracts/globalSearch.ts`
-- `src/web-next/shell/layouts/applyLayoutProfile.ts`
-- `src/web-next/app/stores/preferencesStore.ts`
+- `src/web/shell/layouts/applyLayoutProfile.ts`
+- `src/web/app/stores/preferencesStore.ts`
 - `src/desktop/DesktopTitleBar.tsx`

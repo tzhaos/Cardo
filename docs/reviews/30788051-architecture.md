@@ -5,7 +5,7 @@
 | Branch tip | `feature/hover-tip` (includes main hardening + hover tip + AGENTS frontend norms) |
 | Date | 2026-07-13 |
 | Scope | Runtime sole SQLite; clients via RuntimeClient/Zod; Command single txn; no OPFS / `database:execute`; no electron in runtime; Zod SoT; no soft-compat schema; attach-first; path SoT; revision/invalidation; doc drift; recent fixes |
-| Surfaces | `src/runtime`, `src/core`, `src/client`, `src/desktop`, `src/extension`, `src/cli`, `src/native-host`, `src/web-next/platform` |
+| Surfaces | `src/runtime`, `src/core`, `src/client`, `src/desktop`, `src/extension`, `src/cli`, `src/native-host`, `src/web/platform` |
 | SoT | `AGENTS.md`, `docs/architecture/local-runtime-multi-client.md` |
 | Method | Grep + read critical paths; re-verify prior review `f432f78a` findings F1–F2 and related fixes |
 | Prior review | `docs/reviews/f432f78a-architecture.md` |
@@ -28,7 +28,7 @@ Remaining gaps are policy edges, not spine failures: dual local-open shell paths
 | Pillar | Status | Evidence paths | Notes |
 | --- | --- | --- | --- |
 | Runtime sole SQLite authority; no second writers | met | `src/runtime/database.ts` (`openRuntimeDatabase` only opener under `src/`); grep: no OPFS/sql.js/wa-sqlite writers; extension/hostPlatform comments forbid fallback | Business DB only in Runtime process |
-| Clients only via RuntimeClient / Zod protocol | met | `src/client/runtimeClient.ts`; `src/web-next/platform/hostPlatform.ts`; `src/core/contracts/runtimeProtocol.ts` | UI does not import Drizzle schema; web-next greps clean |
+| Clients only via RuntimeClient / Zod protocol | met | `src/client/runtimeClient.ts`; `src/web/platform/hostPlatform.ts`; `src/core/contracts/runtimeProtocol.ts` | UI does not import Drizzle schema; web-next greps clean |
 | Command Registry + single Drizzle txn + op log + history same txn | met | `src/core/application/executeDatabaseCommand.ts` (handler + op log + history + `bumpRevision` in one `database.transaction`); registry handlers | Empty changes: no op log / no revision bump |
 | Query path: typed in-process; clients via protocol | met | In-process: `workspaceQueries.ts` via `httpServer.ts` `dispatchQuery`; client: RuntimeClient query methods | All SQLite queries on `CommandQueue` (prior F2 closed) |
 | AppPorts non-DB only | met | `src/core/ports/AppPorts.ts` (no DatabasePort); desktop/extension/web-runtime shell ports | Shell only; business I/O via hostPlatform |
@@ -91,7 +91,7 @@ Residual note (not a reopen of F2): Drizzle still uses async `sqlite-proxy` stat
 ### F5 — Severity: low
 - Area: Recovery / error-screen copy vs architecture policy
 - Evidence:
-  - `src/web-next/ui/cardo\error-screen.ts` hardcodes discovery `schemaVersion is 9` (zh/en steps) instead of interpolating `DATABASE_SCHEMA_VERSION`.
+  - `src/web/ui/cardo\error-screen.ts` hardcodes discovery `schemaVersion is 9` (zh/en steps) instead of interpolating `DATABASE_SCHEMA_VERSION`.
   - Hints still say upgrade “migrates preferences columns automatically” (soft-repair language) after ensurePreferences removal.
 - Risk: User-facing drift after schema bumps; implies a retired soft-compat path. Desktop main recovery already interpolates `DATABASE_SCHEMA_VERSION` (compat worklog). Architecture gate itself is correct.
 - Recommendation: Interpolate `DATABASE_SCHEMA_VERSION`; drop soft-repair wording; keep stop-Runtime / rebuild / reattach steps.
@@ -99,7 +99,7 @@ Residual note (not a reopen of F2): Drizzle still uses async `sqlite-proxy` stat
 ### F6 — Severity: low
 - Area: Stale comment in hostPlatform session wording
 - Evidence:
-  - `src/web-next/platform/hostPlatform.ts` L168: “Stream onStreamClose remains primary unregister if bye fetch is torn down mid-close.”
+  - `src/web/platform/hostPlatform.ts` L168: “Stream onStreamClose remains primary unregister if bye fetch is torn down mid-close.”
   - Server: stream close does not unregister (`clients.ts` L102–111). Client `close()` does best-effort `session.bye` (`runtimeClient.ts` L343–355). Idle sweep is the server-side fallback when bye never arrives.
 - Risk: Contributor confusion only; can reintroduce F1-class “unregister on stream end” thinking.
 - Recommendation: Update comment to: pagehide → `client.close()` → `session.bye`; server idle sweep if bye lost; stream close is not session end.

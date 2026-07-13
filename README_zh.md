@@ -38,7 +38,7 @@ Cardo（拉丁语 cardo：门枢 / 枢纽 / 轴线）是本机优先的空间工
 | 浏览器扩展     | Manifest V3 客户端；经 Native Messaging 发现 Runtime |
 | 桌面端         | Electron 壳；优先 attach，缺失则 embed               |
 
-所有图形表面共用同一套 React UI（`src/web-next`），经 Zod 校验的协议访问 Runtime。扩展 OPFS 与桌面 raw SQL IPC 都不会成为第二套长期业务库。
+所有图形表面共用同一套 React UI（`src/web`），经 Zod 校验的协议访问 Runtime。扩展 OPFS 与桌面 raw SQL IPC 都不会成为第二套长期业务库。
 
 <p align="center">
   <img src="./docs/assets/readme/surfaces.svg" alt="四种表面，同一工作区" width="920"/>
@@ -69,9 +69,10 @@ Cardo（拉丁语 cardo：门枢 / 枢纽 / 轴线）是本机优先的空间工
 
 ### 产品壳层
 
-- 顶栏页面、撤销 / 重做、底栏工具、画布工具
+- 侧栏壳：页面、收藏、回收站、设置脚；主面板标题工具
+- 撤销 / 重做、画布工具、底栏搜索 / 新建盒子
 - 跨页面、盒子与条目的全局搜索
-- 内置主题：Classic、Glass、Fluent、Material、SwiftUI
+- 内置主题：Classic、Glass、Fluent、Material、SwiftUI、Codex
 - 界面语言：English / 中文
 - 功能目录可开关壳层插槽（设置 → 界面）
 
@@ -135,7 +136,17 @@ src/
 ├── runtime/       HTTP 服务、锁、discovery、鉴权、事件、系统能力
 ├── client/        RuntimeClient（HTTP + fetch stream）
 ├── cli/           cardo serve | open | status | stop
-├── web-next/      共享 React UI、画布、主题、i18n、设置
+├── web/           共享产品 UI（单一树；历史 web-next + web-v2 已合并）
+│   ├── app/       CardoApp、start、stores、bootstrap、样式入口
+│   ├── shell/     侧栏壳、设置 chrome、FeatureGate
+│   ├── features/  盒子、画布、设置正文、条目、搜索…
+│   ├── kit/       产品 UI kit（路径导入：kit/button、kit/icon…）
+│   ├── domain/    纯展示 / 几何辅助
+│   ├── styles/    产品 CSS + 主题 recipe
+│   ├── themes/    Theme Pack apply / 注册表
+│   ├── i18n/      en + zh 产品文案
+│   └── platform/  RuntimeClient 宿主桥
+├── web-runtime/   托管 UI 入口（Vite base /app/）
 ├── extension/     MV3 启动、Chrome 适配、Runtime 发现
 ├── desktop/       Electron main / preload / renderer attach-embed
 └── native-host/   瘦 Native Messaging Host（discover + 可选 relay）
@@ -271,6 +282,7 @@ Host 只读 discovery（并可可选中继），永不打开 SQLite。
 | `fluent`   | 接近 Windows 11 的实心壳 |
 | `material` | Material 风格实心壳      |
 | `swiftui`  | App 风格玻璃壳           |
+| `codex`    | 侧栏壳 / 主面板方言      |
 
 JSON 只放可序列化 token；结构方言 CSS 挂在 `[data-cardo-theme]` 下。制作说明见 `docs/architecture/theme-pack-authoring.md`。校验：
 
@@ -285,7 +297,7 @@ npx tsx scripts/validate-builtin-themes.ts
 | 层级         | 选型                                                         |
 | ------------ | ------------------------------------------------------------ |
 | 语言         | TypeScript                                                   |
-| UI           | React 19、Motion、Radix 基础件、产品级 `ui/cardo` 封装       |
+| UI           | React 19、Motion、Radix 基础件、产品级 `src/web/kit`         |
 | 样式         | Tailwind CSS 4、Design Token、主题 recipe                    |
 | 契约         | Zod 4（类型用 `z.infer`）                                    |
 | 持久化       | Drizzle ORM + SQLite                                         |
@@ -307,6 +319,9 @@ npx tsx scripts/validate-builtin-themes.ts
 | [`docs/architecture/robustness-and-operations.md`](./docs/architecture/robustness-and-operations.md)     | 锁、日志、更新与恢复       |
 | [`docs/architecture/ui-theme-system.md`](./docs/architecture/ui-theme-system.md)                         | 主题系统总览               |
 | [`docs/architecture/theme-pack-authoring.md`](./docs/architecture/theme-pack-authoring.md)               | 官方 / 用户主题包写作      |
+| [`docs/architecture/cardo-ui-system-paradigm.md`](./docs/architecture/cardo-ui-system-paradigm.md)       | 产品 UI 分层与 kit 规则    |
+| [`docs/architecture/cardo-ui-kit.md`](./docs/architecture/cardo-ui-kit.md)                               | `src/web/kit` 公开 API     |
+| [`docs/architecture/web-v2-codex-shell-design.md`](./docs/architecture/web-v2-codex-shell-design.md)     | 侧栏壳设计（cutover 完成） |
 | [`docs/architecture/zod-drizzle-shadcn-refactor.md`](./docs/architecture/zod-drizzle-shadcn-refactor.md) | 契约与 UI 边界重构笔记     |
 | [`docs/product-roadmap-v0.4.md`](./docs/product-roadmap-v0.4.md)                                         | 模板体系方向               |
 | [`docs/product-roadmap-v0.5.md`](./docs/product-roadmap-v0.5.md)                                         | 书签 / 网址资产方向        |

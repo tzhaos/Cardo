@@ -71,7 +71,7 @@ Overall: solid local-protocol foundation, fail-closed on several Desktop/Extensi
 
 ### F7 — Severity: medium
 - Area: Token storage after Web bootstrap
-- Evidence: `src/web-next/platform/hostPlatform.ts:113-123`, architecture notes that v1 may store session token in sessionStorage; exchange returns process token (`src/runtime/auth.ts:61-71`)
+- Evidence: `src/web/platform/hostPlatform.ts:113-123`, architecture notes that v1 may store session token in sessionStorage; exchange returns process token (`src/runtime/auth.ts:61-71`)
 - Risk: Same-origin XSS (or compromised static asset) reads `sessionStorage` process token → full workspace R/W, openLocalResource, shutdown. Code is stripped from URL (good), but long-lived process token in sessionStorage widens blast radius vs short-lived session tokens.
 - Recommendation: Prefer memory-only after exchange where possible; longer term: distinct short-lived client sessions with reduced capabilities; keep process token for stewards only.
 

@@ -10,9 +10,9 @@
 ```text
 themes/builtin/<id>/theme.cardo-theme.json   ← L0 tokens
         ↓ applyTheme → --cardo-* + data-cardo-theme + data-cardo-chrome-material
-src/web-next/styles/**/*.css                 ← 通用组件只消费变量
-src/web-next/styles/themes/chrome-material.css ← material 共享规则
-src/web-next/styles/themes/<id>…             ← 该包结构方言 recipe
+src/web/styles/**/*.css                 ← 通用组件只消费变量
+src/web/styles/themes/chrome-material.css ← material 共享规则
+src/web/styles/themes/<id>…             ← 该包结构方言 recipe
 ```
 
 - JSON 管可序列化 token；`applyTheme` 写到 `documentElement`。
@@ -29,6 +29,7 @@ src/web-next/styles/themes/<id>…             ← 该包结构方言 recipe
 | `fluent` | Windows Fluent | solid | Microsoft Windows 11 设计风格 |
 | `material` | Material | solid | Google AI Studio 设计风格 |
 | `swiftui` | SwiftUI | glass | App 设计风格 |
+| `codex` | Codex | solid | 侧栏壳 / 主面板方言（与产品 shell 拓扑配套） |
 
 ### 包文件
 
@@ -39,12 +40,13 @@ themes/builtin/
   fluent/theme.cardo-theme.json
   material/theme.cardo-theme.json
   swiftui/theme.cardo-theme.json
+  codex/theme.cardo-theme.json
 ```
 
 ### Recipe 文件
 
 ```text
-src/web-next/styles/themes/
+src/web/styles/themes/
   index.css
   shared.css
   chrome-material.css
@@ -53,6 +55,7 @@ src/web-next/styles/themes/
   fluent/{index,shell,settings,overlays}.css
   material/{index,shell,settings,overlays}.css
   swiftui/{index,shell,settings,overlays}.css
+  codex/index.css
 ```
 
 ### 新增官方主题
@@ -77,11 +80,12 @@ src/web-next/styles/themes/
 | 文件 | 职责 |
 | --- | --- |
 | `src/core/contracts/themePack.ts` | Zod 契约、官方 id、recipe 映射 |
-| `src/web-next/themes/builtInPacks.ts` | 加载官方 JSON |
-| `src/web-next/themes/resolveTheme.ts` | pack ⊕ overrides ⊕ options |
-| `src/web-next/themes/applyTheme.ts` | CSS 变量 + data 属性 |
-| `src/web-next/themes/themeRegistry.ts` | 注册表 |
-| `src/web-next/components/settings/SettingsWindow.tsx` | 整数 left/top、opacity 进出场 |
+| `src/web/themes/builtInPacks.ts` | 加载官方 JSON |
+| `src/web/themes/resolveTheme.ts` | pack ⊕ overrides ⊕ options |
+| `src/web/themes/applyTheme.ts` | CSS 变量 + data 属性 |
+| `src/web/themes/themeRegistry.ts` | 注册表 |
+| `src/web/shell/SettingsShell.tsx` | 全壳设置模式（opacity 进出场；无 floating window） |
+| `src/web/features/settings/SettingsPanel.tsx` | 设置正文（sections body） |
 
 ## 校验
 

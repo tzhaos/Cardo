@@ -1,0 +1,28 @@
+/**
+ * Cardo product styles entry (`src/web`).
+ * Order: tokens → design-system → utilities → domain CSS → kit → shell chrome → themes last.
+ */
+
+@import '../styles/tokens.css';
+@import '../styles/design-system.css';
+@import '../styles/utilities.css';
+@import '../styles/menus.css';
+@import '../styles/boxes.css';
+@import '../styles/items.css';
+@import '../styles/add-views.css';
+@import '../styles/search.css';
+@import '../styles/page-confirm.css';
+@import '../styles/canvas.css';
+@import '../styles/shell.css';
+@import '../styles/toolbars.css';
+@import '../styles/alignment.css';
+@import '../styles/settings.css';
+@import '../styles/layouts.css';
+@import '../styles/motion.css';
+/* Product UI Kit chrome (cardo-*) — before shell geometry and theme recipes. */
+@import '../kit/styles/kit.css';
+/* Shell layout geometry + full-shell settings (sidebar product chrome). */
+@import '../shell/chrome.css';
+@import '../shell/settings-shell.css';
+/* Theme recipes last — must win over shared settings surface tokens. */
+@import '../styles/themes/index.css';

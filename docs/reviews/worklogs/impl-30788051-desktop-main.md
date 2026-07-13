@@ -49,7 +49,7 @@ Addresses review items from `docs/reviews/30788051-desktop-clients.md` (F3 tray 
 
 ## Out of scope / not touched
 
-- `src/web-next/ui/cardo/error-screen.ts` (other agent)
+- `src/web/ui/cardo/error-screen.ts` (other agent)
 - Updater files (`desktopUpdater.ts` and related)
 - Extension / CLI recovery copy
 

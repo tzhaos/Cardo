@@ -1,7 +1,7 @@
 # Frontend history — code patterns for AGENTS frontend rules
 
 Date: 2026-07-13  
-Scope: read-only scan of `src/web-next` and related UI (themes, i18n, desktop-adjacent error/tray already covered in hardcode audits).  
+Scope: read-only scan of `src/web` and related UI (themes, i18n, desktop-adjacent error/tray already covered in hardcode audits).  
 Product code and `AGENTS.md` / `Agents.md` not modified.
 
 Purpose: inventory patterns that future AGENTS frontend rules should forbid or require. Complements review-track consolidation in `frontend-history-reviews.md` and hardcode audits (`hardcode-audit-theme-ui.md`, `hardcode-audit-ui-strings.md`, `hardcode-audit-i18n.md`).
@@ -14,13 +14,13 @@ Source of truth: `OFFICIAL_BUILT_IN_THEME_IDS` in `src/core/contracts/themePack.
 
 | id | Default | Pack JSON | Recipe entry (`OFFICIAL_THEME_RECIPE_ENTRIES`) |
 | --- | --- | --- | --- |
-| `classic` | yes (`OFFICIAL_DEFAULT_THEME_ID`) | `themes/builtin/classic/theme.cardo-theme.json` | `src/web-next/styles/themes/classic.css` |
-| `glass` | | `themes/builtin/glass/…` | `src/web-next/styles/themes/glass/index.css` |
-| `fluent` | | `themes/builtin/fluent/…` | `src/web-next/styles/themes/fluent/index.css` |
-| `material` | | `themes/builtin/material/…` | `src/web-next/styles/themes/material/index.css` |
-| `swiftui` | | `themes/builtin/swiftui/…` | `src/web-next/styles/themes/swiftui/index.css` |
+| `classic` | yes (`OFFICIAL_DEFAULT_THEME_ID`) | `themes/builtin/classic/theme.cardo-theme.json` | `src/web/styles/themes/classic.css` |
+| `glass` | | `themes/builtin/glass/…` | `src/web/styles/themes/glass/index.css` |
+| `fluent` | | `themes/builtin/fluent/…` | `src/web/styles/themes/fluent/index.css` |
+| `material` | | `themes/builtin/material/…` | `src/web/styles/themes/material/index.css` |
+| `swiftui` | | `themes/builtin/swiftui/…` | `src/web/styles/themes/swiftui/index.css` |
 
-Load path: `import.meta.glob` in `src/web-next/themes/builtInPacks.ts` → registry in `themeRegistry.ts`.  
+Load path: `import.meta.glob` in `src/web/themes/builtInPacks.ts` → registry in `themeRegistry.ts`.  
 Validate: `npx tsx scripts/validate-builtin-themes.ts` / `npm run validate:themes`.  
 Token key of special interest: `settingsChrome` → CSS var `--cardo-settings-chrome` (must stay opaque for long text shells).
 
@@ -30,12 +30,12 @@ Token key of special interest: `settingsChrome` → CSS var `--cardo-settings-ch
 
 | Role | Path | Notes |
 | --- | --- | --- |
-| Primary catalog | `src/web-next/i18n/messages.ts` | `WEB_NEXT_MESSAGES` en + zh; types `WebNextLocale`, `WebNextMessageKey`; `translateWebNext` |
-| React hook | `src/web-next/i18n/useI18n.ts` | locale from `preferencesStore`; `t(key, params?)` |
-| Settings search index | `src/web-next/components/settings/settingsSearchCatalog.ts` | keys only; labels via `t()` |
+| Primary catalog | `src/web/i18n/messages.ts` | `WEB_NEXT_MESSAGES` en + zh; types `WebNextLocale`, `WebNextMessageKey`; `translateWebNext` |
+| React hook | `src/web/i18n/useI18n.ts` | locale from `preferencesStore`; `t(key, params?)` |
+| Settings search index | `src/web/features/settings/settingsSearchCatalog.ts` | keys only; labels via `t()` |
 | Theme pack name/desc | `themes/builtin/*/theme.cardo-theme.json` | intentional dual `name.en` / `name.zh` (not messages.ts) |
-| Theme look presets | `src/web-next/components/settings/themeLookPresets.ts` | dual-locale map (intentional) |
-| Fatal bootstrap UI | `src/web-next/ui/cardo/error-screen.ts` | dual-locale inline; not preferences; not messages.ts |
+| Theme look presets | `src/web/features/settings/themeLookPresets.ts` | dual-locale map (intentional) |
+| Fatal bootstrap UI | `src/web/ui/cardo/error-screen.ts` | dual-locale inline; not preferences; not messages.ts |
 | Extension connect guide | `src/extension/bootstrap/runtimeGuide.ts` | dual-locale; separate SoT |
 | Extension Chrome locales | `vite/extension-locales.ts` → `_locales` | store / action |
 | Welcome seed | `src/core/database/welcomeSeed.ts` | dual locale written into DB at init |
@@ -54,7 +54,7 @@ Required pattern for new product chrome: add en+zh keys in `messages.ts`, consum
 - UI components do not import Drizzle or open SQLite.
 - Preferences and workspace mutations share the same enqueue + command types.
 
-Files: `src/web-next/app/stores/workspaceStore.ts`, `preferencesStore.ts`, `src/web-next/platform/hostPlatform.ts`.
+Files: `src/web/app/stores/workspaceStore.ts`, `preferencesStore.ts`, `src/web/platform/hostPlatform.ts`.
 
 ### 2. Drag / resize frame rate does not write the DB
 
@@ -171,7 +171,7 @@ Rule direction: toolbar/icon chrome must use `IconButton` `tooltip` / `HoverTip`
 | Seed page titles | English-only in DB for user pages |
 | Internal type names | `WebNextApp`, `translateWebNext`, `WebNextLocale` — code only; rename over time, not user-facing |
 
-Hardcoded CJK outside messages under `src/web-next` components: essentially none (CJK lives in `messages.ts` zh block and intentional dual maps).
+Hardcoded CJK outside messages under `src/web` components: essentially none (CJK lives in `messages.ts` zh block and intentional dual maps).
 
 Rule direction: no JSX string literals for chrome labels; no second ad-hoc locale map for React product UI; fatal/tray must either join messages or be documented dual-locale SoT.
 
@@ -262,11 +262,11 @@ Forbid:
 ## Scan method (reproducible)
 
 ```text
-themeId ===          src/  (especially web-next/components)
-#[0-9a-fA-F]{3,8}    src/web-next **/*.{css,tsx,ts}
-title=               src/web-next/components
+themeId ===          src/  (especially web/components)
+#[0-9a-fA-F]{3,8}    src/web **/*.{css,tsx,ts}
+title=               src/web/components
 wbn-|khaos-          src/
-scale / whileTap     src/web-next (tsx + css)
+scale / whileTap     src/web (tsx + css)
 fireCommand|updateBoxFrame|updateBoxDragFrame
 WebNext|layout.exitZen|settingsChrome
 OFFICIAL_BUILT_IN_THEME_IDS / themes/builtin/*

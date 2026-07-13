@@ -19,11 +19,11 @@ Locale under review: `zh` / zh-CN (catalog key `zh`)
 
 | Surface | Path |
 | --- | --- |
-| Primary i18n catalog | `src/web-next/i18n/messages.ts` (`WEB_NEXT_MESSAGES.zh`) |
-| Settings search keywords | `src/web-next/components/settings/settingsSearchCatalog.ts` |
-| Theme look labels | `src/web-next/components/settings/themeLookPresets.ts` |
+| Primary i18n catalog | `src/web/i18n/messages.ts` (`WEB_NEXT_MESSAGES.zh`) |
+| Settings search keywords | `src/web/features/settings/settingsSearchCatalog.ts` |
+| Theme look labels | `src/web/features/settings/themeLookPresets.ts` |
 | Built-in Theme Packs (name/description/options) | `themes/builtin/*/theme.cardo-theme.json` |
-| Fatal error screen | `src/web-next/ui/cardo/error-screen.ts` |
+| Fatal error screen | `src/web/ui/cardo/error-screen.ts` |
 | Extension connect guide | `src/extension/bootstrap/runtimeGuide.ts` |
 | Extension Chrome store / action | `vite/extension-locales.ts` |
 | Desktop tray | `src/desktop/main.ts` |
@@ -81,7 +81,7 @@ Severity: high = shipping user-visible architecture/dev copy or broken localizat
 
 - Criteria: 3, 4, 5, 7
 - Surface / location: Fatal bootstrap error screen (all surfaces when classify hits)
-- Key or evidence: `src/web-next/ui/cardo/error-screen.ts` zh branches (~67–213, footer ~363–365)
+- Key or evidence: `src/web/ui/cardo/error-screen.ts` zh branches (~67–213, footer ~363–365)
 - Current (samples):
   - 「当前 Cardo Runtime 返回的设置数据与本版本不匹配（常见于旧 Runtime 仍在运行，或数据库尚未迁移到主题系统字段）。」
   - Steps: `npm run desktop:build`、`cardo serve`、`schemaVersion 为 9`、`%APPDATA%\cardo\runtime.log`

@@ -13,11 +13,11 @@ GitHub Actions `CI`（`.github/workflows/ci.yml`）在 push/PR 到 `main` 时顺
 
 ### CI 实际顺序（权威）
 
-| 顺序 | CI step | 本地等价命令 | 失败含义 |
-| --- | --- | --- | --- |
-| 1 | Check formatting | `npm run format:check` | Prettier 未对齐；先 `npm run format` 再 check |
-| 2 | Run static checks and tests | `npm run check`（= `lint` + `lint:eslint` + `test:ts` + `validate:themes`） | 类型 / ESLint / 单测 / 官方主题校验失败 |
-| 3 | Full product build | `npm run build:all` | 某一 surface 无法产出 artifacts |
+| 顺序 | CI step                     | 本地等价命令                                                                | 失败含义                                      |
+| ---- | --------------------------- | --------------------------------------------------------------------------- | --------------------------------------------- |
+| 1    | Check formatting            | `npm run format:check`                                                      | Prettier 未对齐；先 `npm run format` 再 check |
+| 2    | Run static checks and tests | `npm run check`（= `lint` + `lint:eslint` + `test:ts` + `validate:themes`） | 类型 / ESLint / 单测 / 官方主题校验失败       |
+| 3    | Full product build          | `npm run build:all`                                                         | 某一 surface 无法产出 artifacts               |
 
 Release 工作流（tag / workflow_dispatch）会 format:check 并打安装包，不重复跑完整 `check` 的部分逻辑可能因版本而变化；合并进 main 的代码仍以 CI 三关为准。
 
@@ -62,11 +62,11 @@ npm run build:all       # 合并前完整产物；用户若只要局部验证可
 
 ### 分支角色
 
-| 分支 | 角色 |
-| --- | --- |
-| `main` | 默认主干；只接受已审查的合并；CI 做校验与 `build:all`，不发布安装包 |
-| `feature/*` / `fix/*` / `chore/*` / `docs/*` | 任务分支；贡献者与 AI 的日常工作区 |
-| `vX.Y.Z` tag | 里程碑发版节点；仅稳定 semver；触发 Desktop Release 工作流 |
+| 分支                                         | 角色                                                                |
+| -------------------------------------------- | ------------------------------------------------------------------- |
+| `main`                                       | 默认主干；只接受已审查的合并；CI 做校验与 `build:all`，不发布安装包 |
+| `feature/*` / `fix/*` / `chore/*` / `docs/*` | 任务分支；贡献者与 AI 的日常工作区                                  |
+| `vX.Y.Z` tag                                 | 里程碑发版节点；仅稳定 semver；触发 Desktop Release 工作流          |
 
 不强制维护长期 `dev` 分支。若仓库另有 `dev`/`develop` 开发线，则任务分支先合入该线，再由里程碑 PR 合入 `main`；规则与下表相同，仅把「目标主干」替换为实际开发线。
 
@@ -172,30 +172,32 @@ Cardo Runtime 是本机唯一权威 SQLite 持有者与业务写路径。CLI、W
 
 ## UI 架构
 
-1. 通用 UI 基于进入仓库的 shadcn/ui 源码二次开发，不直接采用默认视觉。
-2. `ui/primitives` 保存 shadcn/Radix 基础源码，`ui/cardo` 保存产品级二次封装，业务组件只组合这些组件。
-3. Canvas、Box Frame、Item Layout、Page Tab、Drag Overlay 和 Resize 保持产品专用结构。
-4. Radix 管焦点、键盘、Portal 和可访问性；Motion 管连续空间动画；CSS 管颜色、边框和简单 hover；Drag Controller 独占拖拽根节点 transform。
-5. 同一个 CSS 属性在同一状态下只能有一个动效所有者。
-6. 拖拽和 Resize 帧内禁止提交 Command、写数据库或更新完整 Workspace。
-7. 迁移组件时先复现当前视觉与几何，不在同一提交中主动重新设计。
-8. 新实现落地后删除对应旧组件和旧 CSS，不长期保留双轨实现。
+1. 通用 UI 基于进入仓库的 shadcn/ui 源码二次开发，不直接采用默认视觉。产品图形面唯一目录为 `src/web`（已合并历史 `web-next` / `web-v2` 双轨）。
+2. `src/web/kit/internal/primitives` 保存 shadcn/Radix 基础源码；`src/web/kit`（及 `kit/components`）为产品级语义组件。业务只组合 kit，禁止旁路 internal。
+3. 壳布局在 `src/web/shell`；领域 UI 在 `src/web/features`（Canvas、Box Frame、Item、设置正文等）；应用入口与 stores 在 `src/web/app`。
+4. Canvas、Box Frame、Item Layout、Page Tab、Drag Overlay 和 Resize 保持产品专用结构。
+5. Radix 管焦点、键盘、Portal 和可访问性；Motion 管连续空间动画；CSS 管颜色、边框和简单 hover；Drag Controller 独占拖拽根节点 transform。
+6. 同一个 CSS 属性在同一状态下只能有一个动效所有者。
+7. 拖拽和 Resize 帧内禁止提交 Command、写数据库或更新完整 Workspace。
+8. 迁移组件时先复现当前视觉与几何，不在同一提交中主动重新设计。
+9. 新实现落地后删除对应旧组件和旧 CSS，不长期保留双轨实现。
 
 ## 前端实现规范（强制）
 
-历史教训来源：会话 compaction（Fluent 发糊 / 主题 token 失效 / 装错路径误判 UI 消失 / 文案与 i18n）、`docs/reviews` 硬编码与文案审查、`src/web-next` 现状扫描。细则与证据见 `docs/reviews/worklogs/frontend-history-*.md` 与 `docs/architecture/theme-pack-authoring.md`。下列条款对 AI 与贡献者同等强制。
+历史教训来源：会话 compaction（Fluent 发糊 / 主题 token 失效 / 装错路径误判 UI 消失 / 文案与 i18n）、`docs/reviews` 硬编码与文案审查、`src/web` 现状扫描。细则与证据见 `docs/reviews/worklogs/frontend-history-*.md` 与 `docs/architecture/theme-pack-authoring.md`。下列条款对 AI 与贡献者同等强制。
 
 ### 1. 风格与组件统一
 
-1. 业务 UI 只组合 `ui/primitives` + `ui/cardo` + 产品域组件；禁止再引入第二套组件库或复制 shadcn 默认皮肤。
-2. 类名与 CSS 变量前缀仅 `cardo-` / `--cardo-*`；禁止新增 `wbn-`、`khaos-` 或其它历史双轨前缀。
-3. 主题属性仅 `data-cardo-theme`（及材质 `data-cardo-chrome-material`）；禁止再挂第二套 `data-theme` 作为产品路径。
-4. 工具栏 / 图标 chrome 的悬停说明用产品 `HoverTip` 或 `IconButton.tooltip`（深色气泡 tip），禁止依赖浏览器原生 `title` 作为主路径（无障碍仍须 `aria-label`）。
-5. 用户可见品牌名只写 Cardo；禁止用户面出现 WebNext、Khaos、KhaosBox。内部模块名 `WebNext*` / 目录 `web-next` 不得泄漏到文案与 About。
-6. 结构基线：系统页邻接与 classic 信息架构一致（收藏 | 页面 | 回收站 | +）；主题方言只改材质与装饰，不得擅自换 IA（除非产品明确批准）。
-7. 同一功能禁止双轨 UI（旧组件 + 新组件长期共存）；落地后删旧实现与旧 CSS。
+1. 产品 UI 只从 `src/web/kit` 导入。推荐路径导入（`kit/button`、`kit/nav-item`、`kit/icon`）；兼容 barrel `kit`。禁止 import `kit/internal/**`。范式：`docs/architecture/cardo-ui-system-paradigm.md`。
+2. 底层仍是 shadcn/Radix 源码二次开发（internal）；禁止再引入第二套组件库或复制 shadcn 默认皮肤。
+3. 类名与 CSS 变量前缀仅 `cardo-` / `--cardo-*`；禁止 `cardo-kit-*`、`wbn-`、`khaos-` 等双轨前缀。
+4. 主题属性仅 `data-cardo-theme`（及材质 `data-cardo-chrome-material`）。图标仅 Lucide（`ThemeIcon`）。控件方言以 Codex recipe 为先；其它主题只加 recipe，不换图标族。
+5. 工具栏 / 图标 chrome 的悬停说明用 `HoverTip` 或 `IconButton.tooltip`，禁止主路径依赖原生 `title`（无障碍仍须 `aria-label`）。
+6. 用户可见品牌名只写 Cardo；禁止用户面出现 WebNext、Khaos、KhaosBox。
+7. 结构基线：收藏 | 页面 | 回收站 | +；主题方言不擅自换 IA。
+8. 缺控件先扩 `kit/components`（并加路径 re-export），禁止业务手写「临时好看按钮」。
 
-### 2. 官方主题适配（classic / glass / fluent / material / swiftui）
+### 2. 官方主题适配（classic / glass / fluent / material / swiftui / codex）
 
 1. 官方 id SoT：`OFFICIAL_BUILT_IN_THEME_IDS`（`src/core/contracts/themePack.ts`）。换皮唯一路径：Theme Pack JSON token + `[data-cardo-theme="<id>"]` recipe。
 2. 新增或改官方主题必须：登记 id → 登记 recipe 入口 → `themes/builtin/<id>/…` 双色 JSON → recipe CSS → `npm run validate:themes`（与 CI check 一致）。
@@ -224,7 +226,7 @@ Cardo Runtime 是本机唯一权威 SQLite 持有者与业务写路径。CLI、W
 
 ### 4. 文案与 i18n
 
-1. 应用内 React 产品文案唯一目录：`src/web-next/i18n/messages.ts`（en + zh 同 key）+ `useI18n().t` / `translateWebNext`。新增文案必须双语同时加。
+1. 应用内 React 产品文案唯一目录：`src/web/i18n/messages.ts`（en + zh 同 key）+ `useI18n().t` / `translateWebNext`。新增文案必须双语同时加。
 2. 禁止在 JSX 硬编码用户可见中文/英文句子（占位 debug 除外且不得合入）。
 3. 禁止草稿/过程体：路线图、「后续」「待定」、GitHub milestone、npm 命令、内部架构说明作为主 UI 文案。
 4. 禁止对用户暴露架构黑话作主文案：Runtime、Command、shell、Chrome（壳工程义）、Design Token、Theme Pack 引擎名、OPFS、schemaVersion 裸数字等。产品说法用「本机服务 / 连接状态 / 主题 / 更新」等。
@@ -238,16 +240,16 @@ Cardo Runtime 是本机唯一权威 SQLite 持有者与业务写路径。CLI、W
 
 提交或宣称完成前，自查：
 
-| 项 | 检查 |
-| --- | --- |
-| 主题 | classic/glass/fluent/material/swiftui 是否未被硬编码色破坏；设置底是否 token |
-| i18n | 新字符串是否 en+zh；有无硬编码；有无架构黑话 |
-| 动效 | 文字壳有无 scale；拖拽帧有无写库；属性所有者是否唯一 |
-| 双轨 | 有无旧组件/旧 CSS/旧 class 前缀并存 |
-| 无障碍 | 图标按钮有 aria-label；焦点是否仍走 Radix |
-| 安装/构建 | 目视是否用新构建产物与正确安装路径，而非旧 Programs\Cardo |
-| 格式 | `format:check`（前端改动同样触发 CI 第一关） |
-| 主题校验 | 动过官方主题则 `validate:themes` |
+| 项        | 检查                                                                         |
+| --------- | ---------------------------------------------------------------------------- |
+| 主题      | classic/glass/fluent/material/swiftui 是否未被硬编码色破坏；设置底是否 token |
+| i18n      | 新字符串是否 en+zh；有无硬编码；有无架构黑话                                 |
+| 动效      | 文字壳有无 scale；拖拽帧有无写库；属性所有者是否唯一                         |
+| 双轨      | 有无旧组件/旧 CSS/旧 class 前缀并存                                          |
+| 无障碍    | 图标按钮有 aria-label；焦点是否仍走 Radix                                    |
+| 安装/构建 | 目视是否用新构建产物与正确安装路径，而非旧 Programs\Cardo                    |
+| 格式      | `format:check`（前端改动同样触发 CI 第一关）                                 |
+| 主题校验  | 动过官方主题则 `validate:themes`                                             |
 
 ### 6. 常见误判（先排环境再改布局）
 
@@ -258,7 +260,7 @@ Cardo Runtime 是本机唯一权威 SQLite 持有者与业务写路径。CLI、W
 ## 主题包
 
 1. Design Token + Theme Pack 是唯一换皮扩展面；禁止第二套皮肤引擎或旧 token 双轨。
-2. JSON 只放可序列化 token；结构方言写在 `src/web-next/styles/themes/<id>…`，选择器挂 `[data-cardo-theme]`。
+2. JSON 只放可序列化 token；结构方言写在 `src/web/styles/themes/<id>…`，选择器挂 `[data-cardo-theme]`。
 3. 浮动壳材质用 `tokens.chrome.material`（glass|solid）与 `data-cardo-chrome-material`，设置壳背景用 `--cardo-settings-chrome`（须不透明）。
 4. 文字壳禁止 scale 进出场与长期 transform 定位；几何整数像素。详见 `docs/architecture/theme-pack-authoring.md`。
 5. 新增官方主题必须登记 id、recipe 映射，并跑 `npm run validate:themes`（或 `npx tsx scripts/validate-builtin-themes.ts`）。

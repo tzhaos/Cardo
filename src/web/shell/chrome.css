@@ -1,0 +1,339 @@
+/**
+ * Product shell geometry (sidebar + main panel, Codex-like).
+ * Scoped under .cardo-v2-app (historical class prefix kept for theme recipes).
+ */
+
+.cardo-v2-app {
+  --cardo-shell-sidebar-width: 236px;
+  --cardo-shell-titlebar-height: 40px;
+  --cardo-v2-panel-radius: var(--cardo-radius-xl, 18px);
+
+  box-sizing: border-box;
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--cardo-text, #1a1c1f);
+  background: var(--cardo-shell, var(--cardo-canvas, #eceef2));
+}
+
+.cardo-v2-app.cardo-app-desktop {
+  padding-top: var(--cardo-shell-titlebar-height);
+}
+
+/* Titlebar shares shell color family (not a second glass fill). */
+.cardo-v2-app .cardo-desktop-titlebar {
+  height: var(--cardo-shell-titlebar-height);
+  border-bottom-color: transparent;
+  background: var(--cardo-shell, var(--cardo-canvas, #eceef2));
+  color: var(--cardo-secondary-text, #5c6370);
+  backdrop-filter: none;
+}
+
+.cardo-v2-app .cardo-desktop-titlebar-brand {
+  color: var(--cardo-text, #1a1c1f);
+}
+
+/* —— Body row: sidebar + main stage —— */
+.cardo-v2-shell-body {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  padding: 0 8px 8px 0;
+}
+
+.cardo-v2-sidebar {
+  display: flex;
+  width: var(--cardo-shell-sidebar-width);
+  flex: 0 0 var(--cardo-shell-sidebar-width);
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Product nav (drop hit root) fills space above the always-on settings foot. */
+.cardo-v2-product-nav {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+.cardo-v2-sidebar-scroll {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 10px;
+  overflow: auto;
+  padding: 8px 8px 8px;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--cardo-text) 14%, transparent) transparent;
+}
+
+.cardo-v2-sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cardo-v2-sidebar-scroll::-webkit-scrollbar-thumb {
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--cardo-text) 12%, transparent);
+}
+
+.cardo-v2-nav-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+/* Layout-only shell chrome; interactive rows use cardo-nav-item (UI Kit). */
+
+.cardo-v2-sidebar-foot {
+  flex: 0 0 auto;
+  padding: 6px 8px 8px;
+}
+
+/* Rename field inside nav row (layout slot; control is kit Input). */
+.cardo-v2-nav-item-input {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.cardo-v2-delete-confirm {
+  margin: 4px 4px 0;
+}
+
+/* —— Main stage / white panel —— */
+.cardo-v2-stage {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+  padding-top: 2px;
+}
+
+.cardo-v2-panel {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  /* Visible so bottom-shell search results can paint above the bar */
+  overflow: visible;
+  border-radius: var(--cardo-v2-panel-radius);
+  background: var(--cardo-panel, #ffffff);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--cardo-text) 3%, transparent);
+}
+
+.cardo-v2-panel-header {
+  display: flex;
+  height: 44px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 12px 0 14px;
+}
+
+.cardo-v2-panel-title {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--cardo-text, #1a1c1f);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardo-v2-panel-tools {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 2px;
+}
+
+.cardo-v2-panel-tools .cardo-icon-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--cardo-secondary-text, #5c6370);
+}
+
+.cardo-v2-panel-tools .cardo-icon-button:hover:not(:disabled) {
+  background: var(--cardo-hover, rgba(0, 0, 0, 0.045));
+  color: var(--cardo-text, #1a1c1f);
+}
+
+.cardo-v2-panel-tools .cardo-v2-tool-active {
+  background: var(--cardo-active, var(--cardo-surface, #e2e5eb));
+  color: var(--cardo-text, #1a1c1f);
+}
+
+.cardo-v2-tool-divider {
+  width: 1px;
+  height: 16px;
+  margin: 0 4px;
+  background: var(--cardo-divider, var(--cardo-border, rgba(0, 0, 0, 0.07)));
+}
+
+/* Canvas well: parent-fill, never 100vw/100vh under v2 */
+.cardo-v2-canvas-well {
+  position: relative;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  margin: 0 10px 10px;
+  border-radius: 12px;
+  background: var(--cardo-canvas, #f3f4f7);
+}
+
+.cardo-v2-app .cardo-v2-canvas-well .cardo-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Elevate canvas during box drag (scoped to panel). */
+.cardo-v2-app:has(.cardo-box-dragging) .cardo-v2-canvas-well .cardo-canvas {
+  z-index: 100;
+}
+
+/*
+ * Bottom action bar sits inside the panel, not fixed to the viewport.
+ * Avoid transform on this shell — it becomes the containing block for search results
+ * and clips/narrows the global search panel.
+ */
+.cardo-v2-bottom-shell {
+  position: absolute;
+  z-index: 30;
+  right: 0;
+  bottom: 14px;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.cardo-v2-bottom-shell .cardo-global-search-panel-wrap {
+  position: relative;
+  left: auto;
+  bottom: auto;
+  width: min(620px, calc(100% - 32px));
+  max-height: min(420px, 50vh);
+  transform: none;
+  pointer-events: auto;
+}
+
+.cardo-v2-bottom-shell .cardo-global-search-panel {
+  max-height: min(420px, 50vh);
+}
+
+.cardo-v2-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid color-mix(in srgb, var(--cardo-text) 6%, transparent);
+  border-radius: var(--cardo-radius-pill, 999px);
+  padding: 6px;
+  background: color-mix(in srgb, var(--cardo-panel, #fff) 94%, transparent);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--cardo-text) 10%, transparent);
+  pointer-events: auto;
+}
+
+.cardo-v2-bottom-bar .cardo-toolbar-divider {
+  height: 20px;
+}
+
+.cardo-v2-search-pill {
+  position: relative;
+  display: flex;
+  height: 36px;
+  align-items: center;
+  overflow: hidden;
+  border-radius: var(--cardo-radius-pill, 999px);
+  background: var(--cardo-hover, rgba(0, 0, 0, 0.045));
+}
+
+.cardo-v2-search-pill .cardo-search-local-trigger {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 1;
+}
+
+.cardo-v2-search-pill .cardo-search-web-trigger {
+  position: absolute;
+  z-index: 1;
+  inset: 0 0 0 auto;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    visibility 0s linear 160ms,
+    opacity var(--cardo-duration-normal, 160ms) var(--cardo-easing, ease);
+}
+
+.cardo-v2-search-pill-active .cardo-search-web-trigger {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
+.cardo-v2-search-pill-active .cardo-search-web-trigger:disabled {
+  cursor: default;
+  opacity: 0.32;
+}
+
+.cardo-v2-search-pill input {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  padding: 0 48px 0 40px;
+  background: transparent;
+  color: var(--cardo-text);
+  font-size: 13px;
+  outline: none;
+  transition: opacity var(--cardo-duration-normal, 160ms) var(--cardo-easing, ease);
+}
+
+/* Settings full-shell geometry lives in styles/settings-shell.css (PR6 §3.4). */
+
+/*
+ * Box → page drop highlight (PR7 / KD-18) — primary nav / sidebar equivalent of
+ * historical cardo-top-bar-drop-mode + tab-pill target styles in motion.css.
+ * Reads uiStore.boxDropPageId via cardo-v2-nav-drop-target.
+ * Shared symbol names stay: boxDragOverTopBar, registerTopBarElement, cardo-top-bar-drag-over.
+ * Tokens only — no hard-coded brand hex.
+ */
+.cardo-v2-nav-drop-target {
+  background: var(--cardo-active, var(--cardo-surface-strong, var(--cardo-surface, #e2e5eb)));
+  box-shadow: inset 0 0 0 1px var(--cardo-border, rgba(0, 0, 0, 0.08));
+  color: var(--cardo-text, #1a1c1f);
+  font-weight: 500;
+}
+
+.cardo-v2-nav-drop-target .cardo-v2-nav-item-icon {
+  color: var(--cardo-text, #1a1c1f);
+}
+
+/* Drop-mode: short bg transition only (no layoutId springs on sidebar rows). */
+.cardo-v2-sidebar-drop-mode .cardo-v2-nav-item {
+  transition: background-color 80ms ease;
+}
+
+.cardo-v2-app[data-mode='settings'] .cardo-v2-settings-shell {
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+/* Text shells: opacity only — never scale */
+.cardo-v2-app .cardo-v2-settings-shell,
+.cardo-v2-app .cardo-v2-delete-confirm,
+.cardo-v2-app .cardo-v2-panel-header {
+  transform: none;
+}

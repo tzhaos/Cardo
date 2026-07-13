@@ -22,7 +22,7 @@ import {
   type ThemePack,
 } from '../src/core/contracts/themePack';
 import { parseThemePackDocumentText } from '../src/core/contracts/themePackIO';
-import { BUILTIN_THEMES_REPO_RELATIVE } from '../src/web-next/themes/themePaths';
+import { BUILTIN_THEMES_REPO_RELATIVE } from '../src/web/themes/themePaths';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const builtinRoot = path.join(root, BUILTIN_THEMES_REPO_RELATIVE);

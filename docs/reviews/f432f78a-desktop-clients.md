@@ -192,5 +192,5 @@ Correctness checklist (pass/fail):
 - CLI: `src/cli/main.ts`
 - Extension: `src/extension/bootstrap/extensionApp.tsx`, `discoverRuntime.ts`, `runtimeGuide.ts`
 - Native Host: `src/native-host/handleNativeHostRequest.ts`, `scripts/install-native-host.ts`
-- Shared client: `src/client/runtimeClient.ts`, `src/web-next/platform/hostPlatform.ts`, `src/web-runtime/main.tsx`
+- Shared client: `src/client/runtimeClient.ts`, `src/web/platform/hostPlatform.ts`, `src/web-runtime/main.tsx`
 - Lock/discovery: `src/runtime/lock.ts`, `src/runtime/discovery.ts`, `src/runtime/paths.ts`, `src/runtime/index.ts`

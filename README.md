@@ -38,7 +38,7 @@ Unlike a pure browser extension or a single desktop binary, Cardo is a multi-sur
 | Browser extension | Manifest V3 client; discovers Runtime via Native Messaging |
 | Desktop           | Electron shell; attach-first, embed-if-missing             |
 
-All graphical surfaces share the same React UI (`src/web-next`) and talk to Runtime through a Zod-validated protocol. There is no second long-lived business database in Extension OPFS or Desktop raw SQL IPC.
+All graphical surfaces share the same React UI (`src/web`) and talk to Runtime through a Zod-validated protocol. There is no second long-lived business database in Extension OPFS or Desktop raw SQL IPC.
 
 <p align="center">
   <img src="./docs/assets/readme/surfaces.svg" alt="Four surfaces, one workspace" width="920"/>
@@ -69,9 +69,10 @@ All graphical surfaces share the same React UI (`src/web-next`) and talk to Runt
 
 ### Product chrome
 
-- Top bar pages, history undo / redo, bottom toolbar, canvas tools
+- Sidebar shell: pages, Favorites, Recycle Bin, settings foot; main panel title tools
+- History undo / redo, canvas tools, bottom search / new box
 - Global search across pages, boxes, and items
-- Built-in theme packs: Classic, Glass, Fluent, Material, SwiftUI
+- Built-in theme packs: Classic, Glass, Fluent, Material, SwiftUI, Codex
 - Interface language: English / 中文
 - Feature catalog for chrome slots (Settings → Interface)
 
@@ -135,7 +136,17 @@ src/
 ├── runtime/       HTTP server, lock, discovery, auth, events, capabilities
 ├── client/        RuntimeClient (HTTP + fetch stream)
 ├── cli/           cardo serve | open | status | stop
-├── web-next/      Shared React UI, canvas, themes, i18n, settings
+├── web/           Shared product UI (single tree; former web-next + web-v2)
+│   ├── app/       CardoApp, start, stores, bootstrap, styles entry
+│   ├── shell/     Sidebar shell, settings chrome, FeatureGate
+│   ├── features/  Boxes, canvas, settings body, items, search, …
+│   ├── kit/       Product UI kit (path imports: kit/button, kit/icon, …)
+│   ├── domain/    Pure presentation / geometry helpers
+│   ├── styles/    Product CSS + theme recipes
+│   ├── themes/    Theme Pack apply / registry
+│   ├── i18n/      en + zh product copy
+│   └── platform/  RuntimeClient host bridge
+├── web-runtime/   Hosted UI entry (Vite base /app/)
 ├── extension/     MV3 bootstrap, Chrome adapters, Runtime discover
 ├── desktop/       Electron main / preload / renderer attach-embed
 └── native-host/   Thin Native Messaging host (discover + optional relay)
@@ -264,13 +275,14 @@ Feature / fix completion in this repo typically runs `npm run build:all`, then a
 
 Official packs ship under `themes/builtin/`:
 
-| id         | Character                        |
-| ---------- | -------------------------------- |
-| `classic`  | Default soft glass chrome        |
-| `glass`    | Floating translucent layers      |
-| `fluent`   | Windows 11–inspired solid chrome |
-| `material` | Material-inspired solid chrome   |
-| `swiftui`  | App-style glass chrome           |
+| id         | Character                          |
+| ---------- | ---------------------------------- |
+| `classic`  | Default soft glass chrome          |
+| `glass`    | Floating translucent layers        |
+| `fluent`   | Windows 11–inspired solid chrome   |
+| `material` | Material-inspired solid chrome     |
+| `swiftui`  | App-style glass chrome             |
+| `codex`    | Sidebar shell / main panel dialect |
 
 Tokens live in JSON; structural dialect CSS hangs off `[data-cardo-theme]`. Authoring guide: `docs/architecture/theme-pack-authoring.md`. Validate with:
 
@@ -285,7 +297,7 @@ npx tsx scripts/validate-builtin-themes.ts
 | Layer            | Choice                                                          |
 | ---------------- | --------------------------------------------------------------- |
 | Language         | TypeScript                                                      |
-| UI               | React 19, Motion, Radix primitives, product `ui/cardo` wrappers |
+| UI               | React 19, Motion, Radix primitives, product `src/web/kit`       |
 | Styling          | Tailwind CSS 4, design tokens, theme recipes                    |
 | Contracts        | Zod 4 (`z.infer` for types)                                     |
 | Persistence      | Drizzle ORM + SQLite                                            |
@@ -307,6 +319,9 @@ npx tsx scripts/validate-builtin-themes.ts
 | [`docs/architecture/robustness-and-operations.md`](./docs/architecture/robustness-and-operations.md)     | Lock, logs, updates, recovery           |
 | [`docs/architecture/ui-theme-system.md`](./docs/architecture/ui-theme-system.md)                         | Theme system overview                   |
 | [`docs/architecture/theme-pack-authoring.md`](./docs/architecture/theme-pack-authoring.md)               | Writing official / user theme packs     |
+| [`docs/architecture/cardo-ui-system-paradigm.md`](./docs/architecture/cardo-ui-system-paradigm.md)       | Product UI layering and kit rules       |
+| [`docs/architecture/cardo-ui-kit.md`](./docs/architecture/cardo-ui-kit.md)                               | `src/web/kit` public API                |
+| [`docs/architecture/web-v2-codex-shell-design.md`](./docs/architecture/web-v2-codex-shell-design.md)     | Sidebar shell design (cutover complete) |
 | [`docs/architecture/zod-drizzle-shadcn-refactor.md`](./docs/architecture/zod-drizzle-shadcn-refactor.md) | Contract and UI boundary refactor notes |
 | [`docs/product-roadmap-v0.4.md`](./docs/product-roadmap-v0.4.md)                                         | Template system direction               |
 | [`docs/product-roadmap-v0.5.md`](./docs/product-roadmap-v0.5.md)                                         | Bookmark / web library direction        |

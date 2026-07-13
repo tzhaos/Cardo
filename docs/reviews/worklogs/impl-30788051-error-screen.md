@@ -15,7 +15,7 @@ Review refs: 30788051 F5 / ZH-01 / hardcode-audit error-screen items.
 
 Edited only:
 
-- `src/web-next/ui/cardo/error-screen.ts`
+- `src/web/ui/cardo/error-screen.ts`
 - this worklog
 
 Did not edit `src/desktop/main.ts` (another agent) or error-screen CSS.

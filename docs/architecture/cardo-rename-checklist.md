@@ -44,7 +44,7 @@
 | Transfer format | `cardo-workspace` |
 | System page ids | `cardo-collection` / `cardo-recycle-bin`（schema v5 单向改写） |
 | 日志 / i18n / 错误串 | Cardo |
-| UI 封装目录 `src/web-next/ui/cardo` | 已由 `ui/khaos` 改名完成 |
+| UI 封装目录 | 现为 `src/web/kit`（历史 `ui/cardo` / `ui/kit` / 双文件夹 `web-next`+`web-v2` 已合并退役） |
 | 品牌文件 `assets/brand/cardo-*` | orbit mark + inverted-bar wordmark；扩展/托盘/Electron 图标同源 |
 
 ## 4. Path SoT

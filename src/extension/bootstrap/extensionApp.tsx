@@ -7,7 +7,7 @@
  */
 
 import { configureAppPorts } from '../../core/runtime/appPorts';
-import { startWebNextApp } from '../../web-next/app/start';
+import { startWebNextApp } from '../../web/app/start';
 import { createExtensionPorts } from '../ports/createExtensionPorts';
 import {
   discoverRuntimeViaNativeMessaging,
@@ -36,7 +36,7 @@ async function clearInjectionForRetry(): Promise<void> {
     window.__CARDO_RUNTIME__ = undefined;
   }
   // Dynamic import avoids static hostPlatform in the extension entry chunk.
-  const { resetHostPlatformForRetry } = await import('../../web-next/platform/hostPlatform');
+  const { resetHostPlatformForRetry } = await import('../../web/platform/hostPlatform');
   await resetHostPlatformForRetry();
 }
 

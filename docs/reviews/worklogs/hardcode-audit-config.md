@@ -2,7 +2,7 @@
 
 Date: 2026-07-13  
 Scope (read-only): `src/runtime`, `src/core`, `src/cli`, `src/client`, `src/native-host`, `scripts` (not `node_modules`).  
-Also notes cross-surface hits in `src/desktop`, `src/web-next`, `assets`, `package.json` when they duplicate the same concept.  
+Also notes cross-surface hits in `src/desktop`, `src/web`, `assets`, `package.json` when they duplicate the same concept.  
 Product code not modified.
 
 Classification legend:
@@ -56,7 +56,7 @@ Forward migrator steps are keyed 4…9 in `src/core/database/migrator.ts` (step 
 
 | Location | Text |
 | --- | --- |
-| `src/web-next/ui/cardo/error-screen.ts` ~80, ~87 | ZH/EN recovery steps: `schemaVersion 为 9` / `schemaVersion is 9` |
+| `src/web/ui/cardo/error-screen.ts` ~80, ~87 | ZH/EN recovery steps: `schemaVersion 为 9` / `schemaVersion is 9` |
 
 When schema bumps to 10, Desktop start dialog stays correct; Preferences mismatch recovery copy will lie.
 
@@ -264,7 +264,7 @@ Same “token at least 32 characters” appears as:
 - `runtime/config.ts`, `runtime/discovery.ts`
 - `core/contracts/runtimeProtocol.ts`, `desktopIpc.ts`
 - `core/protocols/nativeMessaging.ts`
-- client-side checks in `web-next/platform/hostPlatform.ts` (`length >= 32`)
+- client-side checks in `web/platform/hostPlatform.ts` (`length >= 32`)
 
 No single `MIN_PROCESS_TOKEN_CHARS` export. Drift risk if entropy policy changes.
 

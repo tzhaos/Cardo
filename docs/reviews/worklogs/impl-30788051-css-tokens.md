@@ -12,12 +12,12 @@ Replace product-surface brand/status hex (and classic-blue rgba rings) with exis
 
 | File | Before | After |
 | --- | --- | --- |
-| `src/web-next/styles/add-views.css` | `.cardo-add-primary` `#60a5fa` / `#ffffff` | `var(--cardo-blue)` / `var(--cardo-create-text)` |
-| `src/web-next/styles/boxes.css` | delete confirm `#ff3045` / `#ffffff` | `var(--cardo-red)` / `var(--cardo-create-text)` (aligned with item delete) |
-| `src/web-next/styles/shell.css` | runtime banner reconnect `#d97706`, disconnect `#dc2626` | `var(--cardo-orange)` / `var(--cardo-red)` |
-| `src/web-next/styles/settings.css` | layout/theme card selected rings `rgba(59, 130, 246, …)` | `color-mix(…, var(--cardo-blue) …)` matching pack-card-selected pattern |
-| `src/web-next/styles/motion.css` | enter-item flash `rgba(78, 143, 255, 0.18)` | `color-mix(in srgb, var(--cardo-blue) 18%, transparent)` |
-| `src/web-next/styles/themes/glass/index.css` | settings shell `#f9fafd` / `#12131c` | `var(--cardo-settings-chrome)` (pack SoT: glass light `#f4f6fb`, dark `#141522`) |
+| `src/web/styles/add-views.css` | `.cardo-add-primary` `#60a5fa` / `#ffffff` | `var(--cardo-blue)` / `var(--cardo-create-text)` |
+| `src/web/styles/boxes.css` | delete confirm `#ff3045` / `#ffffff` | `var(--cardo-red)` / `var(--cardo-create-text)` (aligned with item delete) |
+| `src/web/styles/shell.css` | runtime banner reconnect `#d97706`, disconnect `#dc2626` | `var(--cardo-orange)` / `var(--cardo-red)` |
+| `src/web/styles/settings.css` | layout/theme card selected rings `rgba(59, 130, 246, …)` | `color-mix(…, var(--cardo-blue) …)` matching pack-card-selected pattern |
+| `src/web/styles/motion.css` | enter-item flash `rgba(78, 143, 255, 0.18)` | `color-mix(in srgb, var(--cardo-blue) 18%, transparent)` |
+| `src/web/styles/themes/glass/index.css` | settings shell `#f9fafd` / `#12131c` | `var(--cardo-settings-chrome)` (pack SoT: glass light `#f4f6fb`, dark `#141522`) |
 
 ## Intent preserved
 
@@ -35,6 +35,6 @@ Replace product-surface brand/status hex (and classic-blue rgba rings) with exis
 
 ## Verify
 
-- Grep: no remaining `#60a5fa`, `#ff3045`, `#d97706`, `#dc2626`, `#f9fafd`, `#12131c`, or classic blue rgba selection rings under `src/web-next/styles` product files (only `tokens.css` selection-ring default remains as bootstrap)
+- Grep: no remaining `#60a5fa`, `#ff3045`, `#d97706`, `#dc2626`, `#f9fafd`, `#12131c`, or classic blue rgba selection rings under `src/web/styles` product files (only `tokens.css` selection-ring default remains as bootstrap)
 - Visual: classic + glass light/dark settings shell; add primary CTA; box delete confirm; runtime banner reconnect/disconnect; layout/theme card selection ring
 - Optional later: `npm run validate:themes` if pack chrome values are tuned to match prior recipe hex more closely

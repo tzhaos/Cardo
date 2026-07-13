@@ -154,8 +154,8 @@ Path SoT 由 `src/runtime/paths.ts` 的 `resolveCardoDataPaths()` 定义：
 | `src/desktop/ensureDesktopRuntime.ts` | attach-first；不兼容则 retire；spawn detached child |
 | `src/desktop/runtimeChild.ts` | Desktop Runtime 子进程入口（`startedBy=desktop`, `auto`） |
 | `src/native-host/*` | 瘦 host：discover；不写 SQLite |
-| `src/web-next/*` | 共享图形 UI |
-| `src/web-next/platform/hostPlatform.ts` | RuntimeClient-only facade |
+| `src/web/*` | 共享图形 UI |
+| `src/web/platform/hostPlatform.ts` | RuntimeClient-only facade |
 
 历史路径说明：旧文档中的 `src/runtime/revision.ts` / `invalidation.ts` 不存在；revision 与 scopes 在 `src/core` 内。
 
@@ -193,7 +193,7 @@ flowchart TD
   Shutdown --> Spawn
   Retire -->|否| Spawn[spawn runtime-child detached]
   Spawn --> Wait[wait health + /app]
-  Wait --> UI[load web-next at baseUrl/app]
+  Wait --> UI[load product UI at baseUrl/app]
   Attach --> UI
   UI --> API[HTTP + fetch stream]
 ```
@@ -215,7 +215,7 @@ flowchart TD
 
 ## 8. Browser Extension 与 Native Messaging
 
-1. v1 主入口：工具栏 action 打开独立扩展页，加载 web-next client。
+1. v1 主入口：工具栏 action 打开独立扩展页，加载 `src/web` 产品 UI client。
 2. 发现：唯一 primary 是 NM `runtime.discover` → 瘦 host 只读 `discovery.json`，返回 baseUrl、token、pid、schemaVersion 等。
 3. Extension 无法直接读用户磁盘；禁止依赖扩展读文件。
 4. 业务 I/O 仅 RuntimeClient（HTTP + fetch stream）。

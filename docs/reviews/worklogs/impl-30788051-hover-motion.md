@@ -15,9 +15,9 @@ No redesign; no changes to `design-system.css` or `hover-tip.tsx`.
 
 | File | Change |
 | --- | --- |
-| `src/web-next/components/canvas/CanvasToolsToolbar.tsx` | `title={item.label}` → `tooltip={item.label}` |
-| `src/web-next/components/top-bar/TopBar.tsx` | Fluent top-trailing canvas tools: same |
-| `src/web-next/components/boxes/BaseBoxFrame.tsx` | Box header controls (lock / detail / layout / close) were `MotionButton` + native `title`; now `IconButton` + `tooltip` (close gained tooltip matching aria-label). Dropped unused `MotionButton` import. |
+| `src/web/features/canvas/CanvasToolsToolbar.tsx` | `title={item.label}` → `tooltip={item.label}` |
+| `src/web/features/top-bar/TopBar.tsx` | Fluent top-trailing canvas tools: same |
+| `src/web/features/boxes/BaseBoxFrame.tsx` | Box header controls (lock / detail / layout / close) were `MotionButton` + native `title`; now `IconButton` + `tooltip` (close gained tooltip matching aria-label). Dropped unused `MotionButton` import. |
 
 Left as native `title` (not IconButton chrome, or non-product-tip cases):
 

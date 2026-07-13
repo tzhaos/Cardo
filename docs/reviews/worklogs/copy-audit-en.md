@@ -1,7 +1,7 @@
 # English user-facing copy audit (Cardo)
 
 Date: 2026-07-13  
-Scope (read-only): `src/web-next/i18n/**`, `src/web-next/components/**`, `src/web-next/platform/**`, `src/web-next/ui/cardo/error-screen.ts`, `src/extension/bootstrap/**`, built-in theme pack en strings under `themes/builtin/**`, Desktop update / startup strings that surface in UI.  
+Scope (read-only): `src/web/i18n/**`, `src/web/features/**`, `src/web/platform/**`, `src/web/ui/cardo/error-screen.ts`, `src/extension/bootstrap/**`, built-in theme pack en strings under `themes/builtin/**`, Desktop update / startup strings that surface in UI.  
 Product name rule: user-facing copy must say Cardo (not WebNext / KhaosBox).  
 No product code was changed.
 
@@ -12,73 +12,73 @@ Summary: day-to-day canvas, menus, Favorites/Recycle Bin, and most Settings labe
 ## Issues
 
 ### C-EN-1
-- Path: `src/web-next/i18n/messages.ts` ~216 (used in `SettingsPanel.tsx` About → Updates)
+- Path: `src/web/i18n/messages.ts` ~216 (used in `SettingsPanel.tsx` About → Updates)
 - Current: "Check GitHub milestone releases for Desktop"
 - Problem: Planning / engineering language in Settings UI (“milestone”, distribution channel name “Desktop” as if internal). Users should not need to know GitHub release process.
 - Suggested formal: "Check for updates from the official Cardo release channel."
 
 ### C-EN-2
-- Path: `src/web-next/i18n/messages.ts` ~232
+- Path: `src/web/i18n/messages.ts` ~232
 - Current: "Check GitHub for a newer Desktop build."
 - Problem: “build” and “GitHub” are developer monologue; idle update status should sound like a product, not a CI artifact.
 - Suggested formal: "Check whether a newer version is available."
 
 ### C-EN-3
-- Path: `src/web-next/i18n/messages.ts` ~242; shown in About (`SettingsPanel.tsx` ~929–930)
+- Path: `src/web/i18n/messages.ts` ~242; shown in About (`SettingsPanel.tsx` ~929–930)
 - Current: label "Theme system" / value "Design tokens + Theme Pack"
 - Problem: Internal architecture jargon exposed on About. End users do not need design-token marketing.
 - Suggested formal: label "Theming" / value "Theme packs" (or hide the row entirely if it is not product-useful).
 
 ### C-EN-4
-- Path: `src/web-next/i18n/messages.ts` ~101
+- Path: `src/web/i18n/messages.ts` ~101
 - Current: "Runtime connection toast"
 - Problem: Internal codename “Runtime” and UI implementation term “toast” in a Settings feature description.
 - Suggested formal: "Show connection status messages"
 
 ### C-EN-5
-- Path: `src/web-next/i18n/messages.ts` ~75, ~77, ~132, ~187
+- Path: `src/web/i18n/messages.ts` ~75, ~77, ~132, ~187
 - Current: "Chrome and workspace tools" / "Chrome always visible" / "Chrome features" / "Chrome spacing"
 - Problem: “Chrome” is shell/UI-engineering jargon; reads as the browser brand or incomplete copy. (Note: some of these keys are currently catalog/layout leftovers rather than live Settings rows, but they remain en locale product strings.)
 - Suggested formal: "Interface and workspace tools" / "Interface always visible" / "Interface features" / "Interface spacing"
 
 ### C-EN-6
-- Path: `src/web-next/i18n/messages.ts` ~86, ~133
+- Path: `src/web/i18n/messages.ts` ~86, ~133
 - Current: "Show or hide shell tools"
 - Problem: “shell” is architecture language; inconsistent with everyday product wording.
 - Suggested formal: "Show or hide interface tools"
 
 ### C-EN-7
-- Path: `src/web-next/i18n/messages.ts` ~231
+- Path: `src/web/i18n/messages.ts` ~231
 - Current: "Updates require a packaged Desktop install."
 - Problem: Packaging/channel jargon (“packaged”, “Desktop install”) rather than user-facing install type language already used nearby (Installed / Portable).
 - Suggested formal: "Updates are available only for installed or portable Cardo apps."
 
 ### C-EN-8
-- Path: `src/web-next/i18n/messages.ts` ~213; key name `settings.webNextEdition` (value currently "Cardo")
+- Path: `src/web/i18n/messages.ts` ~213; key name `settings.webNextEdition` (value currently "Cardo")
 - Current: key `settings.webNextEdition` → "Cardo"
 - Problem: Value is fine; key still embeds retired codename WebNext. Risk of future copy regressing to “WebNext edition”. User-visible string is OK today.
 - Suggested formal: Rename key to `settings.productName` or `settings.edition` (keep value "Cardo").
 
 ### C-EN-9
-- Path: `src/web-next/i18n/messages.ts` ~263; used in `BaseBoxFrame.tsx` ~606
+- Path: `src/web/i18n/messages.ts` ~263; used in `BaseBoxFrame.tsx` ~606
 - Current: "Collected Items"
 - Problem: Product term elsewhere is Favorites / Favorite boxes; “Collected Items” is inconsistent and slightly draft-like.
 - Suggested formal: "Favorite items" or "Favorites" (match `page.collection` / `menu.addToCollection` vocabulary)
 
 ### C-EN-10
-- Path: `src/web-next/i18n/messages.ts` ~198
+- Path: `src/web/i18n/messages.ts` ~198
 - Current: "Export command history"
 - Problem: “command” is internal Command Registry vocabulary.
 - Suggested formal: "Export activity history" or "Export operation history"
 
 ### C-EN-11
-- Path: `src/web-next/i18n/messages.ts` ~111
+- Path: `src/web/i18n/messages.ts` ~111
 - Current: "Active page and undo are shared across connected clients"
 - Problem: “clients” is multi-client architecture talk; slightly developer-facing (string may be unused in current Settings UI but remains en locale).
 - Suggested formal: "The current page and undo history stay in sync across open Cardo windows."
 
 ### C-EN-12
-- Path: `src/web-next/i18n/messages.ts` ~78
+- Path: `src/web/i18n/messages.ts` ~78
 - Current: "Exit Zen"
 - Problem: Incomplete feature label with no surrounding polish; “Zen” as a mode name without Settings/help context reads like WIP. (Key appears unused in components today.)
 - Suggested formal: If shipping: "Exit focus mode". If not shipping: remove from en locale until the feature lands.
@@ -102,37 +102,37 @@ Summary: day-to-day canvas, menus, Favorites/Recycle Bin, and most Settings labe
 - Suggested formal: "Material-inspired surfaces and accent colors."
 
 ### C-EN-16
-- Path: `src/web-next/ui/cardo/error-screen.ts` ~67–97 (PREFERENCES_SCHEMA_MISMATCH)
+- Path: `src/web/ui/cardo/error-screen.ts` ~67–97 (PREFERENCES_SCHEMA_MISMATCH)
 - Current: "Preferences from Runtime do not match this Cardo build (often a stale Runtime or a database that has not migrated theme fields yet)." + steps including `npm run desktop:build`, `schemaVersion is 9`, mixing checkouts.
 - Problem: Verbose developer monologue on a user-facing fatal screen: Runtime, migration, schemaVersion, npm scripts, repo checkouts.
 - Suggested formal: Title "Cardo needs to restart after an update"; summary "This version of Cardo cannot read your current settings data."; steps: "Close all Cardo windows." / "Quit Cardo completely, then open it again." / "If the problem continues, reinstall Cardo or contact support with Technical details." Keep npm/schema only under Technical details for developers.
 
 ### C-EN-17
-- Path: `src/web-next/ui/cardo/error-screen.ts` ~102–125 (RUNTIME_NO_APP_UI)
+- Path: `src/web/ui/cardo/error-screen.ts` ~102–125 (RUNTIME_NO_APP_UI)
 - Current: "Runtime is up but is not serving the /app static UI. Desktop needs a web-runtime build that matches this app." + `artifacts/web-runtime/index.html`
 - Problem: Internal paths (`/app`, web-runtime, artifacts) and build instructions are not end-user copy.
 - Suggested formal: "Cardo started but the app interface files are missing or incomplete. Reinstall Cardo, or repair the installation, then try again."
 
 ### C-EN-18
-- Path: `src/web-next/ui/cardo/error-screen.ts` ~134–176 (RUNTIME_UNAVAILABLE)
+- Path: `src/web/ui/cardo/error-screen.ts` ~134–176 (RUNTIME_UNAVAILABLE)
 - Current: "Cannot connect to Cardo Runtime" / "The UI needs a local Cardo Runtime as the data authority..."
 - Problem: Exposes architecture (“Runtime”, “data authority”). Steps include `cardo serve`, `npm run native-host:install`, token URL hygiene — useful for power users, harsh for general users.
 - Suggested formal: Title "Cannot connect to Cardo"; summary "Cardo is not running on this computer, or this window could not join it."; steps for extension: "Open the Cardo desktop app." / "Fully quit and reopen the browser, then Retry." / "Reinstall Cardo if the problem continues." Put CLI/token notes under Technical details.
 
 ### C-EN-19
-- Path: `src/web-next/ui/cardo/error-screen.ts` ~206–213
+- Path: `src/web/ui/cardo/error-screen.ts` ~206–213
 - Current: "Cardo hit a problem" / "An unclassified error occurred."
 - Problem: Slightly chatty (“hit a problem”) and internal classification language (“unclassified”).
 - Suggested formal: "Cardo could not continue" / "An unexpected error occurred."
 
 ### C-EN-20
-- Path: `src/web-next/ui/cardo/error-screen.ts` ~364–365
+- Path: `src/web/ui/cardo/error-screen.ts` ~364–365
 - Current: "Logs: %APPDATA%\\cardo\\runtime.log · discovery.json"
 - Problem: Always-on developer footer; fine for advanced recovery but dense for default UI. Also hard-codes Windows path form only.
 - Suggested formal: "Support logs are available under Technical details." or show path only after expanding technical details.
 
 ### C-EN-21
-- Path: `src/web-next/platform/hostPlatform.ts` ~108–109, ~135–136 (thrown messages often land on error screen)
+- Path: `src/web/platform/hostPlatform.ts` ~108–109, ~135–136 (thrown messages often land on error screen)
 - Current: "Desktop Runtime config missing. Main must inject window.__CARDO_RUNTIME__ via preload before load." / "Runtime mode requested but no token. Open via `cardo open` (one-time code bootstrap)." / "Cardo Runtime is not connected. Start Cardo CLI/Desktop and ensure the native messaging host is installed."
 - Problem: Raw engineering errors shown as summary when classification falls through or mirrors Runtime copy; mentions preload, window globals, CLI, native messaging host.
 - Suggested formal: Map these to short user summaries in `classifyCardoError` and keep the raw text only as detail. Example: "Cardo could not start its connection. Quit and reopen the app." / "Open Cardo from the app or `cardo open`, then try again."
@@ -168,13 +168,13 @@ Summary: day-to-day canvas, menus, Favorites/Recycle Bin, and most Settings labe
 - Suggested formal: Short user message + optional “Copy technical details”. Example: "Cardo could not start. Quit any other Cardo process, reinstall if needed, then try again."
 
 ### C-EN-27
-- Path: `src/web-next/i18n/messages.ts` menu vs box casing (~245–259 vs ~250–253)
+- Path: `src/web/i18n/messages.ts` menu vs box casing (~245–259 vs ~250–253)
 - Current: "New Page", "New Box", "Delete Box" vs "Pin box", "Lock box position"
 - Problem: Title Case / sentence case inconsistency in context menus (polish, not draft).
 - Suggested formal: Prefer one menu style throughout, e.g. sentence case: "New page", "New box", "Delete box", "Pin box".
 
 ### C-EN-28
-- Path: `src/web-next/app/stores/workspaceStore.ts` ~118
+- Path: `src/web/app/stores/workspaceStore.ts` ~118
 - Current: default title `'Untitled'` hardcoded in `createPage`
 - Problem: Bypasses i18n (`page.untitled` exists). With Chinese locale, new pages can still get English "Untitled".
 - Suggested formal: Use `translateWebNext(locale, 'page.untitled')` (or Runtime default that respects preferences.locale).

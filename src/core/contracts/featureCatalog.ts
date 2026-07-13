@@ -5,9 +5,10 @@ import { z } from 'zod';
  * Extending the set requires a code PR — no dynamic feature id loading.
  *
  * Official Cardo defaults are all ON so classic shell looks unchanged.
+ * PR9: chrome.topBar retired → chrome.sidebar (no dual-read shim; unknown keys stripped).
  */
 export const featureIds = [
-  'chrome.topBar',
+  'chrome.sidebar',
   'chrome.historyToolbar',
   'chrome.bottomToolbar',
   'chrome.canvasTools',
@@ -26,7 +27,7 @@ export type FeatureId = z.infer<typeof featureIdSchema>;
 export const featureFlagOverridesSchema = z.partialRecord(featureIdSchema, z.boolean());
 export type FeatureFlagOverrides = z.infer<typeof featureFlagOverridesSchema>;
 
-/** Strip retired keys (e.g. item.contextMenu) without failing hydrate. */
+/** Strip retired keys (e.g. chrome.topBar) without failing hydrate. */
 export function normalizeFeatureFlagOverrides(value: unknown): FeatureFlagOverrides {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
   const next: FeatureFlagOverrides = {};
@@ -40,14 +41,14 @@ export function normalizeFeatureFlagOverrides(value: unknown): FeatureFlagOverri
 }
 
 export type FeatureSlot =
-  | 'shell.top'
+  | 'shell.nav'
   | 'shell.corner'
   | 'shell.bottom'
   | 'canvas.overlay'
   | 'shell.modal'
   | 'shell.toast'
-  | 'topBar.tab'
-  | 'topBar'
+  | 'nav.item'
+  | 'nav'
   | 'box.chrome';
 
 export interface FeatureDefinition {
@@ -64,12 +65,12 @@ export interface FeatureDefinition {
 
 export const FEATURE_CATALOG: readonly FeatureDefinition[] = [
   {
-    id: 'chrome.topBar',
-    slot: 'shell.top',
+    id: 'chrome.sidebar',
+    slot: 'shell.nav',
     defaultEnabled: true,
     dependsOn: [],
-    labelKey: 'settings.feature.chrome.topBar',
-    descriptionKey: 'settings.feature.chrome.topBarDescription',
+    labelKey: 'settings.feature.chrome.sidebar',
+    descriptionKey: 'settings.feature.chrome.sidebarDescription',
   },
   {
     id: 'chrome.historyToolbar',
@@ -113,25 +114,25 @@ export const FEATURE_CATALOG: readonly FeatureDefinition[] = [
   },
   {
     id: 'workspace.collection',
-    slot: 'topBar.tab',
+    slot: 'nav.item',
     defaultEnabled: true,
-    dependsOn: ['chrome.topBar'],
+    dependsOn: ['chrome.sidebar'],
     labelKey: 'settings.feature.workspace.collection',
     descriptionKey: 'settings.feature.workspace.collectionDescription',
   },
   {
     id: 'workspace.recycleBin',
-    slot: 'topBar.tab',
+    slot: 'nav.item',
     defaultEnabled: true,
-    dependsOn: ['chrome.topBar'],
+    dependsOn: ['chrome.sidebar'],
     labelKey: 'settings.feature.workspace.recycleBin',
     descriptionKey: 'settings.feature.workspace.recycleBinDescription',
   },
   {
     id: 'workspace.multiPage',
-    slot: 'topBar',
+    slot: 'nav',
     defaultEnabled: true,
-    dependsOn: ['chrome.topBar'],
+    dependsOn: ['chrome.sidebar'],
     labelKey: 'settings.feature.workspace.multiPage',
     descriptionKey: 'settings.feature.workspace.multiPageDescription',
   },

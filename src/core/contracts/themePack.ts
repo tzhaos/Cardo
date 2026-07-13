@@ -47,6 +47,11 @@ export const colorTokenMapSchema = z
     scrollbar: z.string().min(1),
     scrollbarHover: z.string().min(1),
     selectionRing: z.string().min(1),
+    /**
+     * Outer product chrome (titlebar + sidebar + shell bg in v2).
+     * Distinct from canvas (work surface inside the main panel).
+     */
+    shell: z.string().min(1),
     /** Settings window chrome (e.g. Fluent mica #F0F3F9). */
     settingsChrome: z.string().min(1),
     /** Settings list / nav hover fill (e.g. Fluent #E8EEF3). */
@@ -318,7 +323,8 @@ export const THEME_FILE_EXTENSION = '.cardo-theme.json';
 
 /**
  * Official built-in Theme Pack ids — frozen, never overwritten by disk/import.
- * classic | glass | fluent | material | swiftui — product display order.
+ * classic | glass | fluent | material | swiftui | codex — product display order
+ * (codex last; default remains classic).
  */
 export const OFFICIAL_BUILT_IN_THEME_IDS: ReadonlySet<string> = new Set([
   'classic',
@@ -326,6 +332,7 @@ export const OFFICIAL_BUILT_IN_THEME_IDS: ReadonlySet<string> = new Set([
   'fluent',
   'material',
   'swiftui',
+  'codex',
 ]);
 
 /**
@@ -333,11 +340,12 @@ export const OFFICIAL_BUILT_IN_THEME_IDS: ReadonlySet<string> = new Set([
  * Tokens alone cannot express shell topology; every official id needs a recipe.
  */
 export const OFFICIAL_THEME_RECIPE_ENTRIES: Readonly<Record<string, string>> = {
-  classic: 'src/web-next/styles/themes/classic.css',
-  glass: 'src/web-next/styles/themes/glass/index.css',
-  fluent: 'src/web-next/styles/themes/fluent/index.css',
-  material: 'src/web-next/styles/themes/material/index.css',
-  swiftui: 'src/web-next/styles/themes/swiftui/index.css',
+  classic: 'src/web/styles/themes/classic.css',
+  glass: 'src/web/styles/themes/glass/index.css',
+  fluent: 'src/web/styles/themes/fluent/index.css',
+  material: 'src/web/styles/themes/material/index.css',
+  swiftui: 'src/web/styles/themes/swiftui/index.css',
+  codex: 'src/web/styles/themes/codex/index.css',
 };
 
 /** CSS custom property names written by the Theme Runtime. */
@@ -368,6 +376,7 @@ export const colorCssVariableNames = {
   scrollbar: '--cardo-scrollbar',
   scrollbarHover: '--cardo-scrollbar-hover',
   selectionRing: '--cardo-selection-ring',
+  shell: '--cardo-shell',
   settingsChrome: '--cardo-settings-chrome',
   settingsHover: '--cardo-settings-hover',
   blue: '--cardo-blue',
@@ -376,6 +385,44 @@ export const colorCssVariableNames = {
   emerald: '--cardo-emerald',
   red: '--cardo-red',
 } as const satisfies Record<keyof ColorTokenMap, string>;
+
+/**
+ * One-way forward fill for packs that predate the required `shell` color token.
+ * For each mode map under tokens.colors: if shell is missing/empty, set
+ * shell = canvas, else settingsChrome. Does not invent dual schema — fill then
+ * strict-parse at load boundaries. Mutates the pack-like object in place.
+ */
+export function ensureThemePackShellColors<
+  T extends {
+    tokens?: {
+      colors?: {
+        light?: Record<string, string>;
+        dark?: Record<string, string>;
+        [mode: string]: Record<string, string> | undefined;
+      };
+    };
+  },
+>(pack: T): T {
+  const colors = pack.tokens?.colors;
+  if (!colors || typeof colors !== 'object') return pack;
+
+  for (const modeKey of Object.keys(colors)) {
+    const map = colors[modeKey];
+    if (!map || typeof map !== 'object') continue;
+    const shell = map.shell;
+    if (typeof shell === 'string' && shell.length > 0) continue;
+    const canvas = map.canvas;
+    if (typeof canvas === 'string' && canvas.length > 0) {
+      map.shell = canvas;
+      continue;
+    }
+    const settingsChrome = map.settingsChrome;
+    if (typeof settingsChrome === 'string' && settingsChrome.length > 0) {
+      map.shell = settingsChrome;
+    }
+  }
+  return pack;
+}
 
 export const radiusCssVariableNames = {
   xs: '--cardo-radius-xs',

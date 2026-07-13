@@ -32,7 +32,7 @@ Answer: yes (partial on policy edges).
 | Pillar (AGENTS / local-runtime) | Status | Evidence |
 | --- | --- | --- |
 | Runtime sole SQLite + business writes | Met | `src/runtime/database.ts` `openRuntimeDatabase`; exclusive lock `src/runtime/lock.ts`; discovery `src/runtime/discovery.ts` |
-| Clients via Runtime protocol only | Met | `src/client/runtimeClient.ts`; `src/web-next/platform/hostPlatform.ts` fail-closed, no OPFS fallback |
+| Clients via Runtime protocol only | Met | `src/client/runtimeClient.ts`; `src/web/platform/hostPlatform.ts` fail-closed, no OPFS fallback |
 | Command registry + single txn + op log/history | Met | `src/core/application/executeDatabaseCommand.ts`; handlers under `src/core/application/*` |
 | Server-derived InvalidationScope | Met | `src/core/application/invalidationScopes.ts`; applied in `src/runtime/httpServer.ts` |
 | AppPorts non-DB only | Met | `src/core/ports/AppPorts.ts` (no DatabasePort) |
@@ -42,7 +42,7 @@ Answer: yes (partial on policy edges).
 | Zod boundary SoT | Mostly met | `src/core/contracts/*`; residual hand types in `commandTypes.ts` |
 | No old-schema dual-read | Mostly met | Forward migrator `src/core/database/migrator.ts`; exception: `ensurePreferencesColumns.ts` |
 | Runtime no electron | Met | `src/runtime/*` free of electron imports |
-| Zustand only ephemeral UI | Met | UI stores under `src/web-next/app/stores/*`; no full Workspace Snapshot persist |
+| Zustand only ephemeral UI | Met | UI stores under `src/web/app/stores/*`; no full Workspace Snapshot persist |
 
 ### Question: fragmented / degraded by ad-hoc work?
 
@@ -56,9 +56,9 @@ Keep: RuntimeClient revision watermarks, CommandQueue, path SoT `cardo` / `cardo
 
 | Item | Severity | Disposition | Evidence |
 | --- | --- | --- | --- |
-| `WebNext*` theme aliases (`registerWebNextTheme`, `getWebNextTheme`, `WebNextThemePalette`, …) | should-fix | delete dead exports; merge call sites to `applyTheme` / ThemePack | `src/web-next/themes/themeRegistry.ts`; Settings still uses `getRegisteredWebNextThemes` |
+| `WebNext*` theme aliases (`registerWebNextTheme`, `getWebNextTheme`, `WebNextThemePalette`, …) | should-fix | delete dead exports; merge call sites to `applyTheme` / ThemePack | `src/web/themes/themeRegistry.ts`; Settings still uses `getRegisteredWebNextThemes` |
 | `applyWebNextTheme` wrapper | polish | merge → call `applyTheme` | `WebNextApp.tsx` |
-| `src/web-next` product UI name | polish | restructure later → e.g. `src/ui` | Entire tree; build chunk names |
+| `src/web` product UI name | polish | restructure later → e.g. `src/ui` | Entire tree; build chunk names |
 | `settings.webNextEdition` key | polish | rename to product-neutral key | `messages.ts`, About settings |
 | Dual-track CSS `--wbn-*` / `ui/khaos` | none left in src | keep clean | Inventory scan: 0 `wbn-` / `khaos-` class uses; 2299 `cardo-` |
 | Doc dual-DB “现状” mermaid | should-fix | rewrite §3.1 as historical | `docs/architecture/local-runtime-multi-client.md` |
@@ -152,7 +152,7 @@ Answer: yes — this was a real product bug class.
 
 #### Root cause (box radius)
 
-1. Theme packs define distinct `tokens.radii` (e.g. classic xl=16px, material xl=28px, paper xl=24px, graphite all 0). Applied via `applyTheme` → `--cardo-radius-*` (`src/web-next/themes/applyTheme.ts`, `radiusCssVariableNames` in `themePack.ts`).
+1. Theme packs define distinct `tokens.radii` (e.g. classic xl=16px, material xl=28px, paper xl=24px, graphite all 0). Applied via `applyTheme` → `--cardo-radius-*` (`src/web/themes/applyTheme.ts`, `radiusCssVariableNames` in `themePack.ts`).
 2. `theme-recipes.css` further selects a radius step per material language (github → lg, one → md, classic → xl, graphite → 0).
 3. Historical bug: Motion `animate.borderRadius` used bare `16px` / always `var(--cardo-radius-xl)`, writing inline styles that override CSS recipes and ignore pack scale differences users expect when switching themes.
 4. Secondary: compact layout profile hard-overrides `--cardo-radius-*` in `layouts.css`, which can fight pack radii when layout=compact.

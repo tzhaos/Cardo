@@ -44,7 +44,7 @@ L5  Recipe CSS          仅结构/材质方言，选择器必须 [data-cardo-the
 1. `OFFICIAL_BUILT_IN_THEME_IDS` 登记 id。
 2. `OFFICIAL_THEME_RECIPE_ENTRIES` 登记 recipe 入口路径。
 3. 添加 `themes/builtin/<id>/theme.cardo-theme.json`（与用户包同格式）。
-4. 添加 recipe：`src/web-next/styles/themes/<id>.css` 或 `<id>/index.css`，并在 `styles/themes/index.css` import。
+4. 添加 recipe：`src/web/styles/themes/<id>.css` 或 `<id>/index.css`，并在 `styles/themes/index.css` import。
 5. 跑 `npx tsx scripts/validate-builtin-themes.ts`。
 6. 跑 `npm run build` 与 `npm run desktop:build`。
 7. 目视：设置、顶栏、盒子、底栏、下拉、明暗两套。
@@ -53,7 +53,9 @@ L5  Recipe CSS          仅结构/材质方言，选择器必须 [data-cardo-the
 
 ### 必填
 
-- `colors.light` + `colors.dark` 完整 `ColorTokenMap`（含 `settingsChrome` / `settingsHover`）。
+- `colors.light` + `colors.dark` 完整 `ColorTokenMap`（含 `shell` / `settingsChrome` / `settingsHover`）。
+- `shell` → `--cardo-shell`：外层产品壳（titlebar + sidebar + 窗体衬底）。与 `canvas`（主面板内工作面）语义不同；勿把 canvas 当成壳色。
+- v1 不把 `shell` 放进 `overridableColorKeys`（用户 L1 仍调 canvas 等）；旧用户包缺 `shell` 时，加载边界会用 `ensureThemePackShellColors` 一次性从同 mode 的 `canvas` 或 `settingsChrome` 填充后再严格 parse（不是双 schema）。
 - 建议 `chrome.material` 显式为 `glass` 或 `solid`。
 - `settingsChrome` / `settingsHover` 应接近不透明（校验脚本会拦明显半透明）。
 
@@ -101,7 +103,7 @@ L5  Recipe CSS          仅结构/材质方言，选择器必须 [data-cardo-the
 5. 小图标：禁止 filter；SVG 复杂渐变在 16–20px 会显软，需接受或改扁平色。
 6. 拖拽结束：`Math.round` 几何后再提交 store。
 
-实现参考：`SettingsWindow.tsx`、`themes/chrome-material.css`。
+实现参考：`src/web/shell/SettingsShell.tsx`（全壳设置）、`src/web/styles/themes/chrome-material.css`。
 
 ## 7. 组件与 UI 约束
 

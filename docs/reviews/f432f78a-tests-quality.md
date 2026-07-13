@@ -4,7 +4,7 @@
 | --- | --- |
 | Review id | f432f78a |
 | Date | 2026-07-13 |
-| Scope | `src/**/*.test.ts`, package scripts, `.github/workflows/*`, type/safety smells, `src/web-next` architecture compliance |
+| Scope | `src/**/*.test.ts`, package scripts, `.github/workflows/*`, type/safety smells, `src/web` architecture compliance |
 | Policy SoT | `AGENTS.md` |
 | Method | Full test-file inventory; workflow + package.json scripts; greps for drizzle/schema/`as any`/`@ts-expect-error`/WebNext/ensurePreferences; sample of largest modules |
 
@@ -24,11 +24,11 @@ Runner: `npm run test:ts` → `tsx --test "src/**/*.test.ts"` (Node built-in tes
 | --- | --- | --- | --- |
 | `src/core/version/semver.test.ts` | Product semver / updater version compare | good | No interaction with `releaseChannel` / GitHub tag parsing |
 | `src/core/domains/items/services/isUrlText.test.ts` | Paste URL detect | good | No unicode / IPv6 / auth-in-URL cases |
-| `src/web-next/domain/canvasGeometry.test.ts` | Canvas world bounds, pan clamp, client→world, resize constrain | good | Zoom ≠ 1 paths not covered if product adds zoom |
-| `src/web-next/domain/placement.test.ts` | Cross-page landing frame + avoidOverlap | good | Full `BoxPageDropController` / camera-invariant grab not covered |
-| `src/web-next/domain/paste.test.ts` | Paste draft typing (folder/url/clipboard/file/shortcut) | good | No Windows UNC, file:// URLs, or multi-line paste |
-| `src/web-next/app/stores/canvasStore.test.ts` | Per-page camera isolation + viewport reclamp | good | No pan/lock interaction modes, no animation flags under UI load |
-| `src/web-next/app/stores/independentMenuStore.test.ts` | Menu position clamp | good / thin | Only clamp pure helper; open/close/drag of menus untested |
+| `src/web/domain/canvasGeometry.test.ts` | Canvas world bounds, pan clamp, client→world, resize constrain | good | Zoom ≠ 1 paths not covered if product adds zoom |
+| `src/web/domain/placement.test.ts` | Cross-page landing frame + avoidOverlap | good | Full `BoxPageDropController` / camera-invariant grab not covered |
+| `src/web/domain/paste.test.ts` | Paste draft typing (folder/url/clipboard/file/shortcut) | good | No Windows UNC, file:// URLs, or multi-line paste |
+| `src/web/app/stores/canvasStore.test.ts` | Per-page camera isolation + viewport reclamp | good | No pan/lock interaction modes, no animation flags under UI load |
+| `src/web/app/stores/independentMenuStore.test.ts` | Menu position clamp | good / thin | Only clamp pure helper; open/close/drag of menus untested |
 | `src/native-host/messageCodec.test.ts` | Length-prefixed native messaging codec | good | Partial frames only one case; no multi-message stream / max size |
 | `src/native-host/handleNativeHostRequest.test.ts` | Unsupported request + path validation + file URL normalize | good | Does not exercise `runtime.discover` / open success path with mocked FS |
 | `src/extension/ports/createExtensionPorts.test.ts` | Extension AppPorts shape (no database) | smoke | Does not call ports; does not assert against `AppPorts` type contract beyond `'database' in ports` |
@@ -134,11 +134,11 @@ Suggested fix: Export pure helpers from `installChannel.ts` (env + path only); k
 
 Title: No ESLint/import boundary for UI → Drizzle / schema / raw SQL IPC
 
-Evidence: `eslint.config.js` has React + type-checked rules but no `no-restricted-imports` for `drizzle-orm`, `**/database/schema`, or `database:execute`. Current tree is clean: no drizzle/schema imports under `src/web-next`; no `database:execute` in `src`. Desktop ports also clean. Enforcement is human review only.
+Evidence: `eslint.config.js` has React + type-checked rules but no `no-restricted-imports` for `drizzle-orm`, `**/database/schema`, or `database:execute`. Current tree is clean: no drizzle/schema imports under `src/web`; no `database:execute` in `src`. Desktop ports also clean. Enforcement is human review only.
 
 Why it matters: One accidental import reintroduces forbidden dual-write / UI DB coupling; CI will not fail.
 
-Suggested fix: ESLint overrides for `src/web-next/**`, `src/extension/**` (except intentional paths), forbidding `drizzle-orm`, `**/core/database/schema`, etc. Optionally forbid `electron` in `src/runtime/**` and `src/client/**`.
+Suggested fix: ESLint overrides for `src/web/**`, `src/extension/**` (except intentional paths), forbidding `drizzle-orm`, `**/core/database/schema`, etc. Optionally forbid `electron` in `src/runtime/**` and `src/client/**`.
 
 ### F9 — Severity: low / architecture compliance note
 
@@ -158,13 +158,13 @@ Evidence (approximate end lines sampled):
 
 | Module | ~LOC | Role |
 | --- | --- | --- |
-| `src/web-next/components/settings/SettingsPanel.tsx` | ~1130 | Settings UI |
-| `src/web-next/components/boxes/BaseBoxFrame.tsx` | ~800 | Box chrome, drag, resize |
+| `src/web/features/settings/SettingsPanel.tsx` | ~1130 | Settings UI |
+| `src/web/features/boxes/BaseBoxFrame.tsx` | ~800 | Box chrome, drag, resize |
 | `src/client/runtimeClient.ts` | ~760 | Shared client protocol |
 | `src/runtime/httpServer.ts` | ~740 | All Runtime HTTP |
-| `src/web-next/i18n/messages.ts` | ~650 | Copy dictionary |
+| `src/web/i18n/messages.ts` | ~650 | Copy dictionary |
 | `src/core/application/itemCommandHandlers.ts` | ~540 | Item commands |
-| `src/web-next/app/stores/preferencesStore.ts` | ~510+ | Preferences client store |
+| `src/web/app/stores/preferencesStore.ts` | ~510+ | Preferences client store |
 | `src/core/application/boxCommandHandlers.ts` | ~494 | Box commands |
 
 Why it matters: High change frequency + no tests = high regression cost. `httpServer` and `runtimeClient` especially.
@@ -175,7 +175,7 @@ Suggested fix: Split HTTP route modules by domain; extract RuntimeClient stream/
 
 Title: Naming dual-track `WebNext*` remains
 
-Evidence: `startWebNextApp`, `WebNextApp`, `applyWebNextTheme`, `WebNextLocale`, `getRegisteredWebNextThemes`, etc. across `src/web-next/**`. Product name is Cardo. No second UI implementation found; dual is naming/API surface, not runtime dual path. Prior health review already listed this.
+Evidence: `startWebNextApp`, `WebNextApp`, `applyWebNextTheme`, `WebNextLocale`, `getRegisteredWebNextThemes`, etc. across `src/web/**`. Product name is Cardo. No second UI implementation found; dual is naming/API surface, not runtime dual path. Prior health review already listed this.
 
 Why it matters: Confuses imports and review (“is there a non-WebNext app?”); not a functional dual-write.
 

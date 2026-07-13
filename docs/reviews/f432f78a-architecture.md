@@ -10,8 +10,8 @@ The remaining gaps are policy edges and multi-client correctness under disconnec
 
 | Pillar | Status | Evidence paths | Notes |
 | --- | --- | --- | --- |
-| Runtime sole SQLite authority; no second writers | met | `src/runtime/database.ts` (`openRuntimeDatabase` only `DatabaseSync` opener under `src/`); `src/web-next/platform/hostPlatform.ts` fail-closed; extension discover comments; grep: no OPFS/sql.js/wa-sqlite writers | Business DB only in Runtime process |
-| Clients only via RuntimeClient / Zod protocol | met | `src/client/runtimeClient.ts`; `src/web-next/platform/hostPlatform.ts`; `src/core/contracts/runtimeProtocol.ts` | UI does not import Drizzle schema / DatabasePort |
+| Runtime sole SQLite authority; no second writers | met | `src/runtime/database.ts` (`openRuntimeDatabase` only `DatabaseSync` opener under `src/`); `src/web/platform/hostPlatform.ts` fail-closed; extension discover comments; grep: no OPFS/sql.js/wa-sqlite writers | Business DB only in Runtime process |
+| Clients only via RuntimeClient / Zod protocol | met | `src/client/runtimeClient.ts`; `src/web/platform/hostPlatform.ts`; `src/core/contracts/runtimeProtocol.ts` | UI does not import Drizzle schema / DatabasePort |
 | Command Registry + single Drizzle txn + op log + history same txn | met | `src/core/application/executeDatabaseCommand.ts` L38–75; `databaseCommandRegistry.ts`; `historyEngine.ts` | Empty changes: no op log / no revision bump |
 | Query path: typed in-process; clients via protocol | partial | In-process: `src/core/database/workspaceQueries.ts` via `httpServer.ts` `dispatchQuery`; client: `RuntimeClient` query methods | Queries not on CommandQueue; concurrent with mutating async txn on one connection |
 | AppPorts non-DB only | met | `src/core/ports/AppPorts.ts` (no DatabasePort); surface ports under desktop/extension/web-runtime | Shell only; business I/O via hostPlatform |

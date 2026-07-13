@@ -6,7 +6,7 @@
 
 import { configureAppPorts } from '../core/runtime/appPorts';
 import type { AppPorts } from '../core/ports/AppPorts';
-import { startWebNextApp } from '../web-next/app/start';
+import { startWebNextApp } from '../web/app/start';
 import { browserClipboardPort } from '../extension/clipboard/browserClipboardPort';
 import { browserFileExportPort } from '../extension/files/browserFileExportPort';
 import { createDesktopPorts } from '../desktop/ports/createDesktopPorts';

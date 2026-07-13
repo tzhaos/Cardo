@@ -6,7 +6,7 @@
 | Date | 2026-07-12 |
 | Related | `AGENTS.md`, `theme-pack-authoring.md`, `themes/README.md`, `src/core/contracts/themePack.ts` |
 | Goal | 支持风格迥异的前端主题：配色/字体自定义、功能开关组合、样式可扩展 |
-| Recipes | 按包拆分：`src/web-next/styles/themes/<id>…`（见 §4.4） |
+| Recipes | 按包拆分：`src/web/styles/themes/<id>…`（见 §4.4） |
 | Authoring | 制作清单与清晰度约束见 `docs/architecture/theme-pack-authoring.md` |
 
 ## 1. 可行性结论（先说清楚）
@@ -44,11 +44,11 @@ Cardo v2: Layout Profile + 主题市场导入
 
 ### 2.1 已有
 
-1. `src/web-next/themes/themeRegistry.ts`：内置 classic / ocean / orchid；light+dark palette；`applyWebNextTheme` 把约 30 个颜色 token 写到 root CSS variables。
+1. `src/web/themes/themeRegistry.ts`：内置 classic / ocean / orchid；light+dark palette；`applyWebNextTheme` 把约 30 个颜色 token 写到 root CSS variables。
 2. preferences：`colorMode`、`themeId` 经 Command 持久化。
 3. Settings UI 可切换模式与主题卡。
-4. `ui/primitives` + `ui/cardo`：Radix 行为 + 产品壳。
-5. CSS 分层：`tokens.css`、`shell`、`boxes`、`items`、`top-bar` 等。
+4. `src/web/kit`（internal Radix + 语义组件）+ `src/web/shell` 产品壳。
+5. CSS 分层：`tokens.css`、`shell`、`boxes`、`items`、sidebar chrome 等。
 
 ### 2.2 缺口
 
@@ -136,7 +136,7 @@ Zod 落在 `src/core/contracts/themePack.ts`（跨 client 导入时与 preferenc
 Token 放在 `themes/builtin/<id>/theme.cardo-theme.json`。当 tokens 不足以表达结构/材质差异时，使用 per-pack recipe，禁止把所有主题选择器堆进单一巨石文件。
 
 ```text
-src/web-next/styles/themes/
+src/web/styles/themes/
   index.css
   shared.css
   chrome-material.css   ← data-cardo-chrome-material (glass|solid)
@@ -249,13 +249,13 @@ effective = basePack.tokens
 | --- | --- |
 | `src/core/contracts/themePack.ts` | Zod Theme Pack / options / feature flags |
 | `themes/builtin/<id>/theme.cardo-theme.json` | 官方包 tokens（与用户包同格式） |
-| `src/web-next/styles/themes/<id>.css` | 官方包结构/材质 recipe（按 id 拆分） |
-| `src/web-next/styles/themes/index.css` | recipe 聚合入口 |
+| `src/web/styles/themes/<id>.css` | 官方包结构/材质 recipe（按 id 拆分） |
+| `src/web/styles/themes/index.css` | recipe 聚合入口 |
 | `src/core/contracts/preferences.ts` | 扩展 preferences 字段 |
-| `src/web-next/themes/*` | 替换扩展现有 registry：load、merge、apply |
-| `src/web-next/shell/FeatureGate.tsx` | 功能开关 |
-| `src/web-next/shell/layouts/*` | Layout profiles |
-| `src/web-next/styles/*` | 全部消费 token，消灭硬编码色/半径 |
+| `src/web/themes/*` | 替换扩展现有 registry：load、merge、apply |
+| `src/web/shell/FeatureGate.tsx` | 功能开关 |
+| `src/web/shell/layouts/*` | Layout profiles |
+| `src/web/styles/*` | 全部消费 token，消灭硬编码色/半径 |
 | Settings | 主题编辑、字体、功能、导入导出 |
 
 ## 10. 分阶段交付（建议 PR 切分）

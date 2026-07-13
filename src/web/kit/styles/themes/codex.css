@@ -1,0 +1,47 @@
+/**
+ * Codex dialect for Cardo UI Kit.
+ * Only structural / density nuances; color from --cardo-* Theme Pack.
+ */
+
+[data-cardo-theme='codex'] .cardo-button-size-md,
+[data-cardo-theme='codex'] .cardo-button-size-sm,
+[data-cardo-theme='codex'] .cardo-pill,
+[data-cardo-theme='codex'] .cardo-nav-item,
+[data-cardo-theme='codex'] .cardo-search,
+[data-cardo-theme='codex'] .cardo-input {
+  /* solid chrome: no glass stack on chrome controls */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+[data-cardo-theme='codex'] .cardo-button-secondary,
+[data-cardo-theme='codex'] .cardo-pill {
+  background: var(--cardo-surface-strong);
+  border-color: var(--cardo-border);
+}
+
+[data-cardo-theme='codex'] .cardo-nav-item[data-active='true'] {
+  background: var(--cardo-active);
+  box-shadow: none;
+}
+
+[data-cardo-theme='codex'] .cardo-nav-item[data-tone='settings'][data-active='true'] {
+  background: color-mix(in srgb, var(--cardo-emerald, #10b981) 16%, var(--cardo-active));
+}
+
+[data-cardo-theme='codex'] .cardo-surface {
+  border-radius: 18px;
+}
+
+[data-cardo-theme='codex'] .cardo-form-card {
+  border-radius: 16px;
+  border-color: var(--cardo-border);
+}
+
+[data-cardo-theme='codex'] .cardo-switch[data-state='checked'] {
+  background: var(--cardo-blue);
+}
+
+[data-cardo-theme='codex'] .cardo-segmented-item[data-active='true'] {
+  background: var(--cardo-active);
+}

@@ -1,0 +1,708 @@
+/**
+ * Fluent recipe — settings window / list / color rows.
+ * Tokens: themes/builtin/fluent/theme.cardo-theme.json
+ * Scoped under [data-cardo-theme="fluent"].
+ * Material paint (solid/opaque) is driven by data-cardo-chrome-material from tokens.
+ */
+
+/*
+ * Fluent Settings shell layout — paint/opacity comes from:
+ *   tokens.settingsChrome / settingsHover
+ *   data-cardo-chrome-material=solid (themes/chrome-material.css)
+ */
+[data-cardo-theme='fluent'] .cardo-independent-menu.cardo-settings-window,
+[data-cardo-theme='fluent'] .cardo-settings-window {
+  border: 1px solid var(--cardo-border);
+  border-radius: 8px;
+  background: var(--cardo-settings-chrome);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, #000 2.5%, transparent),
+    0 12px 40px color-mix(in srgb, #000 10%, transparent);
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-panel {
+  border-radius: 8px;
+  background: var(--cardo-settings-chrome);
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-header {
+  min-height: 52px;
+  border-bottom: 1px solid var(--cardo-border);
+  padding: 0 12px 0 16px;
+  background: var(--cardo-settings-chrome);
+  gap: 12px;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-header-title {
+  gap: 10px;
+  color: var(--cardo-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-header-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-header button {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+}
+
+/*
+ * SearchBox: pill on chrome; focus uses neutral gray underline.
+ */
+[data-cardo-theme='fluent'] .cardo-settings-search {
+  width: min(360px, 46vw);
+  height: 36px;
+  gap: 10px;
+  border: 1px solid color-mix(in srgb, var(--cardo-text) 10%, transparent);
+  border-radius: 999px;
+  padding: 0 14px;
+  background: var(--cardo-settings-chrome);
+  color: var(--cardo-secondary-text);
+  box-shadow: none;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-search-icon {
+  color: var(--cardo-secondary-text);
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-search:hover {
+  border-color: color-mix(in srgb, var(--cardo-text) 16%, transparent);
+  background: var(--cardo-settings-chrome);
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-search:focus-within {
+  border-color: color-mix(in srgb, var(--cardo-text) 10%, transparent);
+  background: var(--cardo-settings-chrome);
+  color: var(--cardo-text);
+  /* Win11 SearchBox bottom accent = theme blue */
+  box-shadow: inset 0 -2px 0 0 var(--cardo-blue);
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-search input {
+  min-width: 0;
+  flex: 1;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--cardo-text);
+  font-size: 14px;
+  font-weight: 400;
+  outline: none;
+  box-shadow: none;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-search input::placeholder {
+  color: var(--cardo-muted);
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-search-clear {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  padding: 0;
+  background: transparent;
+  color: var(--cardo-secondary-text);
+  cursor: pointer;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-search-clear:hover {
+  background: var(--cardo-settings-hover);
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-layout {
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 0;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-nav {
+  gap: 2px;
+  border-right: 1px solid var(--cardo-border);
+  padding: 10px 10px 16px;
+  background: var(--cardo-settings-chrome);
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-nav button {
+  min-height: 40px;
+  gap: 12px;
+  border-radius: 4px;
+  padding: 0 12px 0 14px;
+  color: var(--cardo-secondary-text);
+  font-size: 14px;
+  font-weight: 400;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-nav button:hover {
+  background: var(--cardo-settings-hover);
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-nav-indicator {
+  border-radius: 4px;
+  background: var(--cardo-settings-hover);
+  box-shadow: none;
+  /* Static fill — no Motion layout promotion (was blurring sibling icons) */
+  will-change: auto;
+  transform: none;
+  filter: none;
+}
+
+/* Thin selection rail — theme accent blue */
+[data-cardo-theme='fluent'] .cardo-settings-nav [data-state='active']::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 0;
+  z-index: 2;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--cardo-blue);
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-nav [data-state='active'] {
+  color: var(--cardo-text) !important;
+  font-weight: 600;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-nav-icon {
+  width: 20px;
+  height: 20px;
+  /* No filter/transform — Motion layoutId on the indicator otherwise blurs glyphs */
+  filter: none !important;
+  transform: none !important;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-nav-glyph {
+  width: 20px;
+  height: 20px;
+  filter: none !important;
+  transform: none !important;
+  shape-rendering: geometricPrecision;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-nav button > span:not(.cardo-settings-nav-indicator),
+[data-cardo-theme='fluent'] .cardo-settings-nav button > .cardo-settings-nav-icon,
+[data-cardo-theme='fluent'] .cardo-settings-nav button > .cardo-icon-frame {
+  position: relative;
+  z-index: 1;
+  filter: none !important;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-content {
+  background: var(--cardo-settings-chrome);
+  padding: 20px 24px 32px;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-tab-content {
+  outline: none;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-heading {
+  margin-bottom: 16px;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-heading h2 {
+  margin: 0;
+  color: var(--cardo-text);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-heading p {
+  margin: 6px 0 0;
+  color: var(--cardo-secondary-text);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-subheading {
+  margin: 20px 0 8px;
+  color: var(--cardo-text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-subheading small {
+  color: var(--cardo-secondary-text);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* Item surfaces: soft mix of chrome + hover so both tokens are visible */
+[data-cardo-theme='fluent'] .cardo-settings-list-group,
+[data-cardo-theme='fluent'] .cardo-theme-color-list,
+[data-cardo-theme='fluent'] .cardo-settings-search-results,
+[data-cardo-theme='fluent'] .cardo-theme-pack-card,
+[data-cardo-theme='fluent'] .cardo-about-card,
+[data-cardo-theme='fluent'] .cardo-custom-search-template {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--cardo-border) 90%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--cardo-settings-hover) 55%, var(--cardo-settings-chrome));
+  box-shadow: none;
+}
+
+/* About / pack / data cards keep horizontal gap; list groups stack with gap:0 */
+[data-cardo-theme='fluent'] .cardo-settings-list-group,
+[data-cardo-theme='fluent'] .cardo-theme-color-list,
+[data-cardo-theme='fluent'] .cardo-settings-search-results {
+  gap: 0;
+}
+
+[data-cardo-theme='fluent'] .cardo-about-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+}
+
+[data-cardo-theme='fluent'] .cardo-about-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+
+[data-cardo-theme='fluent'] .cardo-about-name {
+  display: block;
+  color: var(--cardo-text);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+[data-cardo-theme='fluent'] .cardo-about-edition {
+  display: block;
+  color: var(--cardo-secondary-text);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+[data-cardo-theme='fluent'] .cardo-theme-pack-card,
+[data-cardo-theme='fluent'] .cardo-custom-search-template {
+  gap: 10px;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-list-group {
+  display: flex;
+  flex-direction: column;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-list-group-spaced {
+  margin-top: 12px;
+}
+
+/* WinUI list: group owns surface; rows are transparent with dividers */
+[data-cardo-theme='fluent'] .cardo-settings-list-group,
+[data-cardo-theme='fluent'] .cardo-settings-group,
+[data-cardo-theme='fluent'] .cardo-about-details {
+  border: 1px solid color-mix(in srgb, var(--cardo-border) 90%, transparent) !important;
+  border-radius: 8px !important;
+  background: color-mix(
+    in srgb,
+    var(--cardo-settings-hover) 55%,
+    var(--cardo-settings-chrome)
+  ) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-list-group .cardo-settings-card,
+[data-cardo-theme='fluent'] .cardo-settings-group .cardo-settings-card,
+[data-cardo-theme='fluent'] .cardo-settings-group .cardo-settings-disclosure,
+[data-cardo-theme='fluent'] .cardo-settings-group .cardo-theme-color-row {
+  min-height: 60px;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 12px 16px;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  gap: 16px;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-list-group .cardo-settings-card + .cardo-settings-card {
+  border-top: 1px solid color-mix(in srgb, var(--cardo-divider) 90%, transparent) !important;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-list-group .cardo-settings-card:hover,
+[data-cardo-theme='fluent'] .cardo-settings-group .cardo-settings-card:hover,
+[data-cardo-theme='fluent'] .cardo-settings-group .cardo-settings-disclosure:hover,
+[data-cardo-theme='fluent'] .cardo-theme-color-row:hover,
+[data-cardo-theme='fluent'] .cardo-settings-search-result:hover,
+[data-cardo-theme='fluent'] .cardo-theme-pack-card:hover {
+  background: var(--cardo-settings-hover) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-group-body {
+  border-top: 1px solid color-mix(in srgb, var(--cardo-divider) 90%, transparent);
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-group .cardo-theme-color-list {
+  gap: 0;
+  margin: 0;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-group .cardo-theme-color-row + .cardo-theme-color-row {
+  border-top: 1px solid color-mix(in srgb, var(--cardo-divider) 90%, transparent) !important;
+}
+
+[data-cardo-theme='fluent'] .cardo-theme-pack-card,
+[data-cardo-theme='fluent'] .cardo-theme-look-card,
+[data-cardo-theme='fluent'] .cardo-about-card {
+  border: 1px solid color-mix(in srgb, var(--cardo-border) 90%, transparent) !important;
+  border-radius: 8px !important;
+  background: color-mix(
+    in srgb,
+    var(--cardo-settings-hover) 55%,
+    var(--cardo-settings-chrome)
+  ) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-card-copy {
+  gap: 14px;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-card-copy > span:last-child {
+  gap: 2px;
+  color: var(--cardo-text);
+  font-size: 14px;
+  font-weight: 400;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-card-copy small {
+  color: var(--cardo-secondary-text);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+[data-cardo-theme='fluent'] .cardo-theme-color-list {
+  display: flex;
+  flex-direction: column;
+  margin-top: 0;
+}
+
+[data-cardo-theme='fluent'] .cardo-theme-color-row {
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 12px 16px;
+  background: transparent;
+  gap: 10px;
+}
+
+[data-cardo-theme='fluent'] .cardo-theme-color-row + .cardo-theme-color-row {
+  border-top: 1px solid color-mix(in srgb, var(--cardo-divider) 90%, transparent);
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-search-results {
+  display: flex;
+  flex-direction: column;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-search-result {
+  display: flex;
+  min-height: 64px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--cardo-divider) 90%, transparent);
+  border-radius: 0;
+  padding: 12px 16px;
+  background: transparent;
+  color: var(--cardo-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-search-result:last-child {
+  border-bottom: 0;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-search-result-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-search-result-copy strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-search-result-copy small {
+  color: var(--cardo-secondary-text);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-search-result-copy em {
+  color: var(--cardo-muted);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 500;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-search-empty {
+  margin: 0;
+  padding: 28px 16px;
+  color: var(--cardo-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+[data-cardo-theme='fluent'] .cardo-theme-pack-card-selected {
+  border-color: color-mix(in srgb, var(--cardo-text) 22%, var(--cardo-border));
+  background: var(--cardo-settings-hover);
+  box-shadow: none;
+}
+
+[data-cardo-theme='fluent'] .cardo-theme-check {
+  background: var(--cardo-text);
+  color: var(--cardo-settings-chrome);
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-secondary-button:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--cardo-text) 16%, var(--cardo-border));
+  background: var(--cardo-settings-hover);
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='fluent'] .cardo-theme-color-label {
+  color: var(--cardo-text);
+  font-size: 14px;
+  font-weight: 400;
+}
+
+[data-cardo-theme='fluent'] .cardo-theme-color-text {
+  height: 30px;
+  border-radius: 4px;
+  background: var(--cardo-settings-chrome);
+}
+
+[data-cardo-theme='fluent'] .cardo-theme-color-picker {
+  height: 30px;
+  border-radius: 4px;
+}
+
+[data-cardo-theme='fluent'] .cardo-theme-color-presets {
+  gap: 8px;
+}
+
+[data-cardo-theme='fluent'] .cardo-theme-color-preset {
+  width: 28px;
+  height: 28px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
+  filter: none;
+  transform: none;
+}
+
+[data-cardo-theme='fluent'] .cardo-theme-color-preset-fill {
+  width: 20px;
+  height: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  box-shadow: none;
+}
+
+[data-cardo-theme='fluent'][data-color-mode='dark'] .cardo-theme-color-preset-fill {
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+[data-cardo-theme='fluent'] .cardo-theme-color-preset:hover {
+  border-color: color-mix(in srgb, var(--cardo-text) 28%, transparent);
+  transform: none;
+  filter: none;
+}
+
+[data-cardo-theme='fluent'] .cardo-theme-color-preset-active {
+  border-color: var(--cardo-blue);
+  box-shadow: none;
+  filter: none;
+}
+
+/* Row list must not clip solid selection rings */
+[data-cardo-theme='fluent'] .cardo-theme-color-list {
+  overflow: visible;
+}
+
+[data-cardo-theme='fluent'] .cardo-theme-color-row {
+  overflow: visible;
+}
+
+[data-cardo-theme='fluent'] .cardo-theme-color-reset-card {
+  margin-top: 0;
+}
+
+/* Win11 secondary command in settings rows */
+[data-cardo-theme='fluent'] .cardo-settings-secondary-button {
+  min-height: 32px;
+  border: 1px solid var(--cardo-border);
+  border-radius: 4px;
+  padding: 0 12px;
+  background: var(--cardo-panel);
+  color: var(--cardo-text);
+  font-size: 13px;
+  font-weight: 400;
+  box-shadow: none;
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-secondary-button:active:not(:disabled) {
+  background: color-mix(in srgb, var(--cardo-settings-hover) 80%, var(--cardo-text));
+}
+
+[data-cardo-theme='fluent'] .cardo-settings-secondary-button:disabled {
+  border-color: var(--cardo-border);
+  background: transparent;
+  color: var(--cardo-muted);
+}
+
+[data-cardo-theme='fluent'] .cardo-segmented-control {
+  border: 1px solid var(--cardo-border);
+  border-radius: 4px;
+  padding: 2px;
+  background: color-mix(in srgb, var(--cardo-settings-hover) 65%, var(--cardo-settings-chrome));
+  gap: 0;
+}
+
+[data-cardo-theme='fluent'] .cardo-segmented-control button {
+  border-radius: 3px;
+  min-height: 28px;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+[data-cardo-theme='fluent'] .cardo-segment-indicator {
+  border-radius: 3px;
+  box-shadow: none;
+}
+
+[data-cardo-theme='fluent'] .cardo-segment-indicator-active {
+  border-color: var(--cardo-border);
+  background: var(--cardo-settings-chrome);
+  box-shadow: none;
+}
+
+[data-cardo-theme='fluent'] .cardo-theme-pack-grid {
+  gap: 10px;
+}
+
+[data-cardo-theme='fluent'] .cardo-custom-search-template {
+  margin-top: 12px;
+  padding: 12px 16px;
+}
+
+[data-cardo-theme='fluent'] .cardo-custom-search-template input {
+  border-radius: 4px;
+  background: var(--cardo-settings-chrome);
+}
+
+/* Only explicit primary CTAs — do not paint every default Button (box icon, etc.) */
+[data-cardo-theme='fluent']
+  .cardo-ui-button-default:not(.cardo-box-icon):not(.cardo-resize-handle) {
+  border-radius: 4px;
+  background: var(--cardo-blue);
+  color: #ffffff;
+}
+
+/* —— full-shell settings (PR8) —— */
+[data-cardo-theme='fluent'] .cardo-v2-settings-shell {
+  background: var(--cardo-shell);
+  color: var(--cardo-text);
+  --cardo-v2-pill-settings: var(--cardo-settings-hover);
+}
+
+[data-cardo-theme='fluent'] .cardo-v2-settings-nav {
+  background: transparent;
+}
+
+[data-cardo-theme='fluent'] .cardo-v2-settings-back {
+  border-radius: var(--cardo-radius-sm);
+  color: var(--cardo-secondary-text);
+}
+
+[data-cardo-theme='fluent'] .cardo-v2-settings-back:hover {
+  background: var(--cardo-settings-hover);
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='fluent'] .cardo-v2-settings-search {
+  border: 1px solid color-mix(in srgb, var(--cardo-text) 10%, transparent);
+  border-radius: var(--cardo-radius-pill);
+  background: var(--cardo-panel);
+  box-shadow: none;
+}
+
+[data-cardo-theme='fluent'] .cardo-v2-settings-search:focus-within {
+  box-shadow: inset 0 -2px 0 0 var(--cardo-blue);
+}
+
+[data-cardo-theme='fluent'] .cardo-v2-settings-section-item {
+  min-height: 40px;
+  border-radius: var(--cardo-radius-sm);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--cardo-secondary-text);
+}
+
+[data-cardo-theme='fluent'] .cardo-v2-settings-section-item:hover {
+  background: var(--cardo-settings-hover);
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='fluent'] .cardo-v2-settings-section-item[data-active='true'] {
+  position: relative;
+  background: var(--cardo-v2-pill-settings);
+  color: var(--cardo-text);
+  font-weight: 600;
+}
+
+/* Thin accent rail on active section (Win11 Settings) */
+[data-cardo-theme='fluent'] .cardo-v2-settings-section-item[data-active='true']::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 0;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--cardo-blue);
+}
+
+[data-cardo-theme='fluent'] .cardo-v2-settings-panel {
+  border-radius: var(--cardo-radius-lg);
+  background: var(--cardo-panel);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--cardo-text) 2.5%, transparent);
+}

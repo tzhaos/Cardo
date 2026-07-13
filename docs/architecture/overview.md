@@ -5,7 +5,7 @@
 | Field | Value |
 | --- | --- |
 | Status | Active |
-| Date | 2026-07-13 |
+| Date | 2026-07-14 |
 | Related | `AGENTS.md`, architecture index [README.md](./README.md) |
 
 ---
@@ -21,7 +21,7 @@ Cardo（拉丁 cardo：门枢 / 枢纽）是本机优先的空间工作台：在
 - Browser Extension — 工具栏打开的扩展页 client
 - Desktop — Electron 壳；优先 attach 已有 Runtime
 
-共享同一份 React UI（`src/web-next`）与同一 revision 空间。
+共享同一份 React UI（`src/web`）与同一 revision 空间。
 
 ---
 
@@ -60,7 +60,7 @@ CLI / Web / Extension / Desktop
 | --- | --- | --- |
 | Runtime | `src/runtime/*` | 自身；写 lock + discovery |
 | CLI | `src/cli/main.ts` | `serve` 前台宿主；`open` 可 spawn detached |
-| Web | `src/web-runtime` + `web-next` | 同源 `/app/`；bootstrap 用 one-time code |
+| Web | `src/web-runtime` + `src/web` | 同源 `/app/`；bootstrap 用 one-time code |
 | Extension | `src/extension/*` | Native Messaging `runtime.discover` → HTTP |
 | Desktop | `src/desktop/*` | attach 已有；否则 spawn detached `runtime-child` |
 
@@ -81,7 +81,7 @@ src/
 ├── runtime/        HTTP、lock、discovery、auth、events、commandQueue、paths
 ├── client/         RuntimeClient（HTTP + fetch stream）
 ├── cli/            cardo serve | open | status | stop
-├── web-next/       共享 React UI、canvas、themes、settings、Zustand
+├── web/            共享产品 UI（app / shell / features / kit / styles / themes / i18n / platform）
 ├── web-runtime/    托管 UI 入口（Vite base /app/）
 ├── extension/      MV3 bootstrap、Chrome ports、NM discover
 ├── desktop/        Electron main / preload / ensureDesktopRuntime / update

@@ -1,0 +1,1907 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cardo v2 · Shell prototype</title>
+    <style>
+      /*
+        Cardo 壳迁移原型（形态参考 Codex，能力对齐现产品）
+        有：收藏 / 页面(扁平) / 回收站 / 新建页 · 画布+盒子 · 撤销重做 · 回原点 · 锁定视口
+            · 全局搜索 · 新建盒子 · 设置(常规/外观/数据/关于)
+        无：文件夹分组、任务 spinner、下载 FAB、分支 chip、会话 dock、选择/平移工具、
+            Codex 配置/插件/模型依赖、diff 主题编辑器
+        图标：对齐 ThemeIcon 语义（lucide 线宽风格）
+      */
+      :root {
+        /* titlebar / sidebar / 窗体衬底：同一壳色，不必再分层 */
+        --shell: #eceef2;
+        --text: #1a1c1f;
+        --text-2: #5c6370;
+        --text-3: #8b929e;
+        --text-4: #a0a7b2;
+        --pill: #e2e5eb;
+        --pill-hover: rgba(0, 0, 0, 0.045);
+        --pill-settings: #d9e2dc;
+        --panel: #ffffff;
+        --canvas: #f3f4f7;
+        --line: rgba(0, 0, 0, 0.07);
+        --line-soft: rgba(0, 0, 0, 0.05);
+        --accent: #3b82f6;
+        --sidebar-w: 236px;
+        --title-h: 38px;
+        --panel-r: 18px;
+        --icon: 16px;
+        --font: "Segoe UI", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", system-ui, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        font-family: var(--font);
+        color: var(--text);
+        background: #aeb4c0;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      button {
+        font: inherit;
+        color: inherit;
+        border: 0;
+        background: none;
+        cursor: pointer;
+        padding: 0;
+      }
+
+      /* —— SVG icon helper —— */
+      .ti {
+        width: var(--icon);
+        height: var(--icon);
+        flex-shrink: 0;
+        display: block;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 1.75;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .ti-fill {
+        fill: currentColor;
+        stroke: none;
+      }
+
+      /* ========== Window ========== */
+      .window {
+        width: min(1280px, calc(100vw - 20px));
+        height: min(840px, calc(100vh - 20px));
+        margin: 10px auto;
+        display: flex;
+        flex-direction: column;
+        border-radius: 10px;
+        overflow: hidden;
+        background: var(--shell);
+        box-shadow:
+          0 0 0 1px rgba(0, 0, 0, 0.12),
+          0 28px 72px rgba(15, 23, 42, 0.26);
+      }
+
+      .titlebar {
+        height: var(--title-h);
+        flex-shrink: 0;
+        display: flex;
+        align-items: stretch;
+        /* 与 --shell / 侧栏同色：层次靠右侧白面板，不靠 title 另铺一色 */
+        background: var(--shell);
+        user-select: none;
+        font-size: 12px;
+        color: var(--text-2);
+      }
+
+      .titlebar-left {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        padding-left: 12px;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .titlebar-brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding-right: 10px;
+        color: var(--text);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        flex-shrink: 0;
+      }
+
+      .titlebar-brand img {
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
+        display: block;
+        object-fit: cover;
+      }
+
+      .titlebar-right {
+        display: flex;
+        margin-left: auto;
+      }
+
+      .win-btn {
+        width: 46px;
+        height: 100%;
+        display: grid;
+        place-items: center;
+        font-size: 10px;
+        color: var(--text);
+        opacity: 0.7;
+      }
+
+      .win-btn:hover {
+        background: rgba(0, 0, 0, 0.06);
+        opacity: 1;
+      }
+
+      .win-btn.close:hover {
+        background: #e81123;
+        color: #fff;
+        opacity: 1;
+      }
+
+      /* ========== Body ========== */
+      .body {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        padding: 0 8px 8px 0;
+      }
+
+      /* ========== Sidebar ========== */
+      .sidebar {
+        width: var(--sidebar-w);
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 12px 16px 10px;
+        font-size: 14.5px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        color: var(--text);
+      }
+
+      .brand img {
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        display: block;
+        object-fit: cover;
+        flex-shrink: 0;
+      }
+
+      .sidebar-scroll {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        padding: 0 8px 8px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 0, 0, 0.14) transparent;
+      }
+
+      .sidebar-scroll::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .sidebar-scroll::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.12);
+        border-radius: 6px;
+      }
+
+      .nav-block {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        margin-bottom: 10px;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 34px;
+        width: 100%;
+        padding: 5px 12px;
+        border-radius: 999px;
+        font-size: 13.5px;
+        color: var(--text);
+        text-align: left;
+      }
+
+      .nav-item:hover {
+        background: var(--pill-hover);
+      }
+
+      .nav-item.active {
+        background: var(--pill);
+      }
+
+      .nav-item.active-settings {
+        background: var(--pill-settings);
+      }
+
+      .nav-item .ico {
+        width: 18px;
+        height: 18px;
+        display: grid;
+        place-items: center;
+        color: var(--text-2);
+        flex-shrink: 0;
+      }
+
+      .nav-item.active .ico {
+        color: var(--text);
+      }
+
+      .nav-item .label {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .sec {
+        padding: 8px 12px 4px;
+        font-size: 12px;
+        color: var(--text-3);
+        font-weight: 500;
+      }
+
+      .pages {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+
+      .sidebar-foot {
+        flex-shrink: 0;
+        padding: 6px 8px 8px;
+        border-top: 1px solid transparent;
+      }
+
+      /* ========== Stage / panel ========== */
+      .stage {
+        flex: 1;
+        min-width: 0;
+        min-height: 0;
+        display: flex;
+        padding-top: 2px;
+      }
+
+      .panel {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        background: var(--panel);
+        border-radius: var(--panel-r);
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.03);
+        overflow: hidden;
+        position: relative;
+      }
+
+      .panel-top {
+        flex-shrink: 0;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 12px 0 14px;
+        gap: 8px;
+      }
+
+      .panel-title {
+        font-size: 13.5px;
+        font-weight: 600;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .panel-tools {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+      }
+
+      .icon-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        color: var(--text-2);
+      }
+
+      .icon-btn:hover {
+        background: rgba(0, 0, 0, 0.045);
+        color: var(--text);
+      }
+
+      .icon-btn.is-on {
+        background: var(--pill);
+        color: var(--text);
+      }
+
+      .icon-btn:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+
+      .icon-btn:disabled:hover {
+        background: none;
+      }
+
+      .tool-divider {
+        width: 1px;
+        height: 16px;
+        background: var(--line);
+        margin: 0 4px;
+      }
+
+      /* canvas */
+      .canvas {
+        flex: 1;
+        min-height: 0;
+        position: relative;
+        margin: 0 10px 10px;
+        border-radius: 12px;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.035) 1px, transparent 0) 0 0 / 18px 18px,
+          var(--canvas);
+      }
+
+      .box {
+        position: absolute;
+        background: #fff;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        border-radius: 12px;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.05);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .box.sel {
+        box-shadow:
+          0 0 0 2px rgba(59, 130, 246, 0.35),
+          0 1px 2px rgba(15, 23, 42, 0.04),
+          0 8px 24px rgba(15, 23, 42, 0.05);
+      }
+
+      .box-h {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px 8px;
+        border-bottom: 1px solid var(--line-soft);
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .box-h .m {
+        width: 18px;
+        height: 18px;
+        border-radius: 5px;
+        background: #eef2ff;
+        color: #4f6ef7;
+        display: grid;
+        place-items: center;
+      }
+
+      .box-h .m .ti {
+        width: 12px;
+        height: 12px;
+      }
+
+      .box-b {
+        padding: 6px 8px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+
+      .item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 8px;
+        border-radius: 8px;
+        font-size: 12.5px;
+      }
+
+      .item:hover {
+        background: #f5f6f8;
+      }
+
+      .item .fav {
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+        background: #94a3b8;
+        flex-shrink: 0;
+      }
+
+      .item .fav.b {
+        background: linear-gradient(135deg, #60a5fa, #3b82f6);
+      }
+      .item .fav.g {
+        background: linear-gradient(135deg, #4ade80, #22c55e);
+      }
+      .item .fav.o {
+        background: linear-gradient(135deg, #fb923c, #f97316);
+      }
+
+      .item .n {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .item .u {
+        color: var(--text-3);
+        font-size: 11px;
+      }
+
+      /* 底栏：对齐现产品 BottomToolbar 能力 — 搜索 / 新建盒子（设置已在侧栏） */
+      .bottom-bar {
+        position: absolute;
+        left: 50%;
+        bottom: 14px;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.94);
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+        z-index: 3;
+      }
+
+      .bottom-bar .icon-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 999px;
+      }
+
+      .bottom-bar .icon-btn .ti {
+        width: 18px;
+        height: 18px;
+      }
+
+      .search-expand {
+        display: none;
+        align-items: center;
+        height: 36px;
+        padding: 0 12px 0 4px;
+        gap: 6px;
+      }
+
+      .bottom-bar.is-search .search-expand {
+        display: flex;
+      }
+
+      .bottom-bar.is-search .btn-search-idle {
+        display: none;
+      }
+
+      .search-expand input {
+        width: 200px;
+        border: 0;
+        outline: none;
+        background: transparent;
+        font: inherit;
+        font-size: 13px;
+        color: var(--text);
+      }
+
+      .search-expand input::placeholder {
+        color: var(--text-4);
+      }
+
+      /* ========== Settings ========== */
+      .view-settings {
+        display: none;
+        flex: 1;
+        min-height: 0;
+      }
+
+      body.is-settings .view-main {
+        display: none !important;
+      }
+
+      body.is-settings .view-settings {
+        display: flex;
+      }
+
+      .set-side {
+        width: var(--sidebar-w);
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      .set-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin: 8px 8px 4px 10px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 13px;
+        color: var(--text-2);
+        width: fit-content;
+      }
+
+      .set-back:hover {
+        background: var(--pill-hover);
+        color: var(--text);
+      }
+
+      .set-back .ti {
+        width: 14px;
+        height: 14px;
+      }
+
+      .set-search {
+        margin: 4px 14px 12px;
+        height: 34px;
+        border-radius: 999px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        background: #fff;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 12px;
+        color: var(--text-3);
+        font-size: 13px;
+      }
+
+      .set-search .ti {
+        width: 14px;
+        height: 14px;
+      }
+
+      .set-scroll {
+        flex: 1;
+        overflow: auto;
+        padding: 0 8px 16px;
+        min-height: 0;
+      }
+
+      .set-stage {
+        flex: 1;
+        min-width: 0;
+        min-height: 0;
+        display: flex;
+        padding-top: 2px;
+      }
+
+      .set-panel {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        background: var(--panel);
+        border-radius: var(--panel-r);
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.03);
+        padding: 32px 40px 56px;
+      }
+
+      .set-panel h1 {
+        margin: 0 0 18px;
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        color: var(--text);
+      }
+
+      /* 页级说明可选；Codex 很多页只有标题 */
+      .set-panel .desc {
+        margin: -8px 0 18px;
+        font-size: 13px;
+        color: var(--text-2);
+        line-height: 1.45;
+      }
+
+      .set-panel h2 {
+        margin: 0 0 10px;
+        font-size: 13.5px;
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      .block {
+        margin-bottom: 28px;
+        max-width: 720px;
+      }
+
+      /* —— 设置卡片：大圆角、浅边、行内分割 —— */
+      .card {
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 16px;
+        overflow: visible;
+        background: #fff;
+        position: relative;
+      }
+
+      .card-inner {
+        border-radius: 16px;
+        overflow: hidden;
+      }
+
+      .srow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 14px 16px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        min-height: 58px;
+        position: relative;
+        background: #fff;
+      }
+
+      .srow:last-child {
+        border-bottom: 0;
+      }
+
+      .srow .meta {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .srow .t {
+        font-size: 13.5px;
+        font-weight: 500;
+        color: var(--text);
+        margin-bottom: 3px;
+        line-height: 1.3;
+      }
+
+      .srow .d {
+        font-size: 12.5px;
+        color: var(--text-2);
+        line-height: 1.4;
+        max-width: 440px;
+      }
+
+      .srow .ctrl {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+      }
+
+      /* 浅灰 pill 触发器（下拉 / 次要操作） */
+      .pill-btn {
+        height: 32px;
+        padding: 0 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        background: #f3f4f6;
+        font-size: 12.5px;
+        color: var(--text);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+
+      .pill-btn:hover {
+        background: #e9ebef;
+      }
+
+      .pill-btn .ti {
+        width: 14px;
+        height: 14px;
+        color: var(--text-2);
+      }
+
+      .pill-btn .chev {
+        font-size: 9px;
+        color: var(--text-3);
+        margin-left: 1px;
+      }
+
+      .pill-btn.ghost {
+        background: transparent;
+        border-color: transparent;
+        color: var(--text-2);
+      }
+
+      .pill-btn.ghost:hover {
+        background: rgba(0, 0, 0, 0.04);
+        color: var(--text);
+      }
+
+      /* 下拉浮层：标题 + 说明 + 勾选 */
+      .menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        z-index: 20;
+        min-width: 260px;
+        padding: 6px;
+        border-radius: 14px;
+        background: #fff;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        box-shadow:
+          0 4px 6px rgba(15, 23, 42, 0.04),
+          0 16px 40px rgba(15, 23, 42, 0.12);
+        display: none;
+      }
+
+      .menu.open {
+        display: block;
+      }
+
+      .menu-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        width: 100%;
+        text-align: left;
+        padding: 10px 10px;
+        border-radius: 10px;
+        font-size: 13px;
+      }
+
+      .menu-item:hover {
+        background: #f3f4f6;
+      }
+
+      .menu-item .mi-body {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .menu-item .mi-t {
+        font-weight: 500;
+        color: var(--text);
+        margin-bottom: 2px;
+      }
+
+      .menu-item .mi-d {
+        font-size: 12px;
+        color: var(--text-2);
+        line-height: 1.35;
+      }
+
+      .menu-item .mi-check {
+        width: 16px;
+        flex-shrink: 0;
+        color: var(--text);
+        opacity: 0;
+        margin-top: 2px;
+      }
+
+      .menu-item.selected .mi-check {
+        opacity: 1;
+      }
+
+      /* 开关：关灰 / 开蓝 */
+      .toggle {
+        width: 40px;
+        height: 22px;
+        border-radius: 999px;
+        background: #e5e7eb;
+        position: relative;
+        flex-shrink: 0;
+        transition: background 120ms ease;
+      }
+
+      .toggle.on {
+        background: #3b9eff;
+      }
+
+      .toggle::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+        transition: transform 120ms ease;
+      }
+
+      .toggle.on::after {
+        transform: translateX(18px);
+      }
+
+      /* 分段：系统 | 开启 | 关闭 */
+      .seg {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        padding: 2px;
+        border-radius: 999px;
+        background: transparent;
+      }
+
+      .seg button {
+        height: 28px;
+        padding: 0 11px;
+        border-radius: 999px;
+        font-size: 12.5px;
+        color: var(--text-2);
+      }
+
+      .seg button:hover {
+        color: var(--text);
+      }
+
+      .seg button.on {
+        background: #eef0f3;
+        color: var(--text);
+        font-weight: 500;
+      }
+
+      /* 字号输入：圆角框 + 单位在外 */
+      .num-field {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--text-2);
+        font-size: 12.5px;
+      }
+
+      .num-field input {
+        width: 44px;
+        height: 30px;
+        border-radius: 999px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        background: #fff;
+        text-align: center;
+        font: inherit;
+        font-size: 12.5px;
+        color: var(--text);
+        outline: none;
+      }
+
+      .num-field input:focus {
+        border-color: rgba(59, 130, 246, 0.45);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+      }
+
+      /* 主题包网格 */
+      .theme-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .theme-card {
+        width: 112px;
+        cursor: pointer;
+        text-align: center;
+      }
+
+      .theme-card .preview {
+        height: 72px;
+        border-radius: 12px;
+        border: 2px solid transparent;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+      }
+
+      .theme-card.on .preview {
+        border-color: #3b9eff;
+        box-shadow: 0 0 0 1px #3b9eff;
+      }
+
+      .theme-card .cap {
+        margin-top: 7px;
+        font-size: 12px;
+        color: var(--text-2);
+      }
+
+      .theme-card.on .cap {
+        color: var(--text);
+        font-weight: 500;
+      }
+
+      .pv {
+        height: 100%;
+        padding: 8px;
+      }
+
+      .pv .bar {
+        height: 6px;
+        border-radius: 3px;
+        margin-bottom: 6px;
+        width: 55%;
+      }
+
+      .pv .line {
+        height: 5px;
+        border-radius: 3px;
+        margin-bottom: 4px;
+        width: 85%;
+      }
+
+      .pv-classic {
+        background: #f5f5f4;
+      }
+      .pv-classic .bar,
+      .pv-classic .line {
+        background: #d4d4d4;
+      }
+
+      .pv-glass {
+        background: linear-gradient(145deg, #e8eef8, #f7f9fc);
+      }
+      .pv-glass .bar,
+      .pv-glass .line {
+        background: rgba(100, 120, 160, 0.25);
+      }
+
+      .pv-fluent {
+        background: #f3f3f3;
+      }
+      .pv-fluent .bar {
+        background: #0078d4;
+        width: 40%;
+      }
+      .pv-fluent .line {
+        background: #d0d0d0;
+      }
+
+      .pv-material {
+        background: #fef7ff;
+      }
+      .pv-material .bar {
+        background: #6750a4;
+        width: 45%;
+      }
+      .pv-material .line {
+        background: #e7e0ec;
+      }
+
+      .pv-swift {
+        background: #f2f2f7;
+      }
+      .pv-swift .bar {
+        background: #007aff;
+        width: 42%;
+      }
+      .pv-swift .line {
+        background: #c7c7cc;
+      }
+
+      /* 颜色覆盖：色块胶囊（产品有 color overrides，不是完整 Codex 主题编辑器） */
+      .swatch {
+        height: 28px;
+        padding: 0 10px 0 6px;
+        border-radius: 999px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 11.5px;
+        font-family: ui-monospace, Consolas, monospace;
+        color: var(--text);
+        background: #fff;
+        position: relative;
+      }
+
+      .swatch i {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        flex-shrink: 0;
+      }
+
+      .swatch.filled {
+        color: #fff;
+        border-color: transparent;
+      }
+
+      /* 简易取色浮层（示意，非完整编辑器） */
+      .picker {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        z-index: 24;
+        width: 200px;
+        padding: 10px;
+        border-radius: 14px;
+        background: #fff;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.14);
+        display: none;
+      }
+
+      .picker.open {
+        display: block;
+      }
+
+      .picker-sv {
+        height: 120px;
+        border-radius: 10px;
+        background:
+          linear-gradient(to top, #000, transparent),
+          linear-gradient(to right, #fff, #3b9eff);
+        position: relative;
+        margin-bottom: 10px;
+      }
+
+      .picker-sv::after {
+        content: "";
+        position: absolute;
+        top: 18%;
+        right: 22%;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+      }
+
+      .picker-hue {
+        height: 12px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
+        position: relative;
+      }
+
+      .picker-hue::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 58%;
+        width: 14px;
+        height: 14px;
+        margin-top: -7px;
+        margin-left: -7px;
+        border-radius: 50%;
+        background: #fff;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+      }
+
+      .card-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      }
+
+      .card-head .ht {
+        font-size: 13.5px;
+        font-weight: 600;
+      }
+
+      .card-head .hr {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .slider-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .slider-row input[type="range"] {
+        width: 120px;
+        accent-color: #3b9eff;
+      }
+
+      .slider-row .val {
+        font-size: 12.5px;
+        color: var(--text-2);
+        min-width: 20px;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      /* note */
+      .note {
+        position: fixed;
+        right: 12px;
+        bottom: 12px;
+        width: 268px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: rgba(18, 20, 26, 0.92);
+        color: #e8eaef;
+        font-size: 11.5px;
+        line-height: 1.45;
+        z-index: 40;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+      }
+
+      .note b {
+        display: block;
+        font-size: 12px;
+        margin-bottom: 4px;
+      }
+
+      .note .acts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+      }
+
+      .note .acts button {
+        color: #93c5fd;
+        font-size: 11.5px;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+
+      .note code {
+        display: block;
+        margin-top: 8px;
+        font-family: ui-monospace, Consolas, monospace;
+        font-size: 10px;
+        opacity: 0.75;
+        word-break: break-all;
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      Inline icons = ThemeIcon 语义草图（lucide 风格），仅用于静态原型。
+      产品实现仍走 ThemeIcon + theme packs。
+    -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none">
+      <symbol id="i-add" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></symbol>
+      <symbol id="i-star" viewBox="0 0 24 24">
+        <path d="M12 3.5l2.2 4.5 5 .7-3.6 3.5.9 5L12 15.4 7.5 17.7l.9-5L4.8 8.7l5-.7L12 3.5z" />
+      </symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24">
+        <path d="M4 7h16M9 7V5h6v2M8 7l1 12h6l1-12" />
+      </symbol>
+      <symbol id="i-settings" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3" />
+        <path
+          d="M12 3v2M12 19v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M3 12h2M19 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+        />
+      </symbol>
+      <symbol id="i-search" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="6" />
+        <path d="M16 16l4 4" />
+      </symbol>
+      <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14L5 10l4-4M5 10h9a5 5 0 1 1 0 10h-2" /></symbol>
+      <symbol id="i-redo" viewBox="0 0 24 24"><path d="M15 14l4-4-4-4M19 10H10a5 5 0 1 0 0 10h2" /></symbol>
+      <symbol id="i-locate" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
+      </symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24">
+        <rect x="5" y="11" width="14" height="10" rx="2" />
+        <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+      </symbol>
+      <symbol id="i-unlock" viewBox="0 0 24 24">
+        <rect x="5" y="11" width="14" height="10" rx="2" />
+        <path d="M8 11V8a4 4 0 0 1 7.5-2" />
+      </symbol>
+      <symbol id="i-box" viewBox="0 0 24 24">
+        <path d="M3 7.5L12 3l9 4.5v9L12 21l-9-4.5v-9z" />
+        <path d="M3 7.5L12 12l9-4.5M12 12v9" />
+      </symbol>
+      <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M7 4h10v16l-5-3-5 3V4z" /></symbol>
+      <symbol id="i-clipboard" viewBox="0 0 24 24">
+        <rect x="7" y="5" width="10" height="15" rx="2" />
+        <path d="M9 5V4h6v1" />
+      </symbol>
+      <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7z" /></symbol>
+      <symbol id="i-options" viewBox="0 0 24 24">
+        <path d="M4 7h16M4 12h10M4 17h14" />
+        <circle cx="18" cy="12" r="2" />
+      </symbol>
+      <symbol id="i-paint" viewBox="0 0 24 24">
+        <path d="M14 4l6 6-9 9H5v-6l9-9z" />
+        <path d="M12 6l6 6" />
+      </symbol>
+      <symbol id="i-database" viewBox="0 0 24 24">
+        <ellipse cx="12" cy="6" rx="7" ry="3" />
+        <path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6" />
+      </symbol>
+      <symbol id="i-help" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.1.9-1.1 1.8V14" />
+        <circle cx="12" cy="17" r="0.6" class="ti-fill" />
+      </symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />
+      </symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A7.5 7.5 0 1 1 9.5 4 6 6 0 0 0 20 14.5z" /></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V5M8 9l4-4 4 4M5 19h14" /></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M8 11l4 4 4-4M5 19h14" /></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" /></symbol>
+      <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="M14 6l-6 6 6 6" /></symbol>
+      <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="M10 6l6 6-6 6" /></symbol>
+      <symbol id="i-app" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3" /></symbol>
+    </svg>
+
+    <div class="window">
+      <header class="titlebar">
+        <div class="titlebar-left">
+          <!-- 对齐 DesktopTitleBar：mark + 词标；无系统菜单栏（Cardo 桌面无菜单） -->
+          <div class="titlebar-brand">
+            <img src="cardo-mark.svg" alt="" width="16" height="16" draggable="false" />
+            <span>Cardo</span>
+          </div>
+        </div>
+        <div class="titlebar-right">
+          <button type="button" class="win-btn" aria-label="最小化">─</button>
+          <button type="button" class="win-btn" aria-label="最大化">□</button>
+          <button type="button" class="win-btn close" aria-label="关闭">✕</button>
+        </div>
+      </header>
+
+      <!-- ===== MAIN：左导航 + 右画布 ===== -->
+      <div class="body view-main">
+        <aside class="sidebar" aria-label="导航">
+          <!-- 词标只放 titlebar（对齐 DesktopTitleBar），侧栏直接进导航，避免双份品牌 -->
+          <div class="sidebar-scroll" style="padding-top: 6px">
+            <!-- 系统入口：与现 TopBar IA 一致 — 收藏 | 页面 | 回收站 | + -->
+            <div class="nav-block">
+              <button type="button" class="nav-item" id="nav-add-page" title="新建页面">
+                <span class="ico"><svg class="ti"><use href="#i-add" /></svg></span>
+                <span class="label">新建页面</span>
+              </button>
+              <button type="button" class="nav-item" data-page="收藏" data-sys="collection">
+                <span class="ico"><svg class="ti"><use href="#i-star" /></svg></span>
+                <span class="label">收藏</span>
+              </button>
+            </div>
+
+            <div class="sec">页面</div>
+            <div class="pages" id="page-list" role="list">
+              <button type="button" class="nav-item active" data-page="工作台" role="listitem">
+                <span class="label">工作台</span>
+              </button>
+              <button type="button" class="nav-item" data-page="阅读稍后" role="listitem">
+                <span class="label">阅读稍后</span>
+              </button>
+              <button type="button" class="nav-item" data-page="项目笔记" role="listitem">
+                <span class="label">项目笔记</span>
+              </button>
+              <button type="button" class="nav-item" data-page="灵感收集" role="listitem">
+                <span class="label">灵感收集</span>
+              </button>
+              <button type="button" class="nav-item" data-page="本周待办" role="listitem">
+                <span class="label">本周待办</span>
+              </button>
+            </div>
+
+            <div class="nav-block" style="margin-top: 12px">
+              <button type="button" class="nav-item" data-page="回收站" data-sys="recycle">
+                <span class="ico"><svg class="ti"><use href="#i-trash" /></svg></span>
+                <span class="label">回收站</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="sidebar-foot">
+            <button type="button" class="nav-item" id="btn-settings">
+              <span class="ico"><svg class="ti"><use href="#i-settings" /></svg></span>
+              <span class="label">设置</span>
+            </button>
+          </div>
+        </aside>
+
+        <main class="stage" aria-label="工作区">
+          <div class="panel">
+            <div class="panel-top">
+              <div class="panel-title" id="panel-page-name">工作台</div>
+              <div class="panel-tools" aria-label="页面工具">
+                <!-- HistoryToolbar -->
+                <button type="button" class="icon-btn" title="撤销" aria-label="撤销">
+                  <svg class="ti"><use href="#i-undo" /></svg>
+                </button>
+                <button type="button" class="icon-btn" title="重做" aria-label="重做" disabled>
+                  <svg class="ti"><use href="#i-redo" /></svg>
+                </button>
+                <span class="tool-divider" aria-hidden="true"></span>
+                <!-- useCanvasTools：回原点 / 锁定视口 -->
+                <button type="button" class="icon-btn" title="回到原点" aria-label="回到原点">
+                  <svg class="ti"><use href="#i-locate" /></svg>
+                </button>
+                <button type="button" class="icon-btn" id="btn-lock" title="锁定画布" aria-label="锁定画布" aria-pressed="false">
+                  <svg class="ti" id="icon-lock"><use href="#i-unlock" /></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="canvas" id="canvas">
+              <div class="box sel" style="left: 36px; top: 36px; width: 268px; height: 210px">
+                <div class="box-h">
+                  <span class="m"><svg class="ti"><use href="#i-bookmark" /></svg></span>
+                  开发书签
+                </div>
+                <div class="box-b">
+                  <div class="item"><span class="fav b"></span><span class="n">GitHub</span><span class="u">github.com</span></div>
+                  <div class="item"><span class="fav"></span><span class="n">MDN Web Docs</span><span class="u">mdn</span></div>
+                  <div class="item"><span class="fav g"></span><span class="n">Drizzle ORM</span><span class="u">orm.drizzle</span></div>
+                  <div class="item"><span class="fav o"></span><span class="n">Radix UI</span><span class="u">radix-ui</span></div>
+                </div>
+              </div>
+
+              <div class="box" style="left: 328px; top: 56px; width: 244px; height: 168px">
+                <div class="box-h">
+                  <span class="m"><svg class="ti"><use href="#i-clipboard" /></svg></span>
+                  剪贴片段
+                </div>
+                <div class="box-b">
+                  <div class="item"><span class="fav"></span><span class="n">Runtime 协议摘录</span></div>
+                  <div class="item"><span class="fav b"></span><span class="n">npm run build:all</span></div>
+                  <div class="item"><span class="fav g"></span><span class="n">主题 token 笔记</span></div>
+                </div>
+              </div>
+
+              <div class="box" style="left: 268px; top: 260px; width: 286px; height: 140px">
+                <div class="box-h">
+                  <span class="m"><svg class="ti"><use href="#i-folder" /></svg></span>
+                  本地资源
+                </div>
+                <div class="box-b">
+                  <div class="item"><span class="fav o"></span><span class="n">spec-v2.pdf</span></div>
+                  <div class="item"><span class="fav"></span><span class="n">wireframe-shell.png</span></div>
+                </div>
+              </div>
+
+              <!-- BottomToolbar 能力：搜索 + 新建盒子（设置在侧栏底） -->
+              <div class="bottom-bar" id="bottom-bar" aria-label="工作区工具">
+                <button type="button" class="icon-btn btn-search-idle" id="btn-search" title="搜索" aria-label="搜索">
+                  <svg class="ti"><use href="#i-search" /></svg>
+                </button>
+                <div class="search-expand">
+                  <button type="button" class="icon-btn" id="btn-search-close" title="关闭搜索" aria-label="关闭搜索">
+                    <svg class="ti"><use href="#i-close" /></svg>
+                  </button>
+                  <input type="search" placeholder="搜索页面、盒子与内容…" aria-label="搜索" />
+                </div>
+                <span class="tool-divider" aria-hidden="true"></span>
+                <button type="button" class="icon-btn" title="新建盒子" aria-label="新建盒子">
+                  <svg class="ti"><use href="#i-add" /></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+
+      <!-- ===== SETTINGS：仅现产品四分区 ===== -->
+      <div class="body view-settings">
+        <aside class="set-side" aria-label="设置导航">
+          <button type="button" class="set-back" id="btn-back">
+            <svg class="ti"><use href="#i-chevron-left" /></svg>
+            返回应用
+          </button>
+          <div class="set-search">
+            <svg class="ti"><use href="#i-search" /></svg>
+            <span>搜索设置…</span>
+          </div>
+          <div class="set-scroll">
+            <button type="button" class="nav-item active-settings" data-set="general">
+              <span class="ico"><svg class="ti"><use href="#i-options" /></svg></span>
+              <span class="label">常规</span>
+            </button>
+            <button type="button" class="nav-item" data-set="appearance">
+              <span class="ico"><svg class="ti"><use href="#i-paint" /></svg></span>
+              <span class="label">外观</span>
+            </button>
+            <button type="button" class="nav-item" data-set="data">
+              <span class="ico"><svg class="ti"><use href="#i-database" /></svg></span>
+              <span class="label">数据</span>
+            </button>
+            <button type="button" class="nav-item" data-set="about">
+              <span class="ico"><svg class="ti"><use href="#i-help" /></svg></span>
+              <span class="label">关于</span>
+            </button>
+          </div>
+        </aside>
+
+        <div class="set-stage">
+          <div class="set-panel">
+            <!-- 常规：语言分段、搜索下拉浮层、功能开关 —— 能力对齐 SettingsPanel -->
+            <section id="set-general">
+              <h1>常规</h1>
+              <div class="block">
+                <div class="card">
+                  <div class="card-inner">
+                    <div class="srow">
+                      <div class="meta">
+                        <div class="t">语言</div>
+                        <div class="d">应用界面语言</div>
+                      </div>
+                      <div class="ctrl">
+                        <div class="seg" role="group" aria-label="语言">
+                          <button type="button" class="on" data-locale="zh">中文</button>
+                          <button type="button" data-locale="en">English</button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="srow">
+                      <div class="meta">
+                        <div class="t">网络搜索</div>
+                        <div class="d">底栏搜索打开网页时使用的引擎</div>
+                      </div>
+                      <div class="ctrl">
+                        <button type="button" class="pill-btn" id="btn-engine" aria-expanded="true" aria-haspopup="listbox">
+                          Bing 中国
+                          <span class="chev">▾</span>
+                        </button>
+                        <div class="menu open" id="menu-engine" role="listbox">
+                          <button type="button" class="menu-item selected" data-engine="bing-cn">
+                            <span class="mi-body">
+                              <span class="mi-t">Bing 中国</span>
+                              <span class="mi-d">适合国内网络环境的默认引擎</span>
+                            </span>
+                            <span class="mi-check">✓</span>
+                          </button>
+                          <button type="button" class="menu-item" data-engine="bing">
+                            <span class="mi-body">
+                              <span class="mi-t">Bing</span>
+                              <span class="mi-d">国际版 Bing 搜索</span>
+                            </span>
+                            <span class="mi-check">✓</span>
+                          </button>
+                          <button type="button" class="menu-item" data-engine="baidu">
+                            <span class="mi-body">
+                              <span class="mi-t">百度</span>
+                              <span class="mi-d">百度网页搜索</span>
+                            </span>
+                            <span class="mi-check">✓</span>
+                          </button>
+                          <button type="button" class="menu-item" data-engine="google">
+                            <span class="mi-body">
+                              <span class="mi-t">Google</span>
+                              <span class="mi-d">Google 网页搜索</span>
+                            </span>
+                            <span class="mi-check">✓</span>
+                          </button>
+                          <button type="button" class="menu-item" data-engine="custom">
+                            <span class="mi-body">
+                              <span class="mi-t">自定义</span>
+                              <span class="mi-d">使用自定义搜索模板 URL</span>
+                            </span>
+                            <span class="mi-check">✓</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="block">
+                <h2>功能</h2>
+                <div class="card">
+                  <div class="card-inner">
+                    <div class="srow">
+                      <div class="meta">
+                        <div class="t">收藏</div>
+                        <div class="d">显示收藏系统页</div>
+                      </div>
+                      <div class="ctrl"><button type="button" class="toggle on" role="switch" aria-checked="true"></button></div>
+                    </div>
+                    <div class="srow">
+                      <div class="meta">
+                        <div class="t">回收站</div>
+                        <div class="d">显示回收站系统页</div>
+                      </div>
+                      <div class="ctrl"><button type="button" class="toggle on" role="switch" aria-checked="true"></button></div>
+                    </div>
+                    <div class="srow">
+                      <div class="meta">
+                        <div class="t">多页面</div>
+                        <div class="d">允许创建与切换多个工作区页面</div>
+                      </div>
+                      <div class="ctrl"><button type="button" class="toggle on" role="switch" aria-checked="true"></button></div>
+                    </div>
+                    <div class="srow">
+                      <div class="meta">
+                        <div class="t">全局搜索</div>
+                        <div class="d">底栏展开本地内容搜索</div>
+                      </div>
+                      <div class="ctrl"><button type="button" class="toggle on" role="switch" aria-checked="true"></button></div>
+                    </div>
+                    <div class="srow">
+                      <div class="meta">
+                        <div class="t">重置功能开关</div>
+                        <div class="d">恢复全部功能为默认</div>
+                      </div>
+                      <div class="ctrl">
+                        <button type="button" class="pill-btn ghost">重置</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 外观：主题包 + 模式分段 + 有限色覆盖（产品有 overrides，非 Codex 全量主题编辑器） -->
+            <section id="set-appearance" class="hidden">
+              <h1>外观</h1>
+              <div class="block">
+                <h2>主题包</h2>
+                <div class="theme-grid" id="theme-grid">
+                  <div class="theme-card on" data-theme="classic">
+                    <div class="preview"><div class="pv pv-classic"><div class="bar"></div><div class="line"></div><div class="line" style="width: 60%"></div></div></div>
+                    <div class="cap">Classic</div>
+                  </div>
+                  <div class="theme-card" data-theme="glass">
+                    <div class="preview"><div class="pv pv-glass"><div class="bar"></div><div class="line"></div><div class="line" style="width: 60%"></div></div></div>
+                    <div class="cap">Glass</div>
+                  </div>
+                  <div class="theme-card" data-theme="fluent">
+                    <div class="preview"><div class="pv pv-fluent"><div class="bar"></div><div class="line"></div><div class="line" style="width: 60%"></div></div></div>
+                    <div class="cap">Fluent</div>
+                  </div>
+                  <div class="theme-card" data-theme="material">
+                    <div class="preview"><div class="pv pv-material"><div class="bar"></div><div class="line"></div><div class="line" style="width: 60%"></div></div></div>
+                    <div class="cap">Material</div>
+                  </div>
+                  <div class="theme-card" data-theme="swiftui">
+                    <div class="preview"><div class="pv pv-swift"><div class="bar"></div><div class="line"></div><div class="line" style="width: 60%"></div></div></div>
+                    <div class="cap">SwiftUI</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="block">
+                <h2>颜色模式</h2>
+                <div class="card">
+                  <div class="card-inner">
+                    <div class="srow">
+                      <div class="meta">
+                        <div class="t">明暗</div>
+                        <div class="d">跟随系统，或固定浅色 / 深色</div>
+                      </div>
+                      <div class="ctrl">
+                        <div class="seg" role="group" aria-label="颜色模式" id="mode-seg">
+                          <button type="button" class="on" data-mode="system">系统</button>
+                          <button type="button" data-mode="light">浅色</button>
+                          <button type="button" data-mode="dark">深色</button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="srow">
+                      <div class="meta">
+                        <div class="t">界面字号</div>
+                        <div class="d">调整应用基准字号</div>
+                      </div>
+                      <div class="ctrl">
+                        <label class="num-field">
+                          <input type="text" value="14" inputmode="numeric" aria-label="界面字号" />
+                          px
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="block">
+                <div class="card">
+                  <div class="card-head">
+                    <span class="ht">颜色覆盖</span>
+                    <div class="hr">
+                      <button type="button" class="pill-btn ghost">重置</button>
+                    </div>
+                  </div>
+                  <div class="card-inner">
+                    <div class="srow">
+                      <div class="meta"><div class="t">强调色</div></div>
+                      <div class="ctrl">
+                        <button type="button" class="swatch filled" id="btn-swatch" style="background: #3b9eff" aria-expanded="false">
+                          <i style="background: #fff; opacity: 0.9"></i>#3B9EFF
+                        </button>
+                        <div class="picker" id="color-picker">
+                          <div class="picker-sv"></div>
+                          <div class="picker-hue"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="srow">
+                      <div class="meta"><div class="t">画布</div></div>
+                      <div class="ctrl">
+                        <span class="swatch"><i style="background: #f3f4f7"></i>#F3F4F7</span>
+                      </div>
+                    </div>
+                    <div class="srow">
+                      <div class="meta"><div class="t">表面</div></div>
+                      <div class="ctrl">
+                        <span class="swatch"><i style="background: #ffffff"></i>#FFFFFF</span>
+                      </div>
+                    </div>
+                    <div class="srow">
+                      <div class="meta"><div class="t">文字</div></div>
+                      <div class="ctrl">
+                        <span class="swatch filled" style="background: #1a1c1f"><i style="background: #fff; opacity: 0.15"></i>#1A1C1F</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 数据：导入 / 导出 次要 pill 操作 -->
+            <section id="set-data" class="hidden">
+              <h1>数据</h1>
+              <div class="block">
+                <div class="card">
+                  <div class="card-inner">
+                    <div class="srow">
+                      <div class="meta">
+                        <div class="t">导出工作区</div>
+                        <div class="d">导出为可迁移的工作区文件</div>
+                      </div>
+                      <div class="ctrl">
+                        <button type="button" class="pill-btn">
+                          <svg class="ti"><use href="#i-download" /></svg>
+                          导出
+                        </button>
+                      </div>
+                    </div>
+                    <div class="srow">
+                      <div class="meta">
+                        <div class="t">导入工作区</div>
+                        <div class="d">从文件恢复；会替换当前数据</div>
+                      </div>
+                      <div class="ctrl">
+                        <button type="button" class="pill-btn">
+                          <svg class="ti"><use href="#i-upload" /></svg>
+                          导入
+                        </button>
+                      </div>
+                    </div>
+                    <div class="srow">
+                      <div class="meta">
+                        <div class="t">导出操作日志</div>
+                        <div class="d">导出历史变更记录</div>
+                      </div>
+                      <div class="ctrl">
+                        <button type="button" class="pill-btn">
+                          <svg class="ti"><use href="#i-download" /></svg>
+                          导出日志
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section id="set-about" class="hidden">
+              <h1>关于</h1>
+              <div class="block">
+                <div class="card">
+                  <div class="card-inner">
+                    <div class="srow">
+                      <div class="meta">
+                        <div class="t">Cardo</div>
+                        <div class="d">本机工作区</div>
+                      </div>
+                      <div class="ctrl">
+                        <span style="font-size: 12.5px; color: var(--text-3)">0.1.6</span>
+                      </div>
+                    </div>
+                    <div class="srow">
+                      <div class="meta">
+                        <div class="t">检查更新</div>
+                        <div class="d">获取桌面端最新稳定版本</div>
+                      </div>
+                      <div class="ctrl">
+                        <button type="button" class="pill-btn">检查</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      <b>v6 · 设置表单细节</b>
+      对齐 Codex 工艺：卡片圆角、标题+说明行、灰 pill 控件、标题+副文下拉、蓝开关、分段、色块/取色示意。
+      能力仍仅 Cardo：常规/外观/数据/关于；无快捷键页、无模型依赖。
+      <div class="acts">
+        <button type="button" data-go="main">主工作台</button>
+        <button type="button" data-go="general">设置·常规</button>
+        <button type="button" data-go="appearance">设置·外观</button>
+        <button type="button" data-go="data">设置·数据</button>
+        <button type="button" data-go="about">设置·关于</button>
+      </div>
+      <code>docs/prototypes/cardo-v2-shell-codex-layout.html</code>
+    </div>
+
+    <script>
+      const pageName = document.getElementById("panel-page-name");
+      const pageButtons = () => document.querySelectorAll(".sidebar-scroll .nav-item[data-page]");
+
+      function selectPage(btn) {
+        pageButtons().forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        if (pageName) pageName.textContent = btn.dataset.page || "";
+      }
+
+      pageButtons().forEach((btn) => {
+        btn.addEventListener("click", () => selectPage(btn));
+      });
+
+      document.getElementById("nav-add-page")?.addEventListener("click", () => {
+        const list = document.getElementById("page-list");
+        if (!list) return;
+        const n = list.querySelectorAll(".nav-item").length + 1;
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "nav-item";
+        btn.dataset.page = `未命名 ${n}`;
+        btn.setAttribute("role", "listitem");
+        btn.innerHTML = `<span class="label">未命名 ${n}</span>`;
+        btn.addEventListener("click", () => selectPage(btn));
+        list.appendChild(btn);
+        selectPage(btn);
+      });
+
+      document.querySelectorAll(".box").forEach((box) => {
+        box.addEventListener("click", (e) => {
+          e.stopPropagation();
+          document.querySelectorAll(".box").forEach((b) => b.classList.remove("sel"));
+          box.classList.add("sel");
+        });
+      });
+      document.getElementById("canvas")?.addEventListener("click", () => {
+        document.querySelectorAll(".box").forEach((b) => b.classList.remove("sel"));
+      });
+
+      const lockBtn = document.getElementById("btn-lock");
+      const lockIcon = document.getElementById("icon-lock");
+      lockBtn?.addEventListener("click", () => {
+        const on = lockBtn.classList.toggle("is-on");
+        lockBtn.setAttribute("aria-pressed", on ? "true" : "false");
+        lockBtn.title = on ? "解锁画布" : "锁定画布";
+        lockBtn.setAttribute("aria-label", lockBtn.title);
+        if (lockIcon) lockIcon.innerHTML = `<use href="${on ? "#i-lock" : "#i-unlock"}" />`;
+      });
+
+      const bottomBar = document.getElementById("bottom-bar");
+      document.getElementById("btn-search")?.addEventListener("click", () => {
+        bottomBar?.classList.add("is-search");
+        bottomBar?.querySelector("input")?.focus();
+      });
+      document.getElementById("btn-search-close")?.addEventListener("click", () => {
+        bottomBar?.classList.remove("is-search");
+        const input = bottomBar?.querySelector("input");
+        if (input) input.value = "";
+      });
+
+      function showSettings(on) {
+        document.body.classList.toggle("is-settings", on);
+      }
+
+      function openSet(id) {
+        showSettings(true);
+        document.querySelectorAll(".set-panel > section").forEach((s) => s.classList.add("hidden"));
+        document.getElementById(`set-${id}`)?.classList.remove("hidden");
+        document.querySelectorAll(".set-scroll .nav-item").forEach((n) => {
+          n.classList.toggle("active-settings", n.dataset.set === id);
+        });
+      }
+
+      document.getElementById("btn-settings")?.addEventListener("click", () => openSet("general"));
+      document.getElementById("btn-back")?.addEventListener("click", () => showSettings(false));
+      document.querySelectorAll(".set-scroll .nav-item[data-set]").forEach((btn) => {
+        btn.addEventListener("click", () => openSet(btn.dataset.set));
+      });
+      document.querySelectorAll(".note .acts button").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const go = btn.dataset.go;
+          if (go === "main") showSettings(false);
+          else openSet(go);
+        });
+      });
+
+      document.querySelectorAll(".theme-card").forEach((card) => {
+        card.addEventListener("click", () => {
+          document.querySelectorAll(".theme-card").forEach((c) => c.classList.remove("on"));
+          card.classList.add("on");
+        });
+      });
+
+      document.querySelectorAll(".toggle").forEach((el) => {
+        el.addEventListener("click", () => {
+          const on = el.classList.toggle("on");
+          el.setAttribute("aria-checked", on ? "true" : "false");
+        });
+      });
+
+      document.querySelectorAll(".seg").forEach((seg) => {
+        seg.querySelectorAll("button").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            seg.querySelectorAll("button").forEach((b) => b.classList.remove("on"));
+            btn.classList.add("on");
+          });
+        });
+      });
+
+      const engineBtn = document.getElementById("btn-engine");
+      const engineMenu = document.getElementById("menu-engine");
+      engineBtn?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const open = engineMenu?.classList.toggle("open");
+        engineBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+      engineMenu?.querySelectorAll(".menu-item").forEach((item) => {
+        item.addEventListener("click", (e) => {
+          e.stopPropagation();
+          engineMenu.querySelectorAll(".menu-item").forEach((m) => m.classList.remove("selected"));
+          item.classList.add("selected");
+          const label = item.querySelector(".mi-t")?.textContent || "";
+          engineBtn.innerHTML = `${label}<span class="chev">▾</span>`;
+          engineMenu.classList.remove("open");
+          engineBtn.setAttribute("aria-expanded", "false");
+        });
+      });
+
+      const swatchBtn = document.getElementById("btn-swatch");
+      const picker = document.getElementById("color-picker");
+      swatchBtn?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const open = picker?.classList.toggle("open");
+        swatchBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+
+      document.addEventListener("click", () => {
+        engineMenu?.classList.remove("open");
+        engineBtn?.setAttribute("aria-expanded", "false");
+        picker?.classList.remove("open");
+        swatchBtn?.setAttribute("aria-expanded", "false");
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,359 @@
+import { useEffect, useMemo, useState } from 'react';
+import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react';
+import { useUiStore } from '../app/stores/uiStore';
+import { useWorkspaceStore } from '../app/stores/workspaceStore';
+import { useInlineRename } from '../app/useInlineRename';
+import { Input } from '../kit/input';
+import { NavItem, SectionLabel } from '../kit/nav-item';
+import { ThemeIcon } from '../kit/icon';
+import { useContextMenu } from '../kit/context-menu';
+import {
+  isCollectionPageId,
+  isRecycleBinPageId,
+  isSystemPageId,
+  type WorkspacePage,
+} from '../domain/workspace';
+import { useI18n } from '../i18n/useI18n';
+import { useFeatureEnabled } from './FeatureGate';
+import { TabDeleteConfirmView } from '../features/pages/TabDeleteConfirmView';
+import {
+  sidebarPageDropRowClassName,
+  usePageDropElementRef,
+  useSidebarBoxDropUi,
+} from './SidebarPageDropBridge';
+
+/**
+ * Product page nav (primary nav / sidebar): new page · favorites · flat pages · recycle bin.
+ * Parent FeatureGate chrome.sidebar (CardoApp); settings foot is outside the gate.
+ * Collection / recycle / multiPage use workspace.* features.
+ * Rename + delete+confirm required; page reorder skipped for now.
+ *
+ * PR7 box drop: each page/system row registers via registerPageDropElement.
+ * Primary nav hit region is registered in CardoApp (registerTopBarElement name kept).
+ * Rules stay in shared BoxPageDropController — do not fork cases here.
+ */
+export function SidebarNav() {
+  const showCollection = useFeatureEnabled('workspace.collection');
+  const showRecycleBin = useFeatureEnabled('workspace.recycleBin');
+  const multiPage = useFeatureEnabled('workspace.multiPage');
+  const persistedPageRows = useWorkspaceStore((state) => state.projection.pages);
+  const activePageId = useWorkspaceStore((state) => state.projection.activePageId);
+  const defaultPageId = useWorkspaceStore((state) => state.projection.defaultPageId);
+  const createPage = useWorkspaceStore((state) => state.createPage);
+  const renamePage = useWorkspaceStore((state) => state.renamePage);
+  const deletePage = useWorkspaceStore((state) => state.deletePage);
+  const setActivePage = useWorkspaceStore((state) => state.setActivePage);
+  const setDefaultPage = useWorkspaceStore((state) => state.setDefaultPage);
+  const { dropPageId } = useSidebarBoxDropUi();
+  const [deletePageId, setDeletePageId] = useState<string | null>(null);
+  const [renamePageId, setRenamePageId] = useState<string | null>(null);
+  const contextMenu = useContextMenu();
+  const { t } = useI18n();
+
+  const persistedPages = useMemo(
+    () => [...persistedPageRows].sort((first, second) => first.order - second.order),
+    [persistedPageRows],
+  );
+  const workspacePages = useMemo(
+    () => persistedPages.filter((page) => !isSystemPageId(page.id)),
+    [persistedPages],
+  );
+  const collectionPage = useMemo(
+    () => persistedPages.find((page) => isCollectionPageId(page.id)),
+    [persistedPages],
+  );
+  const recycleBinPage = useMemo(
+    () => persistedPages.find((page) => isRecycleBinPageId(page.id)),
+    [persistedPages],
+  );
+  const visibleUserPages = useMemo(() => {
+    if (multiPage) return workspacePages;
+    return workspacePages.filter((page) => page.id === activePageId);
+  }, [activePageId, multiPage, workspacePages]);
+
+  const pageToDelete = workspacePages.find((page) => page.id === deletePageId);
+  const deleteBoxCount = useWorkspaceStore(
+    (state) => state.projection.boxes.filter((box) => box.pageId === deletePageId).length,
+  );
+
+  useEffect(() => {
+    if (!deletePageId) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setDeletePageId(null);
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target?.closest('[data-v2-sidebar-nav]')) {
+        setDeletePageId(null);
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('pointerdown', onPointerDown, true);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('pointerdown', onPointerDown, true);
+    };
+  }, [deletePageId]);
+
+  const openNewPage = () => createPage(t('page.untitled'));
+
+  const activatePage = (pageId: string) => {
+    useUiStore.getState().selectBox(null);
+    setActivePage(pageId);
+  };
+
+  const openPageMenu = (event: ReactMouseEvent<HTMLElement>, page?: WorkspacePage) => {
+    event.preventDefault();
+    event.stopPropagation();
+    contextMenu.openMenu(event.clientX, event.clientY, [
+      ...(multiPage
+        ? [
+            {
+              id: 'new-page',
+              label: t('menu.newPage'),
+              icon: <ThemeIcon name="add" size={16} />,
+              onSelect: openNewPage,
+            },
+          ]
+        : []),
+      ...(page
+        ? [
+            {
+              id: 'rename-page',
+              label: t('menu.rename'),
+              icon: <ThemeIcon name="edit" size={16} />,
+              onSelect: () => setRenamePageId(page.id),
+            },
+            ...(multiPage
+              ? [
+                  {
+                    id: 'set-default-page',
+                    label: t(page.id === defaultPageId ? 'page.default' : 'page.setDefault'),
+                    icon: <ThemeIcon name="home" size={16} />,
+                    disabled: page.id === defaultPageId,
+                    onSelect: () => setDefaultPage(page.id),
+                  },
+                  {
+                    id: 'delete-page',
+                    label: t('page.delete', { title: page.title }),
+                    icon: <ThemeIcon name="trash" size={16} />,
+                    danger: true,
+                    disabled: workspacePages.length <= 1,
+                    onSelect: () => setDeletePageId(page.id),
+                  },
+                ]
+              : []),
+          ]
+        : []),
+    ]);
+  };
+
+  return (
+    <div className="cardo-v2-sidebar-scroll">
+      {pageToDelete ? (
+        <div className="cardo-v2-delete-confirm">
+          <TabDeleteConfirmView
+            title={pageToDelete.title}
+            boxCount={deleteBoxCount}
+            onCancel={() => setDeletePageId(null)}
+            onConfirm={() => {
+              deletePage(pageToDelete.id);
+              setDeletePageId(null);
+            }}
+          />
+        </div>
+      ) : (
+        <>
+          {multiPage ? (
+            <div className="cardo-v2-nav-block">
+              <NavItem
+                icon={<ThemeIcon name="add" size={16} />}
+                onClick={openNewPage}
+                aria-label={t('shell.newPage')}
+              >
+                {t('shell.newPage')}
+              </NavItem>
+            </div>
+          ) : null}
+
+          {showCollection && collectionPage ? (
+            <div className="cardo-v2-nav-block">
+              <NavRow
+                pageId={collectionPage.id}
+                active={collectionPage.id === activePageId}
+                dropPageId={dropPageId}
+                icon={<ThemeIcon name="star" size={16} />}
+                label={t('shell.favorites')}
+                onActivate={() => activatePage(collectionPage.id)}
+                onContextMenu={(event) => openPageMenu(event)}
+              />
+            </div>
+          ) : null}
+
+          <div className="cardo-v2-nav-block">
+            <SectionLabel>{t('shell.pages')}</SectionLabel>
+            <nav className="cardo-v2-pages" aria-label={t('page.workspacePages')}>
+              {visibleUserPages.map((page) => (
+                <PageNavRow
+                  key={page.id}
+                  page={page}
+                  active={page.id === activePageId}
+                  dropPageId={dropPageId}
+                  renameRequested={renamePageId === page.id}
+                  onActivate={() => activatePage(page.id)}
+                  onRename={(title) => renamePage(page.id, title)}
+                  onRenameRequestHandled={() => setRenamePageId(null)}
+                  onContextMenu={(event) => openPageMenu(event, page)}
+                />
+              ))}
+            </nav>
+          </div>
+
+          {showRecycleBin && recycleBinPage ? (
+            <div className="cardo-v2-nav-block">
+              <NavRow
+                pageId={recycleBinPage.id}
+                active={recycleBinPage.id === activePageId}
+                dropPageId={dropPageId}
+                icon={<ThemeIcon name="trash" size={16} />}
+                label={t('shell.recycleBin')}
+                onActivate={() => activatePage(recycleBinPage.id)}
+                onContextMenu={(event) => openPageMenu(event)}
+              />
+            </div>
+          ) : null}
+        </>
+      )}
+    </div>
+  );
+}
+
+function NavRow({
+  pageId,
+  active,
+  dropPageId,
+  icon,
+  label,
+  onActivate,
+  onContextMenu,
+}: {
+  pageId: string;
+  active: boolean;
+  dropPageId: string | null;
+  icon: ReactNode;
+  label: string;
+  onActivate: () => void;
+  onContextMenu: (event: ReactMouseEvent<HTMLElement>) => void;
+}) {
+  const dropRef = usePageDropElementRef(pageId);
+  const isDrop = dropPageId === pageId;
+  return (
+    <div
+      ref={dropRef}
+      data-page-drop-id={pageId}
+      className={sidebarPageDropRowClassName({ pageId, active, dropPageId })}
+    >
+      <NavItem
+        active={active}
+        dropTarget={isDrop}
+        icon={icon}
+        aria-current={active ? 'page' : undefined}
+        aria-label={label}
+        onClick={onActivate}
+        onContextMenu={onContextMenu}
+      >
+        {label}
+      </NavItem>
+    </div>
+  );
+}
+
+function PageNavRow({
+  page,
+  active,
+  dropPageId,
+  renameRequested,
+  onActivate,
+  onRename,
+  onRenameRequestHandled,
+  onContextMenu,
+}: {
+  page: WorkspacePage;
+  active: boolean;
+  dropPageId: string | null;
+  renameRequested: boolean;
+  onActivate: () => void;
+  onRename: (title: string) => void;
+  onRenameRequestHandled: () => void;
+  onContextMenu: (event: ReactMouseEvent<HTMLElement>) => void;
+}) {
+  const { t } = useI18n();
+  const dropRef = usePageDropElementRef(page.id);
+  const rename = useInlineRename({
+    value: page.title,
+    onCommit: onRename,
+    ignoreOutsidePointer: isSidebarNavTarget,
+  });
+  const startRenaming = rename.start;
+
+  useEffect(() => {
+    if (!renameRequested) return;
+    startRenaming();
+    onRenameRequestHandled();
+  }, [onRenameRequestHandled, renameRequested, startRenaming]);
+
+  if (rename.renaming) {
+    return (
+      <div
+        ref={dropRef}
+        data-page-drop-id={page.id}
+        className={sidebarPageDropRowClassName({ pageId: page.id, active, dropPageId })}
+        onContextMenu={rename.onContextMenu}
+      >
+        <span className="cardo-v2-nav-item-icon" aria-hidden="true">
+          <ThemeIcon name="document" size={16} />
+        </span>
+        <Input
+          ref={rename.inputRef}
+          className="cardo-v2-nav-item-input"
+          aria-label={t('page.rename', { title: page.title })}
+          value={rename.draft}
+          onChange={(event) => rename.setDraft(event.target.value)}
+          onBlur={rename.commit}
+          onKeyDown={rename.onKeyDown}
+          onContextMenu={rename.onContextMenu}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={dropRef}
+      data-page-drop-id={page.id}
+      className={sidebarPageDropRowClassName({ pageId: page.id, active, dropPageId })}
+    >
+      <NavItem
+        active={active}
+        dropTarget={dropPageId === page.id}
+        icon={<ThemeIcon name="document" size={16} />}
+        aria-current={active ? 'page' : undefined}
+        aria-label={page.title}
+        onClick={onActivate}
+        onDoubleClick={(event) => {
+          event.stopPropagation();
+          rename.start();
+        }}
+        onContextMenu={onContextMenu}
+      >
+        {page.title}
+      </NavItem>
+    </div>
+  );
+}
+
+function isSidebarNavTarget(target: EventTarget | null) {
+  return target instanceof Element && Boolean(target.closest('[data-v2-sidebar-nav]'));
+}

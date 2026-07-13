@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Maximize2, Minus, Square, X } from 'lucide-react';
 import cardoMarkUrl from '../../assets/brand/cardo-mark.svg';
-import { useI18n } from '../web-next/i18n/useI18n';
-import { Button } from '../web-next/ui/primitives/button';
+import { useI18n } from '../web/i18n/useI18n';
+import { Button } from '../web/kit/button';
 
 export default function DesktopTitleBar() {
   const [isMaximized, setMaximized] = useState(false);

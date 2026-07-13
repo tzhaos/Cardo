@@ -1,0 +1,78 @@
+@keyframes cardo-enter-item {
+  from {
+    background: color-mix(in srgb, var(--cardo-blue) 18%, transparent);
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cardo-item-new {
+  animation: cardo-enter-item 520ms ease both;
+}
+
+@keyframes cardo-tab-drop-ready {
+  0%,
+  100% {
+    opacity: 0.36;
+    transform: scale(0.96);
+  }
+
+  50% {
+    opacity: 0.72;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes cardo-tab-drop-release {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.96);
+  }
+
+  45% {
+    opacity: 0.2;
+    transform: scale(1.04);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* No drop/hover rings or release flashes on legacy tab pills (if any remain in theme CSS). */
+.cardo-box-drop-target .cardo-tab-pill > button::after,
+.cardo-box-drop-released .cardo-tab-pill > button::after {
+  content: none !important;
+  display: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  animation: none !important;
+}
+
+/*
+ * While any box is dragged over primary nav drop mode, freeze layout springs so
+ * chrome tracks the pointer. Historical class: cardo-top-bar-drop-mode.
+ * Sidebar drop mode: cardo-v2-sidebar-drop-mode (+ cardo-v2-nav-drop-target
+ * highlight in chrome.css) — nav rows are not layoutId-sprung, only short bg transition.
+ */
+.cardo-top-bar-drop-mode .cardo-tab-pill,
+.cardo-top-bar-drop-mode .cardo-tabs > * {
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

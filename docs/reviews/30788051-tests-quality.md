@@ -25,11 +25,11 @@ Runner: `npm run test:ts` → `tsx --test "src/**/*.test.ts"` (Node built-in tes
 | --- | --- | --- | --- | --- |
 | `src/core/version/semver.test.ts` | Product X.Y.Z parse/compare for updater | 3 describes | good | No link to GitHub tag_name edge cases beyond normalize |
 | `src/core/domains/items/services/isUrlText.test.ts` | Paste URL detect | 5 | good | No IPv6, userinfo, unicode IDN |
-| `src/web-next/domain/canvasGeometry.test.ts` | World bounds, pan clamp, client→world, resize constrain | 6 | good | Zoom ≠ 1 untested if product adds zoom |
-| `src/web-next/domain/placement.test.ts` | Cross-page landing + avoidOverlap | 3 | good | Drop controller / camera grab not covered |
-| `src/web-next/domain/paste.test.ts` | Paste draft folder/url/clipboard/file/shortcut | 5 | good | No UNC, file://, multi-line |
-| `src/web-next/app/stores/canvasStore.test.ts` | Per-page camera isolation + viewport reclamp | 2 | good | Interaction modes / pan lock under load untested |
-| `src/web-next/app/stores/independentMenuStore.test.ts` | Menu position clamp pure helper | 2 | thin | open/close/drag of menus untested |
+| `src/web/domain/canvasGeometry.test.ts` | World bounds, pan clamp, client→world, resize constrain | 6 | good | Zoom ≠ 1 untested if product adds zoom |
+| `src/web/domain/placement.test.ts` | Cross-page landing + avoidOverlap | 3 | good | Drop controller / camera grab not covered |
+| `src/web/domain/paste.test.ts` | Paste draft folder/url/clipboard/file/shortcut | 5 | good | No UNC, file://, multi-line |
+| `src/web/app/stores/canvasStore.test.ts` | Per-page camera isolation + viewport reclamp | 2 | good | Interaction modes / pan lock under load untested |
+| `src/web/app/stores/independentMenuStore.test.ts` | Menu position clamp pure helper | 2 | thin | open/close/drag of menus untested |
 | `src/native-host/messageCodec.test.ts` | Length-prefixed NM codec | 2 | good | One partial-frame case; no multi-message stream / max size |
 | `src/native-host/handleNativeHostRequest.test.ts` | Unsupported type + path validation + file URL normalize | 3 | good | No discover/open success with mocked FS |
 | `src/extension/ports/createExtensionPorts.test.ts` | AppPorts shell shape, no database | 1 | smoke | Does not invoke ports; no NM boundary Zod |
@@ -141,7 +141,7 @@ Suggested fix: Export pure pick/parse helpers (or move to a pure module); fixtur
 
 Title: ESLint restricted imports cover web-next only
 
-Evidence: `eslint.config.js` `no-restricted-imports` for `src/web-next/**/*`: forbids `drizzle-orm` and `**/database/schema`. Grep: no drizzle/schema under web-next. No equivalent blocks for `src/extension/**`, Desktop renderer surfaces, or “no electron in `src/runtime/**` / `src/core/**`” (core/runtime currently clean of electron imports by grep). No ban on `database:execute` IPC (also absent in tree).
+Evidence: `eslint.config.js` `no-restricted-imports` for `src/web/**/*`: forbids `drizzle-orm` and `**/database/schema`. Grep: no drizzle/schema under web-next. No equivalent blocks for `src/extension/**`, Desktop renderer surfaces, or “no electron in `src/runtime/**` / `src/core/**`” (core/runtime currently clean of electron imports by grep). No ban on `database:execute` IPC (also absent in tree).
 
 Why it matters: Accidental UI→schema or Runtime→electron import fails CI only for web-next path.
 
@@ -165,13 +165,13 @@ Approximate sizes sampled:
 
 | Module | ~LOC | Role |
 | --- | --- | --- |
-| `src/web-next/components/settings/SettingsPanel.tsx` | ~1130 | Settings UI |
+| `src/web/features/settings/SettingsPanel.tsx` | ~1130 | Settings UI |
 | `src/client/runtimeClient.ts` | ~820 | Shared client protocol |
 | `src/runtime/httpServer.ts` | ~800+ | All Runtime HTTP |
-| `src/web-next/components/boxes/BaseBoxFrame.tsx` | ~800 | Box chrome, drag, resize |
-| `src/web-next/i18n/messages.ts` | ~650 | Copy dictionary |
+| `src/web/features/boxes/BaseBoxFrame.tsx` | ~800 | Box chrome, drag, resize |
+| `src/web/i18n/messages.ts` | ~650 | Copy dictionary |
 | `src/core/application/itemCommandHandlers.ts` | ~570 | Item commands |
-| `src/web-next/app/stores/preferencesStore.ts` | ~520+ | Preferences client store |
+| `src/web/app/stores/preferencesStore.ts` | ~520+ | Preferences client store |
 
 Why it matters: High change frequency + no tests = high regression cost on RuntimeClient and httpServer especially.
 
@@ -181,7 +181,7 @@ Suggested fix: Extract pure revision/SSE/CORS helpers and unit-test them before 
 
 Title: WebNext* naming residue (not a dual UI runtime)
 
-Evidence: Widespread: `startWebNextApp`, `WebNextApp`, `applyWebNextTheme`, `WebNextLocale`, `translateWebNext`, `getRegisteredWebNextThemes`, directory `src/web-next/`. `WebNextColorMode` is a type alias of contract `ColorMode` (`themeRegistry.ts`). Product user-facing brand is Cardo; AGENTS forbids WebNext/Khaos leakage in user copy. No second product UI implementation found.
+Evidence: Widespread: `startWebNextApp`, `WebNextApp`, `applyWebNextTheme`, `WebNextLocale`, `translateWebNext`, `getRegisteredWebNextThemes`, directory `src/web/`. `WebNextColorMode` is a type alias of contract `ColorMode` (`themeRegistry.ts`). Product user-facing brand is Cardo; AGENTS forbids WebNext/Khaos leakage in user copy. No second product UI implementation found.
 
 Why it matters: Import confusion and review noise; not dual-write.
 

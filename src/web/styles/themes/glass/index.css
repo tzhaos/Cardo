@@ -1,0 +1,652 @@
+/**
+ * Glass theme recipes — Ethereal light + Dark Glass dark (one dialect).
+ * Tokens: themes/builtin/glass/theme.cardo-theme.json
+ * Does not replace classic; classic stays the product default glass chrome.
+ */
+
+[data-cardo-theme='glass'] .cardo-app,
+[data-cardo-theme='glass'] .cardo-v2-app {
+  background-color: var(--cardo-shell);
+  background-image:
+    radial-gradient(
+      ellipse 80% 60% at 20% 10%,
+      color-mix(in srgb, var(--cardo-purple) 10%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 70% 50% at 85% 20%,
+      color-mix(in srgb, var(--cardo-blue) 12%, transparent),
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 60% 45% at 50% 90%,
+      color-mix(in srgb, var(--cardo-blue) 8%, transparent),
+      transparent 55%
+    );
+}
+
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-app,
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-v2-app {
+  background-image:
+    radial-gradient(
+      ellipse 70% 55% at 15% 15%,
+      color-mix(in srgb, var(--cardo-purple) 14%, transparent),
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 60% 45% at 90% 25%,
+      color-mix(in srgb, var(--cardo-blue) 10%, transparent),
+      transparent 48%
+    );
+}
+
+[data-cardo-theme='glass'] .cardo-canvas-boundary {
+  background-image: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+[data-cardo-theme='glass'] .cardo-top-bar {
+  border: 1px solid var(--cardo-border);
+  background: var(--cardo-surface) !important;
+  box-shadow: var(--cardo-shadow) !important;
+  backdrop-filter: blur(var(--cardo-chrome-blur)) !important;
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur)) !important;
+}
+
+/* Floating pill: tabs stay centered in the chrome strip */
+[data-cardo-theme='glass'] .cardo-top-inner {
+  justify-content: center;
+}
+
+[data-cardo-theme='glass'] .cardo-top-center {
+  justify-content: center;
+}
+
+[data-cardo-theme='glass'] .cardo-active-tab-indicator {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cardo-panel) 88%, transparent);
+  box-shadow:
+    var(--cardo-inset-shadow),
+    0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-active-tab-indicator {
+  background: color-mix(in srgb, var(--cardo-blue) 28%, var(--cardo-panel));
+  box-shadow: none;
+}
+
+[data-cardo-theme='glass'] .cardo-history-controls {
+  border: 1px solid var(--cardo-border);
+  border-radius: 999px;
+  background: var(--cardo-surface);
+  backdrop-filter: blur(var(--cardo-chrome-blur));
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur));
+  box-shadow: var(--cardo-shadow);
+}
+
+[data-cardo-theme='glass'] .cardo-box,
+[data-cardo-theme='glass'] .cardo-collection-box {
+  border: 1px solid var(--cardo-border);
+  --cardo-box-radius: var(--cardo-radius-xl);
+  border-radius: var(--cardo-box-radius);
+  background-color: var(--cardo-panel);
+  background-image: none;
+  box-shadow: var(--cardo-shadow);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+[data-cardo-theme='glass'] .cardo-box-header,
+[data-cardo-theme='glass'] .cardo-collection-box-header {
+  border-bottom: 0;
+  background: transparent;
+}
+
+[data-cardo-theme='glass'] .cardo-box-footer {
+  border-top: 0;
+  background: transparent;
+}
+
+[data-cardo-theme='glass'] .cardo-box-footer button,
+[data-cardo-theme='glass'] .cardo-box-footer .cardo-ui-button-default {
+  border: 0 !important;
+  border-radius: var(--cardo-radius-lg) !important;
+  background: transparent !important;
+  color: var(--cardo-secondary-text) !important;
+  font-weight: 500;
+  box-shadow: none !important;
+}
+
+[data-cardo-theme='glass'] .cardo-box-footer button:hover {
+  background: var(--cardo-hover) !important;
+  color: var(--cardo-text) !important;
+  filter: none;
+}
+
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-box-footer button,
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-box-footer .cardo-ui-button-default {
+  background: var(--cardo-neutral-button) !important;
+  color: var(--cardo-soft-text) !important;
+}
+
+/*
+ * One continuous atmosphere on the window only.
+ * Header / nav / content stay transparent so the gradient is never split into three plates.
+ */
+[data-cardo-theme='glass'] .cardo-independent-menu.cardo-settings-window,
+[data-cardo-theme='glass'] .cardo-settings-window {
+  border: 1px solid color-mix(in srgb, #ffffff 55%, var(--cardo-border));
+  border-radius: 22px;
+  /* Opaque settings field from pack token; wash is decorative only. */
+  background-color: var(--cardo-settings-chrome);
+  background-image: radial-gradient(
+    120% 100% at 18% 0%,
+    color-mix(in srgb, var(--cardo-blue) 11%, transparent) 0%,
+    color-mix(in srgb, var(--cardo-purple) 7%, transparent) 38%,
+    transparent 72%
+  );
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, #ffffff 40%, transparent) inset,
+    0 24px 64px rgba(15, 23, 42, 0.14),
+    0 8px 24px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(calc(var(--cardo-chrome-blur) + 8px)) saturate(1.25);
+  -webkit-backdrop-filter: blur(calc(var(--cardo-chrome-blur) + 8px)) saturate(1.25);
+  overflow: hidden;
+}
+
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-independent-menu.cardo-settings-window,
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-settings-window {
+  background-color: var(--cardo-settings-chrome);
+  background-image: radial-gradient(
+    120% 100% at 16% 0%,
+    color-mix(in srgb, var(--cardo-purple) 16%, transparent) 0%,
+    color-mix(in srgb, var(--cardo-blue) 12%, transparent) 42%,
+    transparent 74%
+  );
+}
+
+[data-cardo-theme='glass'] .cardo-settings-panel {
+  background: transparent;
+}
+
+/* Divider only — no fill so window gradient shows through title bar / rail / content */
+[data-cardo-theme='glass'] .cardo-settings-header {
+  border-bottom: 1px solid color-mix(in srgb, var(--cardo-border) 70%, transparent);
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-settings-header {
+  background: transparent;
+}
+
+[data-cardo-theme='glass'] .cardo-settings-nav {
+  border-right: 1px solid color-mix(in srgb, var(--cardo-border) 65%, transparent);
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-settings-nav {
+  background: transparent;
+}
+
+[data-cardo-theme='glass'] .cardo-settings-nav button {
+  border-radius: 999px;
+  min-height: 36px;
+}
+
+[data-cardo-theme='glass'] .cardo-settings-nav-indicator {
+  border-radius: 999px;
+  background: color-mix(in srgb, #ffffff 62%, transparent);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.75) inset,
+    0 4px 14px rgba(15, 23, 42, 0.07);
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+}
+
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-settings-nav-indicator {
+  background: color-mix(
+    in srgb,
+    var(--cardo-blue) 22%,
+    color-mix(in srgb, #ffffff 8%, transparent)
+  );
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 4px 16px color-mix(in srgb, var(--cardo-blue) 18%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+[data-cardo-theme='glass'] .cardo-settings-content {
+  background: transparent;
+}
+
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-settings-content {
+  background: transparent;
+}
+
+/*
+ * Glass paints ALL settings items via content-level tokens (settings.css shared group).
+ * Data import/export, language rows, packs, looks, about — one override covers them.
+ */
+[data-cardo-theme='glass'] .cardo-settings-content {
+  --cardo-settings-item-bg: color-mix(in srgb, #ffffff 58%, transparent);
+  --cardo-settings-item-bg-hover: color-mix(in srgb, #ffffff 72%, transparent);
+  --cardo-settings-item-border: color-mix(in srgb, #ffffff 70%, var(--cardo-border));
+  --cardo-settings-item-border-hover: color-mix(in srgb, #ffffff 82%, var(--cardo-border));
+  --cardo-settings-item-radius: 16px;
+  --cardo-settings-item-blur: blur(22px) saturate(1.28);
+  --cardo-settings-item-inset: 0 1px 0 rgba(255, 255, 255, 0.78) inset;
+  --cardo-settings-item-shadow:
+    0 0 0 0.5px color-mix(in srgb, var(--cardo-border) 55%, transparent),
+    0 10px 28px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04);
+  --cardo-settings-item-shadow-hover:
+    0 0 0 0.5px color-mix(in srgb, var(--cardo-blue) 18%, var(--cardo-border)),
+    0 14px 36px rgba(15, 23, 42, 0.1), 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+/* Selected pack/look: light = soft white wash; dark = accent glass (never solid light gray). */
+[data-cardo-theme='glass'] .cardo-theme-pack-card-selected,
+[data-cardo-theme='glass'] .cardo-theme-look-card-selected {
+  border-color: color-mix(in srgb, var(--cardo-blue) 40%, #ffffff) !important;
+  background: color-mix(
+    in srgb,
+    #ffffff 70%,
+    color-mix(in srgb, var(--cardo-blue) 8%, transparent)
+  ) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 0 0 1px color-mix(in srgb, var(--cardo-blue) 22%, transparent),
+    0 12px 32px color-mix(in srgb, var(--cardo-blue) 12%, transparent),
+    0 4px 12px rgba(15, 23, 42, 0.06) !important;
+}
+
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-theme-pack-card-selected,
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-theme-look-card-selected {
+  border-color: color-mix(in srgb, var(--cardo-blue) 55%, transparent) !important;
+  background: color-mix(
+    in srgb,
+    var(--cardo-blue) 18%,
+    color-mix(in srgb, var(--cardo-panel) 50%, transparent)
+  ) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 0 0 1px color-mix(in srgb, var(--cardo-blue) 28%, transparent),
+    0 14px 36px color-mix(in srgb, var(--cardo-blue) 16%, transparent) !important;
+}
+
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-settings-content {
+  --cardo-settings-item-bg: color-mix(in srgb, #ffffff 8%, transparent);
+  --cardo-settings-item-bg-hover: color-mix(in srgb, #ffffff 12%, transparent);
+  --cardo-settings-item-border: color-mix(in srgb, #ffffff 14%, transparent);
+  --cardo-settings-item-border-hover: color-mix(in srgb, var(--cardo-blue) 35%, transparent);
+  --cardo-settings-item-inset: 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  --cardo-settings-item-shadow: 0 12px 32px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.25);
+  --cardo-settings-item-shadow-hover:
+    0 16px 40px rgba(0, 0, 0, 0.42),
+    0 4px 12px color-mix(in srgb, var(--cardo-blue) 12%, transparent);
+}
+
+/*
+ * Glass: each settings item floats — list-group is not a solid plate.
+ * Shared surface tokens paint cards; group itself stays transparent.
+ */
+[data-cardo-theme='glass'] .cardo-settings-list-group {
+  gap: 12px;
+  border: 0 !important;
+  background: transparent !important;
+  overflow: visible;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+[data-cardo-theme='glass'] .cardo-settings-list-group .cardo-settings-card {
+  border-radius: 16px !important;
+}
+
+[data-cardo-theme='glass'] .cardo-settings-list-group .cardo-settings-card + .cardo-settings-card {
+  border-top: 1px solid var(--cardo-settings-item-border) !important;
+}
+
+/* Grouped expanders (custom colors) are one floating glass panel */
+[data-cardo-theme='glass'] .cardo-settings-group {
+  gap: 0;
+  overflow: hidden;
+}
+
+[data-cardo-theme='glass'] .cardo-theme-look-grid,
+[data-cardo-theme='glass'] .cardo-theme-pack-grid {
+  gap: 12px;
+}
+
+/* Segmented control as a smaller glass pill */
+[data-cardo-theme='glass'] .cardo-segmented-control {
+  border: 1px solid color-mix(in srgb, #ffffff 55%, var(--cardo-border));
+  border-radius: 999px;
+  background: color-mix(in srgb, #ffffff 40%, transparent);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.55) inset;
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+}
+
+[data-cardo-theme='glass'] .cardo-segment-indicator-active {
+  border-color: transparent;
+  background: color-mix(in srgb, #ffffff 88%, transparent);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-segmented-control {
+  background: color-mix(in srgb, var(--cardo-panel) 50%, transparent);
+  border-color: color-mix(in srgb, #ffffff 10%, transparent);
+  box-shadow: none;
+}
+
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-segment-indicator-active {
+  background: color-mix(in srgb, var(--cardo-panel) 92%, transparent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+[data-cardo-theme='glass'] .cardo-bottom-toolbar {
+  border: 1px solid var(--cardo-border) !important;
+  border-radius: 999px !important;
+  background: var(--cardo-surface) !important;
+  box-shadow: var(--cardo-shadow) !important;
+  backdrop-filter: blur(var(--cardo-chrome-blur)) !important;
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur)) !important;
+}
+
+[data-cardo-theme='glass'] .cardo-bottom-toolbar .cardo-toolbar-create {
+  background: var(--cardo-create-background) !important;
+  color: var(--cardo-create-text) !important;
+  border-radius: 999px !important;
+}
+
+[data-cardo-theme='glass'] .cardo-search-pill,
+[data-cardo-theme='glass'] .cardo-canvas-tools {
+  border: 1px solid var(--cardo-border);
+  background: var(--cardo-surface);
+  backdrop-filter: blur(var(--cardo-chrome-blur));
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur));
+  box-shadow: var(--cardo-shadow);
+}
+
+[data-cardo-theme='glass'] .cardo-canvas-tools {
+  gap: 2px;
+  border-radius: var(--cardo-radius-xl);
+  padding: 5px;
+}
+
+[data-cardo-theme='glass'] .cardo-canvas-tools button {
+  border-radius: var(--cardo-radius-lg);
+  color: var(--cardo-secondary-text);
+}
+
+[data-cardo-theme='glass'] .cardo-canvas-tools button:hover:not(:disabled) {
+  background: var(--cardo-hover);
+  color: var(--cardo-text);
+}
+
+/* Active: soft surface wash, not solid primary */
+[data-cardo-theme='glass'] .cardo-canvas-tools-button-active {
+  background: color-mix(in srgb, var(--cardo-panel) 70%, transparent) !important;
+  color: var(--cardo-text) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cardo-border) 80%, transparent);
+}
+
+/* —— Dropdown / flyout language (select + context menus) —— */
+[data-cardo-theme='glass'] .cardo-ui-select-trigger {
+  min-height: 32px;
+  border: 1px solid color-mix(in srgb, #ffffff 70%, var(--cardo-border));
+  border-radius: 999px;
+  padding: 0 10px 0 12px;
+  background: color-mix(in srgb, #ffffff 55%, transparent);
+  color: var(--cardo-text);
+  font-size: 12px;
+  font-weight: 500;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.75) inset,
+    0 4px 12px rgba(15, 23, 42, 0.05);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+}
+
+[data-cardo-theme='glass'] .cardo-ui-select-trigger:hover {
+  background: color-mix(in srgb, #ffffff 70%, transparent);
+  border-color: color-mix(in srgb, #ffffff 85%, var(--cardo-border));
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.85) inset,
+    0 6px 16px rgba(15, 23, 42, 0.07);
+}
+
+[data-cardo-theme='glass'] .cardo-ui-select-trigger[data-state='open'],
+[data-cardo-theme='glass'] .cardo-ui-select-trigger:focus-visible {
+  border-color: color-mix(in srgb, var(--cardo-blue) 35%, #ffffff);
+  background: color-mix(in srgb, #ffffff 76%, transparent);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 0 0 3px color-mix(in srgb, var(--cardo-blue) 14%, transparent),
+    0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+[data-cardo-theme='glass'] .cardo-floating-menu,
+[data-cardo-theme='glass'] .cardo-ui-menu-content,
+[data-cardo-theme='glass'] .cardo-ui-select-content {
+  gap: 0;
+  border: 1px solid color-mix(in srgb, #ffffff 72%, var(--cardo-border));
+  border-radius: 16px;
+  padding: 6px;
+  background: color-mix(in srgb, #ffffff 62%, transparent);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.82) inset,
+    0 0 0 0.5px color-mix(in srgb, var(--cardo-border) 50%, transparent),
+    0 16px 40px rgba(15, 23, 42, 0.12),
+    0 4px 12px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(28px) saturate(1.35);
+  -webkit-backdrop-filter: blur(28px) saturate(1.35);
+}
+
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-ui-select-trigger {
+  border-color: color-mix(in srgb, #ffffff 12%, transparent);
+  background: color-mix(in srgb, var(--cardo-panel) 55%, transparent);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;
+}
+
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-floating-menu,
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-ui-menu-content,
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-ui-select-content {
+  border-color: color-mix(in srgb, #ffffff 12%, transparent);
+  background: color-mix(in srgb, var(--cardo-panel) 62%, transparent);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 18px 44px rgba(0, 0, 0, 0.45);
+}
+
+[data-cardo-theme='glass'] .cardo-menu-row,
+[data-cardo-theme='glass'] .cardo-ui-select-item {
+  min-height: 34px;
+  border-radius: 12px;
+  padding: 0 12px 0 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cardo-soft-text);
+}
+
+/* Soft glass hover — never solid primary slab */
+[data-cardo-theme='glass'] .cardo-menu-row:hover:not(:disabled),
+[data-cardo-theme='glass'] .cardo-menu-row[data-highlighted],
+[data-cardo-theme='glass'] .cardo-menu-row[data-state='open'],
+[data-cardo-theme='glass'] .cardo-menu-row:focus-visible,
+[data-cardo-theme='glass'] .cardo-ui-select-item[data-highlighted] {
+  background: color-mix(in srgb, #ffffff 55%, transparent);
+  color: var(--cardo-text);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset;
+}
+
+[data-cardo-theme='glass'] .cardo-ui-select-item[data-state='checked'] {
+  background: color-mix(in srgb, var(--cardo-blue) 12%, transparent);
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='glass'] .cardo-ui-select-item[data-state='checked'][data-highlighted] {
+  background: color-mix(in srgb, var(--cardo-blue) 18%, transparent);
+}
+
+[data-cardo-theme='glass'] .cardo-ui-select-check {
+  color: var(--cardo-blue);
+}
+
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-menu-row:hover:not(:disabled),
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-menu-row[data-highlighted],
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-ui-select-item[data-highlighted] {
+  background: color-mix(in srgb, #ffffff 10%, transparent);
+  box-shadow: none;
+}
+
+[data-cardo-theme='glass'] .cardo-menu-row-danger:hover:not(:disabled),
+[data-cardo-theme='glass'] .cardo-menu-row-danger[data-highlighted] {
+  background: color-mix(in srgb, var(--cardo-red) 12%, transparent);
+  color: var(--cardo-red) !important;
+  box-shadow: none;
+}
+
+[data-cardo-theme='glass'] .cardo-ui-menu-separator {
+  margin: 4px 10px;
+  background: color-mix(in srgb, var(--cardo-divider) 80%, transparent);
+}
+
+/* —— sidebar product shell (PR8) —— */
+/* Atmosphere lives on .cardo-v2-app (with .cardo-app above); titlebar matches shell base */
+[data-cardo-theme='glass'] .cardo-v2-app .cardo-desktop-titlebar {
+  background: var(--cardo-shell);
+  border-bottom-color: transparent;
+  color: var(--cardo-secondary-text);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+[data-cardo-theme='glass'] .cardo-v2-product-nav,
+[data-cardo-theme='glass'] .cardo-v2-sidebar-foot {
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='glass'] .cardo-v2-nav-item {
+  border-radius: var(--cardo-radius-pill);
+  min-height: 34px;
+}
+
+[data-cardo-theme='glass'] .cardo-v2-nav-item:hover {
+  background: color-mix(in srgb, var(--cardo-panel) 42%, transparent);
+}
+
+[data-cardo-theme='glass'] .cardo-v2-nav-item-active,
+[data-cardo-theme='glass'] .cardo-v2-nav-item[data-active='true'] {
+  background: color-mix(in srgb, var(--cardo-panel) 70%, transparent);
+  color: var(--cardo-text);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cardo-border) 70%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+[data-cardo-theme='glass'] .cardo-v2-sidebar-foot .cardo-v2-nav-item-active {
+  background: color-mix(in srgb, var(--cardo-emerald) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cardo-emerald) 22%, transparent);
+}
+
+[data-cardo-theme='glass'] .cardo-v2-panel {
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--cardo-panel) 88%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--cardo-border) 65%, transparent),
+    var(--cardo-shadow);
+  backdrop-filter: blur(calc(var(--cardo-chrome-blur, 20px) + 4px)) saturate(1.15);
+  -webkit-backdrop-filter: blur(calc(var(--cardo-chrome-blur, 20px) + 4px)) saturate(1.15);
+}
+
+[data-cardo-theme='glass'] .cardo-v2-panel-header {
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='glass'] .cardo-v2-panel-tools .cardo-icon-button {
+  border-radius: var(--cardo-radius-lg);
+  color: var(--cardo-secondary-text);
+}
+
+[data-cardo-theme='glass'] .cardo-v2-canvas-well {
+  border-radius: var(--cardo-radius-xl);
+  background: var(--cardo-canvas);
+}
+
+[data-cardo-theme='glass'] .cardo-v2-bottom-shell {
+  bottom: 16px;
+}
+
+[data-cardo-theme='glass'] .cardo-v2-bottom-bar {
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-pill);
+  background: var(--cardo-surface);
+  box-shadow: var(--cardo-shadow);
+  backdrop-filter: blur(var(--cardo-chrome-blur));
+  -webkit-backdrop-filter: blur(var(--cardo-chrome-blur));
+}
+
+[data-cardo-theme='glass'] .cardo-v2-nav-drop-target {
+  background: color-mix(in srgb, var(--cardo-blue) 16%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cardo-blue) 30%, transparent);
+}
+
+/* Full-shell settings: opaque chrome field + soft atmosphere wash */
+[data-cardo-theme='glass'] .cardo-v2-settings-shell {
+  background-color: var(--cardo-settings-chrome);
+  background-image: radial-gradient(
+    120% 100% at 18% 0%,
+    color-mix(in srgb, var(--cardo-blue) 11%, transparent) 0%,
+    color-mix(in srgb, var(--cardo-purple) 7%, transparent) 38%,
+    transparent 72%
+  );
+  color: var(--cardo-text);
+  --cardo-v2-pill-settings: color-mix(in srgb, var(--cardo-panel) 62%, transparent);
+}
+
+[data-color-mode='dark'][data-cardo-theme='glass'] .cardo-v2-settings-shell {
+  background-color: var(--cardo-settings-chrome);
+  background-image: radial-gradient(
+    120% 100% at 16% 0%,
+    color-mix(in srgb, var(--cardo-purple) 16%, transparent) 0%,
+    color-mix(in srgb, var(--cardo-blue) 12%, transparent) 42%,
+    transparent 74%
+  );
+  --cardo-v2-pill-settings: color-mix(in srgb, var(--cardo-blue) 18%, transparent);
+}
+
+[data-cardo-theme='glass'] .cardo-v2-settings-nav {
+  background: transparent;
+}
+
+[data-cardo-theme='glass'] .cardo-v2-settings-panel {
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--cardo-panel) 72%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--cardo-border) 55%, transparent),
+    var(--cardo-shadow);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+}
+
+[data-cardo-theme='glass'] .cardo-v2-settings-section-item {
+  border-radius: var(--cardo-radius-pill);
+}
+
+[data-cardo-theme='glass'] .cardo-v2-settings-section-item[data-active='true'] {
+  background: var(--cardo-v2-pill-settings);
+  color: var(--cardo-text);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--cardo-panel) 55%, transparent) inset;
+}

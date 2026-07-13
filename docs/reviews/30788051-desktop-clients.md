@@ -56,7 +56,7 @@ Overall: Desktop host + updater integrity are milestone-ready for Setup/Portable
 ### F3 — Severity: medium
 
 - Area: Packaged vs developer recovery UX
-- Evidence: Startup failure `dialog.showErrorBox` interpolates `DATABASE_SCHEMA_VERSION` but still points at monorepo commands (`node artifacts/cli/cardo.js stop`, `npm run desktop:build`) in `src/desktop/main.ts`. Error-screen preferences mismatch still hardcodes “schemaVersion is 9” and monorepo steps (`src/web-next/ui/cardo/error-screen.ts`). Tray menu labels are Chinese-only (`main.ts` tray template).
+- Evidence: Startup failure `dialog.showErrorBox` interpolates `DATABASE_SCHEMA_VERSION` but still points at monorepo commands (`node artifacts/cli/cardo.js stop`, `npm run desktop:build`) in `src/desktop/main.ts`. Error-screen preferences mismatch still hardcodes “schemaVersion is 9” and monorepo steps (`src/web/ui/cardo/error-screen.ts`). Tray menu labels are Chinese-only (`main.ts` tray template).
 - Risk: Packaged users get developer-centric steps; schema hardcode drifts on bump; non-zh users get Chinese tray only (product i18n policy).
 - Recommendation: Packaged vs dev copy branches; interpolate `DATABASE_SCHEMA_VERSION` everywhere; bilingual tray; primary recovery: quit Cardo / Settings update / release page / `cardo stop` when CLI exists.
 
@@ -198,5 +198,5 @@ Overall: Desktop host + updater integrity are milestone-ready for Setup/Portable
 - CLI: `src/cli/main.ts`
 - Extension: `src/extension/bootstrap/extensionApp.tsx`, `discoverRuntime.ts`, `runtimeGuide.ts`
 - Native Host: `src/native-host/handleNativeHostRequest.ts`, `scripts/install-native-host.ts`
-- Shared client: `src/client/runtimeClient.ts`, `src/web-next/platform/hostPlatform.ts`, `src/web-runtime/main.tsx`
+- Shared client: `src/client/runtimeClient.ts`, `src/web/platform/hostPlatform.ts`, `src/web-runtime/main.tsx`
 - Lock/discovery: `src/runtime/lock.ts`, `src/runtime/discovery.ts`, `src/runtime/paths.ts`, `src/runtime/index.ts`, `src/runtime/clients.ts`

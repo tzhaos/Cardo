@@ -1,0 +1,45 @@
+/**
+ * Page delete confirmation chrome (shared by shell SidebarNav).
+ * Extracted from retired top-bar.css after PR10 dual-track delete.
+ */
+
+.cardo-tab-confirm {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 2px 0 10px;
+  color: var(--cardo-soft-text);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.cardo-tab-confirm > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardo-tab-confirm div {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+.cardo-tab-confirm button,
+.cardo-danger-button {
+  height: 36px;
+  border: 0;
+  border-radius: var(--cardo-radius-pill);
+  padding: 0 14px;
+  background: var(--cardo-hover);
+  color: var(--cardo-soft-text);
+}
+
+.cardo-danger-button {
+  background: color-mix(in srgb, var(--cardo-red) 12%, transparent) !important;
+  color: var(--cardo-red) !important;
+}

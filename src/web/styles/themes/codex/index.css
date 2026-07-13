@@ -1,0 +1,280 @@
+/**
+ * Codex Theme Pack recipes — solid sidebar-shell dialect.
+ * Tokens: themes/builtin/codex/theme.cardo-theme.json
+ * Scoped under [data-cardo-theme="codex"].
+ *
+ * Primary product path is sidebar shell selectors (.cardo-v2-*).
+ * Residual .cardo-top-bar class names remain for shared drop/motion hooks
+ * until a coordinated rename.
+ */
+
+[data-cardo-theme='codex'] .cardo-app,
+[data-cardo-theme='codex'] .cardo-v2-app {
+  background-color: var(--cardo-shell);
+  background-image: none;
+}
+
+/* Titlebar + sidebar share --cardo-shell (solid material) */
+[data-cardo-theme='codex'] .cardo-desktop-titlebar,
+[data-cardo-theme='codex'] .cardo-v2-app .cardo-desktop-titlebar {
+  background: var(--cardo-shell);
+  border-bottom-color: transparent;
+  color: var(--cardo-secondary-text);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* —— product shell —— */
+[data-cardo-theme='codex'] .cardo-v2-product-nav,
+[data-cardo-theme='codex'] .cardo-v2-sidebar-scroll,
+[data-cardo-theme='codex'] .cardo-v2-sidebar-foot {
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='codex'] .cardo-v2-nav-item {
+  border-radius: var(--cardo-radius-pill);
+  min-height: 34px;
+  font-size: 13.5px;
+  font-weight: 400;
+}
+
+[data-cardo-theme='codex'] .cardo-v2-nav-item:hover {
+  background: var(--cardo-hover);
+}
+
+[data-cardo-theme='codex'] .cardo-v2-nav-item-active,
+[data-cardo-theme='codex'] .cardo-v2-nav-item[data-active='true'] {
+  background: var(--cardo-active);
+  color: var(--cardo-text);
+  font-weight: 550;
+}
+
+[data-cardo-theme='codex'] .cardo-v2-nav-item-active .cardo-v2-nav-item-icon,
+[data-cardo-theme='codex'] .cardo-v2-nav-item[data-active='true'] .cardo-v2-nav-item-icon {
+  color: var(--cardo-text);
+}
+
+/* Settings foot active — soft emerald wash (prototype pill-settings) */
+[data-cardo-theme='codex'] .cardo-v2-sidebar-foot .cardo-v2-nav-item-active {
+  background: color-mix(in srgb, var(--cardo-emerald) 18%, var(--cardo-active));
+}
+
+[data-cardo-theme='codex'] .cardo-v2-nav-drop-target {
+  background: color-mix(in srgb, var(--cardo-blue) 14%, var(--cardo-active));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--cardo-blue) 35%, transparent);
+  color: var(--cardo-text);
+  font-weight: 500;
+}
+
+[data-cardo-theme='codex'] .cardo-v2-panel {
+  border-radius: 18px;
+  background: var(--cardo-panel);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--cardo-text) 4%, transparent);
+}
+
+[data-cardo-theme='codex'] .cardo-v2-panel-header {
+  height: 44px;
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='codex'] .cardo-v2-panel-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+[data-cardo-theme='codex'] .cardo-v2-panel-tools .cardo-icon-button {
+  border-radius: var(--cardo-radius-md);
+  color: var(--cardo-secondary-text);
+}
+
+[data-cardo-theme='codex'] .cardo-v2-panel-tools .cardo-icon-button:hover:not(:disabled) {
+  background: var(--cardo-hover);
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='codex'] .cardo-v2-panel-tools .cardo-v2-tool-active {
+  background: var(--cardo-active);
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='codex'] .cardo-v2-canvas-well {
+  border-radius: 12px;
+  background: var(--cardo-canvas);
+}
+
+[data-cardo-theme='codex'] .cardo-v2-bottom-shell {
+  bottom: 14px;
+}
+
+[data-cardo-theme='codex'] .cardo-v2-bottom-bar {
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-pill);
+  background: color-mix(in srgb, var(--cardo-panel) 94%, transparent);
+  box-shadow: var(--cardo-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+[data-cardo-theme='codex'] .cardo-v2-bottom-bar .cardo-toolbar-create {
+  background: var(--cardo-create-background);
+  color: var(--cardo-create-text);
+  border-radius: var(--cardo-radius-pill);
+}
+
+[data-cardo-theme='codex'] .cardo-v2-search-pill {
+  border-radius: var(--cardo-radius-pill);
+  background: var(--cardo-hover);
+}
+
+/* —— full-shell settings —— */
+[data-cardo-theme='codex'] .cardo-v2-settings-shell {
+  background: var(--cardo-shell);
+  color: var(--cardo-text);
+  --cardo-v2-pill-settings: color-mix(in srgb, var(--cardo-blue) 14%, var(--cardo-shell));
+}
+
+[data-cardo-theme='codex'] .cardo-v2-settings-nav {
+  background: transparent;
+}
+
+[data-cardo-theme='codex'] .cardo-v2-settings-back {
+  border-radius: var(--cardo-radius-md);
+  color: var(--cardo-secondary-text);
+}
+
+[data-cardo-theme='codex'] .cardo-v2-settings-back:hover {
+  background: var(--cardo-hover);
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='codex'] .cardo-v2-settings-search {
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-pill);
+  background: var(--cardo-panel);
+  box-shadow: none;
+}
+
+[data-cardo-theme='codex'] .cardo-v2-settings-section-item {
+  min-height: 40px;
+  border-radius: var(--cardo-radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cardo-secondary-text);
+}
+
+[data-cardo-theme='codex'] .cardo-v2-settings-section-item:hover {
+  background: var(--cardo-hover);
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='codex'] .cardo-v2-settings-section-item[data-active='true'] {
+  background: var(--cardo-v2-pill-settings);
+  color: var(--cardo-text);
+}
+
+[data-cardo-theme='codex'] .cardo-v2-settings-panel {
+  border-radius: 18px;
+  background: var(--cardo-panel);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--cardo-text) 3%, transparent);
+}
+
+/* Boxes */
+[data-cardo-theme='codex'] .cardo-box,
+[data-cardo-theme='codex'] .cardo-collection-box {
+  border: 1px solid var(--cardo-border);
+  --cardo-box-radius: var(--cardo-radius-xl);
+  border-radius: var(--cardo-box-radius);
+  background-color: var(--cardo-panel);
+  background-image: none;
+  box-shadow: var(--cardo-shadow);
+}
+
+[data-cardo-theme='codex'] .cardo-box-header,
+[data-cardo-theme='codex'] .cardo-collection-box-header {
+  border-bottom: 1px solid var(--cardo-border-subtle);
+  background: var(--cardo-panel-chrome);
+}
+
+/*
+ * Residual production chrome (dead after TopBar delete is fine until CSS sweep).
+ * Kept so shared class names (drop-over / motion) still resolve to solid tokens.
+ */
+[data-cardo-theme='codex'] .cardo-top-bar {
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-lg);
+  background: var(--cardo-surface-strong) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+[data-cardo-theme='codex'] .cardo-active-tab-indicator {
+  border-radius: var(--cardo-radius-md);
+  background: var(--cardo-neutral-button);
+  box-shadow: none;
+}
+
+[data-cardo-theme='codex'] .cardo-history-controls,
+[data-cardo-theme='codex'] .cardo-bottom-toolbar,
+[data-cardo-theme='codex'] .cardo-search-pill,
+[data-cardo-theme='codex'] .cardo-canvas-tools {
+  border: 1px solid var(--cardo-border);
+  background: var(--cardo-surface-strong);
+  box-shadow: var(--cardo-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+[data-cardo-theme='codex'] .cardo-bottom-toolbar {
+  border-radius: var(--cardo-radius-pill) !important;
+}
+
+[data-cardo-theme='codex'] .cardo-bottom-toolbar .cardo-toolbar-create {
+  background: var(--cardo-create-background) !important;
+  color: var(--cardo-create-text) !important;
+  border-radius: var(--cardo-radius-pill) !important;
+}
+
+[data-cardo-theme='codex'] .cardo-independent-menu.cardo-settings-window,
+[data-cardo-theme='codex'] .cardo-settings-window {
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-xl);
+  background-color: var(--cardo-settings-chrome);
+  box-shadow: var(--cardo-shadow);
+}
+
+[data-cardo-theme='codex'] .cardo-settings-nav button {
+  border-radius: var(--cardo-radius-md);
+  min-height: 36px;
+}
+
+[data-cardo-theme='codex'] .cardo-settings-nav-indicator {
+  border-radius: var(--cardo-radius-md);
+  background: var(--cardo-neutral-button);
+  box-shadow: none;
+}
+
+[data-cardo-theme='codex'] .cardo-ui-select-trigger {
+  min-height: 32px;
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-md);
+  padding: 0 10px 0 12px;
+  background: var(--cardo-surface-strong);
+  font-size: 12px;
+  font-weight: 500;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+[data-cardo-theme='codex'] .cardo-floating-menu,
+[data-cardo-theme='codex'] .cardo-ui-menu-content,
+[data-cardo-theme='codex'] .cardo-ui-select-content {
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-lg);
+  background: var(--cardo-panel);
+  box-shadow: var(--cardo-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}

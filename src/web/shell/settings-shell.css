@@ -1,0 +1,221 @@
+/**
+ * Full-shell settings layout (set-side + set-panel).
+ * Token-only surfaces; no floating independent-menu geometry.
+ */
+
+.cardo-v2-settings-shell {
+  --cardo-v2-settings-nav-width: var(--cardo-shell-sidebar-width, 236px);
+  --cardo-v2-settings-panel-radius: var(--cardo-v2-panel-radius, var(--cardo-radius-xl, 16px));
+  /* Codex-like active pill; soft accent via shell/blue mix (not brand hex). */
+  --cardo-v2-pill-settings: color-mix(
+    in srgb,
+    var(--cardo-blue) 14%,
+    var(--cardo-shell, var(--cardo-settings-chrome, var(--cardo-canvas)))
+  );
+
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  min-height: 0;
+  min-width: 0;
+  flex: 1 1 auto;
+  padding: 0 8px 8px 0;
+  background: var(--cardo-shell, var(--cardo-settings-chrome, var(--cardo-canvas)));
+  color: var(--cardo-text);
+}
+
+.cardo-v2-settings-nav {
+  box-sizing: border-box;
+  display: flex;
+  width: var(--cardo-v2-settings-nav-width);
+  flex: 0 0 var(--cardo-v2-settings-nav-width);
+  flex-direction: column;
+  min-height: 0;
+  padding: 8px 0 12px;
+  background: transparent;
+}
+
+.cardo-v2-settings-back {
+  display: inline-flex;
+  width: fit-content;
+  max-width: calc(100% - 18px);
+  align-items: center;
+  gap: 6px;
+  margin: 0 8px 4px 10px;
+  border: 0;
+  border-radius: var(--cardo-radius-md, 8px);
+  padding: 6px 10px;
+  background: transparent;
+  color: var(--cardo-secondary-text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition:
+    background var(--cardo-duration-normal, 0.16s) var(--cardo-easing, ease),
+    color var(--cardo-duration-normal, 0.16s) var(--cardo-easing, ease);
+}
+
+.cardo-v2-settings-back:hover {
+  background: var(--cardo-hover, rgba(0, 0, 0, 0.045));
+  color: var(--cardo-text);
+}
+
+.cardo-v2-settings-back-icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  transform: rotate(180deg);
+}
+
+.cardo-v2-settings-search {
+  position: relative;
+  display: flex;
+  height: 34px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 14px 12px;
+  border: 1px solid var(--cardo-border, rgba(0, 0, 0, 0.08));
+  border-radius: var(--cardo-radius-pill, 999px);
+  padding: 0 12px;
+  background: var(--cardo-panel, #fff);
+  color: var(--cardo-muted, var(--cardo-secondary-text));
+  cursor: text;
+}
+
+.cardo-v2-settings-search-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  pointer-events: none;
+  color: var(--cardo-muted, var(--cardo-secondary-text));
+}
+
+.cardo-v2-settings-search input {
+  min-width: 0;
+  flex: 1;
+  height: 100%;
+  border: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--cardo-text);
+  font-size: 13px;
+  outline: none;
+}
+
+.cardo-v2-settings-search input::placeholder {
+  color: var(--cardo-muted, var(--cardo-secondary-text));
+  opacity: 1;
+}
+
+.cardo-v2-settings-search-clear {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--cardo-radius-pill, 999px);
+  padding: 0;
+  background: transparent;
+  color: var(--cardo-muted, var(--cardo-secondary-text));
+  cursor: pointer;
+}
+
+.cardo-v2-settings-search-clear:hover {
+  background: var(--cardo-hover, rgba(0, 0, 0, 0.06));
+  color: var(--cardo-text);
+}
+
+.cardo-v2-settings-section-list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 8px;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--cardo-text) 14%, transparent) transparent;
+}
+
+.cardo-v2-settings-section-item {
+  position: relative;
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-radius: var(--cardo-radius-md, 8px);
+  padding: 0 12px;
+  background: transparent;
+  color: var(--cardo-secondary-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--cardo-duration-normal, 0.16s) var(--cardo-easing, ease),
+    color var(--cardo-duration-normal, 0.16s) var(--cardo-easing, ease);
+}
+
+.cardo-v2-settings-section-item:hover {
+  background: var(--cardo-hover, rgba(0, 0, 0, 0.045));
+  color: var(--cardo-text);
+}
+
+.cardo-v2-settings-section-item[data-active='true'] {
+  background: var(--cardo-v2-pill-settings);
+  color: var(--cardo-text);
+}
+
+.cardo-v2-settings-stage {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  padding-top: 2px;
+}
+
+.cardo-v2-settings-panel {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: var(--cardo-v2-settings-panel-radius);
+  background: var(--cardo-panel, #fff);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--cardo-text) 3%, transparent);
+}
+
+/* Fill the white panel; reuse shared settings content tokens from styles/settings.css. */
+.cardo-v2-settings-panel > .cardo-settings-content {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  padding: 28px 36px 48px;
+}
+
+.cardo-v2-settings-panel .cardo-settings-heading h2 {
+  font-size: 22px;
+  letter-spacing: -0.03em;
+}
+
+/* Embedded SettingsPanel path (optional host adapter). */
+.cardo-settings-panel-embedded {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.cardo-settings-panel-embedded > .cardo-settings-content {
+  flex: 1;
+  min-height: 0;
+}

@@ -72,8 +72,9 @@ export default tseslint.config(
     },
   },
   {
-    // Product UI is a Runtime client: no Drizzle / schema imports (AGENTS UI boundary).
-    files: ['src/web-next/**/*.{ts,tsx}'],
+    // Product UI: no Drizzle / schema + only public web/kit (flat config replaces rules).
+    files: ['src/web/**/*.{ts,tsx}'],
+    ignores: ['src/web/kit/**'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -82,14 +83,77 @@ export default tseslint.config(
             {
               name: 'drizzle-orm',
               message:
-                'web-next must not import drizzle-orm; use RuntimeClient queries/commands and core contracts.',
+                'Product UI must not import drizzle-orm; use RuntimeClient queries/commands and core contracts.',
+            },
+            {
+              name: '@fluentui/react-icons',
+              message: 'Icons are Lucide-only via ThemeIcon / web/kit.',
+            },
+            {
+              name: '@mui/icons-material',
+              message: 'Icons are Lucide-only via ThemeIcon / web/kit.',
             },
           ],
           patterns: [
             {
               group: ['**/database/schema', '**/database/schema.*', '**/core/database/schema'],
               message:
-                'web-next must not import database schema; business I/O is Runtime-only via RuntimeClient.',
+                'Product UI must not import database schema; business I/O is Runtime-only via RuntimeClient.',
+            },
+            {
+              group: [
+                '**/ui/primitives/**',
+                '**/ui/primitives',
+                '**/ui/cardo/**',
+                '**/ui/cardo',
+                '**/ui/icons/**',
+                '**/ui/icons',
+                '**/kit/internal/**',
+                '**/ui/lib/**',
+                '**/web/kit/internal/**',
+              ],
+              message:
+                'Import product UI only from web/kit path exports (button, nav-item, icon, …). Do not use kit/internal or retired UI paths.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // Non-UI product code may hold DB (core/runtime) but still must not import kit internals / retired UI.
+    // Do not ban drizzle here — core and runtime are allowed to use it.
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/web/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                '**/ui/primitives/**',
+                '**/ui/primitives',
+                '**/ui/cardo/**',
+                '**/ui/cardo',
+                '**/ui/icons/**',
+                '**/ui/icons',
+                '**/kit/internal/**',
+                '**/ui/lib/**',
+                '**/web/kit/internal/**',
+              ],
+              message:
+                'Import product UI only from web/kit path exports. Do not use kit/internal or retired UI paths.',
+            },
+          ],
+          paths: [
+            {
+              name: '@fluentui/react-icons',
+              message: 'Icons are Lucide-only via ThemeIcon / web/kit.',
+            },
+            {
+              name: '@mui/icons-material',
+              message: 'Icons are Lucide-only via ThemeIcon / web/kit.',
             },
           ],
         },

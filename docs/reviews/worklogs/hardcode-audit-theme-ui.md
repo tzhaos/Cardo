@@ -1,7 +1,7 @@
 # Hardcode audit — Theme / CSS / UI tokens (dual-track forbidden)
 
 Date: 2026-07-13  
-Scope (read-only): `src/web-next/styles/**`, `src/web-next/styles/themes/**`, `src/web-next/themes/**`, `src/web-next/components/**`, related `src/core/contracts/themePack.ts` / `preferences.ts`, `themes/builtin/**`.  
+Scope (read-only): `src/web/styles/**`, `src/web/styles/themes/**`, `src/web/themes/**`, `src/web/features/**`, related `src/core/contracts/themePack.ts` / `preferences.ts`, `themes/builtin/**`.  
 Product code not modified.
 
 Severity key:
@@ -36,38 +36,38 @@ Overall: CSS variable surface is `--cardo-*` only (no `--wbn-*` dual-track left 
 
 | Path | Snippet / fact | Why |
 | --- | --- | --- |
-| `src/web-next/styles/add-views.css` (~123–124) | `.cardo-add-primary { background: #60a5fa; color: #ffffff; }` | Primary add CTA does not use `--cardo-blue` / `--cardo-create-text`; theme accent override will not recolor |
-| `src/web-next/styles/boxes.css` (~554–556) | `.cardo-box-delete-confirm-button { background: #ff3045; color: #ffffff; }` | Delete confirm not `--cardo-red`; diverges from item delete which already uses `var(--cardo-red)` |
-| `src/web-next/styles/shell.css` (~243–249) | Runtime banner reconnect `#d97706`, disconnect `#dc2626` | Status colors not tokens; dark/light packs cannot retint |
-| `src/web-next/styles/settings.css` (~627–628, ~1198–1199) | Selected layout/theme cards: `rgba(59, 130, 246, 0.36/0.08)` | Hardcoded classic blue ring; should be `color-mix(... var(--cardo-blue) ...)` like `.cardo-theme-pack-card-selected` |
-| `src/web-next/styles/items.css` (~338–354) | Item type accents: `#64748b` / `#8b5cf6` / `#3b82f6` / `#f97316` / `#10b981` | Semantic type colors fixed outside token map; folder reuses classic blue, not pack blue |
-| `src/web-next/styles/motion.css` (~3) | `@keyframes cardo-enter-item` flash `rgba(78, 143, 255, 0.18)` | Enter highlight not tied to `--cardo-blue` / `--cardo-selection-ring` |
-| `src/web-next/styles/themes/glass/index.css` (~140, ~160) | Settings shell `background-color: #f9fafd` / `#12131c` | Bypasses `--cardo-settings-chrome`; contradicts authoring rule that settings shells consume `settingsChrome` |
+| `src/web/styles/add-views.css` (~123–124) | `.cardo-add-primary { background: #60a5fa; color: #ffffff; }` | Primary add CTA does not use `--cardo-blue` / `--cardo-create-text`; theme accent override will not recolor |
+| `src/web/styles/boxes.css` (~554–556) | `.cardo-box-delete-confirm-button { background: #ff3045; color: #ffffff; }` | Delete confirm not `--cardo-red`; diverges from item delete which already uses `var(--cardo-red)` |
+| `src/web/styles/shell.css` (~243–249) | Runtime banner reconnect `#d97706`, disconnect `#dc2626` | Status colors not tokens; dark/light packs cannot retint |
+| `src/web/styles/settings.css` (~627–628, ~1198–1199) | Selected layout/theme cards: `rgba(59, 130, 246, 0.36/0.08)` | Hardcoded classic blue ring; should be `color-mix(... var(--cardo-blue) ...)` like `.cardo-theme-pack-card-selected` |
+| `src/web/styles/items.css` (~338–354) | Item type accents: `#64748b` / `#8b5cf6` / `#3b82f6` / `#f97316` / `#10b981` | Semantic type colors fixed outside token map; folder reuses classic blue, not pack blue |
+| `src/web/styles/motion.css` (~3) | `@keyframes cardo-enter-item` flash `rgba(78, 143, 255, 0.18)` | Enter highlight not tied to `--cardo-blue` / `--cardo-selection-ring` |
+| `src/web/styles/themes/glass/index.css` (~140, ~160) | Settings shell `background-color: #f9fafd` / `#12131c` | Bypasses `--cardo-settings-chrome`; contradicts authoring rule that settings shells consume `settingsChrome` |
 
 ### medium — partial token use or one-off fallbacks
 
 | Path | Snippet / fact | Why |
 | --- | --- | --- |
-| `src/web-next/styles/settings.css` (~898) | Switch thumb `background: #fff` | Always pure white; may be intentional Material-style thumb |
-| `src/web-next/styles/settings.css` (~1171, ~1253) | Confirm/import text `#fff` / `#ffffff` on token bg | Prefer `--cardo-create-text` for consistency |
-| `src/web-next/styles/items.css` (~513–517) | Confirm text `#ffffff`; hover mix with `#000000` | Red path uses token bg; white/black mixers still literal |
-| `src/web-next/styles/boxes.css` (~316) | Color swatch check glyph `color: #fff` | Acceptable on swatch; optional `--cardo-create-text` |
-| `src/web-next/styles/top-bar.css` (~260) | Danger button `rgba(239, 68, 68, 0.1)` | Classic red 10% wash; should be `color-mix(in srgb, var(--cardo-red) 10%, transparent)` |
-| `src/web-next/components/settings/SettingsPanel.tsx` (~642, ~701, ~746, ~896) | Fallback `'#3b82f6'` when blue missing | Hardcoded classic blue fallback instead of pack default / `defaultTokens` |
-| `src/web-next/styles/themes/fluent/overlays.css` | `var(--cardo-settings-chrome, #ffffff)` and `#000`/`#fff` in shadow mixes | Fallbacks ok; shadow tints are recipe dialect |
-| `src/web-next/ui/cardo/error-screen.ts` (~403–566) | Full self-contained palette (`#f4f5f7`, `#111827`, …) | Fatal shell intentionally isolated from theme runtime; still a second visual system |
+| `src/web/styles/settings.css` (~898) | Switch thumb `background: #fff` | Always pure white; may be intentional Material-style thumb |
+| `src/web/styles/settings.css` (~1171, ~1253) | Confirm/import text `#fff` / `#ffffff` on token bg | Prefer `--cardo-create-text` for consistency |
+| `src/web/styles/items.css` (~513–517) | Confirm text `#ffffff`; hover mix with `#000000` | Red path uses token bg; white/black mixers still literal |
+| `src/web/styles/boxes.css` (~316) | Color swatch check glyph `color: #fff` | Acceptable on swatch; optional `--cardo-create-text` |
+| `src/web/styles/top-bar.css` (~260) | Danger button `rgba(239, 68, 68, 0.1)` | Classic red 10% wash; should be `color-mix(in srgb, var(--cardo-red) 10%, transparent)` |
+| `src/web/features/settings/SettingsPanel.tsx` (~642, ~701, ~746, ~896) | Fallback `'#3b82f6'` when blue missing | Hardcoded classic blue fallback instead of pack default / `defaultTokens` |
+| `src/web/styles/themes/fluent/overlays.css` | `var(--cardo-settings-chrome, #ffffff)` and `#000`/`#fff` in shadow mixes | Fallbacks ok; shadow tints are recipe dialect |
+| `src/web/ui/cardo/error-screen.ts` (~403–566) | Full self-contained palette (`#f4f5f7`, `#111827`, …) | Fatal shell intentionally isolated from theme runtime; still a second visual system |
 
 ### ok — legitimate color SoT (not “hardcode debt”)
 
 | Path | Role |
 | --- | --- |
-| `src/web-next/styles/tokens.css` | CSS bootstrap defaults before `applyTheme` |
-| `src/web-next/themes/defaultTokens.ts` | TS default token map |
+| `src/web/styles/tokens.css` | CSS bootstrap defaults before `applyTheme` |
+| `src/web/themes/defaultTokens.ts` | TS default token map |
 | `themes/builtin/*/theme.cardo-theme.json` | Official pack documents |
-| `src/web-next/components/settings/colorPresets.ts` | User color picker chips (must stay concrete) |
-| `src/web-next/components/settings/themeLookPresets.ts` | Curated accent looks per pack (must stay concrete) |
-| `src/web-next/styles/themes/swiftui/settings.css` (~50–63) | macOS traffic-light `#ff5f57` / `#febc2e` / `#28c840` — platform chrome dialect in recipe |
-| `src/web-next/styles/themes/**` heavy `#ffffff` / `#000` in `color-mix` glass tints | Recipe material dialect; acceptable if not re-expressing brand tokens |
+| `src/web/features/settings/colorPresets.ts` | User color picker chips (must stay concrete) |
+| `src/web/features/settings/themeLookPresets.ts` | Curated accent looks per pack (must stay concrete) |
+| `src/web/styles/themes/swiftui/settings.css` (~50–63) | macOS traffic-light `#ff5f57` / `#febc2e` / `#28c840` — platform chrome dialect in recipe |
+| `src/web/styles/themes/**` heavy `#ffffff` / `#000` in `color-mix` glass tints | Recipe material dialect; acceptable if not re-expressing brand tokens |
 
 ### high residual pattern: dual delete reds
 
@@ -95,11 +95,11 @@ Docs still mention historical `--wbn-*` migration (`docs/architecture/ui-theme-s
 
 | Path | Finding | Severity |
 | --- | --- | --- |
-| `src/web-next/styles/theme-recipes.css` | `@deprecated` re-export of `./themes/index.css` | medium — second import path for recipes; `app/styles.css` already imports `themes/index.css` directly; file can be deleted once no external refs |
-| `src/web-next/styles/boxes.css` (~9–14) | Comment: “theme-recipes may retarget… (e.g. github → lg, one → md)” + “Material treatment comes from theme-recipes.css” | low — retired pack names (`github`, `one`) and obsolete import name in comments |
-| `src/web-next/themes/applyTheme.ts` (~53–54) | Sets both `root.dataset.cardoTheme` and `root.dataset.theme` | medium — dual data attributes; CSS recipes only select `[data-cardo-theme=…]`; no `[data-theme]` consumers under `src/` |
-| `src/web-next/styles/settings.css` (~912) | Comment “Legacy theme pack card styles (unused…)” while `.cardo-theme-pack-*` still used by Settings + recipes | low — stale comment; not dual-track code |
-| `src/web-next/**` API names | `applyWebNextTheme`, `getRegisteredWebNextThemes`, `WebNextThemeDefinition`, folder `web-next` | low — rename residue (`Cardo` product / `WebNext*` types); not a second skin engine |
+| `src/web/styles/theme-recipes.css` | `@deprecated` re-export of `./themes/index.css` | medium — second import path for recipes; `app/styles.css` already imports `themes/index.css` directly; file can be deleted once no external refs |
+| `src/web/styles/boxes.css` (~9–14) | Comment: “theme-recipes may retarget… (e.g. github → lg, one → md)” + “Material treatment comes from theme-recipes.css” | low — retired pack names (`github`, `one`) and obsolete import name in comments |
+| `src/web/themes/applyTheme.ts` (~53–54) | Sets both `root.dataset.cardoTheme` and `root.dataset.theme` | medium — dual data attributes; CSS recipes only select `[data-cardo-theme=…]`; no `[data-theme]` consumers under `src/` |
+| `src/web/styles/settings.css` (~912) | Comment “Legacy theme pack card styles (unused…)” while `.cardo-theme-pack-*` still used by Settings + recipes | low — stale comment; not dual-track code |
+| `src/web/**` API names | `applyWebNextTheme`, `getRegisteredWebNextThemes`, `WebNextThemeDefinition`, folder `web-next` | low — rename residue (`Cardo` product / `WebNext*` types); not a second skin engine |
 
 ### ok — themeId branching that is not dual CSS track
 
@@ -195,7 +195,7 @@ Default id: `OFFICIAL_DEFAULT_THEME_ID = 'classic'` (`themePaths.ts`); load-time
 
 ### ok
 
-Scanned `style={{…}}` in `src/web-next/components/**`:
+Scanned `style={{…}}` in `src/web/features/**`:
 
 - Backgrounds from palette tokens / presets (Settings color chips)
 - Geometry: height, width, flex, gap, marginTop, zIndex, boxShadow
@@ -218,8 +218,8 @@ User-facing copy routes through `i18n/messages.ts` + `t(...)`.
 | Path | Role |
 | --- | --- |
 | `src/core/contracts/preferences.ts` `FONT_FAMILY_STACKS` | Preference ids `default` / `system-ui` / `serif` |
-| `src/web-next/styles/tokens.css` `--cardo-font-sans` / `--cardo-font-mono` | Bootstrap before runtime apply |
-| `src/web-next/themes/applyTheme.ts` | Writes `--cardo-font-sans` from `FONT_FAMILY_STACKS` |
+| `src/web/styles/tokens.css` `--cardo-font-sans` / `--cardo-font-mono` | Bootstrap before runtime apply |
+| `src/web/themes/applyTheme.ts` | Writes `--cardo-font-sans` from `FONT_FAMILY_STACKS` |
 
 Most chrome CSS uses `var(--cardo-font-sans)` (`alignment.css`, `toolbars.css`, body inherit).
 
@@ -227,8 +227,8 @@ Most chrome CSS uses `var(--cardo-font-sans)` (`alignment.css`, `toolbars.css`, 
 
 | Path | Finding |
 | --- | --- |
-| `src/web-next/styles/boxes.css` (~373) | `.cardo-box-color-code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }` ignores `--cardo-font-mono` |
-| `src/web-next/ui/cardo/error-screen.ts` (~407, ~479) | Hardcoded Inter / Noto / YaHei stack and mono stack; never follows preference `fontFamily` |
+| `src/web/styles/boxes.css` (~373) | `.cardo-box-color-code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }` ignores `--cardo-font-mono` |
+| `src/web/ui/cardo/error-screen.ts` (~407, ~479) | Hardcoded Inter / Noto / YaHei stack and mono stack; never follows preference `fontFamily` |
 
 ### low
 
@@ -281,10 +281,10 @@ Most chrome CSS uses `var(--cardo-font-sans)` (`alignment.css`, `toolbars.css`, 
 
 | Pattern | Tooling | Result |
 | --- | --- | --- |
-| `#hex` in styles | ripgrep under `src/web-next/styles` | ~110 hits; clustered above |
+| `#hex` in styles | ripgrep under `src/web/styles` | ~110 hits; clustered above |
 | `rgb/rgba/hsl` | ripgrep | shadows + glass mixes + a few non-token rings |
 | `wbn-` / `khaos-` | ripgrep under `src` | 0 |
-| `z-index` / `zIndex` | ripgrep under `src/web-next` | ~47 sites |
+| `z-index` / `zIndex` | ripgrep under `src/web` | ~47 sites |
 | `font-family` / `fontFamily` | ripgrep | token SoT + 2 bypasses + error-screen |
 | Official theme ids | `themePack.ts` vs `themes/builtin` vs `styles/themes/index.css` | 5/5 aligned |
 | `themeId ===` | ripgrep in components | 5 files |
