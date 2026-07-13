@@ -11,12 +11,20 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { startRuntime, stopRuntime, waitUntilRuntimeStopped } from '../runtime/index';
+import {
+  registerRuntimeProcessHandlers,
+  setRuntimeLogPath,
+  startRuntime,
+  stopRuntime,
+  waitUntilRuntimeStopped,
+} from '../runtime/index';
 import { defaultOpenLocalResource } from '../runtime/openLocalResourceHook';
 import { resolveCardoDataPaths } from '../runtime/paths';
 
 async function main(): Promise<void> {
   const paths = resolveCardoDataPaths();
+  setRuntimeLogPath(paths.logPath);
+  registerRuntimeProcessHandlers();
   try {
     fs.mkdirSync(paths.dataDir, { recursive: true });
     fs.appendFileSync(

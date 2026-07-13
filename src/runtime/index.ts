@@ -15,6 +15,7 @@ import { removeDiscoveryFile, writeDiscoveryFile } from './discovery';
 import { EventHub } from './events';
 import { createRuntimeHttpServer, type RuntimeHttpContext } from './httpServer';
 import { removeLockFile, tryAcquireExclusiveLock, updateLockFile, type RuntimeLock } from './lock';
+import { runtimeLog, setRuntimeLogPath } from './log';
 import { CARDO_THEMES_DIRNAME, ensureDataDir, ensureThemesDir } from './paths';
 import { getRevision } from '../core/database/revision';
 import { DATABASE_SCHEMA_VERSION } from '../core/database/version';
@@ -23,6 +24,7 @@ export type { StartRuntimeOptions, RuntimeHostConfig } from './config';
 export { resolveCardoDataPaths, resolveDefaultDataDir, CARDO_USER_DATA_DIR_NAME } from './paths';
 export { readDiscoveryFile } from './discovery';
 export { readLockFile, probeRuntimeHealth } from './lock';
+export { runtimeLog, setRuntimeLogPath, type RuntimeLogLevel } from './log';
 
 export interface StartedRuntime {
   baseUrl: string;
@@ -52,6 +54,8 @@ interface RuntimeState {
 
 let runtimeState: RuntimeState | null = null;
 let runtimeStoppedWaiters: Array<() => void> = [];
+let processHandlersRegistered = false;
+let fatalHandling = false;
 
 /** Resolves when the in-process Runtime has fully stopped (or immediately if not running). */
 export function waitUntilRuntimeStopped(): Promise<void> {
@@ -65,6 +69,76 @@ function notifyRuntimeStopped(): void {
   const waiters = runtimeStoppedWaiters;
   runtimeStoppedWaiters = [];
   for (const resolve of waiters) resolve();
+}
+
+/**
+ * Register once: unhandledRejection + uncaughtException → structured log,
+ * best-effort stopRuntime / lock+discovery cleanup if this process owns them, then exit(1).
+ * Safe to call from CLI serve / runtime-child before startRuntime.
+ */
+export function registerRuntimeProcessHandlers(): void {
+  if (processHandlersRegistered) {
+    return;
+  }
+  processHandlersRegistered = true;
+
+  process.on('unhandledRejection', (reason) => {
+    void handleRuntimeFatal('unhandled_rejection', reason);
+  });
+  process.on('uncaughtException', (error) => {
+    void handleRuntimeFatal('uncaught_exception', error);
+  });
+}
+
+async function handleRuntimeFatal(event: string, reason: unknown): Promise<void> {
+  if (fatalHandling) {
+    return;
+  }
+  fatalHandling = true;
+
+  const message = reason instanceof Error ? reason.message : String(reason);
+  const stack = reason instanceof Error ? reason.stack : undefined;
+  runtimeLog('error', event, {
+    pid: process.pid,
+    message,
+    stack,
+    code: 'fatal',
+    port: runtimeState?.port,
+  });
+
+  const owned = runtimeState;
+  if (owned) {
+    try {
+      await Promise.race([
+        stopRuntime(),
+        new Promise<void>((resolve) => {
+          setTimeout(resolve, 2_000);
+        }),
+      ]);
+    } catch (cleanupError) {
+      runtimeLog('error', 'fatal_stop_failed', {
+        pid: process.pid,
+        message:
+          cleanupError instanceof Error ? cleanupError.message : String(cleanupError),
+      });
+    }
+
+    // Last-ditch: if stop did not clear ownership, drop lock/discovery for this process.
+    if (runtimeState) {
+      try {
+        removeLockFile(owned.config.lockPath);
+        removeDiscoveryFile(owned.config.discoveryPath);
+        runtimeLog('warn', 'fatal_force_cleanup', {
+          pid: process.pid,
+          port: owned.port,
+        });
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  process.exit(1);
 }
 
 export function isRuntimeRunning(): boolean {
@@ -101,9 +175,18 @@ export async function startRuntime(options: StartRuntimeOptions): Promise<Starte
   // Default openLocalResource is no-op; CLI/Desktop inject host capability hooks.
   const config = buildRuntimeHostConfig(options);
 
+  setRuntimeLogPath(config.logPath);
+  registerRuntimeProcessHandlers();
+
   ensureDataDir(config.dataDir);
   // Ensure user theme drop folder exists for Desktop/CLI Theme Pack files.
   ensureThemesDir(path.join(config.dataDir, CARDO_THEMES_DIRNAME));
+
+  runtimeLog('info', 'runtime_starting', {
+    pid: process.pid,
+    startedBy: config.startedBy,
+    lifetimeMode: config.lifetimeMode,
+  });
 
   const auth = new RuntimeAuth(config.token);
   const startedAt = new Date().toISOString();
@@ -251,6 +334,13 @@ export async function startRuntime(options: StartRuntimeOptions): Promise<Starte
     stopping: false,
   };
 
+  runtimeLog('info', 'runtime_started', {
+    pid: process.pid,
+    port,
+    startedBy: config.startedBy,
+    lifetimeMode: config.lifetimeMode,
+  });
+
   return {
     baseUrl,
     port,
@@ -273,6 +363,13 @@ export async function stopRuntime(): Promise<void> {
   if (!state || state.stopping) return;
   state.stopping = true;
 
+  runtimeLog('info', 'runtime_stopping', {
+    pid: process.pid,
+    port: state.port,
+    startedBy: state.config.startedBy,
+    lifetimeMode: state.config.lifetimeMode,
+  });
+
   state.clients.cancelGrace();
   state.events.closeAll();
   state.clients.dispose();
@@ -291,4 +388,9 @@ export async function stopRuntime(): Promise<void> {
 
   runtimeState = null;
   notifyRuntimeStopped();
+
+  runtimeLog('info', 'runtime_stopped', {
+    pid: process.pid,
+    port: state.port,
+  });
 }
