@@ -16,6 +16,7 @@ import {
   resolveUpdateRepository,
 } from '../../core/version/releaseChannel';
 import { isNewerProductSemver, normalizeProductSemver } from '../../core/version/semver';
+import { parseCardoReleasePolicy } from './releasePolicy';
 
 const githubAssetSchema = z
   .object({
@@ -220,17 +221,21 @@ export async function fetchLatestStableUpdate(options: {
   }
 
   const tag = release.tag_name.startsWith('v') ? release.tag_name : `v${version}`;
+  const notes = (release.body ?? '').trim();
+  const policy = parseCardoReleasePolicy(notes);
   return {
     version,
     tag,
     releaseUrl: release.html_url ?? githubReleasePageUrl(owner, repo, tag),
-    notes: (release.body ?? '').trim(),
+    notes,
     publishedAt: release.published_at ?? null,
     assetKind,
     installerName: asset.name,
     installerUrl: asset.browser_download_url,
     installerSizeBytes: asset.size,
     sha256,
+    minClientVersion: policy.minClientVersion,
+    forceUpdateFromNotes: policy.forceUpdateFlag,
   };
 }
 
