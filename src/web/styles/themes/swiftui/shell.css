@@ -539,7 +539,7 @@
 }
 
 [data-cardo-theme='swiftui'] .cardo-v2-bottom-bar .cardo-toolbar-create {
-  border-radius: 12px;
+  border-radius: 50%;
   background: var(--cardo-blue);
   color: var(--cardo-create-text);
 }

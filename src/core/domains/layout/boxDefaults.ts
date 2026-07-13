@@ -1,6 +1,10 @@
-/** Default size for user-created boxes (toolbar, canvas context menu, etc.). */
-export const DEFAULT_BOX_WIDTH = 400;
-export const DEFAULT_BOX_HEIGHT = 320;
+/**
+ * Default size for user-created boxes (toolbar, canvas context menu, etc.).
+ * Sized for the sidebar + main-panel shell: large enough for a few items,
+ * without dominating the canvas the way 400×320 did.
+ */
+export const DEFAULT_BOX_WIDTH = 320;
+export const DEFAULT_BOX_HEIGHT = 240;
 
 /**
  * First-run welcome box: large enough for several clipboard tips.

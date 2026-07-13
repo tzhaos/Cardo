@@ -119,7 +119,7 @@
 [data-cardo-theme='codex'] .cardo-v2-bottom-bar .cardo-toolbar-create {
   background: var(--cardo-create-background);
   color: var(--cardo-create-text);
-  border-radius: var(--cardo-radius-pill);
+  border-radius: 50%;
 }
 
 [data-cardo-theme='codex'] .cardo-v2-search-pill {

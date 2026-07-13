@@ -499,7 +499,7 @@
 }
 
 [data-cardo-theme='fluent'] .cardo-v2-bottom-bar .cardo-toolbar-create {
-  border-radius: var(--cardo-radius-md);
+  border-radius: 50%;
   background: var(--cardo-blue);
   color: var(--cardo-create-text);
 }

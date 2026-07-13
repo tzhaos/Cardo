@@ -468,7 +468,7 @@
 }
 
 [data-cardo-theme='material'] .cardo-v2-bottom-bar .cardo-toolbar-create {
-  border-radius: var(--cardo-radius-pill);
+  border-radius: 50%;
   background: var(--cardo-settings-hover);
   color: var(--cardo-blue);
 }
