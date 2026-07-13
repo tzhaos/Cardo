@@ -3,7 +3,7 @@
   "name": "__MSG_extensionName__",
   "short_name": "__MSG_extensionShortName__",
   "description": "__MSG_extensionDescription__",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmWL8gxwhWOIuyDY3prL2eF3xfqF1vie7bQZjH0G+iWUOw8Gi1NQikP1QTDWyS8jJmrjKqYtNd96TrNHKDPxSVmWbnDrZ6WoXyKqazzXLf1/3vj9J1PAenhsZSg+BiS4fVvoNSPWN69O+pREO9SlhVvvSxxH0Lg7vQnyzTRpjluFO9FqliVPjaqPoHPMx8Ne3GtTHvWhtUtuF+nQ8lAZ4KDkoL919gbMebmF53E6//BEDSJTmOghe9jZ7FSeL0heBRRcquWwVOrvz8gRqYdO1bIeInJ/A6gUYhOJ660wNT8e8mLziDWK8tf+WEdTSfQPW4mfgwBlEbXGQrOTmvLrXwQIDAQAB",
   "default_locale": "en",
   "icons": {
