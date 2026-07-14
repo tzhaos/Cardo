@@ -94,19 +94,22 @@ Agents forbids long dual-track UI. A new shell that rewires composition, drop ta
 From `docs/prototypes/cardo-v2-shell-codex-layout.html`:
 
 ```text
-Titlebar: mark+Cardo | window controls (desktop)
-Sidebar 236px:
-  新建页面
-  收藏
-  页面 (flat list)
-  回收站
-  foot: 设置
-Main panel (white, r≈18):
-  header: page title | undo redo | locate | lock
-  canvas: existing boxes
-  bottom floating bar: search | + box
+Titlebar (desktop): sidebar toggle | back/forward | File | window controls
+  (no product logo/wordmark in titlebar)
+Sidebar (~236px × density):
+  Brand wordmark "Cardo"
+  New group · Search
+  Favorites
+  Groups (flat list, reorder DnD)
+  Recycle Bin
+  foot: Settings
+Main panel (white, radius token):
+  header: group title | view switcher | undo/redo | canvas tools menu
+  canvas: freeform / waterfall / list
+  bottom: circular create FAB only
+Search: overlay over canvas (Ctrl/Cmd+K)
 Settings: full shell swap
-  常规 | 外观 | 数据 | 关于
+  General | Appearance | Data | About
 ```
 
 Excluded from product (prototype comments):

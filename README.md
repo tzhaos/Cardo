@@ -330,8 +330,8 @@ GitHub Actions runs format checks, static analysis, tests, and `build:all` for p
 Publish a Windows Desktop release by pushing a stable semantic version tag:
 
 ```powershell
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.2.0
+git push origin v0.2.0
 ```
 
 The release workflow packages Desktop only (NSIS installer, portable exe, SHA-256 checksums) and uploads them to the matching GitHub Release. CLI and other clients are expected to ship via npm later.

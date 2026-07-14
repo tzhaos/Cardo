@@ -146,6 +146,33 @@ export function PanelHeader() {
             })}
           </div>
         ) : null}
+        {showGroupView && activeGroupView === 'list' ? (
+          <div
+            className="cardo-group-view-switcher"
+            role="group"
+            aria-label={t('groupView.listColumns')}
+          >
+            {([1, 2, 3] as const).map((count) => {
+              const page = pages.find((entry) => entry.id === activePageId);
+              const current = page?.listColumns ?? 1;
+              return (
+                <IconButton
+                  key={count}
+                  className="cardo-group-view-option"
+                  pressed={current === count}
+                  onClick={() => {
+                    if (dragBusy) return;
+                    setPageGroupLayout(activePageId, { listColumns: count });
+                  }}
+                  aria-label={t('groupView.listColumnsN', { count: String(count) })}
+                  tooltip={t('groupView.listColumnsN', { count: String(count) })}
+                >
+                  <span className="cardo-group-columns-label">{count}</span>
+                </IconButton>
+              );
+            })}
+          </div>
+        ) : null}
         {showGroupView && showWorkspaceTools ? <Divider /> : null}
         {showWorkspaceTools ? (
           <>

@@ -16,6 +16,13 @@
   border-radius: 6px;
 }
 
+.cardo-group-columns-label {
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
 .cardo-group-view-switcher .cardo-group-view-option[data-pressed='true'],
 .cardo-group-view-switcher .cardo-group-view-option.cardo-icon-button-pressed {
   background: var(--cardo-panel, #fff);
