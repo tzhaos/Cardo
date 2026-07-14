@@ -25,7 +25,7 @@ import { FaviconImage } from '../items/FaviconImage';
 const SCROLL_RETRY_MS = [0, 50, 150, 300, 500] as const;
 
 /**
- * Local workspace search results body for SearchPage.
+ * Local workspace search results body for SearchPage overlay.
  * Also offers a web-search action using preferences search engine.
  *
  * Activation split:
@@ -131,7 +131,7 @@ export function GlobalSearchPanel({
 
   const scrollSearchTargetIntoView = (boxId: string, itemId?: string) => {
     // Managed views (waterfall/list) may not finish paint on the same tick as page switch.
-    // SearchPage replaces WorkspaceCanvas, so retry after the swap paints.
+    // Overlay closes after activate; canvas stays mounted — still retry for layout reflow.
     const run = () => {
       document
         .querySelector(`[data-box-id="${CSS.escape(boxId)}"]`)
@@ -430,6 +430,9 @@ export function GlobalSearchPanel({
                     ? t('search.failed')
                     : t('search.noGlobalResults')}
               </span>
+              {!pending && !searchError && trimmedQuery ? (
+                <span className="cardo-global-search-empty-hint">{t('search.scopeHint')}</span>
+              ) : null}
               {searchError && !pending ? (
                 <Button
                   variant="ghost"

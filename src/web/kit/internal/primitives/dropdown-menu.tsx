@@ -17,7 +17,7 @@ export function DropdownMenuContent({
     <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.Content
         data-slot="dropdown-menu-content"
-        className={cn('cardo-floating-menu cardo-ui-menu-content', className)}
+        className={cn('cardo-floating-menu cardo-menu-content', className)}
         sideOffset={sideOffset}
         collisionPadding={collisionPadding}
         {...props}
@@ -62,7 +62,7 @@ export function DropdownMenuSubContent({
     <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.SubContent
         data-slot="dropdown-menu-sub-content"
-        className={cn('cardo-floating-menu cardo-ui-menu-content', className)}
+        className={cn('cardo-floating-menu cardo-menu-content', className)}
         sideOffset={sideOffset}
         collisionPadding={collisionPadding}
         {...props}
@@ -78,7 +78,7 @@ export function DropdownMenuSeparator({
   return (
     <DropdownMenuPrimitive.Separator
       data-slot="dropdown-menu-separator"
-      className={cn('cardo-ui-menu-separator', className)}
+      className={cn('cardo-menu-separator', className)}
       {...props}
     />
   );

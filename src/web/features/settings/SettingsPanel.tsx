@@ -40,6 +40,7 @@ import { ConfirmBar } from '../../kit/confirm-bar';
 import { IconFrame } from '../../kit/icon-button';
 import { Input } from '../../kit/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../kit/select';
+import { Segmented } from '../../kit/segmented';
 import { SettingsCard, SettingsRow } from '../../kit/settings-form';
 import { Switch } from '../../kit/switch';
 import { Textarea } from '../../kit/textarea';
@@ -354,19 +355,15 @@ function GeneralSettings({
           title={t('settings.language')}
           description={t('settings.languageDescription')}
           control={
-            <ToggleGroup
+            <Segmented
               aria-label={t('settings.language')}
-              type="single"
               value={locale}
-              onValueChange={(value) => value && setLocale(preferenceLocaleSchema.parse(value))}
-            >
-              <SegmentButton active={locale === 'zh'} value="zh">
-                {t('settings.chinese')}
-              </SegmentButton>
-              <SegmentButton active={locale === 'en'} value="en">
-                {t('settings.english')}
-              </SegmentButton>
-            </ToggleGroup>
+              onValueChange={(value) => setLocale(preferenceLocaleSchema.parse(value))}
+              options={[
+                { value: 'zh', label: t('settings.chinese') },
+                { value: 'en', label: t('settings.english') },
+              ]}
+            />
           }
         />
         <SettingsRow

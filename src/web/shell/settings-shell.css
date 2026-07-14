@@ -3,11 +3,14 @@
  * Token-only surfaces; no floating independent-menu geometry.
  */
 
-.cardo-v2-settings-shell {
-  --cardo-v2-settings-nav-width: var(--cardo-shell-sidebar-width, 236px);
-  --cardo-v2-settings-panel-radius: var(--cardo-v2-panel-radius, var(--cardo-radius-xl, 16px));
+.cardo-shell-settings-shell {
+  --cardo-shell-settings-nav-width: var(--cardo-shell-sidebar-width, 236px);
+  --cardo-shell-settings-panel-radius: var(
+    --cardo-shell-panel-radius,
+    var(--cardo-radius-xl, 16px)
+  );
   /* Active section pill: fixed neutral (not theme/custom accent). */
-  --cardo-v2-pill-settings: rgba(128, 128, 128, 0.18);
+  --cardo-shell-pill-settings: rgba(128, 128, 128, 0.18);
 
   box-sizing: border-box;
   display: flex;
@@ -20,18 +23,18 @@
   color: var(--cardo-text);
 }
 
-.cardo-v2-settings-nav {
+.cardo-shell-settings-nav {
   box-sizing: border-box;
   display: flex;
-  width: var(--cardo-v2-settings-nav-width);
-  flex: 0 0 var(--cardo-v2-settings-nav-width);
+  width: var(--cardo-shell-settings-nav-width);
+  flex: 0 0 var(--cardo-shell-settings-nav-width);
   flex-direction: column;
   min-height: 0;
   padding: 8px 0 12px;
   background: transparent;
 }
 
-.cardo-v2-settings-back {
+.cardo-shell-settings-back {
   display: inline-flex;
   width: fit-content;
   max-width: calc(100% - 18px);
@@ -51,18 +54,18 @@
     color var(--cardo-duration-normal, 0.16s) var(--cardo-easing, ease);
 }
 
-.cardo-v2-settings-back:hover {
+.cardo-shell-settings-back:hover {
   background: var(--cardo-hover, rgba(0, 0, 0, 0.045));
   color: var(--cardo-text);
 }
 
-.cardo-v2-settings-back-icon {
+.cardo-shell-settings-back-icon {
   display: grid;
   flex-shrink: 0;
   place-items: center;
 }
 
-.cardo-v2-settings-search {
+.cardo-shell-settings-search {
   position: relative;
   display: flex;
   height: 34px;
@@ -78,7 +81,7 @@
   cursor: text;
 }
 
-.cardo-v2-settings-search-icon {
+.cardo-shell-settings-search-icon {
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
@@ -88,7 +91,7 @@
   color: var(--cardo-muted, var(--cardo-secondary-text));
 }
 
-.cardo-v2-settings-search input {
+.cardo-shell-settings-search input {
   min-width: 0;
   flex: 1;
   height: 100%;
@@ -101,12 +104,12 @@
   outline: none;
 }
 
-.cardo-v2-settings-search input::placeholder {
+.cardo-shell-settings-search input::placeholder {
   color: var(--cardo-muted, var(--cardo-secondary-text));
   opacity: 1;
 }
 
-.cardo-v2-settings-search-clear {
+.cardo-shell-settings-search-clear {
   display: inline-flex;
   width: 22px;
   height: 22px;
@@ -121,12 +124,12 @@
   cursor: pointer;
 }
 
-.cardo-v2-settings-search-clear:hover {
+.cardo-shell-settings-search-clear:hover {
   background: var(--cardo-hover, rgba(0, 0, 0, 0.06));
   color: var(--cardo-text);
 }
 
-.cardo-v2-settings-section-list {
+.cardo-shell-settings-section-list {
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -138,7 +141,7 @@
   scrollbar-color: color-mix(in srgb, var(--cardo-text) 14%, transparent) transparent;
 }
 
-.cardo-v2-settings-section-item {
+.cardo-shell-settings-section-item {
   position: relative;
   display: flex;
   min-height: 40px;
@@ -159,17 +162,17 @@
     color var(--cardo-duration-normal, 0.16s) var(--cardo-easing, ease);
 }
 
-.cardo-v2-settings-section-item:hover {
+.cardo-shell-settings-section-item:hover {
   background: rgba(128, 128, 128, 0.12);
   color: var(--cardo-text);
 }
 
-.cardo-v2-settings-section-item[data-active='true'] {
-  background: var(--cardo-v2-pill-settings);
+.cardo-shell-settings-section-item[data-active='true'] {
+  background: var(--cardo-shell-pill-settings);
   color: var(--cardo-text);
 }
 
-.cardo-v2-settings-stage {
+.cardo-shell-settings-stage {
   display: flex;
   flex: 1;
   min-width: 0;
@@ -178,7 +181,7 @@
   padding: 2px 12px 0 0;
 }
 
-.cardo-v2-settings-panel {
+.cardo-shell-settings-panel {
   display: flex;
   width: 100%;
   max-width: 720px;
@@ -186,13 +189,13 @@
   min-height: 0;
   flex: 1 1 auto;
   overflow: hidden;
-  border-radius: var(--cardo-v2-settings-panel-radius);
+  border-radius: var(--cardo-shell-settings-panel-radius);
   background: var(--cardo-panel, #fff);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--cardo-text) 3%, transparent);
 }
 
 /* Cap content width so fullscreen does not stretch form rows. */
-.cardo-v2-settings-panel > .cardo-settings-content {
+.cardo-shell-settings-panel > .cardo-settings-content {
   flex: 1;
   min-height: 0;
   width: 100%;
@@ -201,7 +204,7 @@
   padding: 28px 28px 48px;
 }
 
-.cardo-v2-settings-panel .cardo-settings-heading h2 {
+.cardo-shell-settings-panel .cardo-settings-heading h2 {
   font-size: 22px;
   letter-spacing: -0.03em;
 }

@@ -33,7 +33,7 @@ const PAGE_REORDER_MIME = 'application/x-cardo-page-id';
  * Rename + delete+confirm + user-page reorder (multiPage).
  *
  * PR7 box drop: each page/system row registers via registerPageDropElement.
- * Primary nav hit region is registered in CardoApp (registerTopBarElement name kept).
+ * Primary nav hit region is registered in CardoApp (registerPrimaryNavElement).
  * Rules stay in shared BoxPageDropController — do not fork cases here.
  */
 export function SidebarNav() {
@@ -195,9 +195,9 @@ export function SidebarNav() {
   };
 
   return (
-    <div className="cardo-v2-sidebar-scroll">
+    <div className="cardo-shell-sidebar-scroll">
       {globalSearchEnabled || multiPage ? (
-        <div className="cardo-v2-nav-block">
+        <div className="cardo-shell-nav-block">
           {globalSearchEnabled ? (
             <NavItem
               className={sidebarNavItemClassName({ active: searchOpen })}
@@ -230,7 +230,7 @@ export function SidebarNav() {
       ) : null}
 
       {showCollection && collectionPage ? (
-        <div className="cardo-v2-nav-block">
+        <div className="cardo-shell-nav-block">
           <NavRow
             pageId={collectionPage.id}
             active={!searchOpen && collectionPage.id === activePageId}
@@ -243,14 +243,14 @@ export function SidebarNav() {
         </div>
       ) : null}
 
-      <div className="cardo-v2-nav-block">
+      <div className="cardo-shell-nav-block">
         <SectionLabel>{t('shell.pages')}</SectionLabel>
-        <nav className="cardo-v2-pages" aria-label={t('page.workspacePages')}>
+        <nav className="cardo-shell-pages" aria-label={t('page.workspacePages')}>
           {visibleUserPages.map((page) =>
             deletePageId === page.id && pageToDelete ? (
               <div
                 key={page.id}
-                className="cardo-v2-page-drop-row cardo-v2-page-delete-row"
+                className="cardo-shell-page-drop-row cardo-shell-page-delete-row"
                 data-page-drop-id={page.id}
               >
                 <PageDeleteConfirmRow
@@ -300,7 +300,7 @@ export function SidebarNav() {
       </div>
 
       {showRecycleBin && recycleBinPage ? (
-        <div className="cardo-v2-nav-block">
+        <div className="cardo-shell-nav-block">
           <NavRow
             pageId={recycleBinPage.id}
             active={!searchOpen && recycleBinPage.id === activePageId}
@@ -417,10 +417,10 @@ function PageNavRow({
       dropPageId,
       chromeOnShell: rename.renaming,
     }),
-    dragging ? 'cardo-v2-page-drop-row-dragging' : '',
-    reorderHover ? 'cardo-v2-page-drop-row-reorder-over' : '',
-    reorderHover === 'before' ? 'cardo-v2-page-drop-row-reorder-before' : '',
-    reorderHover === 'after' ? 'cardo-v2-page-drop-row-reorder-after' : '',
+    dragging ? 'cardo-shell-page-drop-row-dragging' : '',
+    reorderHover ? 'cardo-shell-page-drop-row-reorder-over' : '',
+    reorderHover === 'before' ? 'cardo-shell-page-drop-row-reorder-before' : '',
+    reorderHover === 'after' ? 'cardo-shell-page-drop-row-reorder-after' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -475,12 +475,12 @@ function PageNavRow({
         className={shellClassName}
         onContextMenu={rename.onContextMenu}
       >
-        <span className="cardo-v2-nav-item-icon cardo-nav-item-icon" aria-hidden="true">
+        <span className="cardo-nav-item-icon" aria-hidden="true">
           <ThemeIcon name="document" size={16} />
         </span>
         <Input
           ref={rename.inputRef}
-          className="cardo-v2-nav-item-input"
+          className="cardo-shell-nav-item-input"
           aria-label={t('page.rename', { title: page.title })}
           value={rename.draft}
           onChange={(event) => rename.setDraft(event.target.value)}
@@ -522,7 +522,7 @@ function PageNavRow({
         {page.title}
       </NavItem>
       <IconButton
-        className="cardo-v2-page-row-menu"
+        className="cardo-shell-page-row-menu"
         type="button"
         aria-label={t('page.moreOptions')}
         tooltip={t('page.moreOptions')}

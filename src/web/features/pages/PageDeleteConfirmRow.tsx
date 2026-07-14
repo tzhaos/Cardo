@@ -35,7 +35,7 @@ export function PageDeleteConfirmRow({
   return (
     <div
       ref={rootRef}
-      className="cardo-v2-page-delete-confirm"
+      className="cardo-shell-page-delete-confirm"
       role="alertdialog"
       aria-modal="false"
       aria-label={t('page.deleteConfirmation')}
@@ -48,14 +48,14 @@ export function PageDeleteConfirmRow({
         }
       }}
     >
-      <span className="cardo-v2-page-delete-copy">
+      <span className="cardo-shell-page-delete-copy">
         <ThemeIcon name="trash" size={14} />
-        <span className="cardo-v2-page-delete-text" title={title}>
-          <span className="cardo-v2-page-delete-msg">{shortMessage}</span>
-          {detail ? <small className="cardo-v2-page-delete-detail">{detail}</small> : null}
+        <span className="cardo-shell-page-delete-text" title={title}>
+          <span className="cardo-shell-page-delete-msg">{shortMessage}</span>
+          {detail ? <small className="cardo-shell-page-delete-detail">{detail}</small> : null}
         </span>
       </span>
-      <span className="cardo-v2-page-delete-actions">
+      <span className="cardo-shell-page-delete-actions">
         <Button
           type="button"
           size="sm"

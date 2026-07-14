@@ -78,24 +78,17 @@
     button,
     [role='button'],
     a.cardo-toolbar-button,
-    .cardo-top-bar,
-    .cardo-tabs,
-    .cardo-tab-pill,
-    .cardo-tab-label,
     .cardo-box-header,
     .cardo-box-title,
     .cardo-box-title-group,
     .cardo-temporary-box-header,
     .cardo-bottom-shell,
     .cardo-bottom-toolbar,
-    .cardo-history-controls,
     .cardo-canvas-tools,
     .cardo-floating-menu,
     .cardo-menu-row,
     .cardo-create-menu-button,
     .cardo-settings-header,
-    .cardo-settings-nav,
-    .cardo-settings-nav button,
     .cardo-theme-pack-card,
     .cardo-theme-pack-card-copy,
     .cardo-layout-card,
@@ -110,11 +103,12 @@
     .cardo-item-title-placeholder,
     .cardo-box-delete,
     .cardo-box-footer,
-    .cardo-ui-menu-content,
-    .cardo-ui-select-content,
-    .cardo-ui-select-item,
-    .cardo-ui-select-trigger,
-    .cardo-ui-tooltip-content,
+    .cardo-nav-item,
+    .cardo-menu-content,
+    .cardo-select-content,
+    .cardo-select-item,
+    .cardo-select-trigger,
+    .cardo-tooltip-content,
     .cardo-global-search-result
   ) {
   caret-color: transparent !important;
@@ -141,66 +135,14 @@
  */
 :where(
   .cardo-floating-menu,
-  .cardo-ui-menu-content,
-  .cardo-ui-select-content,
-  .cardo-ui-select-item,
-  .cardo-ui-tooltip-content
+  .cardo-menu-content,
+  .cardo-select-content,
+  .cardo-select-item,
+  .cardo-tooltip-content
 ) {
   caret-color: transparent;
   user-select: none;
   -webkit-user-select: none;
-}
-
-.cardo-history-controls {
-  position: fixed;
-  z-index: 88;
-  top: var(--cardo-space-6);
-  left: var(--cardo-space-6);
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  border: 1px solid var(--cardo-border);
-  border-radius: var(--cardo-radius-pill);
-  padding: calc(var(--cardo-space-1) + 2px);
-  background: var(--cardo-surface);
-  box-shadow: var(--cardo-shadow);
-  backdrop-filter: blur(var(--cardo-chrome-blur));
-}
-
-.cardo-app-desktop .cardo-history-controls {
-  top: 64px;
-}
-
-.cardo-history-controls button {
-  display: inline-flex;
-  width: 36px;
-  height: 36px;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  border-radius: var(--cardo-radius-pill);
-  background: transparent;
-  color: var(--cardo-secondary-text);
-}
-
-.cardo-history-controls button:hover:not(:disabled) {
-  background: var(--cardo-hover);
-  color: var(--cardo-text);
-}
-
-.cardo-history-controls button:disabled {
-  opacity: 0.34;
-}
-
-.cardo-history-shared-hint-detail {
-  display: block;
-  margin-top: 0.35rem;
-  max-width: 16rem;
-  color: var(--cardo-muted, #888);
-  font-size: 0.78rem;
-  font-weight: 400;
-  line-height: 1.35;
-  white-space: normal;
 }
 
 .cardo-runtime-connection-banner {
@@ -327,9 +269,12 @@
   width: 46px;
   align-items: center;
   justify-content: center;
+  margin: 0;
+  padding: 0;
   border: 0;
   background: transparent;
   color: var(--cardo-secondary-text);
+  cursor: pointer;
   transition:
     color 140ms ease,
     background 140ms ease;
@@ -345,79 +290,12 @@
   color: #fff;
 }
 
-.cardo-independent-menu {
-  position: fixed;
-  z-index: 180;
-  width: min(860px, calc(100vw - 32px));
-  height: min(620px, calc(100vh - 32px));
-  overflow: hidden;
-  border: 1px solid var(--cardo-border);
-  border-radius: var(--cardo-radius-xl);
-  background: var(--cardo-surface-strong);
-  box-shadow: var(--cardo-shadow-hover);
-  /* Material blur applied in themes/chrome-material.css via data-cardo-chrome-material. */
-  /* Position via left/top (not transform) so shell text stays pixel-crisp. */
-  transform: none;
-}
-
-body.cardo-independent-menu-dragging .cardo-independent-menu,
-body.cardo-independent-menu-resizing .cardo-independent-menu {
-  will-change: left, top, width, height;
-}
-
-body.cardo-independent-menu-resizing {
-  cursor: se-resize;
-  user-select: none;
-}
-
-.cardo-settings-resize-handle {
-  position: absolute;
-  z-index: 2;
-  right: 0;
-  bottom: 0;
-  width: 18px;
-  height: 18px;
-  border: 0;
-  padding: 0;
-  background: transparent;
-  cursor: se-resize;
-  touch-action: none;
-}
-
-.cardo-settings-resize-handle::after {
-  content: '';
-  position: absolute;
-  right: 5px;
-  bottom: 5px;
-  width: 8px;
-  height: 8px;
-  border-right: 1.5px solid var(--cardo-muted);
-  border-bottom: 1.5px solid var(--cardo-muted);
-  opacity: 0.7;
-}
-
-[data-cardo-theme='fluent'] .cardo-settings-resize-handle::after {
-  /* Fluent: no decorative grip — hit target only */
-  display: none;
-}
-
 @media (max-width: 760px) {
-  .cardo-top-bar {
-    top: 14px;
-    max-width: calc(100vw - 20px);
-  }
-
-  .cardo-history-controls,
   .cardo-canvas-tools {
     top: 14px;
   }
 
   .cardo-bottom-shell {
     bottom: 14px;
-  }
-
-  .cardo-independent-menu {
-    width: calc(100vw - 20px);
-    height: min(640px, calc(100vh - 20px));
   }
 }

@@ -25,7 +25,7 @@ export function ToggleGroupItem({
   return (
     <ToggleGroupPrimitive.Item
       data-slot="toggle-group-item"
-      className={cn('cardo-ui-toggle-group-item', className)}
+      className={cn('cardo-toggle-group-item', className)}
       {...props}
     />
   );

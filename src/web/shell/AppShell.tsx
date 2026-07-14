@@ -29,15 +29,15 @@ export function AppShell({
   return (
     <div
       className={[
-        'cardo-v2-shell-body',
-        sidebarCollapsed ? 'cardo-v2-shell-body-sidebar-collapsed' : '',
+        'cardo-shell-shell-body',
+        sidebarCollapsed ? 'cardo-shell-shell-body-sidebar-collapsed' : '',
       ]
         .filter(Boolean)
         .join(' ')}
       data-sidebar-collapsed={sidebarCollapsed ? 'true' : undefined}
     >
       <div
-        className={['cardo-v2-sidebar', sidebarCollapsed ? 'cardo-v2-sidebar-collapsed' : '']
+        className={['cardo-shell-sidebar', sidebarCollapsed ? 'cardo-shell-sidebar-collapsed' : '']
           .filter(Boolean)
           .join(' ')}
         aria-hidden={sidebarCollapsed || undefined}

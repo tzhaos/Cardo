@@ -44,17 +44,10 @@ interface UiStore {
   /** True while a freeform box SE resize pointer session is active. */
   boxResizeActive: boolean;
   boxDragSession: BoxDragSession | null;
-  /** True while box drag pointer is over primary nav / sidebar. Name kept until cutover. */
-  boxDragOverTopBar: boolean;
+  /** True while box drag pointer is over primary nav / sidebar. */
+  boxDragOverPrimaryNav: boolean;
   /** Page id under pointer within primary nav drop rows, or null. */
   boxDropPageId: string | null;
-  boxDropRelease: {
-    boxId: string;
-    pageId: string;
-    entryFrame: BoxFrame;
-    entryScale: number;
-    entryTransformOrigin: string;
-  } | null;
   pendingBoxLanding: { boxId: string; frame: BoxFrame } | null;
   /** Waterfall/list insert ghost while dragging. */
   managedInsertPreview: ManagedInsertPreview | null;
@@ -65,6 +58,13 @@ interface UiStore {
    * enter animation and locate pulse do not share CSS / timers).
    */
   locateHighlight: { boxId: string; itemId: string } | null;
+  /**
+   * Single-box multi-select for item rows. `selectedItemIds` is a set-like Record;
+   * only valid when `selectionBoxId` is set.
+   */
+  selectionBoxId: string | null;
+  selectedItemIds: Record<string, true>;
+  lastSelectedItemId: string | null;
   searchQuery: string;
   /** Full search page open from sidebar entry (with new group). */
   searchOpen: boolean;
@@ -107,6 +107,9 @@ interface UiStore {
   highlightBox: (boxId: string) => void;
   /** Pulse an item after search locate (auto-clears ~1.8s). Does not touch create highlight. */
   markLocated: (boxId: string, itemId: string) => void;
+  toggleItemSelection: (boxId: string, itemId: string) => void;
+  selectItemRange: (boxId: string, itemId: string, orderedItemIds: string[]) => void;
+  clearItemSelection: () => void;
   openAddView: (boxId: string, itemType?: WorkspaceItemType) => void;
   selectAddItemType: (boxId: string, itemType: WorkspaceItemType) => void;
   updateDraft: (boxId: string, patch: Record<string, string>) => void;
@@ -117,17 +120,9 @@ interface UiStore {
   /** Pointer-rate world frame + last client; mutates session without React notify. */
   updateBoxDragFrame: (frame: BoxFrame, clientX?: number, clientY?: number) => void;
   rebaseBoxDragSession: (frame: BoxFrame, clientX: number, clientY: number) => void;
-  setBoxDragOverTopBar: (overTopBar: boolean) => void;
+  setBoxDragOverPrimaryNav: (overPrimaryNav: boolean) => void;
   setBoxDropPage: (pageId: string | null) => void;
   setManagedInsertPreview: (preview: ManagedInsertPreview | null) => void;
-  finishBoxDrop: (
-    boxId: string,
-    pageId: string,
-    entryFrame: BoxFrame,
-    entryScale: number,
-    entryTransformOrigin: string,
-  ) => void;
-  clearBoxDropRelease: () => void;
   setPendingBoxLanding: (boxId: string, frame: BoxFrame) => void;
   clearPendingBoxLanding: (boxId?: string) => void;
   endBoxDrag: () => void;
@@ -163,14 +158,16 @@ export const useUiStore = create<UiStore>((set) => ({
   draggedBoxId: null,
   boxResizeActive: false,
   boxDragSession: null,
-  boxDragOverTopBar: false,
+  boxDragOverPrimaryNav: false,
   boxDropPageId: null,
-  boxDropRelease: null,
   pendingBoxLanding: null,
   managedInsertPreview: null,
   selectedBoxId: null,
   highlightedBoxId: null,
   locateHighlight: null,
+  selectionBoxId: null,
+  selectedItemIds: {},
+  lastSelectedItemId: null,
   searchQuery: '',
   searchOpen: false,
   runtimeConnectionStatus: 'connected',
@@ -317,7 +314,76 @@ export const useUiStore = create<UiStore>((set) => ({
       return { navPast, navFuture, navIntent, navCurrentPageId };
     }),
   clearNavIntent: () => set((state) => (state.navIntent ? { navIntent: null } : state)),
-  selectBox: (boxId) => set({ selectedBoxId: boxId }),
+  selectBox: (boxId) =>
+    set((state) => ({
+      selectedBoxId: boxId,
+      // Switching boxes clears item multi-select (single-box scope).
+      ...(state.selectionBoxId && state.selectionBoxId !== boxId
+        ? { selectionBoxId: null, selectedItemIds: {}, lastSelectedItemId: null }
+        : {}),
+    })),
+  toggleItemSelection: (boxId, itemId) =>
+    set((state) => {
+      if (state.selectionBoxId && state.selectionBoxId !== boxId) {
+        return {
+          selectionBoxId: boxId,
+          selectedItemIds: { [itemId]: true as const },
+          lastSelectedItemId: itemId,
+        };
+      }
+      const current = state.selectionBoxId === boxId ? state.selectedItemIds : {};
+      const next = { ...current };
+      if (next[itemId]) {
+        delete next[itemId];
+      } else {
+        next[itemId] = true;
+      }
+      const ids = Object.keys(next);
+      if (ids.length === 0) {
+        return { selectionBoxId: null, selectedItemIds: {}, lastSelectedItemId: null };
+      }
+      return {
+        selectionBoxId: boxId,
+        selectedItemIds: next,
+        lastSelectedItemId: itemId,
+      };
+    }),
+  selectItemRange: (boxId, itemId, orderedItemIds) =>
+    set((state) => {
+      const anchor =
+        state.selectionBoxId === boxId && state.lastSelectedItemId
+          ? state.lastSelectedItemId
+          : itemId;
+      const start = orderedItemIds.indexOf(anchor);
+      const end = orderedItemIds.indexOf(itemId);
+      if (start < 0 || end < 0) {
+        return {
+          selectionBoxId: boxId,
+          selectedItemIds: { [itemId]: true as const },
+          lastSelectedItemId: itemId,
+        };
+      }
+      const from = Math.min(start, end);
+      const to = Math.max(start, end);
+      const selectedItemIds: Record<string, true> = {};
+      for (let index = from; index <= to; index += 1) {
+        const id = orderedItemIds[index];
+        if (id) selectedItemIds[id] = true;
+      }
+      return {
+        selectionBoxId: boxId,
+        selectedItemIds,
+        // Keep anchor so further Shift+clicks extend from original pivot.
+        lastSelectedItemId:
+          state.selectionBoxId === boxId ? (state.lastSelectedItemId ?? itemId) : itemId,
+      };
+    }),
+  clearItemSelection: () =>
+    set((state) =>
+      state.selectionBoxId || Object.keys(state.selectedItemIds).length > 0
+        ? { selectionBoxId: null, selectedItemIds: {}, lastSelectedItemId: null }
+        : state,
+    ),
   highlightBox: (boxId) => {
     if (boxHighlightTimeout !== null) window.clearTimeout(boxHighlightTimeout);
     set({ highlightedBoxId: boxId });
@@ -397,9 +463,8 @@ export const useUiStore = create<UiStore>((set) => ({
         lastClientY: session.lastClientY ?? session.startClientY,
         morphology: session.morphology ?? 'freeform',
       },
-      boxDragOverTopBar: false,
+      boxDragOverPrimaryNav: false,
       boxDropPageId: null,
-      boxDropRelease: null,
       pendingBoxLanding: null,
       managedInsertPreview: null,
       selectedBoxId: session.boxId,
@@ -449,10 +514,10 @@ export const useUiStore = create<UiStore>((set) => ({
           }
         : state,
     ),
-  setBoxDragOverTopBar: (overTopBar) =>
+  setBoxDragOverPrimaryNav: (overPrimaryNav) =>
     set((state) =>
-      state.draggedBoxId && state.boxDragOverTopBar !== overTopBar
-        ? { boxDragOverTopBar: overTopBar }
+      state.draggedBoxId && state.boxDragOverPrimaryNav !== overPrimaryNav
+        ? { boxDragOverPrimaryNav: overPrimaryNav }
         : state,
     ),
   setBoxDropPage: (pageId) =>
@@ -479,9 +544,6 @@ export const useUiStore = create<UiStore>((set) => ({
       }
       return { managedInsertPreview: preview };
     }),
-  finishBoxDrop: (boxId, pageId, entryFrame, entryScale, entryTransformOrigin) =>
-    set({ boxDropRelease: { boxId, pageId, entryFrame, entryScale, entryTransformOrigin } }),
-  clearBoxDropRelease: () => set({ boxDropRelease: null }),
   setPendingBoxLanding: (boxId, frame) => set({ pendingBoxLanding: { boxId, frame } }),
   clearPendingBoxLanding: (boxId) =>
     set((state) =>
@@ -493,7 +555,7 @@ export const useUiStore = create<UiStore>((set) => ({
     set({
       draggedBoxId: null,
       boxDragSession: null,
-      boxDragOverTopBar: false,
+      boxDragOverPrimaryNav: false,
       boxDropPageId: null,
       managedInsertPreview: null,
     }),

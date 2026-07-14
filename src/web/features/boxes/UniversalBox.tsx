@@ -9,15 +9,7 @@ import { useI18n } from '../../i18n/useI18n';
 import { BoxAppearanceIcon } from './boxIconRegistry';
 
 /** Freeform canvas morphology — full box chrome. */
-export function UniversalBox({
-  box,
-  skipEntryAnimation = false,
-  layoutLocked = false,
-}: {
-  box: WorkspaceBox;
-  skipEntryAnimation?: boolean;
-  layoutLocked?: boolean;
-}) {
+export function UniversalBox({ box }: { box: WorkspaceBox }) {
   const draftState = useUiStore((state) => state.addDrafts[box.id]);
   const openAddView = useUiStore((state) => state.openAddView);
   const { t } = useI18n();
@@ -32,8 +24,6 @@ export function UniversalBox({
       iconId={icon}
       accent={accent}
       onAddItem={() => openAddView(box.id, defaultItemType)}
-      skipEntryAnimation={skipEntryAnimation}
-      layoutLocked={layoutLocked}
     >
       {draftState?.mode ? <UniversalAddView boxId={box.id} defaultType={defaultItemType} /> : null}
       {box.items.length ? (

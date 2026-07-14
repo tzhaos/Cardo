@@ -36,9 +36,9 @@ Historical baseline before this migration: full-viewport canvas with fixed overl
 Target (now production) Codex-inspired product chrome:
 
 - Desktop titlebar and left sidebar share one shell color family (no layered title bar fill that fights the sidebar).
-- Brand mark + "Cardo" live only on the titlebar (DesktopTitleBar pattern); sidebar does not repeat brand.
-- Sidebar IA: 新建页面 · 收藏 · flat 页面 list · 回收站 · foot 设置 (settings foot is not gated by `chrome.sidebar`).
-- Main stage is a rounded white panel: page title + undo/redo/locate/lock · canvas · bottom floating search / new box.
+- Product wordmark "Cardo" lives in the left sidebar (`SidebarBrand`); Desktop titlebar is chrome-only (leading controls + window min/max/close) with File menu in `ShellTitleLeading`.
+- Sidebar IA: 新建分组 · 收藏 · flat 分组 list · 回收站 · foot 设置 (settings foot is not gated by `chrome.sidebar`).
+- Main stage is a rounded white panel: group title + undo/redo/locate/lock · canvas · bottom create-box FAB only (search is sidebar / Ctrl+K).
 - Settings is a full-shell swap (same titlebar + nav width), not a long-lived floating window.
 - Official Theme Pack id `codex` expresses the Codex-like visual dialect.
 - Implementation lives under `src/web` (`shell/`, `app/`, `features/`, `kit/`). Runtime, contracts, stores, domain, and UI kit are shared. Production ships a single `artifacts/web-runtime` under base `/app/`.
@@ -236,13 +236,13 @@ Rules:
 ```mermaid
 flowchart LR
   subgraph window [cardo-app-v2]
-    TB[DesktopTitleBar — mark + Cardo + controls]
+    TB[DesktopTitleBar — leading + window controls]
     subgraph body [body row]
-      SB[Sidebar 236px]
+      SB[Sidebar brand + nav 236px]
       subgraph stage [Main stage flex 1]
         PH[Panel header tools]
         CV[WorkspaceCanvas fills parent]
-        BB[Bottom bar search + box]
+        BB[Bottom FAB create box only]
       end
     end
   end
@@ -322,8 +322,8 @@ Geometry CSS vars (recipe/product, not necessarily Theme Pack JSON):
 
 Brand:
 
-- Keep `src/desktop/DesktopTitleBar.tsx` mark + Cardo + window controls.
-- Sidebar must not render a second logo/wordmark block (prototype’s `.brand` in sidebar is non-product for Cardo).
+- Product wordmark lives in `src/web/shell/SidebarBrand.tsx` (sidebar top).
+- `src/desktop/DesktopTitleBar.tsx` is window chrome only: title leading (sidebar toggle · history · File menu) + plain min/max/close buttons — no brand mark.
 
 Material vs same color family (KD-6 refined):
 
@@ -335,13 +335,13 @@ Material vs same color family (KD-6 refined):
 
 | Region    | Behavior                                                                       | Feature gate                                                   |
 | --------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------- |
-| 新建页面  | Creates page via existing workspace store / command path (same as TopBar add)  | `workspace.multiPage`                                          |
+| 新建分组  | Creates group via existing workspace store / command path (same as TopBar add) | `workspace.multiPage`                                          |
 | 收藏      | System collection page                                                         | `workspace.collection`                                         |
-| 页面 list | Flat user pages: select, rename, delete+confirm; reorder optional post-cutover | `workspace.multiPage`                                          |
+| 分组 list | Flat user groups: select, rename, delete+confirm; reorder optional post-cutover | `workspace.multiPage`                                          |
 | 回收站    | System recycle page                                                            | `workspace.recycleBin`                                         |
 | foot 设置 | Opens settings shell (full swap)                                               | Always mounted; not inside `chrome.sidebar` / primary-nav gate |
 
-Primary nav FeatureGate (`chrome.sidebar` after PR9) wraps product nav only (新建/收藏/页面/回收站), not the settings foot.
+Primary nav FeatureGate (`chrome.sidebar` after PR9) wraps product nav only (新建/收藏/分组/回收站), not the settings foot.
 
 When `chrome.sidebar` is off after cutover:
 
@@ -930,7 +930,7 @@ Optional: dev-only `data-cardo-shell="v2"` for QA (must not ship dual mount on m
 | KD-2  | Single artifact `/app/` — no `/app-v2`                                                           | Runtime/Desktop/Extension simplicity                                   |
 | KD-3  | Product shell = sidebar + main panel for all themes                                              | Prototype + product morph; not theme-only Layout Profile               |
 | KD-4  | Official theme id `codex` with full Theme Pack registration                                      | Named dialect SoT; validate:themes enforced                            |
-| KD-5  | Brand only on DesktopTitleBar; no sidebar wordmark                                               | User decision + prototype productization                               |
+| KD-5  | Brand wordmark in sidebar (`SidebarBrand`); DesktopTitleBar is chrome-only                       | Product IA: titlebar = OS chrome + File; sidebar owns product name     |
 | KD-6  | Titlebar and sidebar same color family via shell token                                           | Prototype hierarchy; PR8 matrix; not “all themes must be opaque solid” |
 | KD-7  | Settings = full shell swap; delete floating SettingsWindow at cutover                            | Prototype + dual-track ban + text crispness                            |
 | KD-8  | Feature id `chrome.sidebar` replaces `chrome.topBar` without dual-read shim                      | Agents no old-field compat; PR9 atomic only                            |
@@ -1205,7 +1205,8 @@ Until PR9: do not use `FeatureGate feature="chrome.sidebar"` (id does not exist 
 - `src/web-runtime/main.tsx` — production entry
 - `src/core/contracts/themePack.ts` — official theme SoT
 - `src/core/contracts/featureCatalog.ts` — feature ids / dependsOn
-- `src/desktop/DesktopTitleBar.tsx` — brand + window controls
+- `src/desktop/DesktopTitleBar.tsx` — window controls (+ title leading slot)
+- `src/web/shell/SidebarBrand.tsx` — product wordmark
 - `src/web/app/BoxPageDropController.tsx` — drop + collection SoT
 - `src/web/features/top-bar/TopBar.tsx` — page parity SoT
 - `scripts/validate-builtin-themes.ts` — theme CI

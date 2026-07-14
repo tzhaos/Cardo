@@ -47,14 +47,20 @@ export function useStagedOrder<TItem extends { id: string }>(
       isStagingRef.current = true;
     },
     updateOrder: (nextOrderedIds: string[]) => {
-      // Keep pinned items before unpinned (Runtime enforces the same rule).
+      // Hard constraint: reject reorder proposals that cross the pin boundary.
+      // Pinned items must stay contiguous at the top; unpinned cannot enter that zone.
       const pinned = new Set(
         items.filter((item) => 'isPinned' in item && item.isPinned).map((item) => item.id),
       );
-      if (pinned.size > 0) {
-        const nextPinned = nextOrderedIds.filter((id) => pinned.has(id));
-        const nextUnpinned = nextOrderedIds.filter((id) => !pinned.has(id));
-        nextOrderedIds = [...nextPinned, ...nextUnpinned];
+      if (pinned.size > 0 && pinned.size < nextOrderedIds.length) {
+        const pinnedCount = pinned.size;
+        const head = nextOrderedIds.slice(0, pinnedCount);
+        const tail = nextOrderedIds.slice(pinnedCount);
+        const crossesBoundary =
+          head.some((id) => !pinned.has(id)) || tail.some((id) => pinned.has(id));
+        if (crossesBoundary) {
+          return;
+        }
       }
       orderRef.current = nextOrderedIds;
       setOrderedIds(nextOrderedIds);

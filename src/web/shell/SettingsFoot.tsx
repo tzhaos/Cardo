@@ -11,7 +11,7 @@ export function SettingsFoot({ onOpen }: { onOpen: () => void }) {
   const { t } = useI18n();
 
   return (
-    <div className="cardo-v2-sidebar-foot">
+    <div className="cardo-shell-sidebar-foot">
       <NavItem
         className={sidebarNavItemClassName({ active: false })}
         icon={<ThemeIcon name="settings" size={16} />}

@@ -70,11 +70,6 @@
   flex: 0 0 auto;
 }
 
-.cardo-tab-pill-system button {
-  width: 36px;
-  padding: 0;
-}
-
 .cardo-toolbar-create {
   order: 5;
   background: var(--cardo-create-background) !important;

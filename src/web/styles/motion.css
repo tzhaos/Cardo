@@ -64,26 +64,11 @@
   }
 }
 
-/* No drop/hover rings or release flashes on legacy tab pills (if any remain in theme CSS). */
-.cardo-box-drop-target .cardo-tab-pill > button::after,
-.cardo-box-drop-released .cardo-tab-pill > button::after {
-  content: none !important;
-  display: none !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  animation: none !important;
-}
-
 /*
- * While any box is dragged over primary nav drop mode, freeze layout springs so
- * chrome tracks the pointer. Historical class: cardo-top-bar-drop-mode.
- * Sidebar drop mode: cardo-v2-sidebar-drop-mode (+ cardo-v2-nav-drop-target
- * highlight in chrome.css) — nav rows are not layoutId-sprung, only short bg transition.
+ * Sidebar drop mode (cardo-shell-sidebar-drop-mode + cardo-shell-nav-drop-target)
+ * uses short bg transitions only — no layoutId springs on nav rows.
+ * (Legacy top-bar / tab-pill drop chrome removed with TopBar cutover.)
  */
-.cardo-top-bar-drop-mode .cardo-tab-pill,
-.cardo-top-bar-drop-mode .cardo-tabs > * {
-  transition: none !important;
-}
 
 @media (prefers-reduced-motion: reduce) {
   *,

@@ -213,7 +213,7 @@ export function PanelHeader() {
       title={title}
       leading={leading}
       tools={tools}
-      className="cardo-v2-panel-header"
+      className="cardo-shell-panel-header"
     />
   );
 }

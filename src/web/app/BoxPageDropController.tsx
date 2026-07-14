@@ -1,9 +1,9 @@
 /**
  * Box → page drop controller (collection add / user-page move / recycle-from rules).
  *
- * Hit region: getTopBarElement() is the primary nav (sidebar product-nav root in v2).
+ * Hit region: getPrimaryNavElement() is the primary nav (sidebar product-nav root).
  * Per-page targets: registerPageDropElement / findPageDropAtPoint.
- * Store flags keep historical names (boxDragOverTopBar = over primary nav) until cutover rename.
+ * Store flag: boxDragOverPrimaryNav = pointer over primary nav.
  */
 import { useEffect, useRef } from 'react';
 import { createLatestFrameScheduler } from './motion/frameScheduler';
@@ -16,7 +16,7 @@ import { startWindowPointerSession } from './windowPointerSession';
 import {
   findPageDropAtPoint,
   getCanvasElement,
-  getTopBarElement,
+  getPrimaryNavElement,
 } from './interactionElementRegistry';
 import {
   clientPointToCanvasWorld,
@@ -59,22 +59,22 @@ export function BoxPageDropController() {
     didOptimisticPreviewRef.current = false;
 
     const ui = useUiStore.getState();
-    // Primary nav / sidebar bounds (registry symbol still named top bar).
-    let topBarRect = getTopBarElement()?.getBoundingClientRect();
-    const updateTopBarRect = () => {
-      topBarRect = getTopBarElement()?.getBoundingClientRect();
+    // Primary nav / sidebar bounds.
+    let primaryNavRect = getPrimaryNavElement()?.getBoundingClientRect();
+    const updatePrimaryNavRect = () => {
+      primaryNavRect = getPrimaryNavElement()?.getBoundingClientRect();
     };
-    const topBarObserver = new ResizeObserver(updateTopBarRect);
-    const topBar = getTopBarElement();
-    if (topBar) topBarObserver.observe(topBar);
+    const primaryNavObserver = new ResizeObserver(updatePrimaryNavRect);
+    const primaryNav = getPrimaryNavElement();
+    if (primaryNav) primaryNavObserver.observe(primaryNav);
     /** True when pointer is over the primary nav hit region (sidebar). */
-    const resolveTopBarHover = (clientX: number, clientY: number) =>
+    const resolvePrimaryNavHover = (clientX: number, clientY: number) =>
       Boolean(
-        topBarRect &&
-        clientX >= topBarRect.left - 8 &&
-        clientX <= topBarRect.right + 8 &&
-        clientY >= topBarRect.top - 10 &&
-        clientY <= topBarRect.bottom + 10,
+        primaryNavRect &&
+        clientX >= primaryNavRect.left - 8 &&
+        clientX <= primaryNavRect.right + 8 &&
+        clientY >= primaryNavRect.top - 10 &&
+        clientY <= primaryNavRect.bottom + 10,
       );
 
     /**
@@ -127,13 +127,13 @@ export function BoxPageDropController() {
     };
 
     const updateDropTarget = ({ clientX, clientY }: { clientX: number; clientY: number }) => {
-      const overTopBar = resolveTopBarHover(clientX, clientY);
-      const pageId = overTopBar ? findPageDropAtPoint(clientX, clientY) : null;
-      ui.setBoxDragOverTopBar(overTopBar);
+      const overPrimaryNav = resolvePrimaryNavHover(clientX, clientY);
+      const pageId = overPrimaryNav ? findPageDropAtPoint(clientX, clientY) : null;
+      ui.setBoxDragOverPrimaryNav(overPrimaryNav);
       ui.setBoxDropPage(pageId);
-      if (overTopBar && pageId) {
+      if (overPrimaryNav && pageId) {
         previewPageUnderPointer(clientX, clientY, pageId);
-      } else if (overTopBar && pageId === null) {
+      } else if (overPrimaryNav && pageId === null) {
         // Gap between page rows / nav chrome: do not keep a sticky page preview.
         revertOptimisticPreviewToOrigin();
       } else {
@@ -142,7 +142,7 @@ export function BoxPageDropController() {
         revertOptimisticPreviewToOrigin();
       }
       // Sole owner of managed insert landing (FloatingDragLayer only paints the ghost).
-      // Always run after top-bar flags so over-nav clears the hole (fn short-circuits).
+      // Always run after primary-nav flags so over-nav clears the hole (fn short-circuits).
       updateManagedInsertPreview(clientX, clientY);
     };
 
@@ -170,12 +170,12 @@ export function BoxPageDropController() {
       session.end('manual');
     };
 
-    window.addEventListener('resize', updateTopBarRect);
+    window.addEventListener('resize', updatePrimaryNavRect);
     window.addEventListener('keydown', onKeyDown);
     return () => {
       frameScheduler.cancel();
-      topBarObserver.disconnect();
-      window.removeEventListener('resize', updateTopBarRect);
+      primaryNavObserver.disconnect();
+      window.removeEventListener('resize', updatePrimaryNavRect);
       window.removeEventListener('keydown', onKeyDown);
       // dispose() does not run onEnd — if we still hold an optimistic cross-page
       // preview, revert so pageId/frame do not stick after external endBoxDrag.
@@ -232,7 +232,7 @@ function commitBoxDragRelease(
   const viewportBounds = getVisibleCanvasWorldBounds(pageCanvas.camera, canvas.viewportSize);
   const canvasBounds = createCanvasWorldBounds(canvas.viewportSize);
   // Released over primary nav / sidebar with a concrete page target.
-  const releasedOnTab = Boolean(tabPageId) && ui.boxDragOverTopBar;
+  const releasedOnTab = Boolean(tabPageId) && ui.boxDragOverPrimaryNav;
 
   // Drag tracking already wrote world coords into latestFrame (client-delta based).
   // Do NOT reproject from the pointer — that fights pan/scale/lift and causes a
@@ -412,6 +412,8 @@ function reflowManagedPage(
   const viewportWidth =
     viewportWidthHint ?? (canvas.viewportSize.width > 0 ? canvas.viewportSize.width : 960);
   const pageBoxes = workspace.projection.boxes.filter((box) => box.pageId === pageId);
+  const page = workspace.projection.pages.find((entry) => entry.id === pageId);
+  const columnCount = mode === 'list' ? (page?.listColumns ?? 1) : (page?.waterfallColumns ?? 0);
 
   // Prefer live landing insertIndex so commit matches what the user saw.
   const preview = ui.managedInsertPreview;
@@ -425,6 +427,7 @@ function reflowManagedPage(
     mode,
     viewportWidth,
     insertIndex,
+    columnCount,
   });
 
   const changed: Record<string, BoxFrame> = {};

@@ -3,16 +3,14 @@ import type { ComponentProps } from 'react';
 import { cn } from '../lib/cn';
 
 export function Tabs({ className, ...props }: ComponentProps<typeof TabsPrimitive.Root>) {
-  return (
-    <TabsPrimitive.Root data-slot="tabs" className={cn('cardo-ui-tabs', className)} {...props} />
-  );
+  return <TabsPrimitive.Root data-slot="tabs" className={cn('cardo-tabs', className)} {...props} />;
 }
 
 export function TabsList({ className, ...props }: ComponentProps<typeof TabsPrimitive.List>) {
   return (
     <TabsPrimitive.List
       data-slot="tabs-list"
-      className={cn('cardo-ui-tabs-list', className)}
+      className={cn('cardo-tabs-list', className)}
       {...props}
     />
   );
@@ -22,7 +20,7 @@ export function TabsTrigger({ className, ...props }: ComponentProps<typeof TabsP
   return (
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
-      className={cn('cardo-ui-tabs-trigger', className)}
+      className={cn('cardo-tabs-trigger', className)}
       {...props}
     />
   );
@@ -32,7 +30,7 @@ export function TabsContent({ className, ...props }: ComponentProps<typeof TabsP
   return (
     <TabsPrimitive.Content
       data-slot="tabs-content"
-      className={cn('cardo-ui-tabs-content', className)}
+      className={cn('cardo-tabs-content', className)}
       {...props}
     />
   );

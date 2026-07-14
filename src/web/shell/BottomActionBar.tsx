@@ -43,7 +43,7 @@ export function BottomActionBar() {
   }
 
   return (
-    <div className="cardo-v2-bottom-shell">
+    <div className="cardo-shell-bottom-shell">
       <IconButton
         className="cardo-toolbar-create"
         onClick={handleAdd}

@@ -16,15 +16,20 @@ import {
   constrainBoxFrameToCanvas,
   constrainBoxResizeToCanvas,
   createCanvasWorldBounds,
+  getCanvasViewportCenter,
 } from '../../domain/canvasGeometry';
 import {
   FREEFORM_MIN_HEIGHT,
   FREEFORM_MIN_WIDTH,
   resolveFreeformDropFrame,
 } from '../../domain/freeformLayout';
+import { resolveGroupViewMode, reflowGroupBoxesAfterDrop } from '../../domain/groupLayout';
+import { findPageLandingFrame } from '../../domain/placement';
 import {
   RECYCLE_BIN_PAGE_ID,
   isRecycleBinPageId,
+  isSystemPageId,
+  type BoxFrame,
   type WorkspaceBox,
   type WorkspaceBoxIcon,
 } from '../../domain/workspace';
@@ -32,6 +37,7 @@ import {
   startWindowPointerSession,
   type WindowPointerSession,
 } from '../../app/windowPointerSession';
+import { showToast } from '../../app/stores/toastStore';
 import { useI18n } from '../../i18n/useI18n';
 import { useFeatureEnabled } from '../../shell/FeatureGate';
 import { BoxAppearanceView } from './BoxAppearancePopover';
@@ -46,12 +52,6 @@ interface BaseBoxFrameProps {
   accent: string;
   children: ReactNode;
   onAddItem: () => void;
-  skipEntryAnimation?: boolean;
-  /**
-   * Waterfall/list: placement is layout-managed (scroll document).
-   * Drag reorder + cross-page still allowed; free resize is off.
-   */
-  layoutLocked?: boolean;
 }
 
 interface BoxDeleteMotion {
@@ -74,8 +74,6 @@ export function BaseBoxFrame({
   accent,
   children,
   onAddItem,
-  skipEntryAnimation: _skipEntryAnimation = false,
-  layoutLocked = false,
 }: BaseBoxFrameProps) {
   const renameBox = useWorkspaceStore((state) => state.renameBox);
   const promoteTemporaryBox = useWorkspaceStore((state) => state.promoteTemporaryBox);
@@ -83,6 +81,7 @@ export function BaseBoxFrame({
   const setBoxLocked = useWorkspaceStore((state) => state.setBoxLocked);
   const setBoxViewMode = useWorkspaceStore((state) => state.setBoxViewMode);
   const deleteBox = useWorkspaceStore((state) => state.deleteBox);
+  const moveBoxToPage = useWorkspaceStore((state) => state.moveBoxToPage);
   const addBoxToCollection = useWorkspaceStore((state) => state.addBoxToCollection);
   const removeBoxFromCollection = useWorkspaceStore((state) => state.removeBoxFromCollection);
   const beginBoxDrag = useUiStore((state) => state.beginBoxDrag);
@@ -97,9 +96,8 @@ export function BaseBoxFrame({
   const pendingBoxLanding = useUiStore((state) =>
     state.pendingBoxLanding?.boxId === box.id ? state.pendingBoxLanding : null,
   );
-  // boxDragOverTopBar = over primary nav / sidebar (historical store name, KD-18).
-  const boxDragOverTopBar = useUiStore((state) =>
-    state.draggedBoxId === box.id ? state.boxDragOverTopBar : false,
+  const boxDragOverPrimaryNav = useUiStore((state) =>
+    state.draggedBoxId === box.id ? state.boxDragOverPrimaryNav : false,
   );
   const boxDropPageId = useUiStore((state) =>
     state.draggedBoxId === box.id ? state.boxDropPageId : null,
@@ -276,7 +274,7 @@ export function BaseBoxFrame({
     if (event.button !== 0 || !event.isPrimary) {
       return;
     }
-    if (layoutLocked || box.isLocked || isDraggingThisBox || deleteMotion) {
+    if (box.isLocked || isDraggingThisBox || deleteMotion) {
       return;
     }
     event.preventDefault();
@@ -351,9 +349,9 @@ export function BaseBoxFrame({
   };
 
   const dragging = isDraggingThisBox;
-  // Compact mini-card while over primary nav / sidebar (store still says TopBar).
-  const draggingOverTopBar = dragging && boxDragOverTopBar;
-  const draggingOverTab = draggingOverTopBar && boxDropPageId !== null;
+  // Compact mini-card while over primary nav / sidebar.
+  const draggingOverPrimaryNav = dragging && boxDragOverPrimaryNav;
+  const draggingOverTab = draggingOverPrimaryNav && boxDropPageId !== null;
   // Mini-card footprint while over primary nav page targets (~160×100), not a circle.
   const compactScale = Math.max(0.28, Math.min(0.5, 160 / box.frame.width, 100 / box.frame.height));
   const isInRecycleBin = isRecycleBinPageId(box.pageId);
@@ -363,20 +361,23 @@ export function BaseBoxFrame({
   const isTemporary = box.kind === 'temporary';
   const viewMode = isTemporary ? 'list' : box.viewMode;
   const detailMode = isTemporary ? 'detailed' : box.detailMode;
-  const boxCornerRadius = draggingOverTopBar ? BOX_CORNER_RADIUS.compact : BOX_CORNER_RADIUS.idle;
+  const boxCornerRadius = draggingOverPrimaryNav
+    ? BOX_CORNER_RADIUS.compact
+    : BOX_CORNER_RADIUS.idle;
   // Keep idle scale while free-dragging so drop does not flash scale 1.028 → 1.
-  const visualScale = draggingOverTopBar ? compactScale * (draggingOverTab ? 0.9 : 1) : 1;
+  const visualScale = draggingOverPrimaryNav ? compactScale * (draggingOverTab ? 0.9 : 1) : 1;
   const visualClassName = [
     'cardo-box',
     dragging || deleteMotion ? 'cardo-box-dragging' : '',
-    draggingOverTopBar || (deleteMotion && !deleteMotion.permanent) ? 'cardo-box-dragging-bar' : '',
+    draggingOverPrimaryNav || (deleteMotion && !deleteMotion.permanent)
+      ? 'cardo-box-dragging-bar'
+      : '',
     draggingOverTab || (deleteMotion && !deleteMotion.permanent) ? 'cardo-box-dragging-tab' : '',
     deleteMotion ? 'cardo-box-delete-exiting' : '',
     selectedBoxId === box.id ? 'cardo-box-selected' : '',
     highlightedBoxId === box.id ? 'cardo-box-highlighted' : '',
     detailMode === 'compact' ? 'cardo-box-compact' : '',
     box.isLocked ? 'cardo-box-locked' : '',
-    layoutLocked ? 'cardo-box-layout-locked' : '',
     isTemporary ? 'cardo-box-temporary' : '',
     addViewState?.mode || (appearanceEnabled && appearanceView) || confirmDelete
       ? 'cardo-box-local-view'
@@ -546,7 +547,7 @@ export function BaseBoxFrame({
         x: deleteMotion?.x ?? 0,
         y: deleteMotion?.y ?? 0,
         scale: deleteMotion?.scale ?? visualScale,
-        opacity: deleteMotion?.opacity ?? (draggingOverTopBar ? 0.94 : 1),
+        opacity: deleteMotion?.opacity ?? (draggingOverPrimaryNav ? 0.94 : 1),
         // Numbers only for Motion. Cross-page uses 24px (mini card), never pill/circle.
         borderRadius: deleteMotion?.borderRadius ?? boxCornerRadius,
       }}
@@ -560,10 +561,10 @@ export function BaseBoxFrame({
                 // Nav mini-card only — freeform scale stays 1 (no release pop).
                 scale: {
                   type: 'tween',
-                  duration: draggingOverTopBar ? 0.16 : 0,
+                  duration: draggingOverPrimaryNav ? 0.16 : 0,
                   ease: [0.2, 0.8, 0.2, 1],
                 },
-                borderRadius: { duration: draggingOverTopBar ? 0.14 : 0 },
+                borderRadius: { duration: draggingOverPrimaryNav ? 0.14 : 0 },
                 opacity: { duration: 0.1 },
               }
             : {
@@ -591,6 +592,69 @@ export function BaseBoxFrame({
           contextMenu.closeMenu();
           return;
         }
+        // Origin page is not tracked on soft-delete (pageId becomes recycle only).
+        // Restore defaults to the workspace default group, with a picker for other groups.
+        const restoreTargetPages = useWorkspaceStore
+          .getState()
+          .projection.pages.filter((page) => !isSystemPageId(page.id));
+        const defaultPageId = useWorkspaceStore.getState().projection.defaultPageId;
+        const preferredRestorePageId =
+          restoreTargetPages.find((page) => page.id === defaultPageId)?.id ??
+          restoreTargetPages[0]?.id ??
+          null;
+        const restoreToPage = (targetPageId: string) => {
+          const workspace = useWorkspaceStore.getState();
+          const canvas = useCanvasStore.getState();
+          const camera = canvas.pages[targetPageId]?.camera ?? { panX: 0, panY: 0 };
+          const center = getCanvasViewportCenter(
+            { panX: camera.panX, panY: camera.panY },
+            canvas.viewportSize,
+          );
+          const bounds = createCanvasWorldBounds(canvas.viewportSize);
+          const frame =
+            findPageLandingFrame(workspace.projection, box.id, targetPageId, center, bounds, {
+              avoidOverlap: true,
+            }) ?? undefined;
+          void moveBoxToPage(box.id, targetPageId, frame)
+            .then(() => {
+              // Managed pages need a modeLayouts reflow so the box slots into the grid.
+              const latest = useWorkspaceStore.getState();
+              const mode = resolveGroupViewMode(latest.projection.pages, targetPageId);
+              if (mode !== 'waterfall' && mode !== 'list') return;
+              const viewportWidth = canvas.viewportSize.width > 0 ? canvas.viewportSize.width : 960;
+              const pageBoxes = latest.projection.boxes.filter(
+                (entry) => entry.pageId === targetPageId,
+              );
+              const frames = reflowGroupBoxesAfterDrop({
+                boxes: pageBoxes,
+                draggedId: box.id,
+                dropPoint: center,
+                mode,
+                viewportWidth,
+              });
+              const changed: Record<string, BoxFrame> = {};
+              for (const entry of pageBoxes) {
+                const next = frames.get(entry.id);
+                if (!next) continue;
+                if (
+                  next.x === entry.frame.x &&
+                  next.y === entry.frame.y &&
+                  next.width === entry.frame.width &&
+                  next.height === entry.frame.height
+                ) {
+                  continue;
+                }
+                changed[entry.id] = next;
+              }
+              if (Object.keys(changed).length) {
+                latest.arrangeBoxesOnPage(targetPageId, changed, mode);
+              }
+            })
+            .catch((error: unknown) => {
+              console.error('Cardo command failed', error);
+              showToast(t('toast.commandFailed'), 'error');
+            });
+        };
         contextMenu.openMenu(event.clientX, event.clientY, [
           {
             id: 'rename',
@@ -631,12 +695,39 @@ export function BaseBoxFrame({
                     isCollected ? removeBoxFromCollection(box.id) : addBoxToCollection(box.id),
                 },
               ]
-            : []),
+            : preferredRestorePageId
+              ? [
+                  {
+                    id: 'restore',
+                    label: t('menu.restoreBox'),
+                    icon: <ThemeIcon name="rotateCcw" size={16} />,
+                    onSelect: () => restoreToPage(preferredRestorePageId),
+                  },
+                  ...(restoreTargetPages.length > 1
+                    ? [
+                        {
+                          id: 'restore-to-group',
+                          label: t('menu.restoreToGroup'),
+                          icon: <ThemeIcon name="panel" size={16} />,
+                          children: restoreTargetPages.map((page) => ({
+                            id: `restore-to-${page.id}`,
+                            label:
+                              page.id === defaultPageId
+                                ? t('menu.restoreToDefaultNamed', { title: page.title })
+                                : page.title,
+                            onSelect: () => restoreToPage(page.id),
+                          })),
+                        },
+                      ]
+                    : []),
+                ]
+              : []),
           {
             id: 'delete',
             label: t(isInRecycleBin ? 'menu.deletePermanently' : 'menu.moveToRecycleBin'),
             icon: <ThemeIcon name="trash" size={16} />,
             danger: true,
+            separatorBefore: isInRecycleBin,
             onSelect: () => setConfirmDelete(true),
           },
         ]);
@@ -842,8 +933,7 @@ export function BaseBoxFrame({
           </Button>
         </footer>
       ) : null}
-      {!layoutLocked &&
-      !box.isLocked &&
+      {!box.isLocked &&
       !confirmDelete &&
       !(appearanceEnabled && appearanceView) &&
       !addViewState?.mode &&

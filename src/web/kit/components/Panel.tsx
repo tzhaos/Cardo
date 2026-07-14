@@ -25,7 +25,7 @@ export function PanelHeader({
         {leading ? <div className="cardo-surface-leading">{leading}</div> : null}
         <h1 className={cn('cardo-surface-title', titleClassName)}>{title}</h1>
       </div>
-      {tools ? <div className="cardo-surface-tools cardo-v2-panel-tools">{tools}</div> : null}
+      {tools ? <div className="cardo-surface-tools cardo-shell-panel-tools">{tools}</div> : null}
     </header>
   );
 }

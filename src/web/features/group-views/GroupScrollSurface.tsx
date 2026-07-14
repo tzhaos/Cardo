@@ -39,6 +39,13 @@ export function GroupScrollSurface({
   const { t } = useI18n();
 
   const mode = resolveGroupViewMode(pages, pageId) as Exclude<GroupViewMode, 'freeform'>;
+  const page = pages.find((entry) => entry.id === pageId);
+  const columnCount =
+    mode === 'list'
+      ? (page?.listColumns ?? 1)
+      : mode === 'waterfall'
+        ? (page?.waterfallColumns ?? 0)
+        : 1;
   const boxes = useMemo(
     () =>
       sortBoxesForManagedMode(
@@ -51,25 +58,29 @@ export function GroupScrollSurface({
   );
 
   const width = viewportWidth > 0 ? viewportWidth : 960;
-  const restFrames = useMemo(() => layoutGroupBoxes(boxes, mode, width), [boxes, mode, width]);
+  const restFrames = useMemo(
+    () => layoutGroupBoxes(boxes, mode, width, { columnCount }),
+    [boxes, columnCount, mode, width],
+  );
+  const multiColumnList = mode === 'list' && columnCount > 1;
 
   // Live reflow: neighbors move into the hole predicted by insert index.
   const layoutFrames = useMemo(() => {
     if (!insertPreview || insertPreview.mode !== mode) return restFrames;
-    // List uses flow layout — only the compact insert marker moves; do not reflow frames.
-    if (mode === 'list') return restFrames;
+    // Single-column list stays CSS flow — only the compact insert marker moves.
+    if (mode === 'list' && !multiColumnList) return restFrames;
     const next = new Map(restFrames);
     for (const [id, frame] of Object.entries(insertPreview.frames)) {
       next.set(id, frame);
     }
     return next;
-  }, [insertPreview, mode, restFrames]);
+  }, [insertPreview, mode, multiColumnList, restFrames]);
 
   const contentHeight = useMemo(() => {
     const base = measureGroupLayoutHeight(layoutFrames);
-    if (!insertPreview?.slotFrame || mode === 'list') return base;
+    if (!insertPreview?.slotFrame || (mode === 'list' && !multiColumnList)) return base;
     return Math.max(base, insertPreview.slotFrame.y + insertPreview.slotFrame.height + 24);
-  }, [insertPreview, layoutFrames, mode]);
+  }, [insertPreview, layoutFrames, mode, multiColumnList]);
 
   if (!isManagedGroupView(mode)) {
     return null;
@@ -79,12 +90,13 @@ export function GroupScrollSurface({
 
   return (
     <div
-      className={`cardo-group-scroll cardo-group-scroll-${mode}${inserting ? ' is-insert-previewing' : ''}`}
+      className={`cardo-group-scroll cardo-group-scroll-${mode}${inserting ? ' is-insert-previewing' : ''}${multiColumnList ? ' cardo-group-scroll-list-columns' : ''}`}
       data-group-scroll
       data-group-view-mode={mode}
+      data-list-columns={mode === 'list' ? columnCount : undefined}
       data-insert-preview={inserting ? 'true' : undefined}
     >
-      {mode === 'list' ? (
+      {mode === 'list' && !multiColumnList ? (
         <div className="cardo-group-list-flow">
           {/*
             Page-level empty (zero boxes) is owned by WorkspaceCanvas (page.groupEmpty).
@@ -100,6 +112,41 @@ export function GroupScrollSurface({
           ))}
           {insertPreview?.mode === 'list' && insertPreview.insertIndex >= boxes.length ? (
             <ListDropLanding label={t('groupView.dropHere')} />
+          ) : null}
+        </div>
+      ) : mode === 'list' && multiColumnList ? (
+        <div className="cardo-group-list-plane" style={{ minHeight: contentHeight }}>
+          {boxes.map((box) => {
+            const frame = layoutFrames.get(box.id) ?? box.modeLayouts.list;
+            return (
+              <div
+                key={box.id}
+                className="cardo-group-list-slot-absolute"
+                data-list-slot
+                style={{
+                  left: frame.x,
+                  top: frame.y,
+                  width: frame.width,
+                  minHeight: frame.height,
+                }}
+              >
+                <GroupListSection box={box} />
+              </div>
+            );
+          })}
+          {insertPreview?.mode === 'list' && insertPreview.slotFrame ? (
+            <div
+              className="cardo-drop-landing cardo-drop-landing-list"
+              aria-hidden="true"
+              style={{
+                left: insertPreview.slotFrame.x,
+                top: insertPreview.slotFrame.y,
+                width: insertPreview.slotFrame.width,
+                height: Math.min(LIST_LANDING_HEIGHT, insertPreview.slotFrame.height),
+              }}
+            >
+              <span>{t('groupView.dropHere')}</span>
+            </div>
           ) : null}
         </div>
       ) : (

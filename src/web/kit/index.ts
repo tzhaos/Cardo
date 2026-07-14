@@ -27,7 +27,7 @@ export { Segmented, type SegmentedOption, type SegmentedProps } from './segmente
 export { Pill, type PillProps } from './pill';
 export { NavItem, SectionLabel, type NavItemProps } from './nav-item';
 export { Panel, PanelHeader, Divider } from './panel';
-export { PageTitle, PageDescription, SettingsCard, SettingsRow } from './settings-form';
+export { SettingsCard, SettingsRow } from './settings-form';
 export { ConfirmBar, type ConfirmBarProps } from './confirm-bar';
 export { ThemeIcon, type ThemeIconName } from './icon';
 

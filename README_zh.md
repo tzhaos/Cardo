@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.1.0-1C1C1E?style=flat-square" alt="version"/>
+  <img src="https://img.shields.io/badge/version-0.2.0-1C1C1E?style=flat-square" alt="version"/>
   <img src="https://img.shields.io/badge/license-MIT-6E6E73?style=flat-square" alt="license"/>
   <img src="https://img.shields.io/badge/runtime-local%20SQLite-111827?style=flat-square" alt="runtime"/>
   <img src="https://img.shields.io/badge/clients-CLI%20%7C%20Web%20%7C%20Extension%20%7C%20Desktop-374151?style=flat-square" alt="clients"/>
@@ -26,7 +26,7 @@
 
 ## Cardo 是什么？
 
-Cardo（拉丁语 cardo：门枢 / 枢纽 / 轴线）是本机优先的空间工作台。你在无限画布上用自由布局的「盒子」收纳链接、笔记、文件、文件夹、网站收藏和快速启动入口；用「页面」划分工作区，并提供收藏与回收站。
+Cardo（拉丁语 cardo：门枢 / 枢纽 / 轴线）是本机优先的空间工作台。你在无限画布上用自由布局的「盒子」收纳链接、笔记、文件、文件夹、网站收藏和快速启动入口；用「分组」划分工作区，并提供收藏与回收站。
 
 它不是「只有插件」或「只有桌面端」：产品围绕本机唯一权威 Runtime 展开，多表面对称接入同一工作区。
 
@@ -58,7 +58,7 @@ Cardo（拉丁语 cardo：门枢 / 枢纽 / 轴线）是本机优先的空间工
 - 盒子可拖拽、缩放、锁定、换色，并在列表 / 网格间切换
 - 条目类型：书签、剪贴板片段、本地文件 / 文件夹 / 快捷方式
 - 选中盒子后粘贴文字、网址或本地路径即可入库；未选中时在中心新建临时盒
-- 多页面工作区、收藏（只读引用视图）、回收站恢复
+- 多分组工作区、收藏（只读引用视图）、回收站恢复
 
 ### 本机 Runtime 权威
 
@@ -69,12 +69,12 @@ Cardo（拉丁语 cardo：门枢 / 枢纽 / 轴线）是本机优先的空间工
 
 ### 产品壳层
 
-- 侧栏壳：页面、收藏、回收站、设置脚；主面板标题工具
-- 撤销 / 重做、画布工具、底栏搜索 / 新建盒子
-- 跨页面、盒子与条目的全局搜索
+- 侧栏壳：分组、收藏、回收站、设置脚；主面板标题工具
+- 撤销 / 重做、画布工具；底栏仅新建盒子 FAB
+- 侧栏搜索入口（或 Ctrl+K）跨分组、盒子与条目全局搜索
 - 内置主题：Codex（可通过 Theme Pack 文件导入更多主题）
 - 界面语言：English / 中文
-- 功能目录可开关壳层插槽（设置 → 界面）
+- 功能目录可开关壳层插槽（设置 → 功能）
 
 ### 壳能力（非数据库端口）
 

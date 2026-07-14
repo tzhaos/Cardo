@@ -38,12 +38,12 @@ export function TooltipContent({
         data-slot="tooltip-content"
         side={side}
         sideOffset={sideOffset}
-        className={cn('cardo-ui-tooltip-content cardo-hover-tip', className)}
+        className={cn('cardo-tooltip-content cardo-hover-tip', className)}
         {...props}
       >
         {children}
         <TooltipPrimitive.Arrow
-          className="cardo-ui-tooltip-arrow cardo-hover-tip-arrow"
+          className="cardo-tooltip-arrow cardo-hover-tip-arrow"
           width={12}
           height={7}
         />

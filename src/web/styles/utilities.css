@@ -6,8 +6,7 @@
 .cardo-custom-scrollbar::-webkit-scrollbar,
 .cardo-add-view::-webkit-scrollbar,
 .cardo-box-content::-webkit-scrollbar,
-.cardo-floating-menu::-webkit-scrollbar,
-.cardo-top-bar::-webkit-scrollbar {
+.cardo-floating-menu::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
@@ -15,16 +14,14 @@
 .cardo-custom-scrollbar::-webkit-scrollbar-track,
 .cardo-add-view::-webkit-scrollbar-track,
 .cardo-box-content::-webkit-scrollbar-track,
-.cardo-floating-menu::-webkit-scrollbar-track,
-.cardo-top-bar::-webkit-scrollbar-track {
+.cardo-floating-menu::-webkit-scrollbar-track {
   background: transparent;
 }
 
 .cardo-custom-scrollbar::-webkit-scrollbar-button,
 .cardo-add-view::-webkit-scrollbar-button,
 .cardo-box-content::-webkit-scrollbar-button,
-.cardo-floating-menu::-webkit-scrollbar-button,
-.cardo-top-bar::-webkit-scrollbar-button {
+.cardo-floating-menu::-webkit-scrollbar-button {
   display: none;
   width: 0;
   height: 0;
@@ -33,8 +30,7 @@
 .cardo-custom-scrollbar::-webkit-scrollbar-thumb,
 .cardo-add-view::-webkit-scrollbar-thumb,
 .cardo-box-content::-webkit-scrollbar-thumb,
-.cardo-floating-menu::-webkit-scrollbar-thumb,
-.cardo-top-bar::-webkit-scrollbar-thumb {
+.cardo-floating-menu::-webkit-scrollbar-thumb {
   border-radius: var(--cardo-radius-pill);
   background: var(--cardo-scrollbar);
 }
@@ -42,7 +38,6 @@
 .cardo-custom-scrollbar::-webkit-scrollbar-thumb:hover,
 .cardo-add-view::-webkit-scrollbar-thumb:hover,
 .cardo-box-content::-webkit-scrollbar-thumb:hover,
-.cardo-floating-menu::-webkit-scrollbar-thumb:hover,
-.cardo-top-bar::-webkit-scrollbar-thumb:hover {
+.cardo-floating-menu::-webkit-scrollbar-thumb:hover {
   background: var(--cardo-scrollbar-hover);
 }

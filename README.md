@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.1.0-1C1C1E?style=flat-square" alt="version"/>
+  <img src="https://img.shields.io/badge/version-0.2.0-1C1C1E?style=flat-square" alt="version"/>
   <img src="https://img.shields.io/badge/license-MIT-6E6E73?style=flat-square" alt="license"/>
   <img src="https://img.shields.io/badge/runtime-local%20SQLite-111827?style=flat-square" alt="runtime"/>
   <img src="https://img.shields.io/badge/clients-CLI%20%7C%20Web%20%7C%20Extension%20%7C%20Desktop-374151?style=flat-square" alt="clients"/>
@@ -26,7 +26,7 @@
 
 ## What is Cardo?
 
-Cardo (Latin cardo: hinge / axis) is a local-first spatial workbench. You organize links, notes, files, folders, bookmarks, and quick-launch items inside freeform boxes on an infinite canvas — across pages, with Favorites and a Recycle Bin.
+Cardo (Latin cardo: hinge / axis) is a local-first spatial workbench. You organize links, notes, files, folders, bookmarks, and quick-launch items inside freeform boxes on an infinite canvas — across groups, with Favorites and a Recycle Bin.
 
 Unlike a pure browser extension or a single desktop binary, Cardo is a multi-surface product around one authoritative local Runtime:
 
@@ -58,7 +58,7 @@ All graphical surfaces share the same React UI (`src/web`) and talk to Runtime t
 - Boxes you can drag, resize, lock, recolor, and switch between list / grid
 - Items: bookmarks, clipboard snippets, local files / folders / shortcuts
 - Paste text, URL, or path into a selected box — or create a temporary box when nothing is selected
-- Multi-page workspaces, Favorites (read-only box views), and Recycle Bin restore
+- Multi-group workspaces, Favorites (read-only box views), and Recycle Bin restore
 
 ### Local Runtime authority
 
@@ -69,12 +69,12 @@ All graphical surfaces share the same React UI (`src/web`) and talk to Runtime t
 
 ### Product chrome
 
-- Sidebar shell: pages, Favorites, Recycle Bin, settings foot; main panel title tools
-- History undo / redo, canvas tools, bottom search / new box
-- Global search across pages, boxes, and items
+- Sidebar shell: groups, Favorites, Recycle Bin, settings foot; main panel title tools
+- History undo / redo, canvas tools; bottom create-box FAB only
+- Global search from the sidebar (or Ctrl+K) across groups, boxes, and items
 - Built-in theme pack: Codex (import additional packs via Theme Pack files)
 - Interface language: English / 中文
-- Feature catalog for chrome slots (Settings → Interface)
+- Feature catalog for chrome slots (Settings → Features)
 
 ### Shell capabilities (non-DB ports)
 

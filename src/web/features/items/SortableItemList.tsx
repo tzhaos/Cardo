@@ -8,6 +8,7 @@ import type { BoxItem, WorkspaceBoxViewMode } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { IconButton } from '../../kit/icon-button';
 import { ThemeIcon } from '../../kit/icon';
+import { ItemMultiSelectBar } from './ItemMultiSelectBar';
 
 export function SortableItemList<TItem extends BoxItem>({
   boxId,
@@ -30,51 +31,62 @@ export function SortableItemList<TItem extends BoxItem>({
     .filter((item): item is TItem => Boolean(item));
   const layoutDependency = `${viewMode}:${orderedIds.join(':')}`;
   const isGrid = viewMode === 'grid';
+  const hasPinBoundary =
+    orderedItems.some((item) => item.isPinned) && orderedItems.some((item) => !item.isPinned);
   return (
-    <Reorder.Group
-      as="div"
-      /*
-       * Motion Reorder only supports a single axis (defaults to y). Grid still
-       * reorders document order; drop hit-testing uses 2D tile centers when isGrid.
-       */
-      axis="y"
-      className={`cardo-item-list${isGrid ? ' cardo-item-list-grid' : ''}`}
-      values={orderedIds}
-      onReorder={updateOrder}
-      onCopy={(event) => {
-        // Allow real content copy (selection or clipboard-body text); block empty
-        // drag-chrome copy that would replace the system clipboard with nothing useful.
-        if (window.getSelection()?.toString().trim()) return;
-        const target = event.target;
-        if (target instanceof Element) {
-          if (target.closest('input,textarea,[contenteditable="true"]')) return;
-          if (target.closest('.cardo-clipboard-body')) return;
-        }
-        event.preventDefault();
-      }}
-    >
-      <AnimatePresence initial={false}>
-        {orderedItems.map((item) => (
-          <SortableItemEntry
-            itemId={item.id}
-            key={item.id}
-            isGrid={isGrid}
-            onReorderEnd={finishReordering}
-            onReorderStart={startReordering}
-            onCrossBoxDrop={(point) => {
-              const drop = resolveCrossBoxDrop(boxId, point);
-              if (!drop) return false;
-              cancelReordering();
-              moveItemBetweenBoxes(boxId, drop.targetBoxId, item.id, drop.targetIndex);
-              return true;
-            }}
-            layoutDependency={layoutDependency}
-          >
-            {renderItem(item)}
-          </SortableItemEntry>
-        ))}
-      </AnimatePresence>
-    </Reorder.Group>
+    <div className="cardo-item-list-shell">
+      <Reorder.Group
+        as="div"
+        /*
+         * Motion Reorder only supports a single axis (defaults to y). Grid still
+         * reorders document order; drop hit-testing uses 2D tile centers when isGrid.
+         */
+        axis="y"
+        className={`cardo-item-list${isGrid ? ' cardo-item-list-grid' : ''}${hasPinBoundary ? ' cardo-item-list-has-pin-boundary' : ''}`}
+        values={orderedIds}
+        onReorder={updateOrder}
+        onCopy={(event) => {
+          // Allow real content copy (selection or clipboard-body text); block empty
+          // drag-chrome copy that would replace the system clipboard with nothing useful.
+          if (window.getSelection()?.toString().trim()) return;
+          const target = event.target;
+          if (target instanceof Element) {
+            if (target.closest('input,textarea,[contenteditable="true"]')) return;
+            if (target.closest('.cardo-clipboard-body')) return;
+          }
+          event.preventDefault();
+        }}
+      >
+        <AnimatePresence initial={false}>
+          {orderedItems.map((item, index) => {
+            const next = orderedItems[index + 1];
+            const showPinSeparator =
+              !isGrid && hasPinBoundary && item.isPinned && next && !next.isPinned;
+            return (
+              <SortableItemEntry
+                itemId={item.id}
+                key={item.id}
+                isGrid={isGrid}
+                showPinSeparator={Boolean(showPinSeparator)}
+                onReorderEnd={finishReordering}
+                onReorderStart={startReordering}
+                onCrossBoxDrop={(point) => {
+                  const drop = resolveCrossBoxDrop(boxId, point);
+                  if (!drop) return false;
+                  cancelReordering();
+                  moveItemBetweenBoxes(boxId, drop.targetBoxId, item.id, drop.targetIndex);
+                  return true;
+                }}
+                layoutDependency={layoutDependency}
+              >
+                {renderItem(item)}
+              </SortableItemEntry>
+            );
+          })}
+        </AnimatePresence>
+      </Reorder.Group>
+      <ItemMultiSelectBar boxId={boxId} items={items} />
+    </div>
   );
 }
 
@@ -82,6 +94,7 @@ function SortableItemEntry({
   itemId,
   children,
   isGrid: _isGrid,
+  showPinSeparator = false,
   onReorderEnd,
   onReorderStart,
   onCrossBoxDrop,
@@ -90,6 +103,7 @@ function SortableItemEntry({
   itemId: string;
   children: ReactNode;
   isGrid: boolean;
+  showPinSeparator?: boolean;
   onReorderEnd: () => void;
   onReorderStart: () => void;
   onCrossBoxDrop: (point: { x: number; y: number }) => boolean;
@@ -144,7 +158,7 @@ function SortableItemEntry({
     <Reorder.Item
       ref={entryRef}
       as="div"
-      className={`cardo-item-reorder-entry${dragging ? ' cardo-item-reorder-entry-dragging' : ''}`}
+      className={`cardo-item-reorder-entry${dragging ? ' cardo-item-reorder-entry-dragging' : ''}${showPinSeparator ? ' cardo-item-pin-boundary' : ''}`}
       data-item-id={itemId}
       value={itemId}
       dragControls={controls}

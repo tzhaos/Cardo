@@ -48,6 +48,7 @@ export function WorkspaceCanvas() {
   const createBox = useWorkspaceStore((state) => state.createBox);
   const createPage = useWorkspaceStore((state) => state.createPage);
   const setDefaultPage = useWorkspaceStore((state) => state.setDefaultPage);
+  const setActivePage = useWorkspaceStore((state) => state.setActivePage);
   const draggedBoxId = useUiStore((state) => state.draggedBoxId);
   const viewportSize = useCanvasStore((state) => state.viewportSize);
   const contextMenu = useContextMenu();
@@ -59,24 +60,31 @@ export function WorkspaceCanvas() {
   const activeGroupViewMode = isSystemPageId(activePageId)
     ? 'freeform'
     : resolveGroupViewMode(pageRows, activePageId);
+  const firstUserPageId =
+    pageRows.find((page) => page.id === defaultPageId && !isSystemPageId(page.id))?.id ??
+    pageRows.find((page) => !isSystemPageId(page.id))?.id ??
+    null;
   const systemPageEmpty =
     isRecycleBin && activePageBoxCount === 0
       ? {
           key: 'recycle-bin-empty',
           icon: <ThemeIcon name="trash" size={22} strokeWidth={1.75} />,
           label: t('page.recycleBinEmpty'),
+          secondary: t('page.recycleBinEmptySecondary'),
         }
       : isCollection && isCollectionEmpty
         ? {
             key: 'collection-empty',
             icon: <ThemeIcon name="star" size={22} strokeWidth={1.75} />,
             label: t('page.collectionEmpty'),
+            secondary: t('page.collectionEmptySecondary'),
           }
         : !isSystemPageId(activePageId) && activePageBoxCount === 0
           ? {
               key: 'group-empty',
               icon: <ThemeIcon name="box" size={22} strokeWidth={1.75} />,
               label: t('page.groupEmpty'),
+              secondary: null as string | null,
             }
           : null;
   const previousActivePageIdRef = useRef(activePageId);
@@ -98,7 +106,6 @@ export function WorkspaceCanvas() {
   );
   const activePageIndex = pageOrder.findIndex((page) => page.id === activePageId);
   const pageTransitionDirection = activePageIndex < previousPageIndex ? -1 : 1;
-  const isPageSwitch = previousActivePageIdRef.current !== activePageId;
   const managedView = isManagedGroupView(activeGroupViewMode);
   const canvasClassName = [
     'cardo-canvas',
@@ -202,11 +209,7 @@ export function WorkspaceCanvas() {
           ) : (
             <CanvasWorld pageId={activePageId}>
               <div className="cardo-canvas-boundary" style={boundaryStyle} />
-              <PageBoxes
-                pageId={activePageId}
-                skipEntryAnimation={isPageSwitch}
-                excludeBoxId={draggedBoxId}
-              />
+              <PageBoxes pageId={activePageId} excludeBoxId={draggedBoxId} />
             </CanvasWorld>
           )}
           <AnimatePresence>
@@ -222,6 +225,11 @@ export function WorkspaceCanvas() {
                   {systemPageEmpty.icon}
                 </span>
                 <span className="cardo-system-page-empty-label">{systemPageEmpty.label}</span>
+                {systemPageEmpty.secondary ? (
+                  <span className="cardo-system-page-empty-secondary">
+                    {systemPageEmpty.secondary}
+                  </span>
+                ) : null}
                 {systemPageEmpty.key === 'group-empty' ? (
                   <Button
                     type="button"
@@ -243,6 +251,17 @@ export function WorkspaceCanvas() {
                     <span>{t('page.createBox')}</span>
                   </Button>
                 ) : null}
+                {systemPageEmpty.key === 'collection-empty' && firstUserPageId ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="cardo-system-page-empty-cta"
+                    onClick={() => setActivePage(firstUserPageId)}
+                  >
+                    <ThemeIcon name="panel" size={14} />
+                    <span>{t('page.goToGroups')}</span>
+                  </Button>
+                ) : null}
               </motion.div>
             ) : null}
           </AnimatePresence>
@@ -258,15 +277,7 @@ export function WorkspaceCanvas() {
   );
 }
 
-function PageBoxes({
-  pageId,
-  skipEntryAnimation,
-  excludeBoxId,
-}: {
-  pageId: string;
-  skipEntryAnimation: boolean;
-  excludeBoxId?: string | null;
-}) {
+function PageBoxes({ pageId, excludeBoxId }: { pageId: string; excludeBoxId?: string | null }) {
   const allBoxes = useWorkspaceStore((state) => state.projection.boxes);
   const dragSession = useUiStore((state) => state.boxDragSession);
   const boxes = useMemo(
@@ -286,12 +297,7 @@ function PageBoxes({
     <>
       {showLandingPreview ? <FreeformDropLandingPreview /> : null}
       {boxes.map((box) => (
-        <WorkspaceBoxRenderer
-          box={box}
-          key={box.id}
-          skipEntryAnimation={skipEntryAnimation}
-          layoutLocked={false}
-        />
+        <WorkspaceBoxRenderer box={box} key={box.id} />
       ))}
     </>
   );
@@ -317,7 +323,7 @@ function FreeformDropLandingPreview() {
         return;
       }
       // Nav hover lands via adaptive placement — hide canvas footprint.
-      if (session?.morphology === 'freeform' && !ui.boxDragOverTopBar) {
+      if (session?.morphology === 'freeform' && !ui.boxDragOverPrimaryNav) {
         const workspace = useWorkspaceStore.getState();
         const canvas = useCanvasStore.getState();
         const movingBox = workspace.projection.boxes.find((box) => box.id === session.boxId);
@@ -440,7 +446,7 @@ function cameraTransform(camera: { panX: number; panY: number; zoom?: number }) 
 }
 
 /**
- * Vertical page turn (sidebar group list is vertical; not legacy top-bar horizontal).
+ * Vertical page turn (sidebar group list is vertical).
  * direction > 0 → higher page order: enter from below, exit upward.
  * direction < 0 → lower page order: enter from above, exit downward.
  * During cross-page box drag the ghost lives outside scenes.

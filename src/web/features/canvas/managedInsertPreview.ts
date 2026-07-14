@@ -28,7 +28,7 @@ export function updateManagedInsertPreview(clientX: number, clientY: number): vo
     ui.setManagedInsertPreview(null);
     return;
   }
-  if (ui.boxDragOverTopBar) {
+  if (ui.boxDragOverPrimaryNav) {
     ui.setManagedInsertPreview(null);
     return;
   }
@@ -39,6 +39,7 @@ export function updateManagedInsertPreview(clientX: number, clientY: number): vo
     return;
   }
 
+  const page = workspace.projection.pages.find((entry) => entry.id === pageId);
   const mode = resolveGroupViewMode(workspace.projection.pages, pageId);
   if (mode !== 'waterfall' && mode !== 'list') {
     ui.setManagedInsertPreview(null);
@@ -47,6 +48,8 @@ export function updateManagedInsertPreview(clientX: number, clientY: number): vo
 
   // card/list ghosts use their morphology; freeform over a managed page uses page mode.
   const managedMode = session.morphology === 'list' || mode === 'list' ? 'list' : 'waterfall';
+  const columnCount =
+    managedMode === 'list' ? (page?.listColumns ?? 1) : (page?.waterfallColumns ?? 0);
   const viewportWidth = useCanvasStore.getState().viewportSize.width || 960;
   const pageBoxes = workspace.projection.boxes.filter((box) => box.pageId === pageId);
   const draggedId = session.boxId;
@@ -66,7 +69,7 @@ export function updateManagedInsertPreview(clientX: number, clientY: number): vo
   let slotFrame: { x: number; y: number; width: number; height: number } | null;
   let frames: Map<string, { x: number; y: number; width: number; height: number }>;
 
-  if (managedMode === 'list') {
+  if (managedMode === 'list' && columnCount <= 1) {
     const others = sortBoxesForManagedMode(
       pageBoxes.filter((box) => box.id !== draggedId),
       'list',
@@ -74,7 +77,10 @@ export function updateManagedInsertPreview(clientX: number, clientY: number): vo
     // DOM midlines of remaining sections (compact landing barely shifts them).
     insertIndex = findListInsertIndexFromDom(others, clientY);
     const trialOrder = [...others.slice(0, insertIndex), dragged, ...others.slice(insertIndex)];
-    frames = layoutGroupBoxes(trialOrder, 'list', viewportWidth, { preserveOrder: true });
+    frames = layoutGroupBoxes(trialOrder, 'list', viewportWidth, {
+      preserveOrder: true,
+      columnCount,
+    });
     // Compact slot for paint; commit still reuses insertIndex + full reflow frames.
     const full = frames.get(draggedId);
     slotFrame = full
@@ -85,8 +91,9 @@ export function updateManagedInsertPreview(clientX: number, clientY: number): vo
       boxes: pageBoxes,
       draggedId,
       dropPoint,
-      mode: 'waterfall',
+      mode: managedMode,
       viewportWidth,
+      columnCount,
     });
     insertIndex = result.insertIndex;
     slotFrame = result.slotFrame;

@@ -337,8 +337,82 @@ button.cardo-item-drag-handle.cardo-button:active {
   background: color-mix(in srgb, var(--box-accent) 5%, var(--cardo-panel-content));
 }
 
+.cardo-item-row.cardo-item-selected {
+  border-color: color-mix(in srgb, var(--cardo-blue) 42%, var(--cardo-border-subtle));
+  background: color-mix(in srgb, var(--cardo-blue) 8%, var(--cardo-panel-content));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--cardo-blue) 18%, transparent);
+}
+
+.cardo-item-row:focus-visible {
+  border-color: color-mix(in srgb, var(--box-accent) 40%, var(--cardo-border-subtle));
+  outline: 2px solid color-mix(in srgb, var(--box-accent) 28%, transparent);
+  outline-offset: 1px;
+}
+
 .cardo-item-pinned .cardo-item-pin {
   color: var(--box-accent);
+}
+
+/* Pin section separator: line under the last pinned row. */
+.cardo-item-reorder-entry.cardo-item-pin-boundary {
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid color-mix(in srgb, var(--box-accent) 28%, var(--cardo-divider));
+}
+
+.cardo-item-list-shell {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0;
+}
+
+.cardo-item-multi-select-bar {
+  position: sticky;
+  z-index: 6;
+  bottom: 0;
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+  border: 1px solid color-mix(in srgb, var(--cardo-blue) 22%, var(--cardo-border-subtle));
+  border-radius: var(--cardo-radius-md);
+  padding: 4px 8px;
+  background: color-mix(in srgb, var(--cardo-blue) 8%, var(--cardo-surface-strong));
+  box-shadow: var(--cardo-shadow);
+}
+
+.cardo-item-multi-select-bar-confirm {
+  border-color: color-mix(in srgb, var(--cardo-red) 28%, var(--cardo-border-subtle));
+  background: color-mix(in srgb, var(--cardo-red) 6%, var(--cardo-surface-strong));
+}
+
+.cardo-item-multi-select-label {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--cardo-soft-text);
+  font-size: 12px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardo-item-multi-select-actions {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+}
+
+.cardo-item-multi-select-actions .cardo-icon-button,
+.cardo-item-multi-select-actions button {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
 }
 
 .cardo-item-glyph {
@@ -358,23 +432,23 @@ button.cardo-item-drag-handle.cardo-button:active {
 }
 
 .cardo-local-item-file {
-  --item-accent: #64748b;
+  --item-accent: var(--cardo-item-file);
 }
 
 .cardo-local-item-shortcut {
-  --item-accent: #8b5cf6;
+  --item-accent: var(--cardo-item-shortcut);
 }
 
 .cardo-local-item-folder {
-  --item-accent: #3b82f6;
+  --item-accent: var(--cardo-item-folder);
 }
 
 .cardo-bookmark-item {
-  --item-accent: #f97316;
+  --item-accent: var(--cardo-item-bookmark);
 }
 
 .cardo-clipboard-item {
-  --item-accent: #10b981;
+  --item-accent: var(--cardo-item-clipboard);
 }
 
 .cardo-shortcut-badge {
@@ -712,6 +786,32 @@ button.cardo-item-drag-handle.cardo-button:active {
   transition: opacity var(--cardo-duration-normal) var(--cardo-easing);
 }
 
+/* List: full pin/edit/delete. Grid: pin + ⋯ overflow (edit/delete in menu). */
+.cardo-item-action-more {
+  display: none;
+}
+
+.cardo-item-list-grid .cardo-item-action-edit,
+.cardo-item-list-grid .cardo-item-action-delete {
+  display: none;
+}
+
+.cardo-item-list-grid .cardo-item-action-more {
+  display: inline-flex;
+}
+
+.cardo-item-more-glyph {
+  display: inline-flex;
+  width: 13px;
+  height: 13px;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
 .cardo-item-row:hover .cardo-item-actions,
 .cardo-item-actions:focus-within {
   opacity: 1;
@@ -767,13 +867,36 @@ button.cardo-item-drag-handle.cardo-button:active {
   align-items: center;
 }
 
+.cardo-clipboard-main {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding-right: 94px;
+}
+
+.cardo-clipboard-title {
+  min-width: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0 0 0 2px;
+  color: var(--cardo-soft-text);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .cardo-clipboard-body {
   display: -webkit-box !important;
   min-height: 0;
   flex: 1 1 auto;
   overflow: hidden;
   margin: 0;
-  padding: 0 94px 0 2px;
+  padding: 0 2px;
   color: var(--cardo-soft-text) !important;
   cursor: copy;
   font-size: 12px !important;
@@ -783,6 +906,11 @@ button.cardo-item-drag-handle.cardo-button:active {
   overflow-wrap: anywhere;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+.cardo-clipboard-main:has(.cardo-clipboard-title) .cardo-clipboard-body,
+.cardo-clipboard-main:has(.cardo-item-title-input) .cardo-clipboard-body {
+  -webkit-line-clamp: 1;
 }
 
 .cardo-clipboard-card-content .cardo-item-actions {
@@ -845,6 +973,18 @@ button.cardo-item-drag-handle.cardo-button:active {
   text-align: center;
 }
 
+.cardo-item-list-grid .cardo-clipboard-main {
+  width: 100%;
+  padding-right: 0;
+  align-items: center;
+  text-align: center;
+}
+
+.cardo-item-list-grid .cardo-clipboard-title {
+  max-width: 100%;
+  text-align: center;
+}
+
 .cardo-item-list-grid .cardo-clipboard-body {
   display: -webkit-box !important;
   width: 100%;
@@ -855,9 +995,13 @@ button.cardo-item-drag-handle.cardo-button:active {
   -webkit-line-clamp: 4;
 }
 
+.cardo-box-compact .cardo-clipboard-main {
+  padding-right: 94px;
+}
+
 .cardo-box-compact .cardo-clipboard-body {
   min-height: 16px;
-  padding: 0 94px 0 2px;
+  padding: 0 2px;
   font-size: 12px !important;
   line-height: 16px;
   -webkit-line-clamp: 1;

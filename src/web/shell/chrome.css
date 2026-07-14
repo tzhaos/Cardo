@@ -1,12 +1,13 @@
 /**
  * Product shell geometry (sidebar + main panel, Codex-like).
- * Scoped under .cardo-v2-app (historical class prefix kept for theme recipes).
+ * Scoped under .cardo-shell-app.
  */
 
-.cardo-v2-app {
-  --cardo-shell-sidebar-width: 236px;
-  --cardo-shell-titlebar-height: 40px;
-  --cardo-v2-panel-radius: var(--cardo-radius-xl, 16px);
+.cardo-shell-app {
+  /* Density-aware shell geometry (tokens from applyTheme / tokens.css). */
+  --cardo-shell-sidebar-width: calc(236px * var(--cardo-density, 1));
+  --cardo-shell-titlebar-height: max(36px, calc(var(--cardo-control-h-md, 32px) + 8px));
+  --cardo-shell-panel-radius: var(--cardo-radius-xl, 16px);
 
   box-sizing: border-box;
   display: flex;
@@ -18,12 +19,12 @@
   background: var(--cardo-shell, var(--cardo-canvas, #eceef2));
 }
 
-.cardo-v2-app.cardo-app-desktop {
+.cardo-shell-app.cardo-app-desktop {
   padding-top: var(--cardo-shell-titlebar-height);
 }
 
 /* Titlebar shares shell color family (not a second glass fill). */
-.cardo-v2-app .cardo-desktop-titlebar {
+.cardo-shell-app .cardo-desktop-titlebar {
   height: var(--cardo-shell-titlebar-height);
   border-bottom-color: transparent;
   background: var(--cardo-shell, var(--cardo-canvas, #eceef2));
@@ -42,8 +43,8 @@
 }
 
 .cardo-shell-title-control {
-  width: 28px;
-  height: 28px;
+  width: var(--cardo-control-h-dense, 28px);
+  height: var(--cardo-control-h-dense, 28px);
   color: var(--cardo-secondary-text, #5c6370);
 }
 
@@ -53,7 +54,7 @@
 
 .cardo-shell-file-menu-trigger {
   display: inline-flex;
-  height: 28px;
+  height: var(--cardo-control-h-dense, 28px);
   align-items: center;
   gap: 4px;
   margin-left: 2px;
@@ -94,7 +95,7 @@
   display: flex;
   flex: 0 0 auto;
   align-items: center;
-  min-height: 40px;
+  min-height: var(--cardo-control-h-md, 32px);
   padding: 10px 16px 6px;
 }
 
@@ -108,14 +109,14 @@
 }
 
 /* —— Body row: sidebar + main stage —— */
-.cardo-v2-shell-body {
+.cardo-shell-shell-body {
   display: flex;
   min-height: 0;
   flex: 1 1 auto;
   padding: 0 8px 8px 0;
 }
 
-.cardo-v2-sidebar {
+.cardo-shell-sidebar {
   display: flex;
   width: var(--cardo-shell-sidebar-width);
   flex: 0 0 var(--cardo-shell-sidebar-width);
@@ -128,7 +129,7 @@
     opacity 140ms ease;
 }
 
-.cardo-v2-sidebar-collapsed {
+.cardo-shell-sidebar-collapsed {
   width: 0;
   flex-basis: 0;
   opacity: 0;
@@ -136,20 +137,20 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cardo-v2-sidebar {
+  .cardo-shell-sidebar {
     transition: none;
   }
 }
 
 /* Product nav (drop hit root) fills space above the always-on settings foot. */
-.cardo-v2-product-nav {
+.cardo-shell-product-nav {
   display: flex;
   min-height: 0;
   flex: 1 1 auto;
   flex-direction: column;
 }
 
-.cardo-v2-sidebar-scroll {
+.cardo-shell-sidebar-scroll {
   display: flex;
   min-height: 0;
   flex: 1 1 auto;
@@ -161,16 +162,16 @@
   scrollbar-color: color-mix(in srgb, var(--cardo-text) 14%, transparent) transparent;
 }
 
-.cardo-v2-sidebar-scroll::-webkit-scrollbar {
+.cardo-shell-sidebar-scroll::-webkit-scrollbar {
   width: 6px;
 }
 
-.cardo-v2-sidebar-scroll::-webkit-scrollbar-thumb {
+.cardo-shell-sidebar-scroll::-webkit-scrollbar-thumb {
   border-radius: 6px;
   background: color-mix(in srgb, var(--cardo-text) 12%, transparent);
 }
 
-.cardo-v2-nav-block {
+.cardo-shell-nav-block {
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -179,7 +180,7 @@
 /* Layout-only shell chrome; interactive rows use cardo-nav-item (UI Kit). */
 
 /* Box-drop hit shell — no hover/active pill (kit NavItem owns those). */
-.cardo-v2-page-drop-row {
+.cardo-shell-page-drop-row {
   position: relative;
   display: flex;
   width: 100%;
@@ -189,7 +190,7 @@
 }
 
 /* Trailing overflow menu (touch / no right-click). Sibling of NavItem — not nested. */
-.cardo-v2-page-row-menu {
+.cardo-shell-page-row-menu {
   position: absolute;
   top: 50%;
   right: 4px;
@@ -207,77 +208,77 @@
     color 120ms ease;
 }
 
-.cardo-v2-page-drop-row:hover .cardo-v2-page-row-menu,
-.cardo-v2-page-drop-row:focus-within .cardo-v2-page-row-menu,
-.cardo-v2-page-row-menu:focus-visible {
+.cardo-shell-page-drop-row:hover .cardo-shell-page-row-menu,
+.cardo-shell-page-drop-row:focus-within .cardo-shell-page-row-menu,
+.cardo-shell-page-row-menu:focus-visible {
   opacity: 1;
 }
 
-.cardo-v2-page-row-menu:hover:not(:disabled) {
+.cardo-shell-page-row-menu:hover:not(:disabled) {
   background: var(--cardo-hover, rgba(0, 0, 0, 0.045));
   color: var(--cardo-text);
 }
 
 /* Touch: always fully visible (no hover affordance). */
 @media (hover: none) {
-  .cardo-v2-page-row-menu {
+  .cardo-shell-page-row-menu {
     opacity: 1;
   }
 }
 
 /* Leave room so the label does not collide with the overflow control. */
-.cardo-v2-page-drop-row .cardo-nav-item {
+.cardo-shell-page-drop-row .cardo-nav-item {
   padding-right: 30px;
 }
 
-.cardo-v2-page-drop-row:hover {
+.cardo-shell-page-drop-row:hover {
   background: transparent;
 }
 
-.cardo-v2-page-drop-row.cardo-v2-page-drop-row-dragging {
+.cardo-shell-page-drop-row.cardo-shell-page-drop-row-dragging {
   opacity: 0.55;
 }
 
 /* Page reorder: brief drag-over highlight + insert indicator (y midpoint). */
-.cardo-v2-page-drop-row.cardo-v2-page-drop-row-reorder-over {
+.cardo-shell-page-drop-row.cardo-shell-page-drop-row-reorder-over {
   background: color-mix(in srgb, var(--cardo-blue, #3b82f6) 10%, transparent);
   border-radius: var(--cardo-radius-pill, 999px);
 }
 
-.cardo-v2-page-drop-row.cardo-v2-page-drop-row-reorder-before {
+.cardo-shell-page-drop-row.cardo-shell-page-drop-row-reorder-before {
   box-shadow: inset 0 2px 0 0 var(--cardo-blue, #3b82f6);
 }
 
-.cardo-v2-page-drop-row.cardo-v2-page-drop-row-reorder-after {
+.cardo-shell-page-drop-row.cardo-shell-page-drop-row-reorder-after {
   box-shadow: inset 0 -2px 0 0 var(--cardo-blue, #3b82f6);
 }
 
-.cardo-v2-sidebar-foot {
+.cardo-shell-sidebar-foot {
   flex: 0 0 auto;
   padding: 6px 8px 8px;
 }
 
 /* Rename field inside nav row (layout slot; control is kit Input). */
-.cardo-v2-nav-item-input {
+.cardo-shell-nav-item-input {
   min-width: 0;
   flex: 1 1 auto;
 }
 
-/* Rename-mode shell reuses nav pill geometry when chromeOnShell is set. */
-.cardo-v2-page-drop-row.cardo-v2-nav-item {
+/* Rename-mode shell reuses kit nav pill geometry when chromeOnShell is set. */
+.cardo-shell-page-drop-row.cardo-nav-item {
   gap: 10px;
-  min-height: 34px;
+  min-height: var(--cardo-control-h-md, 32px);
   border-radius: var(--cardo-radius-pill, 999px);
   padding: 5px 12px;
 }
 
 /* Row-scoped group delete (sidebar item — not full-nav swap). */
-.cardo-v2-page-delete-row {
+.cardo-shell-page-delete-row {
   width: 100%;
   min-width: 0;
 }
 
-.cardo-v2-page-delete-confirm {
+.cardo-shell-page-delete-confirm {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -285,14 +286,14 @@
   gap: 6px 8px;
   width: 100%;
   min-width: 0;
-  min-height: 34px;
+  min-height: var(--cardo-control-h-md, 32px);
   padding: 4px 8px 4px 10px;
   border: 1px solid color-mix(in srgb, var(--cardo-red, #ef4444) 22%, transparent);
   border-radius: var(--cardo-radius-pill, 999px);
   background: color-mix(in srgb, var(--cardo-red, #ef4444) 6%, transparent);
 }
 
-.cardo-v2-page-delete-copy {
+.cardo-shell-page-delete-copy {
   display: inline-flex;
   min-width: 0;
   flex: 1 1 auto;
@@ -301,7 +302,7 @@
   color: var(--cardo-soft-text);
 }
 
-.cardo-v2-page-delete-text {
+.cardo-shell-page-delete-text {
   display: flex;
   min-width: 0;
   flex: 1 1 auto;
@@ -309,7 +310,7 @@
   gap: 1px;
 }
 
-.cardo-v2-page-delete-msg {
+.cardo-shell-page-delete-msg {
   overflow: hidden;
   font-size: 12px;
   font-weight: 500;
@@ -318,7 +319,7 @@
   white-space: nowrap;
 }
 
-.cardo-v2-page-delete-detail {
+.cardo-shell-page-delete-detail {
   overflow: hidden;
   color: var(--cardo-muted, var(--cardo-secondary-text));
   font-size: 10.5px;
@@ -328,19 +329,19 @@
   white-space: nowrap;
 }
 
-.cardo-v2-page-delete-actions {
+.cardo-shell-page-delete-actions {
   display: inline-flex;
   flex: 0 0 auto;
   gap: 4px;
 }
 
-.cardo-v2-page-delete-actions .cardo-button {
+.cardo-shell-page-delete-actions .cardo-button {
   flex: 0 0 auto;
   min-width: 48px;
 }
 
 /* —— Main stage / white panel —— */
-.cardo-v2-stage {
+.cardo-shell-stage {
   display: flex;
   min-width: 0;
   min-height: 0;
@@ -348,21 +349,21 @@
   padding-top: 2px;
 }
 
-.cardo-v2-panel {
+.cardo-shell-panel {
   position: relative;
   display: flex;
   min-height: 0;
   flex: 1 1 auto;
   flex-direction: column;
   overflow: hidden;
-  border-radius: var(--cardo-v2-panel-radius);
+  border-radius: var(--cardo-shell-panel-radius);
   background: var(--cardo-panel, #ffffff);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--cardo-text) 3%, transparent);
 }
 
-.cardo-v2-panel-header {
+.cardo-shell-panel-header {
   display: flex;
-  height: 44px;
+  height: max(40px, calc(var(--cardo-control-h-md, 32px) + 12px));
   flex: 0 0 auto;
   align-items: center;
   justify-content: space-between;
@@ -371,21 +372,21 @@
 }
 
 /* Close control while SearchPage is open (entry itself is sidebar nav). */
-.cardo-v2-panel-header .cardo-panel-search-close {
-  width: 28px;
-  height: 28px;
-  flex: 0 0 28px;
+.cardo-shell-panel-header .cardo-panel-search-close {
+  width: var(--cardo-control-h-dense, 28px);
+  height: var(--cardo-control-h-dense, 28px);
+  flex: 0 0 var(--cardo-control-h-dense, 28px);
   border-radius: var(--cardo-radius-md, 10px);
   color: var(--cardo-soft-text);
 }
 
-.cardo-v2-panel-header .cardo-panel-search-close:hover:not(:disabled) {
+.cardo-shell-panel-header .cardo-panel-search-close:hover:not(:disabled) {
   background: var(--cardo-hover, rgba(0, 0, 0, 0.045));
   color: var(--cardo-text);
 }
 
 /* Empty recycle bin confirm — compact horizontal strip in the panel header tools slot. */
-.cardo-v2-panel-header .cardo-panel-empty-recycle-confirm {
+.cardo-shell-panel-header .cardo-panel-empty-recycle-confirm {
   flex-direction: row;
   align-items: center;
   gap: 10px;
@@ -397,7 +398,7 @@
   background: color-mix(in srgb, var(--cardo-red, #dc2626) 8%, var(--cardo-panel, #fff));
 }
 
-.cardo-v2-panel-header .cardo-panel-empty-recycle-confirm .cardo-confirm-bar-message {
+.cardo-shell-panel-header .cardo-panel-empty-recycle-confirm .cardo-confirm-bar-message {
   flex: 1 1 auto;
   min-width: 0;
   font-size: 12px;
@@ -406,15 +407,18 @@
   text-overflow: ellipsis;
 }
 
-.cardo-v2-panel-header .cardo-panel-empty-recycle-confirm .cardo-confirm-bar-actions {
+.cardo-shell-panel-header .cardo-panel-empty-recycle-confirm .cardo-confirm-bar-actions {
   flex: 0 0 auto;
 }
 
-.cardo-v2-panel-header .cardo-panel-empty-recycle-confirm .cardo-confirm-bar-actions .cardo-button {
+.cardo-shell-panel-header
+  .cardo-panel-empty-recycle-confirm
+  .cardo-confirm-bar-actions
+  .cardo-button {
   flex: 0 0 auto;
 }
 
-.cardo-v2-panel-title {
+.cardo-shell-panel-title {
   min-width: 0;
   overflow: hidden;
   color: var(--cardo-text, #1a1c1f);
@@ -424,40 +428,28 @@
   white-space: nowrap;
 }
 
-.cardo-v2-panel-tools {
+.cardo-shell-panel-tools {
   display: flex;
   flex: 0 0 auto;
   align-items: center;
   gap: 2px;
 }
 
-.cardo-v2-panel-tools .cardo-icon-button {
-  width: 32px;
-  height: 32px;
+.cardo-shell-panel-tools .cardo-icon-button {
+  width: var(--cardo-control-h-icon, 32px);
+  height: var(--cardo-control-h-icon, 32px);
   border-radius: 8px;
   color: var(--cardo-secondary-text, #5c6370);
 }
 
-.cardo-v2-panel-tools .cardo-icon-button:hover:not(:disabled) {
+.cardo-shell-panel-tools .cardo-icon-button:hover:not(:disabled) {
   background: var(--cardo-hover, rgba(0, 0, 0, 0.045));
   color: var(--cardo-text, #1a1c1f);
 }
 
-.cardo-v2-panel-tools .cardo-v2-tool-active {
-  background: var(--cardo-active, var(--cardo-surface, #e2e5eb));
-  color: var(--cardo-text, #1a1c1f);
-}
-
-.cardo-v2-tool-divider {
-  width: 1px;
-  height: 16px;
-  margin: 0 4px;
-  background: var(--cardo-divider, var(--cardo-border, rgba(0, 0, 0, 0.07)));
-}
-
-/* Canvas well: parent-fill, never 100vw/100vh under v2.
- * Hosts WorkspaceCanvas or SearchPage — children use height 100%. */
-.cardo-v2-canvas-well {
+/* Canvas well: parent-fill, never 100vw/100vh under shell.
+ * Hosts WorkspaceCanvas; SearchPage overlays as an absolute sibling. */
+.cardo-shell-canvas-well {
   position: relative;
   display: flex;
   min-height: 0;
@@ -469,7 +461,7 @@
   background: var(--cardo-canvas, #f3f4f7);
 }
 
-.cardo-v2-app .cardo-v2-canvas-well .cardo-canvas {
+.cardo-shell-app .cardo-shell-canvas-well .cardo-canvas {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -477,12 +469,12 @@
 }
 
 /* Elevate canvas during box drag (scoped to panel). */
-.cardo-v2-app:has(.cardo-box-dragging) .cardo-v2-canvas-well .cardo-canvas {
+.cardo-shell-app:has(.cardo-box-dragging) .cardo-shell-canvas-well .cardo-canvas {
   z-index: 100;
 }
 
 /* Bottom create FAB sits inside the panel (no pill dock shell). */
-.cardo-v2-bottom-shell {
+.cardo-shell-bottom-shell {
   position: absolute;
   z-index: 30;
   right: 0;
@@ -496,7 +488,7 @@
 }
 
 /* Create-box FAB: free-floating circle (no outer gray pill). */
-.cardo-v2-bottom-shell .cardo-toolbar-create {
+.cardo-shell-bottom-shell .cardo-toolbar-create {
   width: 44px;
   height: 44px;
   flex: 0 0 44px;
@@ -507,11 +499,11 @@
   pointer-events: auto;
 }
 
-.cardo-v2-bottom-shell .cardo-toolbar-create:hover:not(:disabled) {
+.cardo-shell-bottom-shell .cardo-toolbar-create:hover:not(:disabled) {
   filter: brightness(1.06);
 }
 
-.cardo-v2-bottom-shell .cardo-toolbar-create:focus-visible {
+.cardo-shell-bottom-shell .cardo-toolbar-create:focus-visible {
   box-shadow:
     0 4px 14px color-mix(in srgb, var(--cardo-text) 14%, transparent),
     var(--cardo-focus-ring);
@@ -520,36 +512,35 @@
 /* Settings full-shell geometry lives in styles/settings-shell.css (PR6 §3.4). */
 
 /*
- * Box → page drop highlight (PR7 / KD-18) — primary nav / sidebar equivalent of
- * historical cardo-top-bar-drop-mode + tab-pill target styles in motion.css.
- * Reads uiStore.boxDropPageId via cardo-v2-nav-drop-target.
- * Shared symbol names stay: boxDragOverTopBar, registerTopBarElement, cardo-top-bar-drag-over.
+ * Box → page drop highlight (PR7 / KD-18) — primary nav / sidebar.
+ * Reads uiStore.boxDropPageId via cardo-shell-nav-drop-target (or kit data-drop-target).
+ * Related: boxDragOverPrimaryNav, registerPrimaryNavElement.
  * Tokens only — no hard-coded brand hex.
  */
-.cardo-v2-nav-drop-target {
+.cardo-shell-nav-drop-target {
   background: var(--cardo-active, var(--cardo-surface-strong, var(--cardo-surface, #e2e5eb)));
   box-shadow: inset 0 0 0 1px var(--cardo-border, rgba(0, 0, 0, 0.08));
   color: var(--cardo-text, #1a1c1f);
   font-weight: 500;
 }
 
-.cardo-v2-nav-drop-target .cardo-v2-nav-item-icon {
+.cardo-shell-nav-drop-target .cardo-nav-item-icon {
   color: var(--cardo-text, #1a1c1f);
 }
 
 /* Drop-mode: short bg transition only (no layoutId springs on sidebar rows). */
-.cardo-v2-sidebar-drop-mode .cardo-v2-nav-item {
+.cardo-shell-sidebar-drop-mode .cardo-nav-item {
   transition: background-color 80ms ease;
 }
 
-.cardo-v2-app[data-mode='settings'] .cardo-v2-settings-shell {
+.cardo-shell-app[data-mode='settings'] .cardo-shell-settings-shell {
   min-height: 0;
   flex: 1 1 auto;
 }
 
 /* Text shells: opacity only — never scale */
-.cardo-v2-app .cardo-v2-settings-shell,
-.cardo-v2-app .cardo-v2-delete-confirm,
-.cardo-v2-app .cardo-v2-panel-header {
+.cardo-shell-app .cardo-shell-settings-shell,
+.cardo-shell-app .cardo-shell-delete-confirm,
+.cardo-shell-app .cardo-shell-panel-header {
   transform: none;
 }

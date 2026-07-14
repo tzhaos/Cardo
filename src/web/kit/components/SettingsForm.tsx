@@ -2,34 +2,9 @@ import type { HTMLAttributes, ReactNode } from 'react';
 import { cn } from '../internal/lib/cn';
 
 /**
- * Settings page title. Prefer wrapping with `.cardo-settings-heading` in product shells
- * so theme recipes keep targeting the settings chrome.
- */
-export function PageTitle({ children, className }: { children: ReactNode; className?: string }) {
-  return (
-    <h2 data-cardo-ui="page-title" className={cn('cardo-heading-page', className)}>
-      {children}
-    </h2>
-  );
-}
-
-export function PageDescription({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <p data-cardo-ui="page-desc" className={cn('cardo-text-lead', className)}>
-      {children}
-    </p>
-  );
-}
-
-/**
  * Settings list group: optional section head + row stack.
  * Uses product `cardo-settings-*` classes so official theme recipes continue to apply.
+ * Section titles in product Settings use local SettingsHeading (not PageTitle).
  */
 export function SettingsCard({
   children,

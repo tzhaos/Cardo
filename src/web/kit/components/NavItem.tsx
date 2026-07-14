@@ -34,7 +34,7 @@ export function NavItem({
       className={cn(
         'cardo-nav-item',
         active && 'cardo-nav-item-active',
-        dropTarget && 'cardo-v2-nav-drop-target',
+        dropTarget && 'cardo-shell-nav-drop-target',
         className,
       )}
       {...props}

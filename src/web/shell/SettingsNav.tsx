@@ -38,15 +38,15 @@ export function SettingsNav({
   }, []);
 
   return (
-    <aside className="cardo-v2-settings-nav" aria-label={t('settings.sections')}>
-      <Button variant="ghost" size="sm" className="cardo-v2-settings-back" onClick={onBack}>
-        <ThemeIcon name="chevronLeft" size={14} className="cardo-v2-settings-back-icon" />
+    <aside className="cardo-shell-settings-nav" aria-label={t('settings.sections')}>
+      <Button variant="ghost" size="sm" className="cardo-shell-settings-back" onClick={onBack}>
+        <ThemeIcon name="chevronLeft" size={14} className="cardo-shell-settings-back-icon" />
         <span>{t('settings.backToApp')}</span>
       </Button>
 
       <SearchField
         ref={searchInputRef}
-        containerClassName="cardo-v2-settings-search"
+        containerClassName="cardo-shell-settings-search"
         value={searchQuery}
         onChange={(event) => onSearchQueryChange(event.target.value)}
         onKeyDown={(event) => {
@@ -59,7 +59,7 @@ export function SettingsNav({
         aria-label={t('settings.search')}
       />
 
-      <nav className="cardo-v2-settings-section-list" aria-label={t('settings.sections')}>
+      <nav className="cardo-shell-settings-section-list" aria-label={t('settings.sections')}>
         {SETTINGS_SECTION_IDS.map((id) => {
           const active = !isSearching && section === id;
           return (
@@ -67,7 +67,7 @@ export function SettingsNav({
               key={id}
               tone="settings"
               active={active}
-              className="cardo-v2-settings-section-item"
+              className="cardo-shell-settings-section-item"
               icon={<SettingsNavIcon id={id} />}
               aria-current={active ? 'page' : undefined}
               onClick={() => {

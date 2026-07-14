@@ -1,8 +1,8 @@
 const boxElements = new Map<string, HTMLElement>();
 const pageDropElements = new Map<string, HTMLElement>();
 let canvasElement: HTMLElement | null = null;
-/** Primary nav hit region (sidebar root in v2). Symbol name kept for KD-18 / call-site stability. */
-let topBarElement: HTMLElement | null = null;
+/** Primary nav hit region (sidebar product-nav root). */
+let primaryNavElement: HTMLElement | null = null;
 
 export function registerBoxElement(boxId: string, element: HTMLElement | null) {
   registerElement(boxElements, boxId, element);
@@ -16,12 +16,9 @@ export function registerCanvasElement(element: HTMLElement | null) {
   canvasElement = element;
 }
 
-/**
- * Register the primary nav hit region (sidebar product-nav root).
- * Name kept as registerTopBarElement until a coordinated cutover rename (KD-18).
- */
-export function registerTopBarElement(element: HTMLElement | null) {
-  topBarElement = element;
+/** Register the primary nav hit region (sidebar product-nav root). */
+export function registerPrimaryNavElement(element: HTMLElement | null) {
+  primaryNavElement = element;
 }
 
 export function getBoxElement(boxId: string) {
@@ -36,9 +33,9 @@ export function getCanvasElement() {
   return getConnectedElement(canvasElement);
 }
 
-/** Primary nav hit region (sidebar). See registerTopBarElement. */
-export function getTopBarElement() {
-  return getConnectedElement(topBarElement);
+/** Primary nav hit region (sidebar product-nav root). */
+export function getPrimaryNavElement() {
+  return getConnectedElement(primaryNavElement);
 }
 
 export function findPageDropAtPoint(clientX: number, clientY: number) {

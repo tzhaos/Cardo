@@ -17,10 +17,10 @@ export function MainStage({
 }) {
   const { t } = useI18n();
   return (
-    <div className="cardo-v2-stage">
-      <Panel className="cardo-v2-panel" aria-label={t('shell.mainStage')}>
+    <div className="cardo-shell-stage">
+      <Panel className="cardo-shell-panel" aria-label={t('shell.mainStage')}>
         {header}
-        <div className="cardo-surface-well cardo-v2-canvas-well">{canvas}</div>
+        <div className="cardo-surface-well cardo-shell-canvas-well">{canvas}</div>
         {bottomBar}
       </Panel>
     </div>

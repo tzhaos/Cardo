@@ -38,7 +38,7 @@ export function FloatingDragLayer() {
       aria-hidden="true"
       data-drag-morph="freeform"
     >
-      <WorkspaceBoxRenderer box={box} skipEntryAnimation />
+      <WorkspaceBoxRenderer box={box} />
     </div>
   );
 }

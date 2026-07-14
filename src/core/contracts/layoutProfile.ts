@@ -18,15 +18,12 @@ export function normalizeLayoutProfileId(_value?: unknown): LayoutProfileId {
 export interface LayoutProfileDefinition {
   id: LayoutProfileId;
   isOfficialDefault: boolean;
-  labelKey: string;
-  descriptionKey: string;
 }
 
+/** Sole supported profile — no settings switch / i18n labels (layout is fixed classic). */
 export const LAYOUT_PROFILES: readonly LayoutProfileDefinition[] = [
   {
     id: 'classic',
     isOfficialDefault: true,
-    labelKey: 'settings.layout.classic',
-    descriptionKey: 'settings.layout.classicDescription',
   },
 ] as const;

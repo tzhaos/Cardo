@@ -190,8 +190,7 @@
   min-width: 0;
 }
 
-.cardo-settings-header:active,
-.cardo-independent-menu-dragging {
+.cardo-settings-header:active {
   cursor: grabbing;
 }
 
@@ -656,8 +655,7 @@
 }
 
 /* Right-side control on a settings card must not shrink into vertical glyph wraps. */
-.cardo-settings-card > .cardo-ui-select-trigger,
-.cardo-settings-card > .cardo-ui-button,
+.cardo-settings-card > .cardo-select-trigger,
 .cardo-settings-card > button {
   flex: 0 0 auto;
   white-space: nowrap;
@@ -946,8 +944,6 @@
 .cardo-feature-reset-card .cardo-settings-secondary-button:disabled {
   opacity: 1;
 }
-
-/* Dead: .cardo-ui-switch — kit Switch uses .cardo-switch (kit-base.css). */
 
 .cardo-feature-reset-card {
   margin-top: 0;
@@ -1316,7 +1312,7 @@
   cursor: pointer;
 }
 
-.cardo-theme-color-controls .cardo-ui-input {
+.cardo-theme-color-controls .cardo-input {
   min-width: 0;
   flex: 1;
 }

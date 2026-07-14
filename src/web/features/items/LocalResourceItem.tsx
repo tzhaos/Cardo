@@ -10,6 +10,7 @@ import { ItemDeleteView } from './ItemDeleteView';
 import { ItemActions } from './ItemActions';
 import { useItemRename } from './useItemRename';
 import { useItemContextMenu } from './useItemContextMenu';
+import { useItemRowInteraction } from './useItemRowInteraction';
 import { recordItemActivity } from '../../app/operationActivity';
 import { IconFrame } from '../../kit/icon-button';
 import { ThemeIcon } from '../../kit/icon';
@@ -41,6 +42,7 @@ export function LocalResourceItem({
   const [deleteView, setDeleteView] = useState(false);
   const [editView, setEditView] = useState(false);
   const { t } = useI18n();
+  const interactionBlocked = deleteView || editView || rename.renaming;
   const openItem = async () => {
     try {
       const result = await openLocalResource(item.path);
@@ -65,11 +67,21 @@ export function LocalResourceItem({
     onPin: () => rename.setPinned(!item.isPinned),
     onDelete: () => setDeleteView(true),
   });
+  const row = useItemRowInteraction({
+    boxId,
+    itemId: item.id,
+    primaryAction: () => void openItem(),
+    openContextMenuAt: contextMenu.openAt,
+    blocked: interactionBlocked,
+  });
 
   return (
     <div
-      className={`cardo-item-row cardo-local-item cardo-local-item-${item.type}${item.isPinned ? ' cardo-item-pinned' : ''}${highlight ? ' cardo-item-new' : ''}${locateHighlight ? ' cardo-item-locate' : ''}${deleteView ? ' cardo-item-delete-state' : ''}${editView ? ' cardo-item-edit-state' : ''}`}
+      className={`cardo-item-row cardo-local-item cardo-local-item-${item.type}${item.isPinned ? ' cardo-item-pinned' : ''}${highlight ? ' cardo-item-new' : ''}${locateHighlight ? ' cardo-item-locate' : ''}${deleteView ? ' cardo-item-delete-state' : ''}${editView ? ' cardo-item-edit-state' : ''}${row.selected ? ' cardo-item-selected' : ''}`}
+      tabIndex={interactionBlocked ? -1 : 0}
       onContextMenu={rename.renaming ? rename.onContextMenu : contextMenu.onContextMenu}
+      onKeyDown={row.onKeyDown}
+      onClick={row.handleSelectionClick}
     >
       <AnimatePresence initial={false} mode="wait">
         {deleteView ? (

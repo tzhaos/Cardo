@@ -5,14 +5,14 @@
  * Product tree lives under `src/web` only (app, shell, features, kit, themes).
  *
  * PR7 box→page drop (KD-18): mounts BoxPageDropController; product-nav / sidebar root is the
- * registerTopBarElement hit region (settings foot excluded); SidebarNav rows use
- * registerPageDropElement. Shared registry names kept until coordinated cutover rename.
+ * registerPrimaryNavElement hit region (settings foot excluded); SidebarNav rows use
+ * registerPageDropElement.
  *
  * Feature gates (PR9 / KD-8 / KD-19):
  * - chrome.sidebar wraps product nav only; SettingsFoot stays outside and always on.
  * - When chrome.sidebar is off, productNav shows a re-enable control (escape hatch).
  * - chrome.bottomToolbar wraps BottomActionBar (create box only).
- * - chrome.globalSearch: sidebar / Ctrl+K (Cmd+K) opens SearchPage (local + web search action).
+ * - chrome.globalSearch: sidebar / Ctrl+K (Cmd+K) opens SearchPage as an overlay on the canvas.
  */
 
 import '@fontsource-variable/inter';
@@ -97,6 +97,16 @@ export default function CardoApp() {
         useUiStore.getState().toggleSidebarCollapsed();
         return;
       }
+      // Escape — clear item multi-select
+      if (event.key === 'Escape') {
+        const ui = useUiStore.getState();
+        if (ui.selectionBoxId || Object.keys(ui.selectedItemIds).length > 0) {
+          if (isEditableTarget(event.target)) return;
+          event.preventDefault();
+          ui.clearItemSelection();
+          return;
+        }
+      }
       // Alt+← / Alt+→ — page history (workspace mode only; not when typing)
       if (event.altKey && !event.ctrlKey && !event.metaKey && mode === 'workspace') {
         if (isEditableTarget(event.target)) return;
@@ -178,7 +188,7 @@ export default function CardoApp() {
     <TooltipProvider>
       <MotionConfig reducedMotion="user">
         <div
-          className={['cardo-app', 'cardo-v2-app', isDesktopHost ? 'cardo-app-desktop' : '']
+          className={['cardo-app', 'cardo-shell-app', isDesktopHost ? 'cardo-app-desktop' : '']
             .filter(Boolean)
             .join(' ')}
           data-shell="sidebar"
@@ -203,10 +213,10 @@ export default function CardoApp() {
                       className={sidebarNavRootClassName({
                         boxDragActive: dropUi.boxDragActive,
                         overNav: dropUi.overNav,
-                        className: 'cardo-v2-product-nav',
+                        className: 'cardo-shell-product-nav',
                       })}
-                      data-top-bar
-                      data-v2-sidebar-nav
+                      data-primary-nav
+                      data-shell-sidebar-nav
                     >
                       <SidebarNav />
                     </div>
@@ -217,7 +227,10 @@ export default function CardoApp() {
                   <MainStage
                     header={<PanelHeader />}
                     canvas={
-                      globalSearchEnabled && searchOpen ? <SearchPage /> : <WorkspaceCanvas />
+                      <>
+                        <WorkspaceCanvas />
+                        {globalSearchEnabled && searchOpen ? <SearchPage /> : null}
+                      </>
                     }
                     bottomBar={
                       searchOpen ? null : (
@@ -244,9 +257,9 @@ function ShowSidebarControl() {
   const setFeatureEnabled = usePreferencesStore((state) => state.setFeatureEnabled);
 
   return (
-    <div className="cardo-v2-product-nav" data-v2-sidebar-nav-fallback="">
-      <div className="cardo-v2-sidebar-scroll">
-        <div className="cardo-v2-nav-block">
+    <div className="cardo-shell-product-nav" data-shell-sidebar-nav-fallback="">
+      <div className="cardo-shell-sidebar-scroll">
+        <div className="cardo-shell-nav-block">
           <NavItem
             className={sidebarNavItemClassName({})}
             icon={<ThemeIcon name="list" size={16} />}

@@ -9,9 +9,9 @@
 
 /*
  * Dragging / delete-flight boxes live inside camera transforms (stacking context).
- * Their own z-index cannot compete with fixed chrome (.cardo-top-bar is 50).
+ * Their own z-index cannot compete with fixed chrome (primary nav / sidebar).
  * Elevate the canvas root while any box is in the floating drag visual so the
- * box paints above the page bar for cross-page drop / recycle flight.
+ * box paints above chrome for cross-page drop / recycle flight.
  */
 .cardo-app:has(.cardo-box-dragging) .cardo-canvas {
   z-index: 100;
@@ -542,4 +542,16 @@
   line-height: 1.5;
   text-align: center;
   text-wrap: balance;
+}
+
+.cardo-system-page-empty-secondary {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  color: var(--cardo-muted);
+  font-size: 11.5px;
+  line-height: 1.45;
+  text-align: center;
+  text-wrap: balance;
+  opacity: 0.9;
 }

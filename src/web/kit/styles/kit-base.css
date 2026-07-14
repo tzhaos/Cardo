@@ -398,6 +398,7 @@
 }
 
 /* —— Settings form —— */
+/* Optional typography utilities (no PageTitle/PageDescription kit export — SettingsHeading is SoT). */
 .cardo-heading-page {
   margin: 0 0 18px;
   color: var(--cardo-text);

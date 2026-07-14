@@ -131,16 +131,6 @@
   color: var(--box-accent);
 }
 
-/* Group waterfall/list: still grabbable for reorder / cross-page. */
-.cardo-box-layout-locked .cardo-box-header {
-  cursor: grab;
-}
-
-.cardo-box-layout-locked.cardo-box-dragging .cardo-box-header,
-.cardo-box-layout-locked .cardo-box-header:active {
-  cursor: grabbing;
-}
-
 .cardo-box.cardo-box-dragging {
   /*
    * Fixed + client left/top while dragging so page-scene slides do not carry the box.
