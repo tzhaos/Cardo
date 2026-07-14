@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import type { GroupViewMode } from '../../../core/contracts/groupView';
 import type { BoxFrame, WorkspaceItemType } from '../../domain/workspace';
 
 export type RuntimeConnectionStatus = 'connected' | 'reconnecting' | 'disconnected';
@@ -62,18 +61,12 @@ interface UiStore {
   searchQuery: string;
   /** Full search page open from sidebar entry (with new group). */
   searchOpen: boolean;
-  /**
-   * Per-group layout mode (pageId → freeform|waterfall|list).
-   * Session SoT until page.viewMode is persisted in schema.
-   */
-  groupViewModes: Record<string, GroupViewMode>;
   /** Ephemeral Runtime event-stream status (not persisted). */
   runtimeConnectionStatus: RuntimeConnectionStatus;
   setSearchQuery: (query: string) => void;
   setSearchOpen: (open: boolean) => void;
   openSearch: () => void;
   closeSearch: () => void;
-  setGroupViewMode: (pageId: string, mode: GroupViewMode) => void;
   setRuntimeConnectionStatus: (status: RuntimeConnectionStatus) => void;
   selectBox: (boxId: string | null) => void;
   highlightBox: (boxId: string) => void;
@@ -104,6 +97,26 @@ interface UiStore {
 
 const emptyDraft: AddDraftState = { mode: false, draft: {} };
 let boxHighlightTimeout: number | null = null;
+/** Per-box item highlight clear timers (created-item flash). */
+const itemHighlightTimeouts = new Map<string, number>();
+
+export function clearItemHighlight(boxId: string) {
+  const timeout = itemHighlightTimeouts.get(boxId);
+  if (timeout !== undefined) {
+    window.clearTimeout(timeout);
+    itemHighlightTimeouts.delete(boxId);
+  }
+  useUiStore.setState((state) => {
+    const draft = state.addDrafts[boxId];
+    if (!draft?.highlightItemId) return state;
+    return {
+      addDrafts: {
+        ...state.addDrafts,
+        [boxId]: { ...draft, highlightItemId: undefined },
+      },
+    };
+  });
+}
 
 export const useUiStore = create<UiStore>((set) => ({
   addDrafts: {},
@@ -118,19 +131,12 @@ export const useUiStore = create<UiStore>((set) => ({
   highlightedBoxId: null,
   searchQuery: '',
   searchOpen: false,
-  groupViewModes: {},
   runtimeConnectionStatus: 'connected',
   setSearchQuery: (query) => set({ searchQuery: query }),
   setSearchOpen: (open) =>
     set((state) => (state.searchOpen === open ? state : { searchOpen: open })),
   openSearch: () => set({ searchOpen: true }),
   closeSearch: () => set({ searchOpen: false, searchQuery: '' }),
-  setGroupViewMode: (pageId, mode) =>
-    set((state) =>
-      state.groupViewModes[pageId] === mode
-        ? state
-        : { groupViewModes: { ...state.groupViewModes, [pageId]: mode } },
-    ),
   setRuntimeConnectionStatus: (status) =>
     set((state) =>
       state.runtimeConnectionStatus === status ? state : { runtimeConnectionStatus: status },
@@ -171,10 +177,29 @@ export const useUiStore = create<UiStore>((set) => ({
     }),
   closeAddView: (boxId) =>
     set((state) => ({ addDrafts: { ...state.addDrafts, [boxId]: { ...emptyDraft } } })),
-  markCreated: (boxId, itemId) =>
+  markCreated: (boxId, itemId) => {
+    const existing = itemHighlightTimeouts.get(boxId);
+    if (existing !== undefined) window.clearTimeout(existing);
     set((state) => ({
       addDrafts: { ...state.addDrafts, [boxId]: { ...emptyDraft, highlightItemId: itemId } },
-    })),
+    }));
+    itemHighlightTimeouts.set(
+      boxId,
+      window.setTimeout(() => {
+        itemHighlightTimeouts.delete(boxId);
+        set((state) => {
+          const draft = state.addDrafts[boxId];
+          if (!draft?.highlightItemId || draft.highlightItemId !== itemId) return state;
+          return {
+            addDrafts: {
+              ...state.addDrafts,
+              [boxId]: { ...draft, highlightItemId: undefined },
+            },
+          };
+        });
+      }, 1800),
+    );
+  },
   beginBoxDrag: (session) =>
     set({
       draggedBoxId: session.boxId,

@@ -1,43 +1,50 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { PointerEventHandler, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import cardoMarkUrl from '../../../../assets/brand/cardo-mark.svg';
 import { AnimatePresence, motion } from 'motion/react';
 import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import { useI18n } from '../../i18n/useI18n';
 import type { WebNextColorMode } from '../../themes/themeRegistry';
 import { getRegisteredWebNextThemes } from '../../themes/themeRegistry';
-import { SettingsNavIcon } from './SettingsNavIcons';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import type { WorkspaceProjection } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
 import {
   exportOperationLog,
+  exportThemePackFile,
   exportWorkspaceData,
   parseWorkspaceImportFile,
 } from '../../platform/hostPlatform';
+import { parseThemePackImportFile } from '../../themes/themeIO';
 import { isValidCustomSearchTemplate, type WebSearchEngineId } from '../../domain/webSearch';
 import {
   colorModeSchema,
+  densitySchema,
+  fontFamilyIdSchema,
+  fontScaleSchema,
   preferenceLocaleSchema,
   webSearchEngineIdSchema,
 } from '../../../core/contracts/preferences';
 import type { DesktopUpdateState } from '../../../core/contracts/desktopUpdate';
-import { FEATURE_CATALOG, isFeatureEnabled } from '../../../core/contracts/featureCatalog';
+import {
+  FEATURE_CATALOG,
+  getFeatureDefinition,
+  isFeatureEnabled,
+} from '../../../core/contracts/featureCatalog';
+import { validateCssSnippet } from '../../../core/contracts/cssSnippet';
 import { matchSettingsSearchEntries, type SettingsSectionId } from './settingsSearchCatalog';
 import { Button } from '../../kit/button';
-import { IconButton, IconFrame } from '../../kit/icon-button';
+import { IconFrame } from '../../kit/icon-button';
 import { Input } from '../../kit/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../kit/select';
 import { SettingsCard, SettingsRow } from '../../kit/settings-form';
 import { Switch } from '../../kit/switch';
-import { Tabs, TabsList, TabsTrigger } from '../../kit/tabs';
+import { Textarea } from '../../kit/textarea';
 import { ThemeIcon } from '../../kit/icon';
 import { ToggleGroup, ToggleGroupItem } from '../../kit/toggle-group';
 import type { WebNextMessageKey } from '../../i18n/messages';
 
 type SettingsSection = SettingsSectionId;
-
-export type SettingsPanelChrome = 'window' | 'embedded';
 
 export const SETTINGS_SECTION_IDS = [
   'general',
@@ -116,9 +123,9 @@ export function SettingsContent({
           <AnimatePresence mode="wait" initial={false}>
             <motion.section
               key={section}
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -8 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               transition={{ duration: 0.16 }}
             >
               {section === 'general' ? (
@@ -140,147 +147,6 @@ export function SettingsContent({
           </AnimatePresence>
         </div>
       )}
-    </div>
-  );
-}
-
-/**
- * Product settings body wrapper. Production settings chrome is SettingsShell + SettingsContent;
- * chrome=embedded is the only path SettingsShell needs. chrome=window is residual header/rail
- * markup (no floating host mounts this after PR10).
- */
-export function SettingsPanel({
-  onClose,
-  onHeaderPointerDown,
-  chrome = 'window',
-  section: sectionProp,
-  onSectionChange,
-  searchQuery: searchQueryProp,
-  onSearchQueryChange,
-}: {
-  onClose: () => void;
-  onHeaderPointerDown?: PointerEventHandler<HTMLElement>;
-  /** embedded: body only for SettingsShell; window: residual self-chrome (unused host). */
-  chrome?: SettingsPanelChrome;
-  section?: SettingsSectionId;
-  onSectionChange?: (section: SettingsSectionId) => void;
-  searchQuery?: string;
-  onSearchQueryChange?: (query: string) => void;
-}) {
-  const [internalSection, setInternalSection] = useState<SettingsSection>('general');
-  const [internalQuery, setInternalQuery] = useState('');
-  const section = sectionProp ?? internalSection;
-  const setSection = (next: SettingsSection) => {
-    if (onSectionChange) onSectionChange(next);
-    else setInternalSection(next);
-  };
-  const settingsQuery = searchQueryProp ?? internalQuery;
-  const setSettingsQuery = (next: string) => {
-    if (onSearchQueryChange) onSearchQueryChange(next);
-    else setInternalQuery(next);
-  };
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const { t } = useI18n();
-  const sections = [
-    { id: 'general' as const, label: t('settings.general') },
-    { id: 'appearance' as const, label: t('settings.appearance') },
-    { id: 'data' as const, label: t('settings.data') },
-    { id: 'about' as const, label: t('settings.about') },
-  ];
-  const isSearching = settingsQuery.trim().length > 0;
-
-  const openSearchResult = (nextSection: SettingsSection) => {
-    setSection(nextSection);
-    setSettingsQuery('');
-  };
-
-  if (chrome === 'embedded') {
-    return (
-      <div
-        className="cardo-settings-panel cardo-settings-panel-embedded"
-        role="region"
-        aria-label={t('settings.title')}
-      >
-        <SettingsContent
-          section={section}
-          searchQuery={settingsQuery}
-          onOpenSearchResult={openSearchResult}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className="cardo-settings-panel" role="dialog" aria-label={t('settings.title')}>
-      <header className="cardo-settings-header" onPointerDown={onHeaderPointerDown}>
-        <div className="cardo-settings-header-title">
-          <IconFrame>
-            <ThemeIcon name="settings" size={17} />
-          </IconFrame>
-          <span>{t('settings.title')}</span>
-        </div>
-        <div className="cardo-settings-header-drag-space" aria-hidden="true" />
-        <div className="cardo-settings-header-actions">
-          <label className="cardo-settings-search" data-no-menu-drag>
-            <span className="cardo-settings-search-icon" aria-hidden>
-              <ThemeIcon name="search" size={16} />
-            </span>
-            <Input
-              ref={searchInputRef}
-              value={settingsQuery}
-              onChange={(event) => setSettingsQuery(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Escape' && settingsQuery) {
-                  event.stopPropagation();
-                  setSettingsQuery('');
-                }
-              }}
-              placeholder={t('settings.searchPlaceholder')}
-              aria-label={t('settings.search')}
-              data-no-menu-drag
-            />
-            {settingsQuery ? (
-              <button
-                type="button"
-                className="cardo-settings-search-clear"
-                data-no-menu-drag
-                aria-label={t('common.close')}
-                onClick={() => setSettingsQuery('')}
-              >
-                <ThemeIcon name="close" size={14} />
-              </button>
-            ) : null}
-          </label>
-          <IconButton data-no-menu-drag onClick={onClose} aria-label={t('common.close')}>
-            <ThemeIcon name="close" size={16} />
-          </IconButton>
-        </div>
-      </header>
-      <Tabs
-        className="cardo-settings-layout"
-        value={section}
-        onValueChange={(value) => {
-          setSection(value as SettingsSection);
-          setSettingsQuery('');
-        }}
-      >
-        <TabsList className="cardo-settings-nav" aria-label={t('settings.sections')}>
-          {sections.map(({ id, label }) => (
-            <TabsTrigger key={id} value={id}>
-              {section === id && !isSearching ? (
-                <span className="cardo-settings-nav-indicator" aria-hidden />
-              ) : null}
-              <SettingsNavIcon id={id} />
-              <span>{label}</span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        <SettingsContent
-          section={section}
-          searchQuery={settingsQuery}
-          onOpenSearchResult={openSearchResult}
-        />
-      </Tabs>
     </div>
   );
 }
@@ -523,11 +389,25 @@ function FeatureSettings() {
         {FEATURE_CATALOG.map((feature) => {
           const enabled = isFeatureEnabled(feature.id, featureFlags);
           const label = t(feature.labelKey as WebNextMessageKey);
+          const missingDeps = feature.dependsOn.filter(
+            (dep) => !isFeatureEnabled(dep, featureFlags),
+          );
+          const requiresHint =
+            missingDeps.length > 0
+              ? t('settings.featureRequires', {
+                  features: missingDeps
+                    .map((dep) => t(getFeatureDefinition(dep).labelKey as WebNextMessageKey))
+                    .join(', '),
+                })
+              : null;
+          const description = requiresHint
+            ? `${t(feature.descriptionKey as WebNextMessageKey)} · ${requiresHint}`
+            : t(feature.descriptionKey as WebNextMessageKey);
           return (
             <SettingsRow
               key={feature.id}
               title={label}
-              description={t(feature.descriptionKey as WebNextMessageKey)}
+              description={description}
               control={
                 <Switch
                   checked={enabled}
@@ -568,7 +448,29 @@ function AppearanceSettings({
   const { t, locale } = useI18n();
   const themeId = usePreferencesStore((state) => state.themeId);
   const setThemeId = usePreferencesStore((state) => state.setThemeId);
-  const themes = useMemo(() => getRegisteredWebNextThemes(), []);
+  const fontFamily = usePreferencesStore((state) => state.fontFamily);
+  const fontScale = usePreferencesStore((state) => state.fontScale);
+  const density = usePreferencesStore((state) => state.density);
+  const setFontFamily = usePreferencesStore((state) => state.setFontFamily);
+  const setFontScale = usePreferencesStore((state) => state.setFontScale);
+  const setDensity = usePreferencesStore((state) => state.setDensity);
+  const cssSnippet = usePreferencesStore((state) => state.cssSnippet);
+  const cssSnippetEnabled = usePreferencesStore((state) => state.cssSnippetEnabled);
+  const setCssSnippet = usePreferencesStore((state) => state.setCssSnippet);
+  const setCssSnippetEnabled = usePreferencesStore((state) => state.setCssSnippetEnabled);
+  const importThemePack = usePreferencesStore((state) => state.importThemePack);
+  const importedThemePacks = usePreferencesStore((state) => state.importedThemePacks);
+  // importedThemePacks is a version signal; registry is outside React state.
+  const importedPackCount = Object.keys(importedThemePacks).length;
+  const themes = useMemo(
+    () => getRegisteredWebNextThemes(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-read after import/remove
+    [importedPackCount],
+  );
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const themeImportRef = useRef<HTMLInputElement>(null);
+  const [importThemeError, setImportThemeError] = useState(false);
+  const snippetInvalid = cssSnippet.trim().length > 0 && !validateCssSnippet(cssSnippet).ok;
 
   return (
     <>
@@ -648,7 +550,177 @@ function AppearanceSettings({
             </ToggleGroup>
           }
         />
+        <SettingsRow
+          title={t('settings.fontFamily')}
+          description={t('settings.fontFamilyDescription')}
+          control={
+            <Select
+              value={fontFamily}
+              onValueChange={(value) => setFontFamily(fontFamilyIdSchema.parse(value))}
+            >
+              <SelectTrigger aria-label={t('settings.fontFamily')}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent align="end">
+                <SelectItem value="default">{t('settings.fontFamily.default')}</SelectItem>
+                <SelectItem value="system-ui">{t('settings.fontFamily.systemUi')}</SelectItem>
+                <SelectItem value="serif">{t('settings.fontFamily.serif')}</SelectItem>
+              </SelectContent>
+            </Select>
+          }
+        />
+        <SettingsRow
+          title={t('settings.fontScale')}
+          description={t('settings.fontScaleDescription')}
+          control={
+            <ToggleGroup
+              aria-label={t('settings.fontScale')}
+              type="single"
+              value={fontScale}
+              onValueChange={(value) => value && setFontScale(fontScaleSchema.parse(value))}
+            >
+              <SegmentButton active={fontScale === 'sm'} value="sm">
+                {t('settings.fontScale.sm')}
+              </SegmentButton>
+              <SegmentButton active={fontScale === 'md'} value="md">
+                {t('settings.fontScale.md')}
+              </SegmentButton>
+              <SegmentButton active={fontScale === 'lg'} value="lg">
+                {t('settings.fontScale.lg')}
+              </SegmentButton>
+            </ToggleGroup>
+          }
+        />
+        <SettingsRow
+          title={t('settings.density')}
+          description={t('settings.densityDescription')}
+          control={
+            <ToggleGroup
+              aria-label={t('settings.density')}
+              type="single"
+              value={density}
+              onValueChange={(value) => value && setDensity(densitySchema.parse(value))}
+            >
+              <SegmentButton active={density === 'compact'} value="compact">
+                {t('settings.density.compact')}
+              </SegmentButton>
+              <SegmentButton active={density === 'comfortable'} value="comfortable">
+                {t('settings.density.comfortable')}
+              </SegmentButton>
+              <SegmentButton active={density === 'spacious'} value="spacious">
+                {t('settings.density.spacious')}
+              </SegmentButton>
+            </ToggleGroup>
+          }
+        />
       </SettingsCard>
+
+      <button
+        type="button"
+        className="cardo-settings-disclosure cardo-settings-list-group-spaced"
+        aria-expanded={advancedOpen}
+        onClick={() => setAdvancedOpen((open) => !open)}
+      >
+        <span>
+          {t('settings.advancedTheme')}
+          <small>{t('settings.advancedThemeDescription')}</small>
+        </span>
+        <ThemeIcon
+          name="chevronRight"
+          size={16}
+          className={[
+            'cardo-settings-disclosure-chevron',
+            advancedOpen ? 'cardo-settings-disclosure-chevron-open' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        />
+      </button>
+
+      {advancedOpen ? (
+        <>
+          <SettingsCard
+            spaced
+            head={t('settings.expertCss')}
+            description={t('settings.expertCssDescription')}
+          >
+            <SettingsRow
+              title={t('settings.cssSnippetEnabled')}
+              description={t('settings.cssSnippetDescription')}
+              control={
+                <Switch
+                  checked={cssSnippetEnabled}
+                  aria-label={t('settings.cssSnippetEnabled')}
+                  onCheckedChange={(next) => setCssSnippetEnabled(next)}
+                />
+              }
+            />
+            <div className="cardo-settings-card cardo-settings-css-snippet">
+              <Textarea
+                value={cssSnippet}
+                onChange={(event) => setCssSnippet(event.target.value)}
+                placeholder={t('settings.cssSnippetPlaceholder')}
+                spellCheck={false}
+                aria-label={t('settings.cssSnippet')}
+              />
+              <small>
+                {snippetInvalid ? t('settings.cssSnippetInvalid') : t('settings.cssSnippetHint')}
+              </small>
+            </div>
+          </SettingsCard>
+
+          <SettingsCard spaced>
+            <SettingsRow
+              title={t('settings.exportTheme')}
+              description={t('settings.exportThemeDescription')}
+              control={
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="cardo-settings-secondary-button"
+                  onClick={() => exportThemePackFile(themeId)}
+                >
+                  {t('settings.exportTheme')}
+                </Button>
+              }
+            />
+            <SettingsRow
+              title={t('settings.importTheme')}
+              description={t('settings.importThemeDescription')}
+              control={
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="cardo-settings-secondary-button"
+                  onClick={() => themeImportRef.current?.click()}
+                >
+                  {t('settings.importTheme')}
+                </Button>
+              }
+            />
+          </SettingsCard>
+          <Input
+            className="cardo-data-file-input"
+            ref={themeImportRef}
+            type="file"
+            accept="application/json,.json,.cardo-theme.json"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              event.currentTarget.value = '';
+              if (!file) return;
+              void parseThemePackImportFile(file)
+                .then((pack) => {
+                  importThemePack(pack);
+                  setImportThemeError(false);
+                })
+                .catch(() => setImportThemeError(true));
+            }}
+          />
+          {importThemeError ? (
+            <p className="cardo-data-error">{t('settings.importThemeInvalid')}</p>
+          ) : null}
+        </>
+      ) : null}
     </>
   );
 }
@@ -696,6 +768,8 @@ function DesktopUpdatePanel() {
   const { t } = useI18n();
   const [state, setState] = useState<DesktopUpdateState | null>(null);
   const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [proxyMode, setProxyMode] = useState<'auto' | 'manual' | 'off'>('auto');
   const [proxyHost, setProxyHost] = useState('127.0.0.1');
   const [proxyPort, setProxyPort] = useState('7890');
@@ -705,9 +779,17 @@ function DesktopUpdatePanel() {
     const bridge = window.cardoDesktop;
     if (!bridge) return;
     let cancelled = false;
-    void bridge.getUpdateState().then((next) => {
-      if (!cancelled) setState(next);
-    });
+    void bridge
+      .getUpdateState()
+      .then((next) => {
+        if (!cancelled) {
+          setState(next);
+          setLoadError(null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setLoadError(t('settings.updateError'));
+      });
     void bridge.getUpdateProxySettings().then((settings) => {
       if (cancelled) return;
       setProxyMode(settings.mode);
@@ -716,14 +798,33 @@ function DesktopUpdatePanel() {
     });
     const unsubscribe = bridge.onUpdateStateChange((next) => {
       setState(next);
+      setLoadError(null);
     });
     return () => {
       cancelled = true;
       unsubscribe();
     };
-  }, []);
+  }, [t]);
 
-  if (!state) return null;
+  if (!state) {
+    return (
+      <>
+        <div className="cardo-settings-subheading cardo-settings-list-group-spaced">
+          <span>{t('settings.update')}</span>
+          <small>{t('settings.updateDescription')}</small>
+        </div>
+        <div className="cardo-settings-list-group">
+          <div className="cardo-settings-card">
+            <div className="cardo-settings-card-copy">
+              <span className="cardo-update-status-copy">
+                {loadError ?? t('settings.updateLoading')}
+              </span>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   const statusText = (() => {
     switch (state.phase) {
@@ -783,8 +884,13 @@ function DesktopUpdatePanel() {
 
   const run = async (action: () => Promise<unknown>) => {
     setBusy(true);
+    setActionError(null);
     try {
       await action();
+    } catch (error) {
+      setActionError(
+        error instanceof Error && error.message ? error.message : t('settings.updateError'),
+      );
     } finally {
       setBusy(false);
     }
@@ -818,6 +924,9 @@ function DesktopUpdatePanel() {
               ) : (
                 <small>v{state.currentVersion}</small>
               )}
+              {actionError ? (
+                <small className="cardo-update-action-error">{actionError}</small>
+              ) : null}
             </span>
           </div>
           <div className="cardo-settings-card-actions">
@@ -885,7 +994,10 @@ function DesktopUpdatePanel() {
       <div className="cardo-settings-list-group">
         <div className="cardo-settings-card">
           <div className="cardo-settings-card-copy">
-            <span>{t('settings.updateProxyMode')}</span>
+            <span>
+              {t('settings.updateProxyMode')}
+              {proxyMode === 'auto' ? <small>{t('settings.updateProxyAutoHint')}</small> : null}
+            </span>
           </div>
           <Select
             value={proxyMode}

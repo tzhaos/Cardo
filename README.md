@@ -72,7 +72,7 @@ All graphical surfaces share the same React UI (`src/web`) and talk to Runtime t
 - Sidebar shell: pages, Favorites, Recycle Bin, settings foot; main panel title tools
 - History undo / redo, canvas tools, bottom search / new box
 - Global search across pages, boxes, and items
-- Built-in theme packs: Classic, Glass, Fluent, Material, SwiftUI, Codex
+- Built-in theme pack: Codex (import additional packs via Theme Pack files)
 - Interface language: English / 中文
 - Feature catalog for chrome slots (Settings → Interface)
 
@@ -275,16 +275,11 @@ Feature / fix completion in this repo typically runs `npm run build:all`, then a
 
 Official packs ship under `themes/builtin/`:
 
-| id         | Character                          |
-| ---------- | ---------------------------------- |
-| `classic`  | Default soft glass chrome          |
-| `glass`    | Floating translucent layers        |
-| `fluent`   | Windows 11–inspired solid chrome   |
-| `material` | Material-inspired solid chrome     |
-| `swiftui`  | App-style glass chrome             |
-| `codex`    | Sidebar shell / main panel dialect |
+| id      | Character                                            |
+| ------- | ---------------------------------------------------- |
+| `codex` | Default product shell dialect (sidebar + main panel) |
 
-Tokens live in JSON; structural dialect CSS hangs off `[data-cardo-theme]`. Authoring guide: `docs/architecture/theme-pack-authoring.md`. Validate with:
+Tokens live in JSON; structural dialect CSS hangs off `[data-cardo-theme]`. User-imported packs register at runtime. Authoring guide: `docs/architecture/theme-pack-authoring.md`. Validate with:
 
 ```bash
 npx tsx scripts/validate-builtin-themes.ts
@@ -323,21 +318,8 @@ npx tsx scripts/validate-builtin-themes.ts
 | [`docs/architecture/cardo-ui-kit.md`](./docs/architecture/cardo-ui-kit.md)                               | `src/web/kit` public API                |
 | [`docs/architecture/web-v2-codex-shell-design.md`](./docs/architecture/web-v2-codex-shell-design.md)     | Sidebar shell design (cutover complete) |
 | [`docs/architecture/zod-drizzle-shadcn-refactor.md`](./docs/architecture/zod-drizzle-shadcn-refactor.md) | Contract and UI boundary refactor notes |
-| [`docs/product-roadmap-v0.4.md`](./docs/product-roadmap-v0.4.md)                                         | Template system direction               |
-| [`docs/product-roadmap-v0.5.md`](./docs/product-roadmap-v0.5.md)                                         | Bookmark / web library direction        |
 | [`AGENTS.md`](./AGENTS.md)                                                                               | Contributor architecture constraints    |
 | [`assets/brand/README.md`](./assets/brand/README.md)                                                     | Brand asset usage                       |
-
----
-
-## Roadmap (product direction)
-
-Cardo ships as an early multi-client Runtime product. Near-term product planning includes:
-
-- v0.4 — richer template system (selector, defaults, Inbox routing, Command Center as work entry)
-- v0.5 — first-class bookmarks, browser bookmark import / export, frequent sites
-
-Roadmaps describe intent, not a release guarantee. Architecture SoT remains the local Runtime multi-client doc.
 
 ---
 

@@ -52,11 +52,10 @@ export function WorkspaceCanvas() {
   const { t } = useI18n();
   const isRecycleBin = isRecycleBinPageId(activePageId);
   const isCollection = isCollectionPageId(activePageId);
-  const groupViewModes = useUiStore((state) => state.groupViewModes);
   // Group layout modes only apply to user pages; collection/recycle stay freeform.
   const activeGroupViewMode = isSystemPageId(activePageId)
     ? 'freeform'
-    : resolveGroupViewMode(groupViewModes, activePageId);
+    : resolveGroupViewMode(pageRows, activePageId);
   const systemPageEmpty =
     isRecycleBin && activePageBoxCount === 0
       ? {
@@ -70,7 +69,13 @@ export function WorkspaceCanvas() {
             icon: <ThemeIcon name="star" size={22} strokeWidth={1.75} />,
             label: t('page.collectionEmpty'),
           }
-        : null;
+        : !isSystemPageId(activePageId) && activePageBoxCount === 0
+          ? {
+              key: 'group-empty',
+              icon: <ThemeIcon name="box" size={22} strokeWidth={1.75} />,
+              label: t('page.groupEmpty'),
+            }
+          : null;
   const previousActivePageIdRef = useRef(activePageId);
   const canvasRef = useRef<HTMLElement>(null);
   const setCanvasElement = useCallback((element: HTMLElement | null) => {

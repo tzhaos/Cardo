@@ -33,12 +33,29 @@ export function useStagedOrder<TItem extends { id: string }>(
     );
   }, [items]);
 
+  // Unmount mid-drag must exit staging so later item updates are not ignored.
+  useEffect(
+    () => () => {
+      isStagingRef.current = false;
+    },
+    [],
+  );
+
   return {
     orderedIds,
     startReordering: () => {
       isStagingRef.current = true;
     },
     updateOrder: (nextOrderedIds: string[]) => {
+      // Keep pinned items before unpinned (Runtime enforces the same rule).
+      const pinned = new Set(
+        items.filter((item) => 'isPinned' in item && item.isPinned).map((item) => item.id),
+      );
+      if (pinned.size > 0) {
+        const nextPinned = nextOrderedIds.filter((id) => pinned.has(id));
+        const nextUnpinned = nextOrderedIds.filter((id) => !pinned.has(id));
+        nextOrderedIds = [...nextPinned, ...nextUnpinned];
+      }
       orderRef.current = nextOrderedIds;
       setOrderedIds(nextOrderedIds);
     },

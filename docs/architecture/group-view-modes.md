@@ -37,11 +37,11 @@ Group (page row)
         └── list → GroupScrollSurface + grouped item grid
 ```
 
-## 3. Implementation plan (incremental)
+## 3. Implementation
 
 1. Freeform box morphology (production).
 2. Waterfall card + list grouped-item morphologies in scroll views (`src/web/features/group-views/*`).
-3. Persist per-group `viewMode` via page metadata (future; session uiStore for now).
+3. Persist per-group layout via `page.groupViewMode` (+ column fields) and `page.setGroupLayout` Command; UI reads projection, not session-only store.
 4. Drag reorder + cross-page for managed modes via `BoxPageDropController` reflow.
 
 ## 4. Non-goals (this milestone)

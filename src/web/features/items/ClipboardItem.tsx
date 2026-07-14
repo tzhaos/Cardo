@@ -7,6 +7,7 @@ import { ItemContentEditView } from './ItemContentEditView';
 import { ItemActions } from './ItemActions';
 import { useItemRename } from './useItemRename';
 import { writeClipboardText } from '../../platform/hostPlatform';
+import { showToast } from '../../app/stores/toastStore';
 import { useI18n } from '../../i18n/useI18n';
 import { useItemContextMenu } from './useItemContextMenu';
 import { recordItemActivity } from '../../app/operationActivity';
@@ -47,6 +48,7 @@ export function ClipboardItem({
       copyResetRef.current = window.setTimeout(() => setCopied(false), 1200);
     } catch {
       setCopied(false);
+      showToast(t('toast.copyFailed'), 'error');
     }
   };
   const contextMenu = useItemContextMenu({

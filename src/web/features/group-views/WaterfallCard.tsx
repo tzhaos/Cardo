@@ -7,10 +7,13 @@ import { isRecycleBinPageId } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { ThemeIcon } from '../../kit/icon';
 import { IconButton } from '../../kit/icon-button';
+import { UniversalAddView } from '../boxes/add-views/UniversalAddView';
 import { BoxAppearanceIcon } from '../boxes/boxIconRegistry';
 import { SortableItemList } from '../items/SortableItemList';
 import { GroupBoxDeleteView } from './GroupBoxDeleteView';
 import { renderGroupItem } from './renderGroupItem';
+
+const DEFAULT_ITEM_TYPE = 'clipboard' as const;
 
 /**
  * Waterfall morphology: compact card (not freeform box chrome).
@@ -19,6 +22,8 @@ import { renderGroupItem } from './renderGroupItem';
 export function WaterfallCard({ box, frame }: { box: WorkspaceBox; frame: BoxFrame }) {
   const beginBoxDrag = useUiStore((state) => state.beginBoxDrag);
   const selectBox = useUiStore((state) => state.selectBox);
+  const openAddView = useUiStore((state) => state.openAddView);
+  const draftState = useUiStore((state) => state.addDrafts[box.id]);
   const deleteBox = useWorkspaceStore((state) => state.deleteBox);
   const { t } = useI18n();
   const accent = getBoxAccent(box);
@@ -88,6 +93,14 @@ export function WaterfallCard({ box, frame }: { box: WorkspaceBox; frame: BoxFra
             <strong className="cardo-waterfall-card-title">{box.title}</strong>
             <span className="cardo-waterfall-card-count">{box.items.length}</span>
             <IconButton
+              data-no-drag
+              aria-label={t('box.addItem')}
+              tooltip={t('box.addItem')}
+              onClick={() => openAddView(box.id, DEFAULT_ITEM_TYPE)}
+            >
+              <ThemeIcon name="add" size={14} strokeWidth={2} />
+            </IconButton>
+            <IconButton
               className="cardo-waterfall-card-delete"
               data-no-drag
               aria-label={t(permanent ? 'menu.deletePermanently' : 'menu.moveToRecycleBin')}
@@ -98,12 +111,16 @@ export function WaterfallCard({ box, frame }: { box: WorkspaceBox; frame: BoxFra
             </IconButton>
           </header>
           <div className="cardo-waterfall-card-body" data-no-box-drag>
-            {box.items.length ? (
+            {draftState?.mode ? (
+              <UniversalAddView boxId={box.id} defaultType={DEFAULT_ITEM_TYPE} />
+            ) : box.items.length ? (
               <SortableItemList
                 boxId={box.id}
                 items={box.items}
                 viewMode="list"
-                renderItem={(item) => renderGroupItem(box.id, item)}
+                renderItem={(item) =>
+                  renderGroupItem(box.id, item, draftState?.highlightItemId === item.id)
+                }
               />
             ) : (
               <div className="cardo-waterfall-card-empty">{t('box.empty')}</div>

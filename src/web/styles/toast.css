@@ -1,0 +1,46 @@
+/* Lightweight ephemeral toasts (bottom-center stack). */
+
+.cardo-toast-host {
+  position: fixed;
+  z-index: 140;
+  right: 0;
+  bottom: 88px;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  pointer-events: none;
+}
+
+.cardo-app-desktop .cardo-toast-host {
+  bottom: 88px;
+}
+
+.cardo-toast {
+  max-width: min(28rem, calc(100vw - 2rem));
+  border: 1px solid var(--cardo-border);
+  border-radius: var(--cardo-radius-pill);
+  padding: 0.5rem 0.95rem;
+  background: var(--cardo-surface);
+  box-shadow: var(--cardo-shadow);
+  color: var(--cardo-text);
+  font-size: 0.85rem;
+  line-height: 1.3;
+  text-align: center;
+  backdrop-filter: blur(12px);
+}
+
+.cardo-toast--success {
+  border-color: color-mix(in srgb, var(--cardo-green, #2f9e44) 35%, var(--cardo-border));
+}
+
+.cardo-toast--error {
+  border-color: color-mix(in srgb, var(--cardo-red, #e03131) 40%, var(--cardo-border));
+  color: color-mix(in srgb, var(--cardo-red, #e03131) 70%, var(--cardo-text));
+}
+
+.cardo-toast--info {
+  border-color: color-mix(in srgb, var(--cardo-blue, #4c6ef5) 28%, var(--cardo-border));
+}

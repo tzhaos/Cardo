@@ -12,7 +12,12 @@ import { ThemeIcon } from '../../kit/icon';
 import { IconButton } from '../../kit/icon-button';
 import { Input } from '../../kit/input';
 import { Button } from '../../kit/button';
-import { constrainBoxFrameToCanvas, createCanvasWorldBounds } from '../../domain/canvasGeometry';
+import {
+  constrainBoxFrameToCanvas,
+  constrainBoxResizeToCanvas,
+  createCanvasWorldBounds,
+} from '../../domain/canvasGeometry';
+import { FREEFORM_MIN_HEIGHT, FREEFORM_MIN_WIDTH } from '../../domain/freeformLayout';
 import {
   RECYCLE_BIN_PAGE_ID,
   isRecycleBinPageId,
@@ -255,6 +260,52 @@ export function BaseBoxFrame({
     holdVisualUntilLandingRef.current = false;
     beginBoxDrag(session);
     attachDragPointerSession(session);
+  };
+
+  /** SE freeform resize — motion-only mid-drag; commit frame on pointerup. */
+  const beginResize = (event: ReactPointerEvent<HTMLElement>) => {
+    if (layoutLocked || box.isLocked || isDraggingThisBox || deleteMotion) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    setAppearanceView(false);
+    contextMenu.closeMenu();
+    selectBox(box.id);
+    pointerSessionRef.current?.dispose();
+
+    const startClientX = event.clientX;
+    const startClientY = event.clientY;
+    const startFrame = {
+      x: box.frame.x,
+      y: box.frame.y,
+      width: boxWidth.get(),
+      height: boxHeight.get(),
+    };
+    let latestFrame = startFrame;
+    const pointerSession = startWindowPointerSession({
+      pointerId: event.pointerId,
+      onMove: (moveEvent) => {
+        latestFrame = constrainBoxResizeToCanvas(
+          {
+            ...startFrame,
+            width: Math.round(startFrame.width + (moveEvent.clientX - startClientX)),
+            height: Math.round(startFrame.height + (moveEvent.clientY - startClientY)),
+          },
+          createCanvasWorldBounds(useCanvasStore.getState().viewportSize),
+          { width: FREEFORM_MIN_WIDTH, height: FREEFORM_MIN_HEIGHT },
+        );
+        boxWidth.set(latestFrame.width);
+        boxHeight.set(latestFrame.height);
+      },
+      onEnd: () => {
+        useWorkspaceStore.getState().updateBoxFrame(box.id, latestFrame);
+        if (pointerSessionRef.current === pointerSession) {
+          pointerSessionRef.current = null;
+        }
+      },
+    });
+    pointerSessionRef.current = pointerSession;
   };
 
   const dragging = isDraggingThisBox;
@@ -583,15 +634,13 @@ export function BaseBoxFrame({
       ) : (
         <header className="cardo-box-header" onPointerDown={beginDrag}>
           <div className="cardo-box-title-group">
-            <Button
-              variant="ghost"
+            <IconButton
               className="cardo-box-icon cardo-icon-frame"
-              type="button"
               data-no-drag
-              title={appearanceEnabled ? t('box.changePreset') : box.title}
               aria-label={appearanceEnabled ? t('box.changePreset') : box.title}
               aria-pressed={appearanceEnabled ? appearanceView : undefined}
               disabled={!appearanceEnabled}
+              tooltip={appearanceEnabled ? t('box.changePreset') : box.title}
               onClick={() => {
                 if (!appearanceEnabled) return;
                 contextMenu.closeMenu();
@@ -601,7 +650,7 @@ export function BaseBoxFrame({
               }}
             >
               {icon}
-            </Button>
+            </IconButton>
             {titleRename.renaming ? (
               <Input
                 ref={titleRename.inputRef}
@@ -749,6 +798,24 @@ export function BaseBoxFrame({
             <span>{t('box.addItem')}</span>
           </Button>
         </footer>
+      ) : null}
+      {!layoutLocked &&
+      !box.isLocked &&
+      !confirmDelete &&
+      !(appearanceEnabled && appearanceView) &&
+      !addViewState?.mode &&
+      !deleteMotion &&
+      !dragging ? (
+        <Button
+          variant="ghost"
+          type="button"
+          className="cardo-box-resize-handle"
+          data-no-drag
+          aria-label={t('box.resize', { title: box.title })}
+          onPointerDown={beginResize}
+        >
+          <span />
+        </Button>
       ) : null}
     </motion.article>
   );

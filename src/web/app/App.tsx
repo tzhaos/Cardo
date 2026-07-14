@@ -11,16 +11,17 @@
  * Feature gates (PR9 / KD-8 / KD-19):
  * - chrome.sidebar wraps product nav only; SettingsFoot stays outside and always on.
  * - chrome.bottomToolbar wraps BottomActionBar (create box only).
- * - chrome.globalSearch: sidebar text nav entry opens SearchPage (local workspace only).
+ * - chrome.globalSearch: sidebar / Ctrl+K (Cmd+K) opens SearchPage (local + web search action).
  */
 
 import '@fontsource-variable/inter';
-import { useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import type { SettingsSectionId } from '../features/settings/settingsSearchCatalog';
 import DesktopTitleBar from '../../desktop/DesktopTitleBar';
 import { BoxPageDropController } from './BoxPageDropController';
 import { WorkspaceCanvas } from '../features/canvas/WorkspaceCanvas';
 import { RuntimeConnectionBanner } from '../features/runtime/RuntimeConnectionBanner';
+import { ToastHost } from '../features/runtime/ToastHost';
 import { applyWebNextTheme } from '../themes/themeRegistry';
 import { FeatureGate } from '../shell/FeatureGate';
 import { applyLayoutProfile } from '../shell/layouts/applyLayoutProfile';
@@ -56,7 +57,21 @@ export default function CardoApp() {
   const [mode, setMode] = useState<'workspace' | 'settings'>('workspace');
   const [settingsSection, setSettingsSection] = useState<SettingsSectionId>('general');
   const searchOpen = useUiStore((state) => state.searchOpen);
+  const openSearch = useUiStore((state) => state.openSearch);
   const globalSearchEnabled = useFeatureEnabled('chrome.globalSearch');
+
+  useEffect(() => {
+    if (!globalSearchEnabled) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey) return;
+      if (event.key.toLowerCase() !== 'k') return;
+      event.preventDefault();
+      if (mode === 'settings') setMode('workspace');
+      openSearch();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [globalSearchEnabled, mode, openSearch]);
 
   const colorMode = usePreferencesStore((state) => state.colorMode);
   const locale = usePreferencesStore((state) => state.locale);
@@ -99,7 +114,9 @@ export default function CardoApp() {
     themeOptionValues,
   ]);
 
+  const closeSearch = useUiStore((state) => state.closeSearch);
   const openSettings = (section: SettingsSectionId = 'general') => {
+    closeSearch();
     setSettingsSection(section);
     setMode('settings');
   };
@@ -117,6 +134,7 @@ export default function CardoApp() {
         <FeatureGate feature="chrome.runtimeBanner">
           <RuntimeConnectionBanner />
         </FeatureGate>
+        <ToastHost />
         {mode === 'settings' ? (
           <SettingsShell onBack={() => setMode('workspace')} initialSection={settingsSection} />
         ) : (

@@ -3,8 +3,11 @@ import { motion } from 'motion/react';
 import type { GlobalSearchResult } from '../../../core/contracts/globalSearch';
 import { recordBoxActivity, recordItemActivity } from '../../app/operationActivity';
 import { useCanvasStore } from '../../app/stores/canvasStore';
+import { showToast } from '../../app/stores/toastStore';
+import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
+import { createWebSearchUrl } from '../../domain/webSearch';
 import type { BoxItem } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { ThemeIcon } from '../../kit/icon';
@@ -18,7 +21,7 @@ import {
 
 /**
  * Local workspace search results body for SearchPage.
- * No web/engine search — groups, boxes, and items only.
+ * Also offers a web-search action using preferences search engine.
  */
 export function GlobalSearchPanel({
   query,
@@ -31,12 +34,13 @@ export function GlobalSearchPanel({
   const setActivePage = useWorkspaceStore((state) => state.setActivePage);
   const selectBox = useUiStore((state) => state.selectBox);
   const highlightBox = useUiStore((state) => state.highlightBox);
+  const markCreated = useUiStore((state) => state.markCreated);
   const focusFrame = useCanvasStore((state) => state.focusFrame);
+  const searchEngine = usePreferencesStore((state) => state.searchEngine);
+  const customSearchTemplate = usePreferencesStore((state) => state.customSearchTemplate);
   const [results, setResults] = useState<GlobalSearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [copiedResultId, setCopiedResultId] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const copiedTimeoutRef = useRef<number | null>(null);
   const resultsRef = useRef(results);
   const selectedIndexRef = useRef(selectedIndex);
   const onActivateRef = useRef(onActivate);
@@ -44,6 +48,8 @@ export function GlobalSearchPanel({
   selectedIndexRef.current = selectedIndex;
   onActivateRef.current = onActivate;
   const { t } = useI18n();
+  const trimmedQuery = query.trim();
+  const webSearchUrl = createWebSearchUrl(searchEngine, customSearchTemplate, trimmedQuery);
 
   useEffect(() => setSelectedIndex(0), [query]);
   // Debounce Runtime search: every keystroke without delay floods SQLite + the client task queue.
@@ -79,33 +85,49 @@ export function GlobalSearchPanel({
       window.clearTimeout(timer);
     };
   }, [query]);
-  useEffect(
-    () => () => {
-      if (copiedTimeoutRef.current !== null) window.clearTimeout(copiedTimeoutRef.current);
-    },
-    [],
-  );
 
-  const activateItem = async (item: BoxItem, resultId: string, boxId: string) => {
+  const locateItemResult = (result: Extract<GlobalSearchResult, { kind: 'item' }>) => {
+    setActivePage(result.page.id, 'search');
+    focusFrame(result.page.id, result.box.frame);
+    selectBox(result.box.id);
+    highlightBox(result.box.id);
+    markCreated(result.box.id, result.item.id);
+  };
+
+  const activateItem = async (item: BoxItem, boxId: string) => {
     try {
       if (item.type === 'clipboard') {
         await writeClipboardText(item.text);
         recordItemActivity(boxId, item, 'item.copy', 'search');
-        setCopiedResultId(resultId);
-        if (copiedTimeoutRef.current !== null) window.clearTimeout(copiedTimeoutRef.current);
-        copiedTimeoutRef.current = window.setTimeout(() => setCopiedResultId(null), 1200);
-        return;
+        showToast(t('toast.copied'), 'success');
+        return true;
       }
       if (item.type === 'bookmark') {
         openExternalUrl(item.url);
         recordItemActivity(boxId, item, 'item.open', 'search');
-      } else {
-        await openLocalResource(item.path);
-        recordItemActivity(boxId, item, 'item.open', 'search');
+        return true;
       }
+      const openResult = await openLocalResource(item.path);
+      if (openResult.status === 'failed') {
+        showToast(t('toast.openFailed'), 'error');
+        return false;
+      }
+      recordItemActivity(boxId, item, 'item.open', 'search');
+      return true;
     } catch {
+      if (item.type === 'clipboard') showToast(t('toast.copyFailed'), 'error');
+      else showToast(t('toast.openFailed'), 'error');
+      return false;
+    }
+  };
+
+  const openWebSearch = () => {
+    if (!webSearchUrl) {
+      showToast(t('toast.webSearchUnavailable'), 'error');
       return;
     }
+    openExternalUrl(webSearchUrl);
+    onActivateRef.current?.();
   };
 
   const activateResult = async (result: GlobalSearchResult) => {
@@ -124,38 +146,62 @@ export function GlobalSearchPanel({
       onActivateRef.current?.();
       return;
     }
-    await activateItem(result.item, result.id, result.box.id);
-    // Keep page open for clipboard copy feedback; navigate types already close above.
-    if (result.item.type !== 'clipboard') {
-      onActivateRef.current?.();
-    }
+    locateItemResult(result);
+    const ok = await activateItem(result.item, result.box.id);
+    // Keep page open for clipboard copy feedback; navigate types close after action.
+    if (result.item.type === 'clipboard') return;
+    if (ok) onActivateRef.current?.();
   };
 
   const activateResultRef = useRef(activateResult);
   activateResultRef.current = activateResult;
+  const openWebSearchRef = useRef(openWebSearch);
+  openWebSearchRef.current = openWebSearch;
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const list = resultsRef.current;
-      if (!list.length) return;
+      const hasWeb = Boolean(trimmedQuery);
+      // Result list + optional web-search row as last virtual index when list empty or as extra.
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        if (!list.length && !hasWeb) return;
         event.preventDefault();
+        const max = list.length; // web row index when hasWeb is list.length
+        const bound = hasWeb ? max : Math.max(0, max - 1);
         setSelectedIndex((current) => {
           const delta = event.key === 'ArrowDown' ? 1 : -1;
+          if (!list.length && hasWeb) return 0;
+          const next = current + delta;
+          if (hasWeb) {
+            if (next < 0) return bound;
+            if (next > bound) return 0;
+            return next;
+          }
           return (current + delta + list.length) % list.length;
         });
         return;
       }
       if (event.key === 'Enter') {
-        const target = list[selectedIndexRef.current];
-        if (!target) return;
-        event.preventDefault();
-        void activateResultRef.current(target);
+        const index = selectedIndexRef.current;
+        if (list.length && index >= 0 && index < list.length) {
+          const target = list[index];
+          if (!target) return;
+          event.preventDefault();
+          void activateResultRef.current(target);
+          return;
+        }
+        if (hasWeb && (index === list.length || !list.length)) {
+          event.preventDefault();
+          openWebSearchRef.current();
+        }
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  }, [trimmedQuery]);
+
+  const webRowSelected =
+    selectedIndex === results.length || (results.length === 0 && selectedIndex === 0);
 
   return (
     <div className="cardo-global-search-panel-wrap">
@@ -181,9 +227,7 @@ export function GlobalSearchPanel({
               >
                 <ResultIcon result={result} />
                 <span className="cardo-global-search-copy">
-                  <span className="cardo-global-search-title">
-                    {copiedResultId === result.id ? t('item.copied') : result.title}
-                  </span>
+                  <span className="cardo-global-search-title">{result.title}</span>
                   <span className="cardo-global-search-path">{result.path}</span>
                   {result.detail ? (
                     <span className="cardo-global-search-detail">
@@ -196,11 +240,50 @@ export function GlobalSearchPanel({
                 <span className="cardo-global-search-kind">{t(`search.kind.${result.kind}`)}</span>
               </Button>
             ))}
+            {trimmedQuery ? (
+              <Button
+                variant="ghost"
+                className={`cardo-global-search-result cardo-global-search-web${webRowSelected ? ' cardo-global-search-result-active' : ''}`}
+                type="button"
+                role="option"
+                aria-selected={webRowSelected}
+                onMouseEnter={() => setSelectedIndex(results.length)}
+                onClick={openWebSearch}
+              >
+                <ThemeIcon name="globe" size={17} />
+                <span className="cardo-global-search-copy">
+                  <span className="cardo-global-search-title">
+                    {t('search.webFor', { query: trimmedQuery })}
+                  </span>
+                  <span className="cardo-global-search-path">{t('search.web')}</span>
+                </span>
+                <span className="cardo-global-search-kind">{t('search.web')}</span>
+              </Button>
+            ) : null}
           </div>
         ) : (
-          <div className="cardo-global-search-empty">
-            <ThemeIcon name="search" size={20} />
-            <span>{pending ? t('shell.searchPlaceholder') : t('search.noGlobalResults')}</span>
+          <div className="cardo-global-search-empty-stack">
+            <div className="cardo-global-search-empty">
+              <ThemeIcon name="search" size={20} />
+              <span>{pending ? t('shell.searchPlaceholder') : t('search.noGlobalResults')}</span>
+            </div>
+            {trimmedQuery ? (
+              <Button
+                variant="ghost"
+                className={`cardo-global-search-result cardo-global-search-web${webRowSelected ? ' cardo-global-search-result-active' : ''}`}
+                type="button"
+                onClick={openWebSearch}
+              >
+                <ThemeIcon name="globe" size={17} />
+                <span className="cardo-global-search-copy">
+                  <span className="cardo-global-search-title">
+                    {t('search.webFor', { query: trimmedQuery })}
+                  </span>
+                  <span className="cardo-global-search-path">{t('search.web')}</span>
+                </span>
+                <span className="cardo-global-search-kind">{t('search.web')}</span>
+              </Button>
+            ) : null}
           </div>
         )}
       </motion.div>

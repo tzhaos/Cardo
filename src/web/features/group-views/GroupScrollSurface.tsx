@@ -31,14 +31,14 @@ export function GroupScrollSurface({
   excludeBoxId?: string | null;
 }) {
   const allBoxes = useWorkspaceStore((state) => state.projection.boxes);
-  const groupViewModes = useUiStore((state) => state.groupViewModes);
+  const pages = useWorkspaceStore((state) => state.projection.pages);
   const insertPreview = useUiStore((state) =>
     state.managedInsertPreview?.pageId === pageId ? state.managedInsertPreview : null,
   );
   const viewportWidth = useCanvasStore((state) => state.viewportSize.width);
   const { t } = useI18n();
 
-  const mode = resolveGroupViewMode(groupViewModes, pageId) as Exclude<GroupViewMode, 'freeform'>;
+  const mode = resolveGroupViewMode(pages, pageId) as Exclude<GroupViewMode, 'freeform'>;
   const boxes = useMemo(
     () =>
       sortBoxesForGroupLayout(

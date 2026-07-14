@@ -142,7 +142,16 @@ export function BoxPageDropController() {
       frameScheduler.cancel();
       topBarObserver.disconnect();
       window.removeEventListener('resize', updateTopBarRect);
+      // dispose() does not run onEnd — if we still hold an optimistic cross-page
+      // preview, revert so pageId/frame do not stick after external endBoxDrag.
       session.dispose();
+      if (didOptimisticPreviewRef.current && useUiStore.getState().draggedBoxId === draggedBoxId) {
+        void useWorkspaceStore.getState().revertOptimisticProjection();
+        useUiStore.getState().endBoxDrag();
+      } else if (didOptimisticPreviewRef.current && !useUiStore.getState().draggedBoxId) {
+        // Drag already ended without commit path — still clear bad projection.
+        void useWorkspaceStore.getState().revertOptimisticProjection();
+      }
     };
   }, [draggedBoxId]);
 
@@ -226,7 +235,7 @@ function commitBoxDragRelease(
 
   const destMode = isSystemPageId(destinationPageId)
     ? 'freeform'
-    : resolveGroupViewMode(ui.groupViewModes, destinationPageId);
+    : resolveGroupViewMode(workspace.projection.pages, destinationPageId);
   const managedDest = isManagedGroupView(destMode);
 
   // Managed layouts: reorder/reflow on release (no freeform free placement).
@@ -347,7 +356,9 @@ function reflowManagedPage(
   const canvas = useCanvasStore.getState();
   const resolved =
     modeHint ??
-    (isSystemPageId(pageId) ? 'freeform' : resolveGroupViewMode(ui.groupViewModes, pageId));
+    (isSystemPageId(pageId)
+      ? 'freeform'
+      : resolveGroupViewMode(workspace.projection.pages, pageId));
   if (resolved !== 'waterfall' && resolved !== 'list') return;
   const mode = resolved;
 

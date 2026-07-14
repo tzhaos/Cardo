@@ -9,6 +9,7 @@ import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { useContextMenu } from '../../kit/context-menu';
 import { ThemeIcon } from '../../kit/icon';
 import { Button } from '../../kit/button';
+import { IconButton } from '../../kit/icon-button';
 import {
   startWindowPointerSession,
   type WindowPointerSession,
@@ -28,6 +29,7 @@ import {
   openLocalResource,
   writeClipboardText,
 } from '../../platform/hostPlatform';
+import { showToast } from '../../app/stores/toastStore';
 import { BoxAppearanceIcon } from '../boxes/boxIconRegistry';
 
 export function CollectionPage() {
@@ -81,17 +83,23 @@ export function CollectionPage() {
         setCopiedItemId(key);
         if (copiedTimeoutRef.current !== null) window.clearTimeout(copiedTimeoutRef.current);
         copiedTimeoutRef.current = window.setTimeout(() => setCopiedItemId(null), 1200);
+        showToast(t('toast.copied'), 'success');
         return;
       }
       if (item.type === 'bookmark') {
         openExternalUrl(item.url);
         recordItemActivity(boxId, item, 'item.open', 'collection');
-      } else {
-        await openLocalResource(item.path);
-        recordItemActivity(boxId, item, 'item.open', 'collection');
+        return;
       }
+      const openResult = await openLocalResource(item.path);
+      if (openResult.status === 'failed') {
+        showToast(t('toast.openFailed'), 'error');
+        return;
+      }
+      recordItemActivity(boxId, item, 'item.open', 'collection');
     } catch {
-      return;
+      if (item.type === 'clipboard') showToast(t('toast.copyFailed'), 'error');
+      else showToast(t('toast.openFailed'), 'error');
     }
   };
 
@@ -284,59 +292,58 @@ function CollectionBox({
         onPointerDown={(event) => beginFrameChange(event, 'move')}
       >
         <span className="cardo-collection-box-grip" aria-hidden="true" />
-        <Button
-          variant="ghost"
+        <IconButton
           className="cardo-collection-box-icon"
-          type="button"
           data-no-collection-drag
           onClick={onLocate}
-          title={t('collection.locateSource')}
+          aria-label={t('collection.locateSource')}
+          tooltip={t('collection.locateSource')}
         >
           <BoxAppearanceIcon icon={getBoxIcon(box)} size={16} />
-        </Button>
+        </IconButton>
         <span className="cardo-collection-box-heading">
           <strong>{box.title}</strong>
           <small>{pageTitle}</small>
         </span>
-        <Button
-          variant="ghost"
-          type="button"
+        <IconButton
           data-no-collection-drag
           onClick={() =>
             onViewChange({ detailMode: view.detailMode === 'detailed' ? 'compact' : 'detailed' })
           }
-          title={t(view.detailMode === 'detailed' ? 'box.switchToCompact' : 'box.switchToDetailed')}
+          aria-label={t(
+            view.detailMode === 'detailed' ? 'box.switchToCompact' : 'box.switchToDetailed',
+          )}
+          tooltip={t(
+            view.detailMode === 'detailed' ? 'box.switchToCompact' : 'box.switchToDetailed',
+          )}
         >
           {view.detailMode === 'detailed' ? (
             <ThemeIcon name="collapse" size={14} />
           ) : (
             <ThemeIcon name="expand" size={14} />
           )}
-        </Button>
-        <Button
-          variant="ghost"
-          type="button"
+        </IconButton>
+        <IconButton
           data-no-collection-drag
           onClick={() => onViewChange({ viewMode: view.viewMode === 'list' ? 'grid' : 'list' })}
-          title={t(view.viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList')}
+          aria-label={t(view.viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList')}
+          tooltip={t(view.viewMode === 'list' ? 'box.switchToGrid' : 'box.switchToList')}
         >
           {view.viewMode === 'list' ? (
             <ThemeIcon name="layoutGrid" size={14} />
           ) : (
             <ThemeIcon name="list" size={14} />
           )}
-        </Button>
-        <Button
-          variant="ghost"
+        </IconButton>
+        <IconButton
           className="cardo-collection-remove"
-          type="button"
           data-no-collection-drag
           onClick={onRemove}
           aria-label={t('collection.remove', { title: box.title })}
-          title={t('collection.remove', { title: box.title })}
+          tooltip={t('collection.remove', { title: box.title })}
         >
           <ThemeIcon name="close" size={14} />
-        </Button>
+        </IconButton>
       </header>
       <div className="cardo-collection-box-items">
         {box.items.length ? (

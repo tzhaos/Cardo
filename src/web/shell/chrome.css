@@ -88,6 +88,23 @@
 
 /* Layout-only shell chrome; interactive rows use cardo-nav-item (UI Kit). */
 
+/* Box-drop hit shell — no hover/active pill (kit NavItem owns those). */
+.cardo-v2-page-drop-row {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  background: transparent;
+}
+
+.cardo-v2-page-drop-row:hover {
+  background: transparent;
+}
+
+.cardo-v2-page-drop-row.cardo-v2-page-drop-row-dragging {
+  opacity: 0.55;
+}
+
 .cardo-v2-sidebar-foot {
   flex: 0 0 auto;
   padding: 6px 8px 8px;
@@ -97,6 +114,14 @@
 .cardo-v2-nav-item-input {
   min-width: 0;
   flex: 1 1 auto;
+}
+
+/* Rename-mode shell reuses nav pill geometry when chromeOnShell is set. */
+.cardo-v2-page-drop-row.cardo-v2-nav-item {
+  gap: 10px;
+  min-height: 34px;
+  border-radius: var(--cardo-radius-pill, 999px);
+  padding: 5px 12px;
 }
 
 .cardo-v2-delete-confirm {

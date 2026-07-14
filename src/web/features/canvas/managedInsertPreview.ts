@@ -35,7 +35,7 @@ export function updateManagedInsertPreview(clientX: number, clientY: number): vo
     return;
   }
 
-  const mode = resolveGroupViewMode(ui.groupViewModes, pageId);
+  const mode = resolveGroupViewMode(workspace.projection.pages, pageId);
   if (mode !== 'waterfall' && mode !== 'list') {
     ui.setManagedInsertPreview(null);
     return;

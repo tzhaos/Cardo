@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { SETTINGS_SECTION_IDS } from '../features/settings/SettingsPanel';
 import { SettingsNavIcon } from '../features/settings/SettingsNavIcons';
 import type { SettingsSectionId } from '../features/settings/settingsSearchCatalog';
@@ -33,6 +33,10 @@ export function SettingsNav({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const isSearching = searchQuery.trim().length > 0;
 
+  useEffect(() => {
+    searchInputRef.current?.focus();
+  }, []);
+
   return (
     <aside className="cardo-v2-settings-nav" aria-label={t('settings.sections')}>
       <Button variant="ghost" size="sm" className="cardo-v2-settings-back" onClick={onBack}>
@@ -63,6 +67,7 @@ export function SettingsNav({
               key={id}
               tone="settings"
               active={active}
+              className="cardo-v2-settings-section-item"
               icon={<SettingsNavIcon id={id} />}
               aria-current={active ? 'page' : undefined}
               onClick={() => {

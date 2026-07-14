@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import type { FileItem, FolderItem, ShortcutItem } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { openLocalResource } from '../../platform/hostPlatform';
+import { showToast } from '../../app/stores/toastStore';
 import { ItemContentEditView } from './ItemContentEditView';
 import { ItemDeleteView } from './ItemDeleteView';
 import { ItemActions } from './ItemActions';
@@ -38,10 +39,14 @@ export function LocalResourceItem({
   const { t } = useI18n();
   const openItem = async () => {
     try {
-      await openLocalResource(item.path);
+      const result = await openLocalResource(item.path);
+      if (result.status === 'failed') {
+        showToast(t('toast.openFailed'), 'error');
+        return;
+      }
       recordItemActivity(boxId, item, 'item.open');
     } catch {
-      return;
+      showToast(t('toast.openFailed'), 'error');
     }
   };
   const contextMenu = useItemContextMenu({

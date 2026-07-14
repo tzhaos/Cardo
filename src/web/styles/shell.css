@@ -227,6 +227,29 @@
   pointer-events: none;
 }
 
+.cardo-runtime-connection-banner-retry {
+  pointer-events: auto;
+  margin-left: 0.15rem;
+  border: 0;
+  border-radius: var(--cardo-radius-pill);
+  padding: 0.15rem 0.55rem;
+  background: var(--cardo-active, var(--cardo-surface-strong, #e2e5eb));
+  color: var(--cardo-text);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.cardo-runtime-connection-banner-retry:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--cardo-text) 8%, var(--cardo-active, #e2e5eb));
+}
+
+.cardo-runtime-connection-banner-retry:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
 .cardo-app-desktop .cardo-runtime-connection-banner {
   /* Stay above bottom chrome; no title-bar offset needed in the corner. */
   bottom: 72px;

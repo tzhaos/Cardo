@@ -177,3 +177,27 @@
   font-size: 13px;
   text-align: center;
 }
+
+.cardo-global-search-empty-stack {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+.cardo-global-search-empty-stack .cardo-global-search-empty {
+  flex: 1 1 auto;
+}
+
+.cardo-global-search-empty-stack .cardo-global-search-web {
+  margin: 0 8px 8px;
+  flex: 0 0 auto;
+  border: 1px solid var(--cardo-border-subtle);
+  background: color-mix(in srgb, var(--cardo-panel, #fff) 80%, transparent);
+}
+
+.cardo-global-search-web {
+  margin-top: 4px;
+  border-top: 1px solid var(--cardo-border-subtle);
+  border-radius: var(--cardo-radius-md);
+}

@@ -72,7 +72,7 @@ Cardo（拉丁语 cardo：门枢 / 枢纽 / 轴线）是本机优先的空间工
 - 侧栏壳：页面、收藏、回收站、设置脚；主面板标题工具
 - 撤销 / 重做、画布工具、底栏搜索 / 新建盒子
 - 跨页面、盒子与条目的全局搜索
-- 内置主题：Classic、Glass、Fluent、Material、SwiftUI、Codex
+- 内置主题：Codex（可通过 Theme Pack 文件导入更多主题）
 - 界面语言：English / 中文
 - 功能目录可开关壳层插槽（设置 → 界面）
 
@@ -275,16 +275,11 @@ Host 只读 discovery（并可可选中继），永不打开 SQLite。
 
 官方主题位于 `themes/builtin/`：
 
-| id         | 气质                     |
-| ---------- | ------------------------ |
-| `classic`  | 默认柔和玻璃壳           |
-| `glass`    | 浮动半透明层             |
-| `fluent`   | 接近 Windows 11 的实心壳 |
-| `material` | Material 风格实心壳      |
-| `swiftui`  | App 风格玻璃壳           |
-| `codex`    | 侧栏壳 / 主面板方言      |
+| id      | 气质                            |
+| ------- | ------------------------------- |
+| `codex` | 默认产品壳方言（侧栏 + 主面板） |
 
-JSON 只放可序列化 token；结构方言 CSS 挂在 `[data-cardo-theme]` 下。制作说明见 `docs/architecture/theme-pack-authoring.md`。校验：
+JSON 只放可序列化 token；结构方言 CSS 挂在 `[data-cardo-theme]` 下。用户导入的主题包在运行时注册。制作说明见 `docs/architecture/theme-pack-authoring.md`。校验：
 
 ```bash
 npx tsx scripts/validate-builtin-themes.ts
@@ -323,21 +318,8 @@ npx tsx scripts/validate-builtin-themes.ts
 | [`docs/architecture/cardo-ui-kit.md`](./docs/architecture/cardo-ui-kit.md)                               | `src/web/kit` 公开 API     |
 | [`docs/architecture/web-v2-codex-shell-design.md`](./docs/architecture/web-v2-codex-shell-design.md)     | 侧栏壳设计（cutover 完成） |
 | [`docs/architecture/zod-drizzle-shadcn-refactor.md`](./docs/architecture/zod-drizzle-shadcn-refactor.md) | 契约与 UI 边界重构笔记     |
-| [`docs/product-roadmap-v0.4.md`](./docs/product-roadmap-v0.4.md)                                         | 模板体系方向               |
-| [`docs/product-roadmap-v0.5.md`](./docs/product-roadmap-v0.5.md)                                         | 书签 / 网址资产方向        |
 | [`AGENTS.md`](./AGENTS.md)                                                                               | 贡献者架构约束             |
 | [`assets/brand/README.md`](./assets/brand/README.md)                                                     | 品牌素材用法               |
-
----
-
-## 路线图（产品方向）
-
-Cardo 目前处于多客户端 Runtime 产品的早期阶段。近期规划包括：
-
-- v0.4 — 更完整的模板体系（选择器、默认内容、Inbox 分流、Command Center 工作入口）
-- v0.5 — 一等 Bookmark、浏览器收藏夹导入 / 导出、常用网址
-
-路线图表达方向，不构成发版承诺。架构事实来源仍是本机 Runtime 多 Client 文档。
 
 ---
 

@@ -47,7 +47,7 @@ export function UniversalBox({
           }
         />
       ) : (
-        <div className="cardo-empty-state">{t('box.empty')}</div>
+        <div className="cardo-empty-state">{t('box.emptyHint')}</div>
       )}
     </BaseBoxFrame>
   );

@@ -80,14 +80,14 @@
   background: var(--cardo-create-background) !important;
   color: var(--cardo-create-text) !important;
   box-shadow: var(--cardo-shadow);
-  will-change: transform;
 }
 
+/* Opacity/brightness only — no scale (Agents: small chrome glyphs). */
 .cardo-toolbar-create:hover {
   box-shadow: 0 7px 16px color-mix(in srgb, var(--cardo-create-background) 30%, transparent);
-  transform: translateY(-1px) scale(1.04);
+  filter: brightness(1.06);
 }
 
 .cardo-toolbar-create:active {
-  transform: scale(0.95);
+  filter: brightness(0.94);
 }

@@ -185,8 +185,11 @@ const actions = {
     }
     fireCommand({ type: 'canvas.arrange', pageId, frames, layoutMode });
   },
-  setPageGroupLayout: (pageId, patch) =>
-    fireCommand({ type: 'page.setGroupLayout', pageId, ...patch }),
+  setPageGroupLayout: (pageId, patch) => {
+    // Optimistic page meta so group-view switcher paints before pageTabs invalidation.
+    applyOptimisticPageGroupLayout(pageId, patch);
+    fireCommand({ type: 'page.setGroupLayout', pageId, ...patch });
+  },
   updateCollectionBoxFrame: (boxId: string, frame: BoxFrame) =>
     fireCommand({ type: 'collection.updateBoxFrame', boxId, frame }),
   updateCollectionBoxView: (
@@ -278,6 +281,45 @@ let state: WorkspaceStore = {
   historyFuture: [],
   ...actions,
 };
+
+function applyOptimisticPageGroupLayout(
+  pageId: string,
+  patch: {
+    groupViewMode?: 'freeform' | 'waterfall' | 'list';
+    waterfallColumns?: number;
+    listColumns?: number;
+  },
+) {
+  const projection = state.projection;
+  const page = projection.pages.find((entry) => entry.id === pageId);
+  if (!page) return;
+  if (
+    (patch.groupViewMode === undefined || page.groupViewMode === patch.groupViewMode) &&
+    (patch.waterfallColumns === undefined || page.waterfallColumns === patch.waterfallColumns) &&
+    (patch.listColumns === undefined || page.listColumns === patch.listColumns)
+  ) {
+    return;
+  }
+  state = {
+    ...state,
+    projection: {
+      ...projection,
+      pages: projection.pages.map((entry) =>
+        entry.id === pageId
+          ? {
+              ...entry,
+              ...(patch.groupViewMode !== undefined ? { groupViewMode: patch.groupViewMode } : {}),
+              ...(patch.waterfallColumns !== undefined
+                ? { waterfallColumns: patch.waterfallColumns }
+                : {}),
+              ...(patch.listColumns !== undefined ? { listColumns: patch.listColumns } : {}),
+            }
+          : entry,
+      ),
+    },
+  };
+  emitChange();
+}
 
 function applyOptimisticBoxFrame(boxId: string, frame: BoxFrame) {
   const projection = state.projection;

@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import {
-  DEFAULT_GROUP_VIEW_MODE,
   groupViewModeIds,
   GROUP_VIEW_MODE_META,
   type GroupViewMode,
@@ -8,6 +7,7 @@ import {
 import { useUiStore } from '../app/stores/uiStore';
 import { useWorkspaceStore } from '../app/stores/workspaceStore';
 import { useCanvasTools } from '../features/canvas/useCanvasTools';
+import { resolveGroupViewMode } from '../domain/groupLayout';
 import { isCollectionPageId, isRecycleBinPageId, isSystemPageId } from '../domain/workspace';
 import { useI18n } from '../i18n/useI18n';
 import { FeatureGate, useFeatureEnabled } from './FeatureGate';
@@ -31,14 +31,13 @@ export function PanelHeader() {
   const canvasToolsEnabled = useFeatureEnabled('chrome.canvasTools');
   const activePageId = useWorkspaceStore((state) => state.projection.activePageId);
   const pages = useWorkspaceStore((state) => state.projection.pages);
+  const setPageGroupLayout = useWorkspaceStore((state) => state.setPageGroupLayout);
   const undo = useWorkspaceStore((state) => state.undo);
   const redo = useWorkspaceStore((state) => state.redo);
   const canUndo = useWorkspaceStore((state) => state.historyPast.length > 0);
   const canRedo = useWorkspaceStore((state) => state.historyFuture.length > 0);
   const searchOpen = useUiStore((state) => state.searchOpen);
   const closeSearch = useUiStore((state) => state.closeSearch);
-  const groupViewModes = useUiStore((state) => state.groupViewModes);
-  const setGroupViewMode = useUiStore((state) => state.setGroupViewMode);
   const { isLocked, items: canvasToolItems } = useCanvasTools();
 
   const title = useMemo(() => {
@@ -54,7 +53,7 @@ export function PanelHeader() {
   const lockItem = canvasToolItems.find((item) => item.id === 'toggle-canvas-lock');
   const showWorkspaceTools = !searchOpen && (historyEnabled || canvasToolsEnabled);
   const showGroupView = !searchOpen && !isSystemPageId(activePageId) && activePageId.length > 0;
-  const activeGroupView = groupViewModes[activePageId] ?? DEFAULT_GROUP_VIEW_MODE;
+  const activeGroupView = resolveGroupViewMode(pages, activePageId);
   const freeformTools = activeGroupView === 'freeform' && !isSystemPageId(activePageId);
 
   const leading = searchOpen ? (
@@ -85,7 +84,7 @@ export function PanelHeader() {
                   key={mode}
                   className="cardo-group-view-option"
                   pressed={pressed}
-                  onClick={() => setGroupViewMode(activePageId, mode)}
+                  onClick={() => setPageGroupLayout(activePageId, { groupViewMode: mode })}
                   aria-label={t(meta.labelKey)}
                   tooltip={t(meta.labelKey)}
                 >

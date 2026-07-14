@@ -44,6 +44,7 @@ export function SettingsShell({
     <div
       className="cardo-v2-settings-shell"
       role="dialog"
+      aria-modal="true"
       aria-label={t('settings.title')}
       data-settings-chrome="embedded"
     >

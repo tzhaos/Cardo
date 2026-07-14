@@ -44,11 +44,18 @@ export function useInlineRename({
   const commit = useCallback(() => {
     if (finishedRef.current) return;
     finishedRef.current = true;
-    if (allowEmpty || draft.trim()) {
-      onCommit(draft);
-    } else {
+    const next = draft.trim();
+    if (!allowEmpty && !next) {
       setDraft(value);
+      setRenaming(false);
+      return;
     }
+    // Skip no-op renames (empty command / history noise).
+    if (next === value.trim() || (!allowEmpty && draft === value)) {
+      setRenaming(false);
+      return;
+    }
+    onCommit(allowEmpty ? draft : next);
     setRenaming(false);
   }, [allowEmpty, draft, onCommit, value]);
 

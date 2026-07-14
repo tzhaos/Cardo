@@ -27,6 +27,7 @@ export function ConfirmBar({
   return (
     <div
       role="alertdialog"
+      aria-modal="true"
       aria-label={ariaLabel}
       data-cardo-ui="confirm-bar"
       className={cn('cardo-confirm-bar', className)}

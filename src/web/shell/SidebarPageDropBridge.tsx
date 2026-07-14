@@ -52,20 +52,34 @@ export function useSidebarBoxDropUi() {
   return { boxDragActive, overNav, dropPageId };
 }
 
-/** Class list for a droppable nav row (active pill + drop highlight). */
+/**
+ * Class list for a droppable nav row shell.
+ * Outer is hit-target only (no hover/active chrome) — kit NavItem owns pill styles.
+ * Pass `chromeOnShell` for rename rows that have no NavItem child.
+ */
 export function sidebarPageDropRowClassName(options: {
   pageId: string;
   active: boolean;
   dropPageId: string | null;
   className?: string;
+  /** When true, shell owns active/drop chrome (rename mode without NavItem). */
+  chromeOnShell?: boolean;
 }) {
-  const { pageId, active, dropPageId, className } = options;
+  const { pageId, active, dropPageId, className, chromeOnShell = false } = options;
   return [
-    'cardo-v2-nav-item',
-    active ? 'cardo-v2-nav-item-active' : '',
-    dropPageId === pageId ? 'cardo-v2-nav-drop-target' : '',
+    'cardo-v2-page-drop-row',
+    chromeOnShell && active ? 'cardo-v2-nav-item cardo-v2-nav-item-active' : '',
+    chromeOnShell && dropPageId === pageId ? 'cardo-v2-nav-drop-target' : '',
     className ?? '',
   ]
+    .filter(Boolean)
+    .join(' ');
+}
+
+/** Classes for kit NavItem used as a product sidebar row (codex recipes hit these). */
+export function sidebarNavItemClassName(options: { active?: boolean; className?: string }) {
+  const { active, className } = options;
+  return ['cardo-v2-nav-item', active ? 'cardo-v2-nav-item-active' : '', className ?? '']
     .filter(Boolean)
     .join(' ');
 }

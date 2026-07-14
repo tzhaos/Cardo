@@ -17,6 +17,7 @@ export function ItemDeleteView({
     <motion.div
       className="cardo-item-delete-view"
       role="alertdialog"
+      aria-modal="true"
       aria-label={t('item.deleteConfirmation')}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -24,6 +25,7 @@ export function ItemDeleteView({
       transition={{ duration: 0.16 }}
       onKeyDown={(event) => {
         if (event.key === 'Escape') {
+          event.stopPropagation();
           onCancel();
         }
       }}

@@ -31,6 +31,7 @@ const IconButtonControl = forwardRef<
         'cardo-button',
         'cardo-button-size-icon',
         'cardo-button-ghost',
+        'cardo-icon-button',
         pressed && 'cardo-icon-button-pressed',
         className,
       )}

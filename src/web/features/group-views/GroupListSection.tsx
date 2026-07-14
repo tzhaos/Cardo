@@ -7,10 +7,13 @@ import { isRecycleBinPageId } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { ThemeIcon } from '../../kit/icon';
 import { IconButton } from '../../kit/icon-button';
+import { UniversalAddView } from '../boxes/add-views/UniversalAddView';
 import { BoxAppearanceIcon } from '../boxes/boxIconRegistry';
 import { SortableItemList } from '../items/SortableItemList';
 import { GroupBoxDeleteView } from './GroupBoxDeleteView';
 import { renderGroupItem } from './renderGroupItem';
+
+const DEFAULT_ITEM_TYPE = 'clipboard' as const;
 
 /**
  * List morphology: group (box) as section + items in a compact grid.
@@ -20,6 +23,7 @@ export function GroupListSection({ box }: { box: WorkspaceBox }) {
   const beginBoxDrag = useUiStore((state) => state.beginBoxDrag);
   const selectBox = useUiStore((state) => state.selectBox);
   const openAddView = useUiStore((state) => state.openAddView);
+  const draftState = useUiStore((state) => state.addDrafts[box.id]);
   const deleteBox = useWorkspaceStore((state) => state.deleteBox);
   const { t } = useI18n();
   const accent = getBoxAccent(box);
@@ -95,7 +99,7 @@ export function GroupListSection({ box }: { box: WorkspaceBox }) {
               data-no-drag
               aria-label={t('box.addItem')}
               tooltip={t('box.addItem')}
-              onClick={() => openAddView(box.id, 'clipboard')}
+              onClick={() => openAddView(box.id, DEFAULT_ITEM_TYPE)}
             >
               <ThemeIcon name="add" size={14} strokeWidth={2} />
             </IconButton>
@@ -108,13 +112,19 @@ export function GroupListSection({ box }: { box: WorkspaceBox }) {
               <ThemeIcon name="trash" size={13} strokeWidth={2} />
             </IconButton>
           </header>
-          {box.items.length ? (
+          {draftState?.mode ? (
+            <div className="cardo-group-list-item-host" data-no-box-drag>
+              <UniversalAddView boxId={box.id} defaultType={DEFAULT_ITEM_TYPE} />
+            </div>
+          ) : box.items.length ? (
             <div className="cardo-group-list-item-host" data-no-box-drag>
               <SortableItemList
                 boxId={box.id}
                 items={box.items}
                 viewMode="grid"
-                renderItem={(item) => renderGroupItem(box.id, item)}
+                renderItem={(item) =>
+                  renderGroupItem(box.id, item, draftState?.highlightItemId === item.id)
+                }
               />
             </div>
           ) : (

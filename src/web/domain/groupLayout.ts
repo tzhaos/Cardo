@@ -309,11 +309,12 @@ export function reflowGroupBoxesAppend(
   });
 }
 
+/** Resolve persisted group layout mode from workspace projection pages. */
 export function resolveGroupViewMode(
-  modes: Record<string, GroupViewMode>,
+  pages: readonly { id: string; groupViewMode: GroupViewMode }[],
   pageId: string,
 ): GroupViewMode {
-  return modes[pageId] ?? DEFAULT_GROUP_VIEW_MODE;
+  return pages.find((page) => page.id === pageId)?.groupViewMode ?? DEFAULT_GROUP_VIEW_MODE;
 }
 
 /** Map client pointer into group-scroll content coordinates. */

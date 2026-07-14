@@ -27,6 +27,7 @@ export function BookmarkItem({
   const rename = useItemRename(boxId, item.id, item.title);
   const [deleteView, setDeleteView] = useState(false);
   const [editView, setEditView] = useState(false);
+  const [faviconBroken, setFaviconBroken] = useState(false);
   const setBookmarkFavicon = useWorkspaceStore((state) => state.setBookmarkFavicon);
   const { t } = useI18n();
   const openItem = () => {
@@ -45,6 +46,10 @@ export function BookmarkItem({
     onPin: () => rename.setPinned(!item.isPinned),
     onDelete: () => setDeleteView(true),
   });
+
+  useEffect(() => {
+    setFaviconBroken(false);
+  }, [item.favicon]);
 
   useEffect(() => {
     if (item.favicon) return;
@@ -99,8 +104,13 @@ export function BookmarkItem({
                 }
               }}
             >
-              {item.favicon ? (
-                <img className="cardo-website-icon" src={item.favicon} alt="" />
+              {item.favicon && !faviconBroken ? (
+                <img
+                  className="cardo-website-icon"
+                  src={item.favicon}
+                  alt=""
+                  onError={() => setFaviconBroken(true)}
+                />
               ) : (
                 <ThemeIcon name="globe" size={12} />
               )}

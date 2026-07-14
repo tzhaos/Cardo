@@ -9,6 +9,7 @@ export { SettingsShell } from './SettingsShell';
 export { SidebarNav } from './SidebarNav';
 export {
   registerSidebarNavRoot,
+  sidebarNavItemClassName,
   sidebarNavRootClassName,
   sidebarNavRootRef,
   sidebarPageDropRowClassName,
@@ -17,8 +18,4 @@ export {
 } from './SidebarPageDropBridge';
 
 /** Shared section bodies for SettingsShell (SettingsContent + section id list). */
-export {
-  SettingsContent,
-  SETTINGS_SECTION_IDS,
-  type SettingsPanelChrome,
-} from '../features/settings/SettingsPanel';
+export { SettingsContent, SETTINGS_SECTION_IDS } from '../features/settings/SettingsPanel';
