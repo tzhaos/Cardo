@@ -22,6 +22,9 @@ import {
 
 export async function getPageTabs(database: CardoDatabase) {
   const rows = await database.select().from(pages).orderBy(asc(pages.sortOrder)).all();
+  // Must match workspacePageSchema (same shape as getWorkspaceProjection.pages).
+  // Omitting groupViewMode / columns makes pageTabs parse fail after every page
+  // mutation — UI surfaces that as toast "Could not save" / 「无法保存」.
   return pageTabsQuerySchema.parse(
     pageSelectSchema
       .array()
@@ -30,6 +33,9 @@ export async function getPageTabs(database: CardoDatabase) {
         id: page.id,
         title: page.title,
         order: page.sortOrder,
+        groupViewMode: page.groupViewMode ?? 'freeform',
+        waterfallColumns: page.waterfallColumns ?? 0,
+        listColumns: page.listColumns ?? 1,
         createdAt: page.createdAt,
         updatedAt: page.updatedAt,
       })),
