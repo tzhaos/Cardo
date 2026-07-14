@@ -127,7 +127,7 @@ export function PanelHeader() {
                   pressed={pressed}
                   onClick={() => setPageGroupLayout(activePageId, { groupViewMode: mode })}
                   aria-label={t(meta.labelKey)}
-                  tooltip={t(meta.labelKey)}
+                  tooltip={`${t(meta.labelKey)} — ${t(meta.descriptionKey)}`}
                 >
                   <ThemeIcon name={GROUP_VIEW_ICONS[mode]} size={15} />
                 </IconButton>

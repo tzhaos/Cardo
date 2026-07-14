@@ -8,6 +8,8 @@
 import { useEffect, useRef } from 'react';
 import { createLatestFrameScheduler } from './motion/frameScheduler';
 import { getPageCanvasState, useCanvasStore } from './stores/canvasStore';
+import { usePreferencesStore } from './stores/preferencesStore';
+import { showToast } from './stores/toastStore';
 import { useUiStore } from './stores/uiStore';
 import { useWorkspaceStore } from './stores/workspaceStore';
 import { startWindowPointerSession } from './windowPointerSession';
@@ -34,6 +36,7 @@ import {
 import type { BoxFrame } from '../domain/workspace';
 import { isCollectionPageId, isRecycleBinPageId, isSystemPageId } from '../domain/workspace';
 import { updateManagedInsertPreview } from '../features/canvas/managedInsertPreview';
+import { translateWebNext } from '../i18n/messages';
 
 export function BoxPageDropController() {
   const draggedBoxId = useUiStore((state) => state.draggedBoxId);
@@ -301,8 +304,11 @@ function commitBoxDragRelease(
           reflowManagedPage(destinationPageId, draggedBoxId, landingFrame);
         }
       })
-      .catch(() => {
+      .catch((error: unknown) => {
+        console.error('Cardo command failed', error);
         void workspace.revertOptimisticProjection();
+        const locale = usePreferencesStore.getState().locale;
+        showToast(translateWebNext(locale, 'toast.commandFailed'), 'error');
       });
     return;
   }
@@ -348,8 +354,11 @@ function commitManagedLayoutDrop(args: {
       .then(() =>
         reflowManagedPage(destinationPageId, draggedBoxId, dropPoint, mode, viewportWidth),
       )
-      .catch(() => {
+      .catch((error: unknown) => {
+        console.error('Cardo command failed', error);
         void workspace.revertOptimisticProjection();
+        const locale = usePreferencesStore.getState().locale;
+        showToast(translateWebNext(locale, 'toast.commandFailed'), 'error');
       });
     return;
   }

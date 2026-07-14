@@ -41,6 +41,8 @@ export function GlobalSearchPanel({
   const [results, setResults] = useState<GlobalSearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [pending, setPending] = useState(false);
+  const [searchError, setSearchError] = useState(false);
+  const [retryToken, setRetryToken] = useState(0);
   const resultsRef = useRef(results);
   const selectedIndexRef = useRef(selectedIndex);
   const onActivateRef = useRef(onActivate);
@@ -59,17 +61,20 @@ export function GlobalSearchPanel({
     if (!trimmed) {
       setResults([]);
       setPending(false);
+      setSearchError(false);
       return () => {
         active = false;
       };
     }
     setPending(true);
+    setSearchError(false);
     const timer = window.setTimeout(() => {
       void queryGlobalSearch(trimmed)
         .then((nextResults) => {
           if (active) {
             setResults(nextResults);
             setPending(false);
+            setSearchError(false);
           }
         })
         .catch((error: unknown) => {
@@ -77,6 +82,8 @@ export function GlobalSearchPanel({
             console.error('Global search failed', error);
             setResults([]);
             setPending(false);
+            setSearchError(true);
+            showToast(t('toast.searchFailed'), 'error');
           }
         });
     }, 200);
@@ -84,7 +91,7 @@ export function GlobalSearchPanel({
       active = false;
       window.clearTimeout(timer);
     };
-  }, [query]);
+  }, [query, retryToken, t]);
 
   const scrollSearchTargetIntoView = (boxId: string, itemId?: string) => {
     // Managed views (waterfall/list) may not finish paint on the same tick as page switch.
@@ -286,7 +293,22 @@ export function GlobalSearchPanel({
           <div className="cardo-global-search-empty-stack">
             <div className="cardo-global-search-empty">
               <ThemeIcon name="search" size={20} />
-              <span>{pending ? t('search.pending') : t('search.noGlobalResults')}</span>
+              <span>
+                {pending
+                  ? t('search.pending')
+                  : searchError
+                    ? t('search.failed')
+                    : t('search.noGlobalResults')}
+              </span>
+              {searchError && !pending ? (
+                <Button
+                  variant="ghost"
+                  type="button"
+                  onClick={() => setRetryToken((token) => token + 1)}
+                >
+                  {t('common.retry')}
+                </Button>
+              ) : null}
             </div>
             {trimmedQuery ? (
               <Button

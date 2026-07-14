@@ -9,6 +9,7 @@ import { getRegisteredWebNextThemes } from '../../themes/themeRegistry';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import type { WorkspaceProjection } from '../../domain/workspace';
 import { useUiStore } from '../../app/stores/uiStore';
+import { showToast } from '../../app/stores/toastStore';
 import {
   exportOperationLog,
   exportThemePackFile,
@@ -173,6 +174,26 @@ function DataSettings() {
     }
   };
 
+  const handleExportWorkspaceData = async () => {
+    try {
+      await exportWorkspaceData();
+      showToast(t('toast.exportOk'), 'success');
+    } catch (error: unknown) {
+      console.error('Workspace export failed', error);
+      showToast(t('toast.exportFailed'), 'error');
+    }
+  };
+
+  const handleExportOperationLog = async () => {
+    try {
+      await exportOperationLog();
+      showToast(t('toast.exportOk'), 'success');
+    } catch (error: unknown) {
+      console.error('Operation log export failed', error);
+      showToast(t('toast.exportFailed'), 'error');
+    }
+  };
+
   return (
     <>
       <SettingsHeading title={t('settings.data')} description={t('settings.dataDescription')} />
@@ -194,7 +215,7 @@ function DataSettings() {
               type="button"
               variant="ghost"
               className="cardo-settings-secondary-button"
-              onClick={() => void exportWorkspaceData()}
+              onClick={() => void handleExportWorkspaceData()}
             >
               {t('settings.exportDataAction')}
             </Button>
@@ -281,7 +302,7 @@ function DataSettings() {
               type="button"
               variant="ghost"
               className="cardo-settings-secondary-button"
-              onClick={() => void exportOperationLog()}
+              onClick={() => void handleExportOperationLog()}
             >
               {t('settings.exportLogAction')}
             </Button>

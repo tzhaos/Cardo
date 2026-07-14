@@ -57,7 +57,8 @@ export function findPageDropAtPoint(clientX: number, clientY: number) {
     ) {
       continue;
     }
-    const distance = Math.abs(clientX - (rect.left + rect.width / 2));
+    // Sidebar nav is a vertical list — pick the row whose vertical center is closest.
+    const distance = Math.abs(clientY - (rect.top + rect.height / 2));
     if (!nearest || distance < nearest.distance) nearest = { pageId, distance };
   }
   return nearest?.pageId ?? null;

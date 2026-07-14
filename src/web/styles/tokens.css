@@ -12,6 +12,11 @@
   --cardo-font-scale: 1;
   --cardo-density: 1;
 
+  /* Control heights — scaled by density in applyTheme (--cardo-density). */
+  --cardo-control-h-md: 32px;
+  --cardo-control-h-icon: 32px;
+  --cardo-control-h-dense: 28px;
+
   --cardo-radius-xs: 4px;
   --cardo-radius-sm: 6px;
   --cardo-radius-md: 10px;

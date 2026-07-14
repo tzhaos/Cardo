@@ -107,6 +107,10 @@ export function applyTheme(root: HTMLElement, options: ApplyThemeOptions): Theme
   );
   root.style.setProperty('--cardo-font-scale', String(FONT_SCALE_FACTORS[fontScale]));
   root.style.setProperty('--cardo-density', String(densityFactor));
+  // Control heights track density so kit buttons/icons tighten or open with spacing.
+  root.style.setProperty('--cardo-control-h-md', `${Math.round(32 * densityFactor)}px`);
+  root.style.setProperty('--cardo-control-h-icon', `${Math.round(32 * densityFactor)}px`);
+  root.style.setProperty('--cardo-control-h-dense', `${Math.round(28 * densityFactor)}px`);
   root.style.setProperty('--cardo-chrome-blur', chromeBlur);
   root.style.setProperty('--cardo-topbar-offset', resolved.chrome.topbarOffset ?? '12px');
 

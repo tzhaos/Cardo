@@ -15,12 +15,16 @@ import { isSystemPageId } from '../../domain/workspace';
  * Live drop-landing preview for waterfall/list:
  * opens a morphology-correct hole where the box will rest on release.
  * Call on every pointer move while a managed drag is active.
+ *
+ * Freeform morphology is allowed when the active page is managed (e.g. cross-page
+ * sidebar hover from a freeform origin) — the ghost stays freeform but the landing
+ * hole still opens using the destination mode.
  */
 export function updateManagedInsertPreview(clientX: number, clientY: number): void {
   const workspace = useWorkspaceStore.getState();
   const ui = useUiStore.getState();
   const session = ui.boxDragSession;
-  if (!session || (session.morphology !== 'card' && session.morphology !== 'list')) {
+  if (!session) {
     ui.setManagedInsertPreview(null);
     return;
   }
@@ -41,6 +45,7 @@ export function updateManagedInsertPreview(clientX: number, clientY: number): vo
     return;
   }
 
+  // card/list ghosts use their morphology; freeform over a managed page uses page mode.
   const managedMode = session.morphology === 'list' || mode === 'list' ? 'list' : 'waterfall';
   const viewportWidth = useCanvasStore.getState().viewportSize.width || 960;
   const pageBoxes = workspace.projection.boxes.filter((box) => box.pageId === pageId);
