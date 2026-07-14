@@ -1,4 +1,5 @@
 import type { WorkspaceItemType } from '../../../domain/workspace';
+import { showToast } from '../../../app/stores/toastStore';
 import { useUiStore } from '../../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../../app/stores/workspaceStore';
 import { useI18n } from '../../../i18n/useI18n';
@@ -40,7 +41,10 @@ export function AddViewShell({
         }
         void createItem(boxId, type, draftState?.draft ?? {})
           .then((item) => markCreated(boxId, item.id))
-          .catch((error: unknown) => console.error('Failed to create Item', error));
+          .catch((error: unknown) => {
+            console.error('Failed to create Item', error);
+            showToast(t('toast.commandFailed'), 'error');
+          });
       }}
     >
       {typePicker}

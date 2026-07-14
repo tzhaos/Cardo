@@ -41,6 +41,8 @@ export interface ManagedInsertPreview {
 interface UiStore {
   addDrafts: Record<string, AddDraftState>;
   draggedBoxId: string | null;
+  /** True while a freeform box SE resize pointer session is active. */
+  boxResizeActive: boolean;
   boxDragSession: BoxDragSession | null;
   /** True while box drag pointer is over primary nav / sidebar. Name kept until cutover. */
   boxDragOverTopBar: boolean;
@@ -76,6 +78,7 @@ interface UiStore {
   closeAddView: (boxId: string) => void;
   markCreated: (boxId: string, itemId: string) => void;
   beginBoxDrag: (session: BoxDragSession) => void;
+  setBoxResizeActive: (active: boolean) => void;
   /** Pointer-rate world frame + last client; mutates session without React notify. */
   updateBoxDragFrame: (frame: BoxFrame, clientX?: number, clientY?: number) => void;
   rebaseBoxDragSession: (frame: BoxFrame, clientX: number, clientY: number) => void;
@@ -121,6 +124,7 @@ export function clearItemHighlight(boxId: string) {
 export const useUiStore = create<UiStore>((set) => ({
   addDrafts: {},
   draggedBoxId: null,
+  boxResizeActive: false,
   boxDragSession: null,
   boxDragOverTopBar: false,
   boxDropPageId: null,
@@ -216,6 +220,8 @@ export const useUiStore = create<UiStore>((set) => ({
       managedInsertPreview: null,
       selectedBoxId: session.boxId,
     }),
+  setBoxResizeActive: (active) =>
+    set((state) => (state.boxResizeActive === active ? state : { boxResizeActive: active })),
   /**
    * Pointer-rate frame while dragging. Mutate latestFrame (and last client) in place
    * and return the same state root so Zustand does not notify React subscribers.

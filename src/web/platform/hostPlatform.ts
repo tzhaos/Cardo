@@ -390,6 +390,28 @@ export function openExternalUrl(url: string) {
   getAppPorts().tabs.openUrl(url);
 }
 
+/** True when the host can show a native file/folder picker (Desktop bridge). */
+export function canOpenLocalPathPicker(): boolean {
+  return (
+    typeof window !== 'undefined' && typeof window.cardoDesktop?.openLocalPathPicker === 'function'
+  );
+}
+
+/**
+ * Native local path picker (Desktop only). Returns selected path or null if canceled /
+ * unavailable (web / extension keep text input only).
+ */
+export async function openLocalPathPicker(options?: {
+  directory?: boolean;
+}): Promise<string | null> {
+  if (!canOpenLocalPathPicker()) return null;
+  try {
+    return (await window.cardoDesktop!.openLocalPathPicker(options)) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function openLocalResource(path: string) {
   const opened = await requireRuntimeClient().openLocalResource(path);
   return opened

@@ -1,9 +1,10 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   groupViewModeIds,
   GROUP_VIEW_MODE_META,
   type GroupViewMode,
 } from '../../core/contracts/groupView';
+import { RECYCLE_BIN_PAGE_ID } from '../../core/contracts/systemPages';
 import { useUiStore } from '../app/stores/uiStore';
 import { useWorkspaceStore } from '../app/stores/workspaceStore';
 import { useCanvasTools } from '../features/canvas/useCanvasTools';
@@ -11,6 +12,7 @@ import { resolveGroupViewMode } from '../domain/groupLayout';
 import { isCollectionPageId, isRecycleBinPageId, isSystemPageId } from '../domain/workspace';
 import { useI18n } from '../i18n/useI18n';
 import { FeatureGate, useFeatureEnabled } from './FeatureGate';
+import { ConfirmBar } from '../kit/confirm-bar';
 import { Divider, PanelHeader as KitPanelHeader } from '../kit/panel';
 import { IconButton } from '../kit/icon-button';
 import { ThemeIcon, type ThemeIconName } from '../kit/icon';
@@ -31,7 +33,11 @@ export function PanelHeader() {
   const canvasToolsEnabled = useFeatureEnabled('chrome.canvasTools');
   const activePageId = useWorkspaceStore((state) => state.projection.activePageId);
   const pages = useWorkspaceStore((state) => state.projection.pages);
+  const recycleBoxCount = useWorkspaceStore(
+    (state) => state.projection.boxes.filter((box) => box.pageId === RECYCLE_BIN_PAGE_ID).length,
+  );
   const setPageGroupLayout = useWorkspaceStore((state) => state.setPageGroupLayout);
+  const emptyRecycleBin = useWorkspaceStore((state) => state.emptyRecycleBin);
   const undo = useWorkspaceStore((state) => state.undo);
   const redo = useWorkspaceStore((state) => state.redo);
   const canUndo = useWorkspaceStore((state) => state.historyPast.length > 0);
@@ -39,6 +45,7 @@ export function PanelHeader() {
   const searchOpen = useUiStore((state) => state.searchOpen);
   const closeSearch = useUiStore((state) => state.closeSearch);
   const { isLocked, items: canvasToolItems } = useCanvasTools();
+  const [emptyRecycleConfirm, setEmptyRecycleConfirm] = useState(false);
 
   const title = useMemo(() => {
     if (searchOpen) return t('toolbar.search');
@@ -55,6 +62,12 @@ export function PanelHeader() {
   const showGroupView = !searchOpen && !isSystemPageId(activePageId) && activePageId.length > 0;
   const activeGroupView = resolveGroupViewMode(pages, activePageId);
   const freeformTools = activeGroupView === 'freeform' && !isSystemPageId(activePageId);
+  const isRecycleActive = !searchOpen && isRecycleBinPageId(activePageId);
+  const showEmptyRecycle = isRecycleActive && recycleBoxCount > 0;
+
+  useEffect(() => {
+    if (!showEmptyRecycle) setEmptyRecycleConfirm(false);
+  }, [showEmptyRecycle]);
 
   const leading = searchOpen ? (
     <IconButton
@@ -67,8 +80,36 @@ export function PanelHeader() {
     </IconButton>
   ) : null;
 
+  const recycleTools =
+    showEmptyRecycle && emptyRecycleConfirm ? (
+      <ConfirmBar
+        className="cardo-panel-empty-recycle-confirm"
+        aria-label={t('page.emptyRecycleBin')}
+        message={t('page.emptyRecycleBinConfirm')}
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t('common.deletePermanently')}
+        onCancel={() => setEmptyRecycleConfirm(false)}
+        onConfirm={() => {
+          emptyRecycleBin();
+          setEmptyRecycleConfirm(false);
+        }}
+        danger
+      />
+    ) : showEmptyRecycle ? (
+      <div className="cardo-surface-tools" aria-label={t('page.emptyRecycleBin')}>
+        <IconButton
+          onClick={() => setEmptyRecycleConfirm(true)}
+          aria-label={t('page.emptyRecycleBin')}
+          tooltip={t('page.emptyRecycleBin')}
+        >
+          <ThemeIcon name="trash" size={16} />
+        </IconButton>
+      </div>
+    ) : null;
+
   const tools =
-    showGroupView || showWorkspaceTools ? (
+    recycleTools ??
+    (showGroupView || showWorkspaceTools ? (
       <div className="cardo-surface-tools" aria-label={t('history.controls')}>
         {showGroupView ? (
           <div
@@ -146,7 +187,7 @@ export function PanelHeader() {
           </>
         ) : null}
       </div>
-    ) : null;
+    ) : null);
 
   return (
     <KitPanelHeader

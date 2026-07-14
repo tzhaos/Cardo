@@ -115,6 +115,22 @@ export function BoxPageDropController() {
       if (overTopBar) {
         previewPageUnderPointer(clientX, clientY, pageId);
       } else {
+        // Left primary nav: undo optimistic cross-page preview so release on canvas
+        // cannot silently migrate the box to a group the user only hovered.
+        if (didOptimisticPreviewRef.current) {
+          const workspace = useWorkspaceStore.getState();
+          const origin = originPageIdRef.current;
+          const session = useUiStore.getState().boxDragSession;
+          if (origin && session) {
+            workspace.previewBoxOnPage(draggedBoxId, origin, session.latestFrame);
+            previewPageIdRef.current = origin;
+            didOptimisticPreviewRef.current = false;
+          } else {
+            void workspace.revertOptimisticProjection();
+            didOptimisticPreviewRef.current = false;
+            previewPageIdRef.current = null;
+          }
+        }
         // Keep managed drop landing in sync even if morph ghost session lags.
         updateManagedInsertPreview(clientX, clientY);
       }

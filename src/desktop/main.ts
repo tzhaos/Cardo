@@ -30,6 +30,8 @@ import {
   desktopClipboardWriteRequestSchema,
   desktopLocalResourceRequestSchema,
   desktopLocalResourceResponseSchema,
+  desktopOpenPathRequestSchema,
+  desktopOpenPathResponseSchema,
   desktopRuntimeConfigSchema,
   desktopSaveFileRequestSchema,
   desktopTextResponseSchema,
@@ -526,6 +528,17 @@ function registerIpcHandlers() {
 
     const error = await shell.openPath(normalized.path);
     return desktopLocalResourceResponseSchema.parse(error ? { ok: false, error } : { ok: true });
+  });
+
+  ipcMain.handle('dialog:open-path', async (_event, input: unknown) => {
+    const { directory } = desktopOpenPathRequestSchema.parse(input ?? {});
+    const result = await dialog.showOpenDialog({
+      properties: directory ? ['openDirectory'] : ['openFile'],
+    });
+    if (result.canceled || !result.filePaths[0]) {
+      return desktopOpenPathResponseSchema.parse(null);
+    }
+    return desktopOpenPathResponseSchema.parse(result.filePaths[0]);
   });
 
   ipcMain.handle('dialog:save-json', async (_event, input: unknown) => {

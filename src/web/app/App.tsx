@@ -16,6 +16,7 @@
 
 import '@fontsource-variable/inter';
 import { useEffect, useLayoutEffect, useState } from 'react';
+import { MotionConfig } from 'motion/react';
 import type { SettingsSectionId } from '../features/settings/settingsSearchCatalog';
 import DesktopTitleBar from '../../desktop/DesktopTitleBar';
 import { BoxPageDropController } from './BoxPageDropController';
@@ -123,59 +124,63 @@ export default function CardoApp() {
 
   return (
     <TooltipProvider>
-      <div
-        className={['cardo-app', 'cardo-v2-app', isDesktopHost ? 'cardo-app-desktop' : '']
-          .filter(Boolean)
-          .join(' ')}
-        data-shell="sidebar"
-        data-mode={mode}
-      >
-        <DesktopTitleBar />
-        <FeatureGate feature="chrome.runtimeBanner">
-          <RuntimeConnectionBanner />
-        </FeatureGate>
-        <ToastHost />
-        {mode === 'settings' ? (
-          <SettingsShell onBack={() => setMode('workspace')} initialSection={settingsSection} />
-        ) : (
-          <>
-            <BoxPageDropController />
-            <AppShell
-              productNav={
-                <FeatureGate feature="chrome.sidebar">
-                  <div
-                    ref={sidebarNavRootRef}
-                    className={sidebarNavRootClassName({
-                      boxDragActive: dropUi.boxDragActive,
-                      overNav: dropUi.overNav,
-                      className: 'cardo-v2-product-nav',
-                    })}
-                    data-top-bar
-                    data-v2-sidebar-nav
-                  >
-                    <SidebarNav />
-                  </div>
-                </FeatureGate>
-              }
-              settingsFoot={<SettingsFoot onOpen={() => openSettings('general')} />}
-              main={
-                <MainStage
-                  header={<PanelHeader />}
-                  canvas={globalSearchEnabled && searchOpen ? <SearchPage /> : <WorkspaceCanvas />}
-                  bottomBar={
-                    searchOpen ? null : (
-                      <FeatureGate feature="chrome.bottomToolbar">
-                        <BottomActionBar />
-                      </FeatureGate>
-                    )
-                  }
-                />
-              }
-            />
-          </>
-        )}
-        <ContextMenuHost />
-      </div>
+      <MotionConfig reducedMotion="user">
+        <div
+          className={['cardo-app', 'cardo-v2-app', isDesktopHost ? 'cardo-app-desktop' : '']
+            .filter(Boolean)
+            .join(' ')}
+          data-shell="sidebar"
+          data-mode={mode}
+        >
+          <DesktopTitleBar />
+          <FeatureGate feature="chrome.runtimeBanner">
+            <RuntimeConnectionBanner />
+          </FeatureGate>
+          <ToastHost />
+          {mode === 'settings' ? (
+            <SettingsShell onBack={() => setMode('workspace')} initialSection={settingsSection} />
+          ) : (
+            <>
+              <BoxPageDropController />
+              <AppShell
+                productNav={
+                  <FeatureGate feature="chrome.sidebar">
+                    <div
+                      ref={sidebarNavRootRef}
+                      className={sidebarNavRootClassName({
+                        boxDragActive: dropUi.boxDragActive,
+                        overNav: dropUi.overNav,
+                        className: 'cardo-v2-product-nav',
+                      })}
+                      data-top-bar
+                      data-v2-sidebar-nav
+                    >
+                      <SidebarNav />
+                    </div>
+                  </FeatureGate>
+                }
+                settingsFoot={<SettingsFoot onOpen={() => openSettings('general')} />}
+                main={
+                  <MainStage
+                    header={<PanelHeader />}
+                    canvas={
+                      globalSearchEnabled && searchOpen ? <SearchPage /> : <WorkspaceCanvas />
+                    }
+                    bottomBar={
+                      searchOpen ? null : (
+                        <FeatureGate feature="chrome.bottomToolbar">
+                          <BottomActionBar />
+                        </FeatureGate>
+                      )
+                    }
+                  />
+                }
+              />
+            </>
+          )}
+          <ContextMenuHost />
+        </div>
+      </MotionConfig>
     </TooltipProvider>
   );
 }

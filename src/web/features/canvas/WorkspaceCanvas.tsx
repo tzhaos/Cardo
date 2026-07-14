@@ -17,6 +17,7 @@ import {
   getCanvasPanLimits,
 } from '../../domain/canvasGeometry';
 import { createBoxFrameCenteredAt } from '../../domain/placement';
+import { resolveFreeformDropFrame } from '../../domain/freeformLayout';
 import { isManagedGroupView, resolveGroupViewMode } from '../../domain/groupLayout';
 import { isCollectionPageId, isRecycleBinPageId, isSystemPageId } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
@@ -275,7 +276,8 @@ function PageBoxes({
 
 /**
  * Freeform drop landing: dashed box footprint in world space under the camera.
- * Tracks latestFrame (same as release commit). Hidden while over primary nav.
+ * Shows the same resolveFreeformDropFrame result the release commit will write
+ * (snap + min-gap vs neighbors). Hidden while over primary nav.
  */
 function FreeformDropLandingPreview() {
   const elRef = useRef<HTMLDivElement>(null);
@@ -293,7 +295,19 @@ function FreeformDropLandingPreview() {
       }
       // Nav hover lands via adaptive placement — hide canvas footprint.
       if (session?.morphology === 'freeform' && !ui.boxDragOverTopBar) {
-        const f = session.latestFrame;
+        const workspace = useWorkspaceStore.getState();
+        const canvas = useCanvasStore.getState();
+        const movingBox = workspace.projection.boxes.find((box) => box.id === session.boxId);
+        const pageId = movingBox?.pageId ?? workspace.projection.activePageId;
+        const canvasBounds = createCanvasWorldBounds(canvas.viewportSize);
+        const occupied = workspace.projection.boxes
+          .filter((box) => box.pageId === pageId && box.id !== session.boxId)
+          .map((box) => box.frame);
+        const f = resolveFreeformDropFrame({
+          frame: session.latestFrame,
+          occupied,
+          bounds: canvasBounds,
+        });
         el.style.left = `${f.x}px`;
         el.style.top = `${f.y}px`;
         el.style.width = `${f.width}px`;
@@ -403,29 +417,29 @@ function cameraTransform(camera: { panX: number; panY: number; zoom?: number }) 
 }
 
 /**
- * Horizontal page turn (not fade).
- * direction > 0 → navigating forward (higher tab order): enter from right, exit left.
- * direction < 0 → navigating backward: enter from left, exit right.
- * Runs during cross-page box drag too — the dragged box is portaled outside scenes.
+ * Vertical page turn (sidebar group list is vertical; not legacy top-bar horizontal).
+ * direction > 0 → higher page order: enter from below, exit upward.
+ * direction < 0 → lower page order: enter from above, exit downward.
+ * During cross-page box drag the ghost lives outside scenes.
  */
 const PAGE_SLIDE_TRANSITION = {
   type: 'tween' as const,
-  duration: 0.42,
+  duration: 0.36,
   ease: [0.22, 0.82, 0.2, 1] as const,
 };
 
 const pageSceneVariants: Variants = {
   enter: (direction: number) => ({
-    x: `${direction * 100}%`,
+    y: `${direction * 100}%`,
     opacity: 1,
   }),
   center: {
-    x: 0,
+    y: 0,
     opacity: 1,
     transition: PAGE_SLIDE_TRANSITION,
   },
   exit: (direction: number) => ({
-    x: `${direction * -100}%`,
+    y: `${direction * -100}%`,
     opacity: 1,
     transition: PAGE_SLIDE_TRANSITION,
   }),

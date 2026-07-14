@@ -6,11 +6,11 @@ import { ItemContentEditView } from './ItemContentEditView';
 import { ItemActions } from './ItemActions';
 import { useItemRename } from './useItemRename';
 import { useI18n } from '../../i18n/useI18n';
-import { openExternalUrl } from '../../platform/hostPlatform';
+import { openExternalUrl, resolveWebsiteIcon } from '../../platform/hostPlatform';
 import { useItemContextMenu } from './useItemContextMenu';
 import { recordItemActivity } from '../../app/operationActivity';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
-import { resolveWebsiteIcon } from '../../platform/hostPlatform';
+import { showToast } from '../../app/stores/toastStore';
 import { Input } from '../../kit/input';
 import { IconFrame } from '../../kit/icon-button';
 import { ThemeIcon } from '../../kit/icon';
@@ -31,8 +31,12 @@ export function BookmarkItem({
   const setBookmarkFavicon = useWorkspaceStore((state) => state.setBookmarkFavicon);
   const { t } = useI18n();
   const openItem = () => {
-    openExternalUrl(item.url);
-    recordItemActivity(boxId, item, 'item.open');
+    try {
+      openExternalUrl(item.url);
+      recordItemActivity(boxId, item, 'item.open');
+    } catch {
+      showToast(t('toast.openFailed'), 'error');
+    }
   };
   const contextMenu = useItemContextMenu({
     pinned: Boolean(item.isPinned),

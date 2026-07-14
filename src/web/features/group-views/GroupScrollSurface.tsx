@@ -7,7 +7,7 @@ import {
   layoutGroupBoxes,
   measureGroupLayoutHeight,
   resolveGroupViewMode,
-  sortBoxesForGroupLayout,
+  sortBoxesForManagedMode,
 } from '../../domain/groupLayout';
 import type { GroupViewMode } from '../../../core/contracts/groupView';
 import { useI18n } from '../../i18n/useI18n';
@@ -41,12 +41,13 @@ export function GroupScrollSurface({
   const mode = resolveGroupViewMode(pages, pageId) as Exclude<GroupViewMode, 'freeform'>;
   const boxes = useMemo(
     () =>
-      sortBoxesForGroupLayout(
+      sortBoxesForManagedMode(
         allBoxes.filter(
           (box) => box.pageId === pageId && (!excludeBoxId || box.id !== excludeBoxId),
         ),
+        mode,
       ),
-    [allBoxes, excludeBoxId, pageId],
+    [allBoxes, excludeBoxId, mode, pageId],
   );
 
   const width = viewportWidth > 0 ? viewportWidth : 960;
@@ -85,34 +86,28 @@ export function GroupScrollSurface({
     >
       {mode === 'list' ? (
         <div className="cardo-group-list-flow">
-          {boxes.length === 0 && !insertPreview ? (
-            <div className="cardo-group-scroll-empty">{t('box.empty')}</div>
-          ) : (
-            <>
-              {boxes.map((box, index) => (
-                <div key={box.id} className="cardo-group-list-slot" data-list-slot-index={index}>
-                  {insertPreview?.mode === 'list' && insertPreview.insertIndex === index ? (
-                    <ListDropLanding label={t('groupView.dropHere')} />
-                  ) : null}
-                  <GroupListSection box={box} />
-                </div>
-              ))}
-              {insertPreview?.mode === 'list' && insertPreview.insertIndex >= boxes.length ? (
+          {/*
+            Page-level empty (zero boxes) is owned by WorkspaceCanvas (page.groupEmpty).
+            This surface only renders sections + insert landings.
+          */}
+          {boxes.map((box, index) => (
+            <div key={box.id} className="cardo-group-list-slot" data-list-slot-index={index}>
+              {insertPreview?.mode === 'list' && insertPreview.insertIndex === index ? (
                 <ListDropLanding label={t('groupView.dropHere')} />
               ) : null}
-            </>
-          )}
+              <GroupListSection box={box} />
+            </div>
+          ))}
+          {insertPreview?.mode === 'list' && insertPreview.insertIndex >= boxes.length ? (
+            <ListDropLanding label={t('groupView.dropHere')} />
+          ) : null}
         </div>
       ) : (
         <div className="cardo-group-waterfall-plane" style={{ minHeight: contentHeight }}>
-          {boxes.length === 0 && !insertPreview ? (
-            <div className="cardo-group-scroll-empty">{t('box.empty')}</div>
-          ) : (
-            boxes.map((box) => {
-              const frame = layoutFrames.get(box.id) ?? box.frame;
-              return <WaterfallCard key={box.id} box={box} frame={frame} />;
-            })
-          )}
+          {boxes.map((box) => {
+            const frame = layoutFrames.get(box.id) ?? box.frame;
+            return <WaterfallCard key={box.id} box={box} frame={frame} />;
+          })}
           {/* Card-shaped hole where the box will rest on release. */}
           {insertPreview?.mode === 'waterfall' && insertPreview.slotFrame ? (
             <div

@@ -5,6 +5,8 @@ import {
   desktopClipboardWriteRequestSchema,
   desktopLocalResourceRequestSchema,
   desktopLocalResourceResponseSchema,
+  desktopOpenPathRequestSchema,
+  desktopOpenPathResponseSchema,
   desktopRuntimeConfigSchema,
   desktopSaveFileRequestSchema,
   desktopTextResponseSchema,
@@ -75,6 +77,13 @@ const bridge: DesktopBridge = {
       await ipcRenderer.invoke(
         'shell:open-local-resource',
         desktopLocalResourceRequestSchema.parse({ resourcePath }),
+      ),
+    ),
+  openLocalPathPicker: async (options) =>
+    desktopOpenPathResponseSchema.parse(
+      await ipcRenderer.invoke(
+        'dialog:open-path',
+        desktopOpenPathRequestSchema.parse(options ?? {}),
       ),
     ),
   saveJson: async (filename, payload) =>

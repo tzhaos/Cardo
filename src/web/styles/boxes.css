@@ -454,10 +454,10 @@ button.cardo-box-icon:disabled {
 
 .cardo-box-header .cardo-box-delete,
 .cardo-box-header .cardo-box-view-toggle {
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
-  min-height: 24px;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
   flex: 0 0 auto;
   border: 0;
   border-radius: var(--cardo-radius-sm);
@@ -480,8 +480,8 @@ button.cardo-box-icon:disabled {
 }
 
 .cardo-box-delete {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   flex: 0 0 auto;
   border: 0;
   border-radius: var(--cardo-radius-sm);
@@ -512,7 +512,7 @@ button.cardo-box-icon:disabled {
   flex: 0 0 auto;
   align-items: center;
   justify-content: flex-end;
-  gap: 1px;
+  gap: 4px;
   margin-left: auto;
   opacity: 0;
   pointer-events: none;
@@ -526,8 +526,8 @@ button.cardo-box-icon:disabled {
 }
 
 .cardo-box-view-toggle {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border: 0;
   border-radius: var(--cardo-radius-sm);
   padding: 0;
@@ -570,7 +570,7 @@ button.cardo-box-icon:disabled {
 
 .cardo-box-compact .cardo-box-footer button,
 .cardo-box-compact .cardo-box-footer .cardo-button.cardo-box-add-item {
-  min-height: 20px;
+  min-height: 28px;
   padding: 2px 5px;
 }
 
@@ -657,20 +657,20 @@ button.cardo-box-icon:disabled {
 .cardo-box-footer .cardo-button.cardo-box-add-item {
   display: inline-flex;
   width: 100%;
-  min-height: 22px;
+  min-height: 32px;
   height: auto;
   align-items: center;
   justify-content: flex-start;
-  gap: 4px;
+  gap: 6px;
   border: 0;
-  border-radius: 5px;
-  padding: 3px 6px;
+  border-radius: 6px;
+  padding: 6px 8px;
   background: transparent;
   box-shadow: none;
   color: var(--cardo-secondary-text);
   cursor: pointer;
   caret-color: transparent;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 1.2;
   user-select: none;

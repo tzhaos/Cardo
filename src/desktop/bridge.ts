@@ -18,6 +18,8 @@ export interface DesktopBridge {
   writeClipboardText(text: string): Promise<void>;
   openExternal(url: string): Promise<void>;
   openLocalResource(resourcePath: string): Promise<DesktopLocalResourceResponse>;
+  /** Native file/folder picker; null when canceled. */
+  openLocalPathPicker(options?: { directory?: boolean }): Promise<string | null>;
   saveJson(filename: string, payload: string): Promise<void>;
   saveText(filename: string, payload: string): Promise<void>;
   resolveWebsiteIcon(url: string): Promise<string | null>;

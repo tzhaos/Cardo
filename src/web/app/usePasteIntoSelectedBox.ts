@@ -3,7 +3,10 @@ import { createCanvasWorldBounds, getCanvasViewportCenter } from '../domain/canv
 import { createPasteItemDraft } from '../domain/paste';
 import { findNewBoxFrame } from '../domain/placement';
 import { isSystemPageId } from '../domain/workspace';
+import { translateWebNext } from '../i18n/messages';
 import { useCanvasStore } from './stores/canvasStore';
+import { usePreferencesStore } from './stores/preferencesStore';
+import { showToast } from './stores/toastStore';
 import { useUiStore } from './stores/uiStore';
 import { useWorkspaceStore } from './stores/workspaceStore';
 
@@ -53,7 +56,11 @@ export function usePasteIntoSelectedBox() {
           useUiStore.getState().selectBox(result.boxId);
           useUiStore.getState().markCreated(result.boxId, result.item.id);
         })
-        .catch((error: unknown) => console.error('Failed to paste Item', error));
+        .catch((error: unknown) => {
+          console.error('Failed to paste Item', error);
+          const locale = usePreferencesStore.getState().locale;
+          showToast(translateWebNext(locale, 'toast.commandFailed'), 'error');
+        });
     };
 
     window.addEventListener('paste', onPaste);

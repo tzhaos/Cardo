@@ -14,9 +14,14 @@ interface ToastStore {
   dismissToast: (id: string) => void;
 }
 
-const TOAST_TTL_MS = 2500;
+const TOAST_TTL_INFO_MS = 2500;
+const TOAST_TTL_ERROR_MS = 4000;
 const dismissTimers = new Map<string, number>();
 let toastSeq = 0;
+
+function toastTtlMs(tone: ToastTone): number {
+  return tone === 'error' ? TOAST_TTL_ERROR_MS : TOAST_TTL_INFO_MS;
+}
 
 export const useToastStore = create<ToastStore>((set, get) => ({
   toasts: [],
@@ -32,7 +37,7 @@ export const useToastStore = create<ToastStore>((set, get) => ({
       window.setTimeout(() => {
         dismissTimers.delete(id);
         get().dismissToast(id);
-      }, TOAST_TTL_MS),
+      }, toastTtlMs(tone)),
     );
   },
   dismissToast: (id) => {

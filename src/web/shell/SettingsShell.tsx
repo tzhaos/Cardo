@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SettingsContent } from '../features/settings/SettingsPanel';
 import type { SettingsSectionId } from '../features/settings/settingsSearchCatalog';
 import { useI18n } from '../i18n/useI18n';
@@ -19,10 +19,23 @@ export function SettingsShell({
   const { t } = useI18n();
   const [section, setSection] = useState<SettingsSectionId>(initialSection);
   const [searchQuery, setSearchQuery] = useState('');
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     setSection(initialSection);
   }, [initialSection]);
+
+  // Capture focus on enter; SettingsNav focuses search. Restore on exit.
+  useEffect(() => {
+    previousFocusRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    return () => {
+      const previous = previousFocusRef.current;
+      if (previous && document.contains(previous)) {
+        previous.focus();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {

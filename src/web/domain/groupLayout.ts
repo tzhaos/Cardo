@@ -17,11 +17,25 @@ export function isManagedGroupView(mode: GroupViewMode): boolean {
   return mode === 'waterfall' || mode === 'list';
 }
 
-/** Sort boxes for serial layouts: top-left first, then stable by id. */
+/** Sort boxes for freeform / frame-order layouts: top-left first, then stable by id. */
 export function sortBoxesForGroupLayout(boxes: readonly WorkspaceBox[]): WorkspaceBox[] {
   return [...boxes].sort((a, b) => {
     if (a.frame.y !== b.frame.y) return a.frame.y - b.frame.y;
     if (a.frame.x !== b.frame.x) return a.frame.x - b.frame.x;
+    return a.id.localeCompare(b.id);
+  });
+}
+
+/** Sort boxes for waterfall/list by that mode's modeLayouts frame (y, then x, then id). */
+export function sortBoxesForManagedMode(
+  boxes: readonly WorkspaceBox[],
+  mode: 'waterfall' | 'list',
+): WorkspaceBox[] {
+  return [...boxes].sort((a, b) => {
+    const fa = mode === 'list' ? a.modeLayouts.list : a.modeLayouts.waterfall;
+    const fb = mode === 'list' ? b.modeLayouts.list : b.modeLayouts.waterfall;
+    if (fa.y !== fb.y) return fa.y - fb.y;
+    if (fa.x !== fb.x) return fa.x - fb.x;
     return a.id.localeCompare(b.id);
   });
 }
@@ -48,14 +62,18 @@ export function layoutGroupBoxes(
   }
 
   // Managed layouts use modeLayouts frames for size/order, never freeform frame.
+  const managedMode = mode === 'list' ? 'list' : 'waterfall';
   const withModeFrames = boxes.map((box) => ({
     ...box,
-    frame: mode === 'list' ? box.modeLayouts.list : box.modeLayouts.waterfall,
+    frame: managedMode === 'list' ? box.modeLayouts.list : box.modeLayouts.waterfall,
   }));
 
   const ordered = options?.preserveOrder
     ? [...withModeFrames]
-    : sortBoxesForGroupLayout(withModeFrames);
+    : sortBoxesForManagedMode(boxes, managedMode).map((box) => ({
+        ...box,
+        frame: managedMode === 'list' ? box.modeLayouts.list : box.modeLayouts.waterfall,
+      }));
   const contentWidth = Math.max(240, viewportWidth - LAYOUT_PAD * 2);
 
   if (mode === 'list') {
@@ -182,14 +200,10 @@ export function findManagedInsertIndex(args: {
     return { insertIndex: 0, slotFrame: null, frames };
   }
 
-  const others = sortBoxesForGroupLayout(
-    boxes
-      .filter((box) => box.id !== draggedId)
-      .map((box) => ({
-        ...box,
-        frame: mode === 'list' ? box.modeLayouts.list : box.modeLayouts.waterfall,
-      })),
-  ).map((box) => boxes.find((entry) => entry.id === box.id)!);
+  const others = sortBoxesForManagedMode(
+    boxes.filter((box) => box.id !== draggedId),
+    mode,
+  );
 
   const dropCx = dropPoint.x;
   const dropCy = dropPoint.y;
@@ -290,12 +304,7 @@ function sortManagedBoxes(
   boxes: readonly WorkspaceBox[],
   mode: Exclude<GroupViewMode, 'freeform'>,
 ) {
-  return sortBoxesForGroupLayout(
-    boxes.map((box) => ({
-      ...box,
-      frame: mode === 'list' ? box.modeLayouts.list : box.modeLayouts.waterfall,
-    })),
-  ).map((box) => boxes.find((entry) => entry.id === box.id)!);
+  return sortBoxesForManagedMode(boxes, mode);
 }
 
 /** Append a new box at the end of a managed layout (for create-in-list/waterfall). */
@@ -304,7 +313,7 @@ export function reflowGroupBoxesAppend(
   mode: Exclude<GroupViewMode, 'freeform'>,
   viewportWidth: number,
 ): Map<string, BoxFrame> {
-  return layoutGroupBoxes(sortBoxesForGroupLayout(boxes), mode, viewportWidth, {
+  return layoutGroupBoxes(sortBoxesForManagedMode(boxes, mode), mode, viewportWidth, {
     preserveOrder: true,
   });
 }

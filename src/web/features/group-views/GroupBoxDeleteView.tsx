@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useI18n } from '../../i18n/useI18n';
 import { Button } from '../../kit/button';
 
@@ -15,8 +16,15 @@ export function GroupBoxDeleteView({
   onConfirm: () => void;
 }) {
   const { t } = useI18n();
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    rootRef.current?.focus();
+  }, []);
+
   return (
     <div
+      ref={rootRef}
       className="cardo-group-box-delete-confirm"
       role="alertdialog"
       aria-modal="true"
@@ -26,6 +34,7 @@ export function GroupBoxDeleteView({
       tabIndex={-1}
       onKeyDown={(event) => {
         if (event.key === 'Escape') {
+          event.preventDefault();
           event.stopPropagation();
           onCancel();
         }

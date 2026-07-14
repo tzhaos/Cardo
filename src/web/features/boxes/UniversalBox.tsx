@@ -35,9 +35,8 @@ export function UniversalBox({
       skipEntryAnimation={skipEntryAnimation}
       layoutLocked={layoutLocked}
     >
-      {draftState?.mode ? (
-        <UniversalAddView boxId={box.id} defaultType={defaultItemType} />
-      ) : box.items.length ? (
+      {draftState?.mode ? <UniversalAddView boxId={box.id} defaultType={defaultItemType} /> : null}
+      {box.items.length ? (
         <SortableItemList
           boxId={box.id}
           items={box.items}
@@ -46,9 +45,9 @@ export function UniversalBox({
             renderGroupItem(box.id, item, draftState?.highlightItemId === item.id)
           }
         />
-      ) : (
+      ) : !draftState?.mode ? (
         <div className="cardo-empty-state">{t('box.emptyHint')}</div>
-      )}
+      ) : null}
     </BaseBoxFrame>
   );
 }

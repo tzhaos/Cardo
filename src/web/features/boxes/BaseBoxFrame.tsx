@@ -17,7 +17,11 @@ import {
   constrainBoxResizeToCanvas,
   createCanvasWorldBounds,
 } from '../../domain/canvasGeometry';
-import { FREEFORM_MIN_HEIGHT, FREEFORM_MIN_WIDTH } from '../../domain/freeformLayout';
+import {
+  FREEFORM_MIN_HEIGHT,
+  FREEFORM_MIN_WIDTH,
+  snapFreeformFrame,
+} from '../../domain/freeformLayout';
 import {
   RECYCLE_BIN_PAGE_ID,
   isRecycleBinPageId,
@@ -283,6 +287,8 @@ export function BaseBoxFrame({
       height: boxHeight.get(),
     };
     let latestFrame = startFrame;
+    useUiStore.getState().setBoxResizeActive(true);
+    const clearResizeActive = () => useUiStore.getState().setBoxResizeActive(false);
     const pointerSession = startWindowPointerSession({
       pointerId: event.pointerId,
       onMove: (moveEvent) => {
@@ -298,13 +304,33 @@ export function BaseBoxFrame({
         boxWidth.set(latestFrame.width);
         boxHeight.set(latestFrame.height);
       },
-      onEnd: () => {
-        useWorkspaceStore.getState().updateBoxFrame(box.id, latestFrame);
+      onEnd: (reason) => {
+        clearResizeActive();
         if (pointerSessionRef.current === pointerSession) {
           pointerSessionRef.current = null;
         }
+        if (reason === 'pointerup') {
+          // Snap size/position to freeform grid on commit only.
+          const snapped = snapFreeformFrame(
+            latestFrame,
+            createCanvasWorldBounds(useCanvasStore.getState().viewportSize),
+          );
+          boxWidth.set(snapped.width);
+          boxHeight.set(snapped.height);
+          useWorkspaceStore.getState().updateBoxFrame(box.id, snapped);
+          return;
+        }
+        // Cancel / blur / leave: revert visual size without a command.
+        boxWidth.set(startFrame.width);
+        boxHeight.set(startFrame.height);
       },
     });
+    // dispose() does not call onEnd — clear the history lock if the session is aborted.
+    const rawDispose = pointerSession.dispose.bind(pointerSession);
+    pointerSession.dispose = () => {
+      clearResizeActive();
+      rawDispose();
+    };
     pointerSessionRef.current = pointerSession;
   };
 

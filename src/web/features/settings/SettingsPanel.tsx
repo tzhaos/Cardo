@@ -459,6 +459,8 @@ function AppearanceSettings({
   const setCssSnippet = usePreferencesStore((state) => state.setCssSnippet);
   const setCssSnippetEnabled = usePreferencesStore((state) => state.setCssSnippetEnabled);
   const importThemePack = usePreferencesStore((state) => state.importThemePack);
+  const removeImportedThemePack = usePreferencesStore((state) => state.removeImportedThemePack);
+  const restoreOfficialLook = usePreferencesStore((state) => state.restoreOfficialLook);
   const importedThemePacks = usePreferencesStore((state) => state.importedThemePacks);
   // importedThemePacks is a version signal; registry is outside React state.
   const importedPackCount = Object.keys(importedThemePacks).length;
@@ -467,6 +469,8 @@ function AppearanceSettings({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- re-read after import/remove
     [importedPackCount],
   );
+  const selectedTheme = themes.find((theme) => theme.id === themeId);
+  const selectedIsImported = Boolean(selectedTheme && !selectedTheme.official);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const themeImportRef = useRef<HTMLInputElement>(null);
   const [importThemeError, setImportThemeError] = useState(false);
@@ -526,6 +530,39 @@ function AppearanceSettings({
             </button>
           );
         })}
+      </SettingsCard>
+
+      <SettingsCard spaced>
+        <SettingsRow
+          title={t('settings.restoreOfficialLook')}
+          description={t('settings.restoreOfficialLookDescription')}
+          control={
+            <Button
+              type="button"
+              variant="ghost"
+              className="cardo-settings-secondary-button"
+              onClick={() => restoreOfficialLook()}
+            >
+              {t('settings.restoreOfficialLook')}
+            </Button>
+          }
+        />
+        {selectedIsImported ? (
+          <SettingsRow
+            title={t('settings.removeImportedTheme')}
+            description={t('settings.removeImportedThemeDescription')}
+            control={
+              <Button
+                type="button"
+                variant="danger"
+                size="sm"
+                onClick={() => removeImportedThemePack(themeId)}
+              >
+                {t('settings.removeImportedTheme')}
+              </Button>
+            }
+          />
+        ) : null}
       </SettingsCard>
 
       <SettingsCard spaced>

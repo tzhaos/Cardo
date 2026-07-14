@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import type { WorkspaceCommand } from '../../../core/contracts/workspaceCommands';
-import { COLLECTION_PAGE_ID } from '../../../core/contracts/systemPages';
+import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID } from '../../../core/contracts/systemPages';
 import type { DatabaseCommandResult } from '../../../core/application/commandTypes';
 import type {
   BoxFrame,
@@ -24,6 +24,9 @@ import {
   redoDatabaseHistory,
   undoDatabaseHistory,
 } from '../../platform/hostPlatform';
+import { translateWebNext } from '../../i18n/messages';
+import { usePreferencesStore } from './preferencesStore';
+import { showToast } from './toastStore';
 
 interface WorkspaceStore {
   projection: WorkspaceProjection;
@@ -36,6 +39,8 @@ interface WorkspaceStore {
   renamePage: (pageId: string, title: string) => void;
   deletePage: (pageId: string) => void;
   reorderPages: (orderedPageIds: string[]) => void;
+  /** Permanently delete every box currently on the recycle bin page. */
+  emptyRecycleBin: () => void;
   setActivePage: (pageId: string, origin?: string) => void;
   setDefaultPage: (pageId: string) => void;
   createBox: (frame: BoxFrame, title?: string) => void;
@@ -140,7 +145,18 @@ const actions = {
   renamePage: (pageId: string, title: string) =>
     fireCommand({ type: 'page.rename', pageId, title }),
   deletePage: (pageId: string) => fireCommand({ type: 'page.delete', pageId }),
-  reorderPages: (orderedPageIds: string[]) => fireCommand({ type: 'page.reorder', orderedPageIds }),
+  reorderPages: (orderedPageIds: string[]) => {
+    // Optimistic so sidebar list reorders before pageTabs invalidation lands.
+    applyOptimisticPageOrder(orderedPageIds);
+    fireCommand({ type: 'page.reorder', orderedPageIds });
+  },
+  emptyRecycleBin: () => {
+    const recycleBoxes = state.projection.boxes.filter((box) => box.pageId === RECYCLE_BIN_PAGE_ID);
+    for (const box of recycleBoxes) {
+      // deleteBox on recycle page is permanent (core boxCommandHandlers).
+      fireCommand({ type: 'box.delete', boxId: box.id });
+    }
+  },
   setActivePage: (pageId: string, _origin = 'navigation') =>
     fireCommand({ type: 'page.open', pageId }),
   setDefaultPage: (pageId: string) => fireCommand({ type: 'page.setDefault', pageId }),
@@ -281,6 +297,25 @@ let state: WorkspaceStore = {
   historyFuture: [],
   ...actions,
 };
+
+function applyOptimisticPageOrder(orderedPageIds: string[]) {
+  if (orderedPageIds.length === 0) return;
+  const projection = state.projection;
+  const orderById = new Map(orderedPageIds.map((pageId, index) => [pageId, index]));
+  let changed = false;
+  const pages = projection.pages.map((page) => {
+    const nextOrder = orderById.get(page.id);
+    if (nextOrder === undefined || page.order === nextOrder) return page;
+    changed = true;
+    return { ...page, order: nextOrder };
+  });
+  if (!changed) return;
+  state = {
+    ...state,
+    projection: { ...projection, pages },
+  };
+  emitChange();
+}
 
 function applyOptimisticPageGroupLayout(
   pageId: string,
@@ -595,6 +630,8 @@ function requireCreatedItem(result: DatabaseCommandResult, commandType: string) 
 
 function reportCommandError(error: unknown) {
   console.error('Cardo command failed', error);
+  const locale = usePreferencesStore.getState().locale;
+  showToast(translateWebNext(locale, 'toast.commandFailed'), 'error');
 }
 
 function subscribe(listener: () => void) {

@@ -15,7 +15,7 @@ import {
 } from '../domain/workspace';
 import { useI18n } from '../i18n/useI18n';
 import { useFeatureEnabled } from './FeatureGate';
-import { TabDeleteConfirmView } from '../features/pages/TabDeleteConfirmView';
+import { PageDeleteConfirmRow } from '../features/pages/PageDeleteConfirmRow';
 import {
   sidebarNavItemClassName,
   sidebarPageDropRowClassName,
@@ -56,6 +56,10 @@ export function SidebarNav() {
   const [deletePageId, setDeletePageId] = useState<string | null>(null);
   const [renamePageId, setRenamePageId] = useState<string | null>(null);
   const [draggingPageId, setDraggingPageId] = useState<string | null>(null);
+  const [reorderHover, setReorderHover] = useState<{
+    pageId: string;
+    insertAfter: boolean;
+  } | null>(null);
   const contextMenu = useContextMenu();
   const { t } = useI18n();
 
@@ -93,7 +97,8 @@ export function SidebarNav() {
     };
     const onPointerDown = (event: PointerEvent) => {
       const target = event.target as HTMLElement | null;
-      if (!target?.closest('[data-v2-sidebar-nav]')) {
+      // Stay open when interacting with the confirm row; cancel on other chrome.
+      if (!target?.closest('[data-sidebar-delete-row]')) {
         setDeletePageId(null);
       }
     };
@@ -116,16 +121,26 @@ export function SidebarNav() {
     setActivePage(pageId);
   };
 
-  const movePageBeforeTarget = (sourceId: string, targetId: string) => {
+  /** Insert source before or after target (y midpoint decides). */
+  const movePageRelativeToTarget = (sourceId: string, targetId: string, insertAfter: boolean) => {
     if (sourceId === targetId) return;
     const ids = workspacePages.map((page) => page.id);
     const from = ids.indexOf(sourceId);
-    const to = ids.indexOf(targetId);
+    let to = ids.indexOf(targetId);
     if (from < 0 || to < 0) return;
     const next = [...ids];
     next.splice(from, 1);
-    next.splice(to, 0, sourceId);
+    // After removing source, target index may shift.
+    to = next.indexOf(targetId);
+    if (to < 0) return;
+    const insertAt = insertAfter ? to + 1 : to;
+    next.splice(insertAt, 0, sourceId);
     reorderPages(next);
+  };
+
+  const clearReorderDrag = () => {
+    setDraggingPageId(null);
+    setReorderHover(null);
   };
 
   const openPageMenu = (event: ReactMouseEvent<HTMLElement>, page?: WorkspacePage) => {
@@ -176,106 +191,122 @@ export function SidebarNav() {
 
   return (
     <div className="cardo-v2-sidebar-scroll">
-      {pageToDelete ? (
-        <div className="cardo-v2-delete-confirm">
-          <TabDeleteConfirmView
-            title={pageToDelete.title}
-            boxCount={deleteBoxCount}
-            onCancel={() => setDeletePageId(null)}
-            onConfirm={() => {
-              deletePage(pageToDelete.id);
-              setDeletePageId(null);
-            }}
+      {globalSearchEnabled || multiPage ? (
+        <div className="cardo-v2-nav-block">
+          {globalSearchEnabled ? (
+            <NavItem
+              className={sidebarNavItemClassName({ active: searchOpen })}
+              icon={<ThemeIcon name="search" size={16} />}
+              active={searchOpen}
+              onClick={() => {
+                if (searchOpen) closeSearch();
+                else openSearch();
+              }}
+              aria-label={t('toolbar.search')}
+              aria-pressed={searchOpen}
+            >
+              {t('toolbar.search')}
+            </NavItem>
+          ) : null}
+          {multiPage ? (
+            <NavItem
+              className={sidebarNavItemClassName({})}
+              icon={<ThemeIcon name="add" size={16} />}
+              onClick={() => {
+                if (searchOpen) closeSearch();
+                openNewPage();
+              }}
+              aria-label={t('shell.newPage')}
+            >
+              {t('shell.newPage')}
+            </NavItem>
+          ) : null}
+        </div>
+      ) : null}
+
+      {showCollection && collectionPage ? (
+        <div className="cardo-v2-nav-block">
+          <NavRow
+            pageId={collectionPage.id}
+            active={!searchOpen && collectionPage.id === activePageId}
+            dropPageId={dropPageId}
+            icon={<ThemeIcon name="star" size={16} />}
+            label={t('shell.favorites')}
+            onActivate={() => activatePage(collectionPage.id)}
+            onContextMenu={(event) => openPageMenu(event)}
           />
         </div>
-      ) : (
-        <>
-          {globalSearchEnabled || multiPage ? (
-            <div className="cardo-v2-nav-block">
-              {globalSearchEnabled ? (
-                <NavItem
-                  className={sidebarNavItemClassName({ active: searchOpen })}
-                  icon={<ThemeIcon name="search" size={16} />}
-                  active={searchOpen}
-                  onClick={() => {
-                    if (searchOpen) closeSearch();
-                    else openSearch();
-                  }}
-                  aria-label={t('toolbar.search')}
-                  aria-pressed={searchOpen}
-                >
-                  {t('toolbar.search')}
-                </NavItem>
-              ) : null}
-              {multiPage ? (
-                <NavItem
-                  className={sidebarNavItemClassName({})}
-                  icon={<ThemeIcon name="add" size={16} />}
-                  onClick={() => {
-                    if (searchOpen) closeSearch();
-                    openNewPage();
-                  }}
-                  aria-label={t('shell.newPage')}
-                >
-                  {t('shell.newPage')}
-                </NavItem>
-              ) : null}
-            </div>
-          ) : null}
+      ) : null}
 
-          {showCollection && collectionPage ? (
-            <div className="cardo-v2-nav-block">
-              <NavRow
-                pageId={collectionPage.id}
-                active={!searchOpen && collectionPage.id === activePageId}
-                dropPageId={dropPageId}
-                icon={<ThemeIcon name="star" size={16} />}
-                label={t('shell.favorites')}
-                onActivate={() => activatePage(collectionPage.id)}
-                onContextMenu={(event) => openPageMenu(event)}
-              />
-            </div>
-          ) : null}
-
-          <div className="cardo-v2-nav-block">
-            <SectionLabel>{t('shell.pages')}</SectionLabel>
-            <nav className="cardo-v2-pages" aria-label={t('page.workspacePages')}>
-              {visibleUserPages.map((page) => (
-                <PageNavRow
-                  key={page.id}
-                  page={page}
-                  active={!searchOpen && page.id === activePageId}
-                  dropPageId={dropPageId}
-                  renameRequested={renamePageId === page.id}
-                  reorderEnabled={multiPage && visibleUserPages.length > 1}
-                  dragging={draggingPageId === page.id}
-                  onActivate={() => activatePage(page.id)}
-                  onRename={(title) => renamePage(page.id, title)}
-                  onRenameRequestHandled={() => setRenamePageId(null)}
-                  onContextMenu={(event) => openPageMenu(event, page)}
-                  onReorderDragStart={() => setDraggingPageId(page.id)}
-                  onReorderDragEnd={() => setDraggingPageId(null)}
-                  onReorderDrop={(sourceId) => movePageBeforeTarget(sourceId, page.id)}
+      <div className="cardo-v2-nav-block">
+        <SectionLabel>{t('shell.pages')}</SectionLabel>
+        <nav className="cardo-v2-pages" aria-label={t('page.workspacePages')}>
+          {visibleUserPages.map((page) =>
+            deletePageId === page.id && pageToDelete ? (
+              <div
+                key={page.id}
+                className="cardo-v2-page-drop-row cardo-v2-page-delete-row"
+                data-page-drop-id={page.id}
+              >
+                <PageDeleteConfirmRow
+                  title={pageToDelete.title}
+                  boxCount={deleteBoxCount}
+                  onCancel={() => setDeletePageId(null)}
+                  onConfirm={() => {
+                    deletePage(pageToDelete.id);
+                    setDeletePageId(null);
+                  }}
                 />
-              ))}
-            </nav>
-          </div>
-
-          {showRecycleBin && recycleBinPage ? (
-            <div className="cardo-v2-nav-block">
-              <NavRow
-                pageId={recycleBinPage.id}
-                active={!searchOpen && recycleBinPage.id === activePageId}
+              </div>
+            ) : (
+              <PageNavRow
+                key={page.id}
+                page={page}
+                active={!searchOpen && page.id === activePageId}
+                isDefault={page.id === defaultPageId}
                 dropPageId={dropPageId}
-                icon={<ThemeIcon name="trash" size={16} />}
-                label={t('shell.recycleBin')}
-                onActivate={() => activatePage(recycleBinPage.id)}
-                onContextMenu={(event) => openPageMenu(event)}
+                renameRequested={renamePageId === page.id}
+                reorderEnabled={multiPage && visibleUserPages.length > 1 && !deletePageId}
+                dragging={draggingPageId === page.id}
+                reorderHover={
+                  reorderHover?.pageId === page.id
+                    ? reorderHover.insertAfter
+                      ? 'after'
+                      : 'before'
+                    : null
+                }
+                onActivate={() => activatePage(page.id)}
+                onRename={(title) => renamePage(page.id, title)}
+                onRenameRequestHandled={() => setRenamePageId(null)}
+                onContextMenu={(event) => openPageMenu(event, page)}
+                onReorderDragStart={() => setDraggingPageId(page.id)}
+                onReorderDragEnd={clearReorderDrag}
+                onReorderHover={(insertAfter) => setReorderHover({ pageId: page.id, insertAfter })}
+                onReorderHoverLeave={() =>
+                  setReorderHover((current) => (current?.pageId === page.id ? null : current))
+                }
+                onReorderDrop={(sourceId, insertAfter) =>
+                  movePageRelativeToTarget(sourceId, page.id, insertAfter)
+                }
               />
-            </div>
-          ) : null}
-        </>
-      )}
+            ),
+          )}
+        </nav>
+      </div>
+
+      {showRecycleBin && recycleBinPage ? (
+        <div className="cardo-v2-nav-block">
+          <NavRow
+            pageId={recycleBinPage.id}
+            active={!searchOpen && recycleBinPage.id === activePageId}
+            dropPageId={dropPageId}
+            icon={<ThemeIcon name="trash" size={16} />}
+            label={t('shell.recycleBin')}
+            onActivate={() => activatePage(recycleBinPage.id)}
+            onContextMenu={(event) => openPageMenu(event)}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -324,31 +355,39 @@ function NavRow({
 function PageNavRow({
   page,
   active,
+  isDefault,
   dropPageId,
   renameRequested,
   reorderEnabled,
   dragging,
+  reorderHover,
   onActivate,
   onRename,
   onRenameRequestHandled,
   onContextMenu,
   onReorderDragStart,
   onReorderDragEnd,
+  onReorderHover,
+  onReorderHoverLeave,
   onReorderDrop,
 }: {
   page: WorkspacePage;
   active: boolean;
+  isDefault: boolean;
   dropPageId: string | null;
   renameRequested: boolean;
   reorderEnabled: boolean;
   dragging: boolean;
+  reorderHover: 'before' | 'after' | null;
   onActivate: () => void;
   onRename: (title: string) => void;
   onRenameRequestHandled: () => void;
   onContextMenu: (event: ReactMouseEvent<HTMLElement>) => void;
   onReorderDragStart: () => void;
   onReorderDragEnd: () => void;
-  onReorderDrop: (sourcePageId: string) => void;
+  onReorderHover: (insertAfter: boolean) => void;
+  onReorderHoverLeave: () => void;
+  onReorderDrop: (sourcePageId: string, insertAfter: boolean) => void;
 }) {
   const { t } = useI18n();
   const dropRef = usePageDropElementRef(page.id);
@@ -374,6 +413,9 @@ function PageNavRow({
       chromeOnShell: rename.renaming,
     }),
     dragging ? 'cardo-v2-page-drop-row-dragging' : '',
+    reorderHover ? 'cardo-v2-page-drop-row-reorder-over' : '',
+    reorderHover === 'before' ? 'cardo-v2-page-drop-row-reorder-before' : '',
+    reorderHover === 'after' ? 'cardo-v2-page-drop-row-reorder-after' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -395,6 +437,16 @@ function PageNavRow({
     if (!types.includes(PAGE_REORDER_MIME) && !types.includes('text/plain')) return;
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
+    const rect = event.currentTarget.getBoundingClientRect();
+    const insertAfter = event.clientY > rect.top + rect.height / 2;
+    onReorderHover(insertAfter);
+  };
+
+  const onDragLeave = (event: ReactDragEvent<HTMLElement>) => {
+    if (!reorderEnabled) return;
+    const related = event.relatedTarget as Node | null;
+    if (related && event.currentTarget.contains(related)) return;
+    onReorderHoverLeave();
   };
 
   const onDrop = (event: ReactDragEvent<HTMLElement>) => {
@@ -404,7 +456,9 @@ function PageNavRow({
     if (!sourceId) return;
     event.preventDefault();
     event.stopPropagation();
-    onReorderDrop(sourceId);
+    const rect = event.currentTarget.getBoundingClientRect();
+    const insertAfter = event.clientY > rect.top + rect.height / 2;
+    onReorderDrop(sourceId, insertAfter);
     onReorderDragEnd();
   };
 
@@ -440,6 +494,7 @@ function PageNavRow({
       data-page-drop-id={page.id}
       className={shellClassName}
       onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
       onDrop={onDrop}
     >
       <NavItem
@@ -447,8 +502,9 @@ function PageNavRow({
         active={active}
         dropTarget={dropPageId === page.id}
         icon={<ThemeIcon name="document" size={16} />}
+        trailing={isDefault ? <ThemeIcon name="home" size={13} title={t('page.default')} /> : null}
         aria-current={active ? 'page' : undefined}
-        aria-label={page.title}
+        aria-label={isDefault ? `${page.title} (${t('page.default')})` : page.title}
         draggable={reorderEnabled}
         onDragStart={onDragStart}
         onDragEnd={onReorderDragEnd}

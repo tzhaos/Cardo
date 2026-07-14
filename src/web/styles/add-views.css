@@ -134,3 +134,23 @@
   color: var(--cardo-red);
   font-size: 12px;
 }
+
+/* Desktop path picker: input + Browse (web/extension keep plain input). */
+.cardo-local-path-row {
+  display: flex;
+  min-width: 0;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.cardo-local-path-row .cardo-input {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.cardo-local-path-row .cardo-local-path-browse {
+  flex: 0 0 auto;
+  align-self: stretch;
+  min-height: 42px;
+  white-space: nowrap;
+}

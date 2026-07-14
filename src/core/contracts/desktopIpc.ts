@@ -33,6 +33,15 @@ export const desktopSaveFileRequestSchema = z
   })
   .strict();
 
+/** Native open-file / open-folder picker (Desktop only). */
+export const desktopOpenPathRequestSchema = z
+  .object({
+    /** When true, pick a directory; otherwise pick a file. */
+    directory: z.boolean().optional(),
+  })
+  .strict();
+export const desktopOpenPathResponseSchema = z.string().nullable();
+
 export const desktopLocalResourceResponseSchema = z.discriminatedUnion('ok', [
   z.object({ ok: z.literal(true) }).strict(),
   z.object({ ok: z.literal(false), error: z.string() }).strict(),
@@ -49,4 +58,5 @@ export const desktopRuntimeConfigSchema = z
   .strict();
 
 export type DesktopLocalResourceResponse = z.infer<typeof desktopLocalResourceResponseSchema>;
+export type DesktopOpenPathRequest = z.infer<typeof desktopOpenPathRequestSchema>;
 export type DesktopRuntimeConfig = z.infer<typeof desktopRuntimeConfigSchema>;

@@ -86,12 +86,32 @@ export function GlobalSearchPanel({
     };
   }, [query]);
 
+  const scrollSearchTargetIntoView = (boxId: string, itemId?: string) => {
+    // Managed views (waterfall/list) may not finish paint on the same tick as page switch.
+    // SearchPage replaces WorkspaceCanvas, so retry after the swap paints.
+    const run = () => {
+      document
+        .querySelector(`[data-box-id="${CSS.escape(boxId)}"]`)
+        ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      if (itemId) {
+        document
+          .querySelector(`[data-item-id="${CSS.escape(itemId)}"]`)
+          ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    };
+    window.requestAnimationFrame(() => {
+      window.setTimeout(run, 0);
+      window.setTimeout(run, 50);
+    });
+  };
+
   const locateItemResult = (result: Extract<GlobalSearchResult, { kind: 'item' }>) => {
     setActivePage(result.page.id, 'search');
     focusFrame(result.page.id, result.box.frame);
     selectBox(result.box.id);
     highlightBox(result.box.id);
     markCreated(result.box.id, result.item.id);
+    scrollSearchTargetIntoView(result.box.id, result.item.id);
   };
 
   const activateItem = async (item: BoxItem, boxId: string) => {
@@ -143,6 +163,7 @@ export function GlobalSearchPanel({
       focusFrame(result.page.id, result.box.frame);
       selectBox(result.box.id);
       highlightBox(result.box.id);
+      scrollSearchTargetIntoView(result.box.id);
       onActivateRef.current?.();
       return;
     }
@@ -265,7 +286,7 @@ export function GlobalSearchPanel({
           <div className="cardo-global-search-empty-stack">
             <div className="cardo-global-search-empty">
               <ThemeIcon name="search" size={20} />
-              <span>{pending ? t('shell.searchPlaceholder') : t('search.noGlobalResults')}</span>
+              <span>{pending ? t('search.pending') : t('search.noGlobalResults')}</span>
             </div>
             {trimmedQuery ? (
               <Button

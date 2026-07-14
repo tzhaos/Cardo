@@ -706,7 +706,7 @@ button.cardo-item-drag-handle.cardo-button:active {
   min-width: auto !important;
   flex: 0 0 auto;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   margin-left: auto;
   opacity: 0;
   transition: opacity var(--cardo-duration-normal) var(--cardo-easing);
@@ -719,12 +719,14 @@ button.cardo-item-drag-handle.cardo-button:active {
 
 .cardo-item-actions button {
   display: inline-flex;
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
   align-items: center;
   justify-content: center;
   border: 0;
-  border-radius: 4px;
+  border-radius: 6px;
   background: transparent;
   color: var(--cardo-secondary-text);
   transition:
@@ -744,6 +746,10 @@ button.cardo-item-drag-handle.cardo-button:active {
 @media (hover: none) {
   .cardo-item-drag-handle {
     opacity: 0.58;
+  }
+
+  .cardo-item-actions {
+    opacity: 1;
   }
 }
 

@@ -69,6 +69,16 @@
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
+  cursor: text;
+}
+
+.cardo-waterfall-card-title-input {
+  min-width: 0;
+  flex: 1 1 auto;
+  height: 26px;
+  padding: 0 6px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .cardo-waterfall-card-count {
@@ -81,14 +91,40 @@
   font-weight: 600;
 }
 
-.cardo-waterfall-card-delete {
+.cardo-waterfall-card-action {
   flex: 0 0 auto;
   opacity: 0;
   transition: opacity 120ms ease;
 }
 
-.cardo-waterfall-card:hover .cardo-waterfall-card-delete {
+.cardo-waterfall-card:hover .cardo-waterfall-card-action,
+.cardo-waterfall-card:focus-within .cardo-waterfall-card-action,
+.cardo-waterfall-card-locked .cardo-waterfall-card-action[aria-pressed='true'] {
   opacity: 1;
+}
+
+.cardo-waterfall-card-highlighted {
+  animation: cardo-managed-search-highlight 1.8s ease-out;
+}
+
+@keyframes cardo-managed-search-highlight {
+  0%,
+  35% {
+    box-shadow:
+      0 1px 2px color-mix(in srgb, var(--cardo-text) 6%, transparent),
+      0 0 0 3px var(--box-accent),
+      0 0 0 10px color-mix(in srgb, var(--box-accent) 22%, transparent);
+  }
+
+  100% {
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--cardo-text) 6%, transparent);
+  }
+}
+
+@media (hover: none) {
+  .cardo-waterfall-card-action {
+    opacity: 1;
+  }
 }
 
 .cardo-waterfall-card-body {
@@ -183,12 +219,44 @@
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
+  cursor: text;
+}
+
+.cardo-group-list-section-title-input {
+  min-width: 0;
+  flex: 1 1 auto;
+  height: 28px;
+  padding: 0 6px;
+  font-size: 13.5px;
+  font-weight: 600;
 }
 
 .cardo-group-list-section-count {
   flex: 0 0 auto;
   color: var(--cardo-muted);
   font-size: 12px;
+}
+
+.cardo-group-list-section-action {
+  flex: 0 0 auto;
+  opacity: 0.72;
+  transition: opacity 120ms ease;
+}
+
+.cardo-group-list-section:hover .cardo-group-list-section-action,
+.cardo-group-list-section:focus-within .cardo-group-list-section-action,
+.cardo-group-list-section-locked .cardo-group-list-section-action[aria-pressed='true'] {
+  opacity: 1;
+}
+
+.cardo-group-list-section-highlighted {
+  animation: cardo-managed-search-highlight 1.8s ease-out;
+}
+
+@media (hover: none) {
+  .cardo-group-list-section-action {
+    opacity: 1;
+  }
 }
 
 .cardo-group-list-item-host {

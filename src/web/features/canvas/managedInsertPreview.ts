@@ -7,7 +7,7 @@ import {
   findManagedInsertIndex,
   layoutGroupBoxes,
   resolveGroupViewMode,
-  sortBoxesForGroupLayout,
+  sortBoxesForManagedMode,
 } from '../../domain/groupLayout';
 import { isSystemPageId } from '../../domain/workspace';
 
@@ -62,7 +62,10 @@ export function updateManagedInsertPreview(clientX: number, clientY: number): vo
   let frames: Map<string, { x: number; y: number; width: number; height: number }>;
 
   if (managedMode === 'list') {
-    const others = sortBoxesForGroupLayout(pageBoxes.filter((box) => box.id !== draggedId));
+    const others = sortBoxesForManagedMode(
+      pageBoxes.filter((box) => box.id !== draggedId),
+      'list',
+    );
     // DOM midlines of remaining sections (compact landing barely shifts them).
     insertIndex = findListInsertIndexFromDom(others, clientY);
     const trialOrder = [...others.slice(0, insertIndex), dragged, ...others.slice(insertIndex)];
