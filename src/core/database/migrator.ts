@@ -5,7 +5,7 @@
  * (see openRuntimeDatabase). Clients never run this path.
  *
  * Wild versions: 0 (empty) and 3 (baseline). Versions 1 and 2 have no migration
- * scripts and fail hard. Forward steps 4…DATABASE_SCHEMA_VERSION (currently 9).
+ * scripts and fail hard. Forward steps 4…DATABASE_SCHEMA_VERSION (currently 10).
  */
 
 import baselineMigrationSql from '../../../drizzle/0000_crazy_obadiah_stane.sql?raw';
@@ -15,6 +15,7 @@ import themePreferencesMigrationSql from '../../../drizzle/0003_theme_preference
 import themeCustomizationMigrationSql from '../../../drizzle/0004_theme_customization.sql?raw';
 import featureFlagsMigrationSql from '../../../drizzle/0005_feature_flags.sql?raw';
 import layoutSnippetMigrationSql from '../../../drizzle/0006_layout_snippet.sql?raw';
+import layoutIsolationMigrationSql from '../../../drizzle/0007_layout_isolation.sql?raw';
 import { BASELINE_SCHEMA_VERSION, DATABASE_SCHEMA_VERSION } from './version';
 
 export interface MigratorAdapter {
@@ -38,6 +39,7 @@ const FORWARD_MIGRATIONS: Readonly<Record<number, string>> = {
   7: themeCustomizationMigrationSql,
   8: featureFlagsMigrationSql,
   9: layoutSnippetMigrationSql,
+  10: layoutIsolationMigrationSql,
 };
 
 /**

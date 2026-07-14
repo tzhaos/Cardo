@@ -109,6 +109,9 @@ export async function getWorkspaceProjection(database: CardoDatabase) {
       id: page.id,
       title: page.title,
       order: page.sortOrder,
+      groupViewMode: page.groupViewMode ?? 'freeform',
+      waterfallColumns: page.waterfallColumns ?? 0,
+      listColumns: page.listColumns ?? 1,
       createdAt: page.createdAt,
       updatedAt: page.updatedAt,
     })),
@@ -154,24 +157,60 @@ function projectWorkspaceBoxes(
     placementsByBox.set(placement.boxId, current);
   }
 
-  return boxRows.map((box) => ({
-    id: box.id,
-    pageId: box.pageId,
-    kind: box.kind,
-    title: box.title,
-    frame: { x: box.x, y: box.y, width: box.width, height: box.height },
-    items: (placementsByBox.get(box.id) ?? []).flatMap((placement) => {
-      const item = itemById.get(placement.itemId);
-      return item ? [projectWorkspaceItem(item, placement.isPinned)] : [];
-    }),
-    viewMode: box.viewMode,
-    detailMode: box.detailMode,
-    isLocked: box.isLocked,
-    icon: box.icon,
-    accent: box.accent,
-    createdAt: box.createdAt,
-    updatedAt: box.updatedAt,
-  }));
+  return boxRows.map((box) => {
+    const freeform = { x: box.x, y: box.y, width: box.width, height: box.height };
+    const modeLayouts = normalizeModeLayouts(box.modeLayouts, freeform);
+    return {
+      id: box.id,
+      pageId: box.pageId,
+      kind: box.kind,
+      title: box.title,
+      frame: freeform,
+      modeLayouts,
+      items: (placementsByBox.get(box.id) ?? []).flatMap((placement) => {
+        const item = itemById.get(placement.itemId);
+        return item ? [projectWorkspaceItem(item, placement.isPinned)] : [];
+      }),
+      viewMode: box.viewMode,
+      detailMode: box.detailMode,
+      isLocked: box.isLocked,
+      icon: box.icon,
+      accent: box.accent,
+      createdAt: box.createdAt,
+      updatedAt: box.updatedAt,
+    };
+  });
+}
+
+function normalizeModeLayouts(
+  raw: unknown,
+  freeform: { x: number; y: number; width: number; height: number },
+) {
+  const fallback = { waterfall: { ...freeform }, list: { ...freeform } };
+  if (!raw || typeof raw !== 'object') return fallback;
+  const record = raw as Record<string, unknown>;
+  const waterfall = readFrame(record.waterfall) ?? freeform;
+  const list = readFrame(record.list) ?? freeform;
+  return { waterfall: { ...waterfall }, list: { ...list } };
+}
+
+function readFrame(value: unknown) {
+  if (!value || typeof value !== 'object') return null;
+  const frame = value as Record<string, unknown>;
+  if (
+    typeof frame.x !== 'number' ||
+    typeof frame.y !== 'number' ||
+    typeof frame.width !== 'number' ||
+    typeof frame.height !== 'number'
+  ) {
+    return null;
+  }
+  return {
+    x: frame.x,
+    y: frame.y,
+    width: frame.width,
+    height: frame.height,
+  };
 }
 
 export function projectWorkspaceItem(

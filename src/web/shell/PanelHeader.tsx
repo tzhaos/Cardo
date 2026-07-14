@@ -50,10 +50,12 @@ export function PanelHeader() {
   }, [activePageId, pages, searchOpen, t]);
 
   const locateItem = canvasToolItems.find((item) => item.id === 'return-to-origin');
+  const arrangeItem = canvasToolItems.find((item) => item.id === 'arrange-boxes');
   const lockItem = canvasToolItems.find((item) => item.id === 'toggle-canvas-lock');
   const showWorkspaceTools = !searchOpen && (historyEnabled || canvasToolsEnabled);
   const showGroupView = !searchOpen && !isSystemPageId(activePageId) && activePageId.length > 0;
   const activeGroupView = groupViewModes[activePageId] ?? DEFAULT_GROUP_VIEW_MODE;
+  const freeformTools = activeGroupView === 'freeform' && !isSystemPageId(activePageId);
 
   const leading = searchOpen ? (
     <IconButton
@@ -117,7 +119,7 @@ export function PanelHeader() {
             {historyEnabled && canvasToolsEnabled ? <Divider /> : null}
             <FeatureGate feature="chrome.canvasTools">
               <IconButton
-                disabled={locateItem?.disabled || activeGroupView !== 'freeform'}
+                disabled={locateItem?.disabled || !freeformTools}
                 onClick={() => locateItem?.onSelect?.()}
                 aria-label={locateItem?.label ?? t('canvas.returnToOrigin')}
                 tooltip={locateItem?.label ?? t('canvas.returnToOrigin')}
@@ -125,7 +127,16 @@ export function PanelHeader() {
                 <ThemeIcon name="locate" size={16} />
               </IconButton>
               <IconButton
+                disabled={arrangeItem?.disabled || !freeformTools}
+                onClick={() => arrangeItem?.onSelect?.()}
+                aria-label={arrangeItem?.label ?? t('canvas.arrangeBoxes')}
+                tooltip={arrangeItem?.label ?? t('canvas.arrangeBoxes')}
+              >
+                <ThemeIcon name="layoutGrid" size={16} />
+              </IconButton>
+              <IconButton
                 pressed={isLocked}
+                disabled={!freeformTools}
                 onClick={() => lockItem?.onSelect?.()}
                 aria-label={lockItem?.label ?? t('canvas.lockViewport')}
                 tooltip={lockItem?.label ?? t('canvas.lockViewport')}

@@ -78,15 +78,19 @@ async function pasteItem(
       .orderBy(desc(boxes.zIndex))
       .all();
     const timestamp = new Date().toISOString();
+    const frame = {
+      x: command.temporaryFrame.x,
+      y: command.temporaryFrame.y,
+      width: command.temporaryFrame.width,
+      height: command.temporaryFrame.height,
+    };
     targetBox = {
       id: `box-${crypto.randomUUID()}`,
       pageId: command.pageId,
       kind: 'temporary',
       title: '',
-      x: command.temporaryFrame.x,
-      y: command.temporaryFrame.y,
-      width: command.temporaryFrame.width,
-      height: command.temporaryFrame.height,
+      ...frame,
+      modeLayouts: { waterfall: { ...frame }, list: { ...frame } },
       viewMode: 'list',
       detailMode: 'detailed',
       isLocked: false,

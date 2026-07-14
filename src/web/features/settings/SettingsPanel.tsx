@@ -5,12 +5,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import { useI18n } from '../../i18n/useI18n';
 import type { WebNextColorMode } from '../../themes/themeRegistry';
-import {
-  getRegisteredWebNextThemes,
-  getThemePack,
-  OFFICIAL_DEFAULT_THEME_ID,
-} from '../../themes/themeRegistry';
-import { resolveEffectiveThemeTokens } from '../../themes/resolveTheme';
+import { getRegisteredWebNextThemes } from '../../themes/themeRegistry';
 import { SettingsNavIcon } from './SettingsNavIcons';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import type { WorkspaceProjection } from '../../domain/workspace';
@@ -28,9 +23,6 @@ import {
 } from '../../../core/contracts/preferences';
 import type { DesktopUpdateState } from '../../../core/contracts/desktopUpdate';
 import { FEATURE_CATALOG, isFeatureEnabled } from '../../../core/contracts/featureCatalog';
-import { overridableColorKeys, type OverridableColorKey } from '../../../core/contracts/themePack';
-import { COLOR_OVERRIDE_PRESETS, isColorPresetActive } from './colorPresets';
-import { getThemeLookPresets, matchThemeLookId, type ThemeLookPreset } from './themeLookPresets';
 import { matchSettingsSearchEntries, type SettingsSectionId } from './settingsSearchCatalog';
 import { Button } from '../../kit/button';
 import { IconButton, IconFrame } from '../../kit/icon-button';
@@ -566,17 +558,6 @@ function FeatureSettings() {
   );
 }
 
-const COLOR_OVERRIDE_LABEL_KEYS = {
-  canvas: 'settings.colorOverride.canvas',
-  panel: 'settings.colorOverride.panel',
-  surface: 'settings.colorOverride.surface',
-  text: 'settings.colorOverride.text',
-  blue: 'settings.colorOverride.blue',
-  createBackground: 'settings.colorOverride.createBackground',
-  settingsChrome: 'settings.colorOverride.settingsChrome',
-  settingsHover: 'settings.colorOverride.settingsHover',
-} as const satisfies Record<OverridableColorKey, string>;
-
 function AppearanceSettings({
   colorMode,
   setColorMode,
@@ -587,45 +568,7 @@ function AppearanceSettings({
   const { t, locale } = useI18n();
   const themeId = usePreferencesStore((state) => state.themeId);
   const setThemeId = usePreferencesStore((state) => state.setThemeId);
-  const themeColorOverrides = usePreferencesStore((state) => state.themeColorOverrides);
-  const setThemeColorOverride = usePreferencesStore((state) => state.setThemeColorOverride);
-  const applyThemeColorLook = usePreferencesStore((state) => state.applyThemeColorLook);
-  const resetThemeColorOverrides = usePreferencesStore((state) => state.resetThemeColorOverrides);
   const themes = useMemo(() => getRegisteredWebNextThemes(), []);
-  const [customColorsOpen, setCustomColorsOpen] = useState(false);
-
-  const pack = useMemo(() => getThemePack(themeId || OFFICIAL_DEFAULT_THEME_ID), [themeId]);
-  const lookPresets = useMemo(
-    () => getThemeLookPresets(themeId || OFFICIAL_DEFAULT_THEME_ID),
-    [themeId],
-  );
-  const effectiveColors = useMemo(
-    () =>
-      resolveEffectiveThemeTokens({
-        pack,
-        colorMode,
-        colorOverrides: themeColorOverrides,
-      }).colors,
-    [pack, colorMode, themeColorOverrides],
-  );
-  const modeOverrides = themeColorOverrides[themeId]?.[colorMode] ?? {};
-  const themeBucket = themeColorOverrides[themeId];
-  const hasAnyOverrides = Boolean(
-    themeBucket &&
-    (Object.keys(themeBucket.light ?? {}).length > 0 ||
-      Object.keys(themeBucket.dark ?? {}).length > 0),
-  );
-  const activeLookId = matchThemeLookId(
-    themeId || OFFICIAL_DEFAULT_THEME_ID,
-    themeBucket?.light,
-    themeBucket?.dark,
-  );
-
-  const applyLook = (look: ThemeLookPreset) => {
-    const id = themeId || OFFICIAL_DEFAULT_THEME_ID;
-    // Absolute replace for this theme's light+dark maps (default look clears overrides).
-    applyThemeColorLook(id, look.colors);
-  };
 
   return (
     <>
@@ -634,7 +577,6 @@ function AppearanceSettings({
         description={t('settings.appearanceDescription')}
       />
 
-      {/* Theme / looks: list-group rows. Selection = left rail (no check over swatches). */}
       <SettingsCard head={t('settings.theme')}>
         {themes.map((theme) => {
           const selected = theme.id === themeId;
@@ -707,227 +649,8 @@ function AppearanceSettings({
           }
         />
       </SettingsCard>
-
-      <SettingsCard
-        spaced
-        head={t('settings.themeLooks')}
-        description={t('settings.themeLooksDescription')}
-      >
-        {lookPresets.map((look) => {
-          const selected = activeLookId === look.id;
-          const lightCanvas = look.colors.light.canvas ?? pack.tokens.colors.light.canvas;
-          const darkCanvas = look.colors.dark.canvas ?? pack.tokens.colors.dark.canvas;
-          const accent =
-            look.colors[colorMode].blue ?? pack.tokens.colors[colorMode].blue ?? '#3b82f6';
-          const panel = look.colors[colorMode].panel ?? pack.tokens.colors[colorMode].panel;
-          const label = look.name[locale === 'zh' ? 'zh' : 'en'];
-          return (
-            <button
-              key={look.id}
-              type="button"
-              role="option"
-              aria-selected={selected}
-              aria-label={label}
-              className={[
-                'cardo-settings-card',
-                'cardo-theme-choice-row',
-                'cardo-theme-look-row',
-                selected ? 'cardo-theme-choice-row-selected' : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-              onClick={() => applyLook(look)}
-            >
-              <span className="cardo-theme-choice-meta">
-                <span className="cardo-theme-choice-title">{label}</span>
-              </span>
-              <span className="cardo-theme-look-swatches" aria-hidden="true">
-                <i style={{ background: lightCanvas }} />
-                <i style={{ background: darkCanvas }} />
-                <i style={{ background: panel }} />
-                <i style={{ background: accent }} />
-              </span>
-              <span
-                className={
-                  selected
-                    ? 'cardo-theme-choice-radio cardo-theme-choice-radio-on'
-                    : 'cardo-theme-choice-radio'
-                }
-                aria-hidden
-              />
-            </button>
-          );
-        })}
-        {activeLookId === null && hasAnyOverrides ? (
-          <div
-            className="cardo-settings-card cardo-theme-choice-row cardo-theme-look-row cardo-theme-choice-row-custom"
-            role="option"
-            aria-selected
-            aria-label={t('settings.themeLookCustom')}
-          >
-            <span className="cardo-theme-choice-meta">
-              <span className="cardo-theme-choice-title">{t('settings.themeLookCustom')}</span>
-            </span>
-            <span className="cardo-theme-look-swatches" aria-hidden="true">
-              <i style={{ background: effectiveColors.canvas }} />
-              <i
-                style={{
-                  background:
-                    effectiveColors.panel ?? effectiveColors.surface ?? effectiveColors.canvas,
-                }}
-              />
-              <i style={{ background: effectiveColors.blue ?? '#3b82f6' }} />
-            </span>
-            <span className="cardo-theme-choice-radio cardo-theme-choice-radio-on" aria-hidden />
-          </div>
-        ) : null}
-      </SettingsCard>
-
-      <div className="cardo-settings-group cardo-settings-list-group-spaced">
-        <button
-          type="button"
-          className="cardo-settings-disclosure cardo-settings-group-header"
-          aria-expanded={customColorsOpen}
-          onClick={() => setCustomColorsOpen((open) => !open)}
-        >
-          <span>
-            {t('settings.colorOverrides')}
-            <small>{t('settings.colorOverridesDescription')}</small>
-          </span>
-          <ThemeIcon
-            name="chevronRight"
-            size={16}
-            className={
-              customColorsOpen
-                ? 'cardo-settings-disclosure-chevron cardo-settings-disclosure-chevron-open'
-                : 'cardo-settings-disclosure-chevron'
-            }
-          />
-        </button>
-
-        {customColorsOpen ? (
-          <div className="cardo-settings-group-body">
-            <div className="cardo-theme-color-list">
-              {overridableColorKeys.map((key) => {
-                const current = String(effectiveColors[key] ?? '');
-                const pickerValue = cssColorToHexInput(current);
-                const presets = COLOR_OVERRIDE_PRESETS[key][colorMode];
-                const label = t(COLOR_OVERRIDE_LABEL_KEYS[key] as Parameters<typeof t>[0]);
-                return (
-                  <div className="cardo-theme-color-row" key={key}>
-                    <div className="cardo-theme-color-row-main">
-                      <span className="cardo-theme-color-label">
-                        <i
-                          className="cardo-theme-color-swatch"
-                          style={{ background: current }}
-                          aria-hidden
-                        />
-                        {label}
-                      </span>
-                      <span className="cardo-theme-color-controls">
-                        <input
-                          className="cardo-theme-color-picker"
-                          type="color"
-                          value={pickerValue}
-                          aria-label={label}
-                          title={t('settings.colorOverride.custom')}
-                          onChange={(event) =>
-                            setThemeColorOverride(colorMode, key, event.target.value)
-                          }
-                        />
-                        <Input
-                          className="cardo-theme-color-text"
-                          value={modeOverrides[key] ?? ''}
-                          placeholder={current}
-                          spellCheck={false}
-                          aria-label={t('settings.colorOverride.customValue', { label })}
-                          onChange={(event) => {
-                            const next = event.target.value.trim();
-                            setThemeColorOverride(colorMode, key, next.length ? next : null);
-                          }}
-                        />
-                      </span>
-                    </div>
-                    <div
-                      className="cardo-theme-color-presets"
-                      role="group"
-                      aria-label={t('settings.colorOverride.presets', { label })}
-                    >
-                      {presets.map((preset) => {
-                        const active = isColorPresetActive(current, preset.value);
-                        return (
-                          <button
-                            key={preset.id}
-                            type="button"
-                            className={[
-                              'cardo-theme-color-preset',
-                              active ? 'cardo-theme-color-preset-active' : '',
-                            ]
-                              .filter(Boolean)
-                              .join(' ')}
-                            aria-label={`${label}: ${preset.id}`}
-                            aria-pressed={active}
-                            title={preset.value}
-                            onClick={() => setThemeColorOverride(colorMode, key, preset.value)}
-                          >
-                            <span
-                              className="cardo-theme-color-preset-fill"
-                              style={{ background: preset.value }}
-                              aria-hidden
-                            />
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <SettingsRow
-              className="cardo-theme-color-reset-card"
-              icon={
-                <IconFrame>
-                  <ThemeIcon name="rotateCcw" size={16} />
-                </IconFrame>
-              }
-              title={t('settings.resetColorOverrides')}
-              description={t('settings.resetColorOverridesDescription')}
-              control={
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="cardo-settings-secondary-button"
-                  disabled={!hasAnyOverrides}
-                  onClick={() => resetThemeColorOverrides()}
-                >
-                  {t('settings.resetColorOverridesAction')}
-                </Button>
-              }
-            />
-          </div>
-        ) : null}
-      </div>
     </>
   );
-}
-
-/** Best-effort #rrggbb for native color inputs; falls back to accent blue. */
-function cssColorToHexInput(value: string): string {
-  const trimmed = value.trim();
-  if (/^#[0-9a-fA-F]{6}$/.test(trimmed)) return trimmed.toLowerCase();
-  if (/^#[0-9a-fA-F]{3}$/.test(trimmed)) {
-    const [, a, b, c] = trimmed;
-    return `#${a}${a}${b}${b}${c}${c}`.toLowerCase();
-  }
-  const rgb = trimmed.match(
-    /^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})(?:\s*,\s*[\d.]+\s*)?\)$/i,
-  );
-  if (rgb) {
-    const hex = (n: string) => Number(n).toString(16).padStart(2, '0');
-    return `#${hex(rgb[1])}${hex(rgb[2])}${hex(rgb[3])}`;
-  }
-  return '#3b82f6';
 }
 
 function AboutSettings() {

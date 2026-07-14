@@ -47,6 +47,27 @@ interface WorkspaceStore {
     draft: Record<string, string>,
   ) => Promise<{ boxId: string; item: BoxItem }>;
   updateBoxFrame: (boxId: string, frame: BoxFrame) => void;
+  /**
+   * Local-only frame write so drop remount paints the landing position immediately
+   * (Runtime commit still goes through updateBoxFrame / moveBoxToPage).
+   */
+  previewBoxFrame: (boxId: string, frame: BoxFrame) => void;
+  /** Optimistic multi-box reflow for waterfall/list before drag end clears the ghost. */
+  previewBoxFrames: (frames: ReadonlyMap<string, BoxFrame>) => void;
+  /** Auto-arrange for one isolated layout mode (freeform | waterfall | list). */
+  arrangeBoxesOnPage: (
+    pageId: string,
+    frames: Record<string, BoxFrame>,
+    layoutMode?: 'freeform' | 'waterfall' | 'list',
+  ) => void;
+  setPageGroupLayout: (
+    pageId: string,
+    patch: {
+      groupViewMode?: 'freeform' | 'waterfall' | 'list';
+      waterfallColumns?: number;
+      listColumns?: number;
+    },
+  ) => void;
   updateCollectionBoxFrame: (boxId: string, frame: BoxFrame) => void;
   updateCollectionBoxView: (
     boxId: string,
@@ -147,8 +168,25 @@ const actions = {
     });
     return requireCreatedItem(result, 'item.paste');
   },
-  updateBoxFrame: (boxId: string, frame: BoxFrame) =>
-    fireCommand({ type: 'box.updateFrame', boxId, frame }),
+  updateBoxFrame: (boxId: string, frame: BoxFrame) => {
+    // Optimistic so drop remount is not one frame at the pre-drag world position.
+    applyOptimisticBoxFrame(boxId, frame);
+    fireCommand({ type: 'box.updateFrame', boxId, frame });
+  },
+  previewBoxFrame: (boxId, frame) => applyOptimisticBoxFrame(boxId, frame),
+  previewBoxFrames: (frames) => applyOptimisticBoxFrames(frames),
+  arrangeBoxesOnPage: (pageId, frames, layoutMode = 'freeform') => {
+    const ids = Object.keys(frames);
+    if (ids.length === 0) return;
+    if (layoutMode === 'freeform') {
+      applyOptimisticBoxFrames(new Map(Object.entries(frames)));
+    } else {
+      applyOptimisticManagedFrames(layoutMode, frames);
+    }
+    fireCommand({ type: 'canvas.arrange', pageId, frames, layoutMode });
+  },
+  setPageGroupLayout: (pageId, patch) =>
+    fireCommand({ type: 'page.setGroupLayout', pageId, ...patch }),
   updateCollectionBoxFrame: (boxId: string, frame: BoxFrame) =>
     fireCommand({ type: 'collection.updateBoxFrame', boxId, frame }),
   updateCollectionBoxView: (
@@ -240,6 +278,82 @@ let state: WorkspaceStore = {
   historyFuture: [],
   ...actions,
 };
+
+function applyOptimisticBoxFrame(boxId: string, frame: BoxFrame) {
+  const projection = state.projection;
+  const box = projection.boxes.find((entry) => entry.id === boxId);
+  if (!box) return;
+  if (
+    box.frame.x === frame.x &&
+    box.frame.y === frame.y &&
+    box.frame.width === frame.width &&
+    box.frame.height === frame.height
+  ) {
+    return;
+  }
+  state = {
+    ...state,
+    projection: {
+      ...projection,
+      boxes: projection.boxes.map((entry) =>
+        entry.id === boxId ? { ...entry, frame: { ...frame } } : entry,
+      ),
+    },
+  };
+  emitChange();
+}
+
+function applyOptimisticBoxFrames(frames: ReadonlyMap<string, BoxFrame>) {
+  if (frames.size === 0) return;
+  const projection = state.projection;
+  let changed = false;
+  const boxes = projection.boxes.map((entry) => {
+    const next = frames.get(entry.id);
+    if (!next) return entry;
+    if (
+      entry.frame.x === next.x &&
+      entry.frame.y === next.y &&
+      entry.frame.width === next.width &&
+      entry.frame.height === next.height
+    ) {
+      return entry;
+    }
+    changed = true;
+    return { ...entry, frame: { ...next } };
+  });
+  if (!changed) return;
+  state = { ...state, projection: { ...projection, boxes } };
+  emitChange();
+}
+
+function applyOptimisticManagedFrames(
+  mode: 'waterfall' | 'list',
+  frames: Record<string, BoxFrame>,
+) {
+  const projection = state.projection;
+  let changed = false;
+  const boxes = projection.boxes.map((entry) => {
+    const next = frames[entry.id];
+    if (!next) return entry;
+    const prev = entry.modeLayouts[mode];
+    if (
+      prev.x === next.x &&
+      prev.y === next.y &&
+      prev.width === next.width &&
+      prev.height === next.height
+    ) {
+      return entry;
+    }
+    changed = true;
+    return {
+      ...entry,
+      modeLayouts: { ...entry.modeLayouts, [mode]: { ...next } },
+    };
+  });
+  if (!changed) return;
+  state = { ...state, projection: { ...projection, boxes } };
+  emitChange();
+}
 
 async function refreshProjection() {
   const [nextProjection, history] = await Promise.all([

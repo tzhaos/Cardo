@@ -27,6 +27,8 @@ import {
 } from '../contracts/preferences';
 import type { FeatureFlagOverrides } from '../contracts/featureCatalog';
 import { layoutProfileIds } from '../contracts/layoutProfile';
+import { groupViewModeIds } from '../contracts/groupView';
+import type { BoxFrame } from '../contracts/workspace';
 import type {
   ImportedThemePacks,
   ThemeColorOverrides,
@@ -45,12 +47,24 @@ export const appState = sqliteTable('app_state', {
   defaultPageId: text('default_page_id').notNull(),
 });
 
+/** Per-mode frames for waterfall/list — freeform stays in x/y/width/height columns. */
+export type BoxModeLayouts = {
+  waterfall: BoxFrame;
+  list: BoxFrame;
+};
+
 export const pages = sqliteTable(
   'pages',
   {
     id: text('id').primaryKey(),
     title: text('title').notNull(),
     sortOrder: integer('sort_order').notNull(),
+    groupViewMode: text('group_view_mode', { enum: groupViewModeIds })
+      .notNull()
+      .default('freeform'),
+    /** 0 = auto columns from viewport; otherwise fixed 1…max. */
+    waterfallColumns: integer('waterfall_columns').notNull().default(0),
+    listColumns: integer('list_columns').notNull().default(1),
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),
   },
@@ -70,6 +84,8 @@ export const boxes = sqliteTable(
     y: integer('y').notNull(),
     width: integer('width').notNull(),
     height: integer('height').notNull(),
+    /** Isolated waterfall/list frames; freeform uses x/y/width/height only. */
+    modeLayouts: text('mode_layouts', { mode: 'json' }).$type<BoxModeLayouts>().notNull(),
     viewMode: text('view_mode', { enum: workspaceBoxViewModes }).notNull(),
     detailMode: text('detail_mode', { enum: workspaceBoxDetailModes }).notNull(),
     isLocked: integer('is_locked', { mode: 'boolean' }).notNull(),

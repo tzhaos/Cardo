@@ -7,7 +7,7 @@ export const DEFAULT_BOX_HEIGHT = 320;
  * Positioned for a typical first paint viewport (see WELCOME_VIEWPORT_*).
  */
 export const WELCOME_BOX_WIDTH = 480;
-export const WELCOME_BOX_HEIGHT = 520;
+export const WELCOME_BOX_HEIGHT = 512;
 
 /** Assumed viewport when placing the seed welcome box (no client metrics at seed time). */
 export const WELCOME_VIEWPORT_WIDTH = 1280;

@@ -6,8 +6,8 @@
 .cardo-v2-settings-shell {
   --cardo-v2-settings-nav-width: var(--cardo-shell-sidebar-width, 236px);
   --cardo-v2-settings-panel-radius: var(--cardo-v2-panel-radius, var(--cardo-radius-xl, 16px));
-  /* Active section pill: emphasis blue on panel (readable, not gray). */
-  --cardo-v2-pill-settings: color-mix(in srgb, var(--cardo-blue) 18%, var(--cardo-panel, #fff));
+  /* Active section pill: fixed neutral (not theme/custom accent). */
+  --cardo-v2-pill-settings: rgba(128, 128, 128, 0.18);
 
   box-sizing: border-box;
   display: flex;
@@ -161,7 +161,7 @@
 }
 
 .cardo-v2-settings-section-item:hover {
-  background: var(--cardo-hover, rgba(0, 0, 0, 0.045));
+  background: rgba(128, 128, 128, 0.12);
   color: var(--cardo-text);
 }
 
@@ -175,26 +175,31 @@
   flex: 1;
   min-width: 0;
   min-height: 0;
-  padding-top: 2px;
+  justify-content: center;
+  padding: 2px 12px 0 0;
 }
 
 .cardo-v2-settings-panel {
   display: flex;
-  flex: 1;
+  width: 100%;
+  max-width: 720px;
   min-width: 0;
   min-height: 0;
+  flex: 1 1 auto;
   overflow: hidden;
   border-radius: var(--cardo-v2-settings-panel-radius);
   background: var(--cardo-panel, #fff);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--cardo-text) 3%, transparent);
 }
 
-/* Fill the white panel; reuse shared settings content tokens from styles/settings.css. */
+/* Cap content width so fullscreen does not stretch form rows. */
 .cardo-v2-settings-panel > .cardo-settings-content {
   flex: 1;
   min-height: 0;
   width: 100%;
-  padding: 28px 36px 48px;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 28px 28px 48px;
 }
 
 .cardo-v2-settings-panel .cardo-settings-heading h2 {

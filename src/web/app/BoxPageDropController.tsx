@@ -23,14 +23,17 @@ import {
   getCanvasViewportCenter,
   getVisibleCanvasWorldBounds,
 } from '../domain/canvasGeometry';
+import { resolveFreeformDropFrame } from '../domain/freeformLayout';
 import { findViewportAdaptiveFrame, isFrameInViewport } from '../domain/placement';
 import {
+  clientPointToGroupScrollContent,
   isManagedGroupView,
   reflowGroupBoxesAfterDrop,
   resolveGroupViewMode,
 } from '../domain/groupLayout';
 import type { BoxFrame } from '../domain/workspace';
 import { isCollectionPageId, isRecycleBinPageId, isSystemPageId } from '../domain/workspace';
+import { updateManagedInsertPreview } from '../features/canvas/managedInsertPreview';
 
 export function BoxPageDropController() {
   const draggedBoxId = useUiStore((state) => state.draggedBoxId);
@@ -111,6 +114,9 @@ export function BoxPageDropController() {
       ui.setBoxDropPage(pageId);
       if (overTopBar) {
         previewPageUnderPointer(clientX, clientY, pageId);
+      } else {
+        // Keep managed drop landing in sync even if morph ghost session lags.
+        updateManagedInsertPreview(clientX, clientY);
       }
     };
 
@@ -183,9 +189,7 @@ function commitBoxDragRelease(
   // visible snap/bounce on every release.
   const dragFrame = constrainBoxFrameToCanvas(dragSession.latestFrame, canvasBounds);
 
-  // Normal canvas drag: keep the frame the user already sees.
-  // Cross-page nav release: auto-place in the viewport (free-slot when crowded).
-  // Off-screen non-nav drop: pull back into the viewport without mutual exclusion.
+  // Freeform: snap to grid + min gap (no overlap). Managed handled above.
   let landingFrame: BoxFrame;
   if (releasedOnTab) {
     const occupiedFrames = workspace.projection.boxes
@@ -198,17 +202,25 @@ function commitBoxDragRelease(
       canvasBounds,
       occupiedFrames,
     });
-  } else if (isFrameInViewport(dragFrame, viewportBounds)) {
-    landingFrame = dragFrame;
   } else {
-    landingFrame = findViewportAdaptiveFrame({
-      size: { width: dragFrame.width, height: dragFrame.height },
-      preferredCenter: {
-        x: dragFrame.x + dragFrame.width / 2,
-        y: dragFrame.y + dragFrame.height / 2,
-      },
-      viewportBounds,
-      canvasBounds,
+    const occupied = workspace.projection.boxes
+      .filter((box) => box.pageId === destinationPageId && box.id !== draggedBoxId)
+      .map((box) => box.frame);
+    const preferred = isFrameInViewport(dragFrame, viewportBounds)
+      ? dragFrame
+      : findViewportAdaptiveFrame({
+          size: { width: dragFrame.width, height: dragFrame.height },
+          preferredCenter: {
+            x: dragFrame.x + dragFrame.width / 2,
+            y: dragFrame.y + dragFrame.height / 2,
+          },
+          viewportBounds,
+          canvasBounds,
+        });
+    landingFrame = resolveFreeformDropFrame({
+      frame: preferred,
+      occupied,
+      bounds: canvasBounds,
     });
   }
 
@@ -219,22 +231,33 @@ function commitBoxDragRelease(
 
   // Managed layouts: reorder/reflow on release (no freeform free placement).
   if (managedDest && !releasedOnTab && (destMode === 'waterfall' || destMode === 'list')) {
+    const dropPoint = clientPointToGroupScrollContent(event.clientX, event.clientY) ?? {
+      x: dragFrame.x + dragFrame.width / 2,
+      y: dragFrame.y + dragFrame.height / 2,
+    };
     commitManagedLayoutDrop({
       draggedBoxId,
       destinationPageId,
       originPageId,
-      dropFrame: dragFrame,
+      dropPoint,
       mode: destMode,
       viewportWidth: canvas.viewportSize.width > 0 ? canvas.viewportSize.width : 960,
     });
     return;
   }
 
-  // Only animate when landing actually moves (tab place / pull-in). Same-spot drop snaps.
+  // Only animate meaningful landings (cross-page tab place / off-screen pull-in).
+  // Same-page freeform: never arm pendingBoxLanding — snap avoids drop flash.
   const moved =
     Math.abs(landingFrame.x - dragSession.latestFrame.x) > 1 ||
     Math.abs(landingFrame.y - dragSession.latestFrame.y) > 1;
-  if (moved && !managedDest) {
+  const crossPageLanding =
+    (originPageId ?? movingBox.pageId) !== destinationPageId || releasedOnTab;
+  if (
+    moved &&
+    !managedDest &&
+    (crossPageLanding || !isFrameInViewport(dragFrame, viewportBounds))
+  ) {
     ui.setPendingBoxLanding(draggedBoxId, landingFrame);
   }
 
@@ -273,24 +296,32 @@ function commitManagedLayoutDrop(args: {
   draggedBoxId: string;
   destinationPageId: string;
   originPageId: string | null;
-  dropFrame: BoxFrame;
+  dropPoint: { x: number; y: number };
   mode: 'waterfall' | 'list';
   viewportWidth: number;
 }) {
-  const { draggedBoxId, destinationPageId, originPageId, dropFrame, mode, viewportWidth } = args;
+  const { draggedBoxId, destinationPageId, originPageId, dropPoint, mode, viewportWidth } = args;
   const workspace = useWorkspaceStore.getState();
   const movingBox = workspace.projection.boxes.find((box) => box.id === draggedBoxId);
   if (!movingBox) return;
 
+  // Temporary frame until reflow writes the real slot.
+  const seedFrame: BoxFrame = {
+    x: dropPoint.x,
+    y: dropPoint.y,
+    width: movingBox.frame.width,
+    height: movingBox.frame.height,
+  };
+
   const persistedPageId = originPageId ?? movingBox.pageId;
   if (persistedPageId !== destinationPageId) {
     if (movingBox.pageId !== destinationPageId) {
-      workspace.previewBoxOnPage(draggedBoxId, destinationPageId, dropFrame);
+      workspace.previewBoxOnPage(draggedBoxId, destinationPageId, seedFrame);
     }
     void workspace
-      .moveBoxToPage(draggedBoxId, destinationPageId, dropFrame)
+      .moveBoxToPage(draggedBoxId, destinationPageId, seedFrame)
       .then(() =>
-        reflowManagedPage(destinationPageId, draggedBoxId, dropFrame, mode, viewportWidth),
+        reflowManagedPage(destinationPageId, draggedBoxId, dropPoint, mode, viewportWidth),
       )
       .catch(() => {
         void workspace.revertOptimisticProjection();
@@ -301,13 +332,13 @@ function commitManagedLayoutDrop(args: {
   if (workspace.projection.activePageId !== destinationPageId) {
     workspace.setActivePage(destinationPageId);
   }
-  reflowManagedPage(destinationPageId, draggedBoxId, dropFrame, mode, viewportWidth);
+  reflowManagedPage(destinationPageId, draggedBoxId, dropPoint, mode, viewportWidth);
 }
 
 function reflowManagedPage(
   pageId: string,
   draggedId: string,
-  dropFrame: BoxFrame,
+  dropPoint: { x: number; y: number },
   modeHint?: 'waterfall' | 'list',
   viewportWidthHint?: number,
 ) {
@@ -323,26 +354,39 @@ function reflowManagedPage(
   const viewportWidth =
     viewportWidthHint ?? (canvas.viewportSize.width > 0 ? canvas.viewportSize.width : 960);
   const pageBoxes = workspace.projection.boxes.filter((box) => box.pageId === pageId);
+
+  // Prefer live landing insertIndex so commit matches what the user saw.
+  const preview = ui.managedInsertPreview;
+  const insertIndex =
+    preview && preview.pageId === pageId && preview.mode === mode ? preview.insertIndex : undefined;
+
   const frames = reflowGroupBoxesAfterDrop({
     boxes: pageBoxes,
     draggedId,
-    dropFrame,
+    dropPoint,
     mode,
     viewportWidth,
+    insertIndex,
   });
 
+  const changed: Record<string, BoxFrame> = {};
   for (const box of pageBoxes) {
     const next = frames.get(box.id);
     if (!next) continue;
     if (
-      next.x !== box.frame.x ||
-      next.y !== box.frame.y ||
-      next.width !== box.frame.width ||
-      next.height !== box.frame.height
+      next.x === box.frame.x &&
+      next.y === box.frame.y &&
+      next.width === box.frame.width &&
+      next.height === box.frame.height
     ) {
-      workspace.updateBoxFrame(box.id, next);
+      continue;
     }
+    changed[box.id] = next;
   }
+  if (Object.keys(changed).length === 0) return;
+
+  // Managed mode only — freeform columns untouched (layout isolation).
+  workspace.arrangeBoxesOnPage(pageId, changed, mode);
 }
 
 /**

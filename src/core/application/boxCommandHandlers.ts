@@ -80,7 +80,12 @@ export async function executeBoxCommand(
     case 'collection.arrange':
       return arrangeCollection(transaction, command.frames);
     case 'canvas.arrange':
-      return arrangePage(transaction, command.pageId, command.frames);
+      return arrangePage(
+        transaction,
+        command.pageId,
+        command.frames,
+        command.layoutMode ?? 'freeform',
+      );
     case 'system.constrainFrames':
       return constrainFrames(transaction, command.viewport);
   }
@@ -100,12 +105,18 @@ async function createBox(
   const timestamp = new Date().toISOString();
   const boxId = `box-${crypto.randomUUID()}`;
   const accent = chooseAvailableBoxAccent(pageBoxes.map((box) => box.accent));
+  const freeform = frameColumns(command.frame);
+  const modeLayouts = {
+    waterfall: { ...command.frame },
+    list: { ...command.frame },
+  };
   const box = {
     id: boxId,
     pageId: command.pageId,
     kind: 'normal' as const,
     title: command.title?.trim() || 'New Box',
-    ...frameColumns(command.frame),
+    ...freeform,
+    modeLayouts,
     viewMode: 'list' as const,
     detailMode: 'detailed' as const,
     isLocked: false,
@@ -369,15 +380,58 @@ async function arrangePage(
   transaction: DatabaseTransaction,
   pageId: string,
   frames: Record<string, BoxFrame>,
+  layoutMode: 'freeform' | 'waterfall' | 'list',
 ) {
   const ids = Object.keys(frames);
   if (!ids.length) return noMutation();
   const pageBoxes = await transaction.select().from(boxes).where(eq(boxes.pageId, pageId)).all();
-  return updateBoxFrames(
-    transaction,
-    pageBoxes.filter((box) => ids.includes(box.id)),
-    frames,
-  );
+  const targets = pageBoxes.filter((box) => ids.includes(box.id));
+  if (layoutMode === 'freeform') {
+    return updateBoxFrames(transaction, targets, frames);
+  }
+  // Managed layouts only touch modeLayouts — freeform columns stay isolated.
+  const changes: DatabaseCommandMutation['changes'] = [];
+  const timestamp = new Date().toISOString();
+  for (const before of targets) {
+    const nextFrame = frames[before.id];
+    if (!nextFrame) continue;
+    const prevLayouts = normalizeModeLayoutsRow(before.modeLayouts, {
+      x: before.x,
+      y: before.y,
+      width: before.width,
+      height: before.height,
+    });
+    const modeLayouts = {
+      ...prevLayouts,
+      [layoutMode]: nextFrame,
+    };
+    const after = { ...before, modeLayouts, updatedAt: timestamp };
+    if (JSON.stringify(prevLayouts) === JSON.stringify(modeLayouts)) continue;
+    await transaction
+      .update(boxes)
+      .set({ modeLayouts, updatedAt: timestamp })
+      .where(eq(boxes.id, before.id));
+    changes.push(rowChange('boxes', { id: before.id }, before, after));
+  }
+  return { changes };
+}
+
+function normalizeModeLayoutsRow(
+  raw: unknown,
+  freeform: BoxFrame,
+): { waterfall: BoxFrame; list: BoxFrame } {
+  if (raw && typeof raw === 'object') {
+    const record = raw as Record<string, unknown>;
+    const waterfall = record.waterfall as BoxFrame | undefined;
+    const list = record.list as BoxFrame | undefined;
+    if (waterfall && list) {
+      return {
+        waterfall: { ...waterfall },
+        list: { ...list },
+      };
+    }
+  }
+  return { waterfall: { ...freeform }, list: { ...freeform } };
 }
 
 async function constrainFrames(

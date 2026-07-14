@@ -1,19 +1,20 @@
-import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
+import { useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { getBoxAccent, getBoxIcon } from '../../domain/boxAppearance';
 import type { BoxFrame, WorkspaceBox } from '../../domain/workspace';
+import { isRecycleBinPageId } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { ThemeIcon } from '../../kit/icon';
 import { IconButton } from '../../kit/icon-button';
 import { BoxAppearanceIcon } from '../boxes/boxIconRegistry';
+import { SortableItemList } from '../items/SortableItemList';
+import { GroupBoxDeleteView } from './GroupBoxDeleteView';
 import { renderGroupItem } from './renderGroupItem';
-
-const PREVIEW_LIMIT = 4;
 
 /**
  * Waterfall morphology: compact card (not freeform box chrome).
- * Drag from header for reorder / cross-page.
+ * Items use the same SortableItemList drag as freeform (reorder + cross-box).
  */
 export function WaterfallCard({ box, frame }: { box: WorkspaceBox; frame: BoxFrame }) {
   const beginBoxDrag = useUiStore((state) => state.beginBoxDrag);
@@ -22,11 +23,11 @@ export function WaterfallCard({ box, frame }: { box: WorkspaceBox; frame: BoxFra
   const { t } = useI18n();
   const accent = getBoxAccent(box);
   const icon = getBoxIcon(box);
-  const preview = box.items.slice(0, PREVIEW_LIMIT);
-  const more = Math.max(0, box.items.length - preview.length);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const permanent = isRecycleBinPageId(box.pageId);
 
   const beginDrag = (event: ReactPointerEvent<HTMLElement>) => {
-    if (box.isLocked) return;
+    if (box.isLocked || confirmDelete) return;
     if ((event.target as HTMLElement).closest('button,input,textarea,select,[data-no-drag]')) {
       return;
     }
@@ -51,12 +52,13 @@ export function WaterfallCard({ box, frame }: { box: WorkspaceBox; frame: BoxFra
       startFrame: frame,
       latestFrame: frame,
       transformOrigin,
+      morphology: 'card',
     });
   };
 
   return (
     <article
-      className="cardo-waterfall-card"
+      className={`cardo-waterfall-card${confirmDelete ? ' cardo-waterfall-card-delete-view' : ''}`}
       data-canvas-box
       data-box-id={box.id}
       data-group-morph="card"
@@ -71,38 +73,44 @@ export function WaterfallCard({ box, frame }: { box: WorkspaceBox; frame: BoxFra
       }
       onPointerDown={() => selectBox(box.id)}
     >
-      <header className="cardo-waterfall-card-header" onPointerDown={beginDrag}>
-        <span className="cardo-waterfall-card-icon" aria-hidden="true">
-          <BoxAppearanceIcon icon={icon} size={14} />
-        </span>
-        <strong className="cardo-waterfall-card-title">{box.title}</strong>
-        <span className="cardo-waterfall-card-count">{box.items.length}</span>
-        <IconButton
-          className="cardo-waterfall-card-delete"
-          data-no-drag
-          aria-label={t('menu.moveToRecycleBin')}
-          tooltip={t('menu.moveToRecycleBin')}
-          onClick={() => deleteBox(box.id)}
-        >
-          <ThemeIcon name="trash" size={13} strokeWidth={2} />
-        </IconButton>
-      </header>
-      <div className="cardo-waterfall-card-body">
-        {preview.length ? (
-          preview.map((item) => (
-            <div className="cardo-waterfall-card-item" key={item.id}>
-              {renderGroupItem(box.id, item)}
-            </div>
-          ))
-        ) : (
-          <div className="cardo-waterfall-card-empty">{t('box.empty')}</div>
-        )}
-        {more > 0 ? (
-          <div className="cardo-waterfall-card-more">
-            {t('groupView.moreItems', { count: more })}
+      {confirmDelete ? (
+        <GroupBoxDeleteView
+          permanent={permanent}
+          onCancel={() => setConfirmDelete(false)}
+          onConfirm={() => deleteBox(box.id)}
+        />
+      ) : (
+        <>
+          <header className="cardo-waterfall-card-header" onPointerDown={beginDrag}>
+            <span className="cardo-waterfall-card-icon" aria-hidden="true">
+              <BoxAppearanceIcon icon={icon} size={14} />
+            </span>
+            <strong className="cardo-waterfall-card-title">{box.title}</strong>
+            <span className="cardo-waterfall-card-count">{box.items.length}</span>
+            <IconButton
+              className="cardo-waterfall-card-delete"
+              data-no-drag
+              aria-label={t(permanent ? 'menu.deletePermanently' : 'menu.moveToRecycleBin')}
+              tooltip={t(permanent ? 'menu.deletePermanently' : 'menu.moveToRecycleBin')}
+              onClick={() => setConfirmDelete(true)}
+            >
+              <ThemeIcon name="trash" size={13} strokeWidth={2} />
+            </IconButton>
+          </header>
+          <div className="cardo-waterfall-card-body" data-no-box-drag>
+            {box.items.length ? (
+              <SortableItemList
+                boxId={box.id}
+                items={box.items}
+                viewMode="list"
+                renderItem={(item) => renderGroupItem(box.id, item)}
+              />
+            ) : (
+              <div className="cardo-waterfall-card-empty">{t('box.empty')}</div>
+            )}
           </div>
-        ) : null}
-      </div>
+        </>
+      )}
     </article>
   );
 }

@@ -103,6 +103,67 @@ export function isFrameInViewport(frame: BoxFrame, viewportBounds: CanvasWorldBo
   return frameContainedBy(frame, padded);
 }
 
+/**
+ * Freeform auto-arrange: pack unlocked boxes into rows from top-left,
+ * preserving each box size and rough reading order (y then x).
+ * Locked boxes keep their frames and are omitted from the pack.
+ */
+export function arrangeFreeformBoxes(args: {
+  boxes: readonly { id: string; frame: BoxFrame; isLocked?: boolean }[];
+  origin: CanvasPoint;
+  contentWidth: number;
+  canvasBounds: CanvasWorldBounds;
+  gap?: number;
+}): Record<string, BoxFrame> {
+  const gap = args.gap ?? BOX_GAP;
+  const contentWidth = Math.max(240, args.contentWidth);
+  const originX = Math.round(args.origin.x);
+  const originY = Math.round(args.origin.y);
+  const frames: Record<string, BoxFrame> = {};
+
+  const movable = args.boxes
+    .filter((box) => !box.isLocked)
+    .slice()
+    .sort((a, b) => {
+      if (a.frame.y !== b.frame.y) return a.frame.y - b.frame.y;
+      if (a.frame.x !== b.frame.x) return a.frame.x - b.frame.x;
+      return a.id.localeCompare(b.id);
+    });
+
+  for (const box of args.boxes) {
+    if (box.isLocked) {
+      frames[box.id] = { ...box.frame };
+    }
+  }
+
+  let cursorX = originX;
+  let cursorY = originY;
+  let rowHeight = 0;
+
+  for (const box of movable) {
+    const width = box.frame.width;
+    const height = box.frame.height;
+    if (cursorX > originX && cursorX + width > originX + contentWidth) {
+      cursorX = originX;
+      cursorY += rowHeight + gap;
+      rowHeight = 0;
+    }
+    frames[box.id] = constrainBoxFrameToCanvas(
+      {
+        x: cursorX,
+        y: cursorY,
+        width,
+        height,
+      },
+      args.canvasBounds,
+    );
+    cursorX += width + gap;
+    rowHeight = Math.max(rowHeight, height);
+  }
+
+  return frames;
+}
+
 export function findAvailableFrame(
   preferredFrame: BoxFrame,
   occupiedFrames: BoxFrame[],

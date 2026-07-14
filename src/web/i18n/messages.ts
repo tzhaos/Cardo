@@ -59,6 +59,7 @@ export const WEB_NEXT_MESSAGES = {
     'toolbar.newBox': 'New box',
     'toolbar.new': 'New',
     'canvas.returnToOrigin': 'Return to origin',
+    'canvas.arrangeBoxes': 'Arrange boxes',
     'canvas.lockViewport': 'Lock canvas movement',
     'canvas.unlockViewport': 'Unlock canvas movement',
     'canvas.layoutTools': 'Canvas tools',
@@ -349,6 +350,7 @@ export const WEB_NEXT_MESSAGES = {
     'groupView.list': 'List',
     'groupView.listDescription': 'Grouped items in a scrollable grid',
     'groupView.moreItems': '+{count} more',
+    'groupView.dropHere': 'Drop here',
   },
   zh: {
     'page.recycleBin': '回收站',
@@ -419,6 +421,7 @@ export const WEB_NEXT_MESSAGES = {
     'toolbar.newBox': '新建盒子',
     'toolbar.new': '新建',
     'canvas.returnToOrigin': '回到原点',
+    'canvas.arrangeBoxes': '整理盒子',
     'canvas.lockViewport': '锁定画布移动',
     'canvas.unlockViewport': '解锁画布移动',
     'canvas.layoutTools': '画布工具',
@@ -695,6 +698,7 @@ export const WEB_NEXT_MESSAGES = {
     'groupView.list': '列表',
     'groupView.listDescription': '按分组展示项目，可滚动网格',
     'groupView.moreItems': '还有 {count} 项',
+    'groupView.dropHere': '放在这里',
   },
 } as const;
 

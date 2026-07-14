@@ -101,13 +101,20 @@
   padding: 6px 8px 8px;
 }
 
-.cardo-waterfall-card-item {
-  min-width: 0;
+/* Dense freeform-compatible item list inside waterfall cards. */
+.cardo-waterfall-card-body .cardo-item-list {
+  gap: 2px;
+  padding: 0;
 }
 
-.cardo-waterfall-card-item .cardo-item-row {
+.cardo-waterfall-card-body .cardo-item-row {
   min-height: 32px;
   padding: 3px 4px 3px 16px;
+}
+
+.cardo-waterfall-card-body .cardo-item-drag-handle {
+  width: 22px;
+  height: 22px;
 }
 
 .cardo-waterfall-card-empty,
@@ -184,20 +191,22 @@
   font-size: 12px;
 }
 
-.cardo-group-list-item-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+.cardo-group-list-item-host {
+  min-width: 0;
+  min-height: 0;
+}
+
+.cardo-group-list-item-host .cardo-item-list-grid {
   gap: 4px;
 }
 
-.cardo-group-list-item-cell {
-  min-width: 0;
+.cardo-group-list-item-host .cardo-item-reorder-entry {
   border: 1px solid transparent;
   border-radius: 8px;
   background: color-mix(in srgb, var(--cardo-canvas, #f3f4f7) 55%, var(--cardo-panel, #fff));
 }
 
-.cardo-group-list-item-cell .cardo-item-row {
+.cardo-group-list-item-host .cardo-item-row {
   min-height: 36px;
   border-radius: 8px;
   padding: 4px 6px 4px 16px;
@@ -207,6 +216,189 @@
   padding: 10px 8px;
   color: var(--cardo-muted);
   font-size: 12px;
+}
+
+/* Shared delete confirm for waterfall card / list section. */
+.cardo-group-box-delete-confirm {
+  display: flex;
+  width: 100%;
+  min-height: 120px;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 16px 14px;
+  text-align: center;
+}
+
+.cardo-group-box-delete-confirm p {
+  margin: 0;
+  color: var(--cardo-soft-text, var(--cardo-text));
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.cardo-group-box-delete-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.cardo-waterfall-card-delete-view,
+.cardo-group-list-section-delete-view {
+  display: flex;
+  flex-direction: column;
+}
+
+.cardo-waterfall-card-delete-view .cardo-group-box-delete-confirm {
+  min-height: 100%;
+}
+
+/*
+ * DROP landing previews (where the box/section will rest on release).
+ * Floating finger-ghost is separate; these sit in the document plane.
+ */
+.cardo-drop-landing {
+  box-sizing: border-box;
+  pointer-events: none;
+  user-select: none;
+}
+
+.cardo-drop-landing-waterfall {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  overflow: hidden;
+  border: 2px dashed color-mix(in srgb, var(--cardo-blue, #3b82f6) 72%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--cardo-blue, #3b82f6) 10%, var(--cardo-panel, #fff));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cardo-blue, #3b82f6) 14%, transparent);
+}
+
+.cardo-drop-landing-chrome {
+  flex: 0 0 36px;
+  border-bottom: 1px dashed color-mix(in srgb, var(--cardo-blue, #3b82f6) 35%, transparent);
+  background: color-mix(in srgb, var(--cardo-blue, #3b82f6) 12%, transparent);
+}
+
+.cardo-drop-landing-waterfall .cardo-drop-landing-label {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  color: color-mix(in srgb, var(--cardo-blue, #3b82f6) 88%, var(--cardo-text));
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* List: compact item-row landing (not a full section slab). */
+.cardo-drop-landing-list {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  margin: 0;
+  border: 1.5px dashed color-mix(in srgb, var(--cardo-blue, #3b82f6) 72%, transparent);
+  border-radius: 8px;
+  padding: 0 12px;
+  background: color-mix(in srgb, var(--cardo-blue, #3b82f6) 10%, var(--cardo-panel, #fff));
+}
+
+.cardo-drop-landing-list-line {
+  flex: 1 1 auto;
+  height: 10px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--cardo-blue, #3b82f6) 16%, transparent);
+}
+
+.cardo-drop-landing-list .cardo-drop-landing-label {
+  flex: 0 0 auto;
+  color: color-mix(in srgb, var(--cardo-blue, #3b82f6) 88%, var(--cardo-text));
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cardo-waterfall-card-dragging,
+.cardo-group-list-section-dragging {
+  cursor: grabbing;
+  touch-action: none;
+  box-shadow:
+    0 14px 36px color-mix(in srgb, var(--cardo-text) 16%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--box-accent) 22%, transparent) !important;
+  opacity: 0.97;
+}
+
+.cardo-waterfall-card-body-ghost {
+  gap: 6px;
+  padding: 10px;
+}
+
+.cardo-waterfall-card-ghost-line {
+  display: flex;
+  align-items: center;
+  min-height: 12px;
+  border-radius: 4px;
+  padding: 0 6px;
+  background: color-mix(in srgb, var(--cardo-text) 7%, transparent);
+  overflow: hidden;
+}
+
+.cardo-waterfall-card-ghost-label {
+  overflow: hidden;
+  color: var(--cardo-muted);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardo-group-list-section-ghost-sheet {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 0 2px 4px;
+  opacity: 0.5;
+}
+
+.cardo-group-list-section-ghost-sheet > span {
+  height: 28px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--cardo-text) 7%, transparent);
+}
+
+/*
+ * Live reflow during insert preview: snap without CSS transition.
+ * Transitioning many cards on every insert-index change re-plays motion (flash).
+ */
+.cardo-group-waterfall-plane .cardo-waterfall-card {
+  transition: none;
+}
+
+/* Idle freeform-like ease only when not drag-inserting. */
+.cardo-group-scroll-waterfall:not(.is-insert-previewing)
+  .cardo-group-waterfall-plane
+  .cardo-waterfall-card {
+  transition:
+    left 140ms ease,
+    top 140ms ease;
+}
+
+.cardo-waterfall-card-dragging {
+  transition: none !important;
+}
+
+/* While insert-previewing, freeze geometry animation entirely. */
+.cardo-group-scroll.is-insert-previewing .cardo-waterfall-card {
+  transition: none !important;
 }
 
 /* Canvas host when managed scroll is active */

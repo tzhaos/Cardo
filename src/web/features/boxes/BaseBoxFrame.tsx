@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
-import { animate as animateMotion, motion, useMotionValue, useSpring } from 'motion/react';
+import { animate as animateMotion, motion, useMotionValue } from 'motion/react';
 import type { MotionStyle } from 'motion/react';
 import { useCanvasStore } from '../../app/stores/canvasStore';
 import { useUiStore, type BoxDragSession } from '../../app/stores/uiStore';
@@ -65,7 +65,7 @@ export function BaseBoxFrame({
   accent,
   children,
   onAddItem,
-  skipEntryAnimation = false,
+  skipEntryAnimation: _skipEntryAnimation = false,
   layoutLocked = false,
 }: BaseBoxFrameProps) {
   const renameBox = useWorkspaceStore((state) => state.renameBox);
@@ -125,9 +125,6 @@ export function BaseBoxFrame({
   const boxTop = useMotionValue(seedPaint.top);
   const boxWidth = useMotionValue(box.frame.width);
   const boxHeight = useMotionValue(box.frame.height);
-  const dragTiltTarget = useMotionValue(0);
-  // Overdamped so fling release does not wobble the box.
-  const dragTilt = useSpring(dragTiltTarget, { stiffness: 380, damping: 42, mass: 0.4 });
   const { t } = useI18n();
   const titleRename = useInlineRename({
     value: box.title,
@@ -161,9 +158,6 @@ export function BaseBoxFrame({
           const width = activeSession?.latestFrame.width ?? initialFrame.width;
           const height = activeSession?.latestFrame.height ?? initialFrame.height;
           const offset = resolveGrabOffset(session.transformOrigin, width, height);
-          dragTiltTarget.set(
-            Math.max(-2.2, Math.min(2.2, (moveEvent.clientX - baseClientX) / 180)),
-          );
           latestFrame = constrainBoxFrameToCanvas(
             {
               ...baseFrame,
@@ -180,12 +174,9 @@ export function BaseBoxFrame({
           updateBoxDragFrame(latestFrame, moveEvent.clientX, moveEvent.clientY);
         },
         onEnd: () => {
-          dragTiltTarget.set(0);
-          // Hold world-space frame for remount into the page scene + landing.
+          // Keep client/fixed paint until unmount — writing world coords while still
+          // position:fixed causes a visible jump (drop flash).
           holdVisualUntilLandingRef.current = true;
-          const world = useUiStore.getState().boxDragSession?.latestFrame ?? latestFrame;
-          boxLeft.set(world.x);
-          boxTop.set(world.y);
           if (pointerSessionRef.current === pointerSession) {
             pointerSessionRef.current = null;
           }
@@ -193,7 +184,7 @@ export function BaseBoxFrame({
       });
       pointerSessionRef.current = pointerSession;
     },
-    [boxLeft, boxTop, dragTiltTarget, updateBoxDragFrame],
+    [boxLeft, boxTop, updateBoxDragFrame],
   );
 
   useEffect(
@@ -250,6 +241,7 @@ export function BaseBoxFrame({
       startFrame: box.frame,
       latestFrame: box.frame,
       transformOrigin,
+      morphology: 'freeform',
     };
     // Seed paint on this instance before remount so the first fixed frame is correct
     // if React reuses anything; DraggedBoxLayer remount seeds from session.lastClient*.
@@ -455,7 +447,8 @@ export function BaseBoxFrame({
       className={visualClassName}
       data-canvas-box
       data-box-id={box.id}
-      initial={skipEntryAnimation ? false : { scale: 0.8, opacity: 0 }}
+      // Never remount-entry after drag: scale/opacity intro is a primary drop flash source.
+      initial={false}
       animate={{
         x: deleteMotion?.x ?? 0,
         y: deleteMotion?.y ?? 0,
@@ -474,21 +467,21 @@ export function BaseBoxFrame({
                 // Nav mini-card only — freeform scale stays 1 (no release pop).
                 scale: {
                   type: 'tween',
-                  duration: draggingOverTopBar ? 0.18 : 0,
+                  duration: draggingOverTopBar ? 0.16 : 0,
                   ease: [0.2, 0.8, 0.2, 1],
                 },
-                borderRadius: { duration: draggingOverTopBar ? 0.16 : 0.1 },
-                opacity: { duration: 0.12 },
+                borderRadius: { duration: draggingOverTopBar ? 0.14 : 0 },
+                opacity: { duration: 0.1 },
               }
             : {
-                // Landing after cross-page / pull-in only.
+                // Landing after cross-page / pull-in only — never animate scale on same-page remount.
                 scale: {
                   type: 'tween',
-                  duration: pendingBoxLanding ? 0.36 : 0,
+                  duration: pendingBoxLanding ? 0.28 : 0,
                   ease: [0.22, 0.82, 0.2, 1],
                 },
-                borderRadius: { duration: pendingBoxLanding ? 0.32 : 0.1 },
-                opacity: { duration: pendingBoxLanding ? 0.24 : 0.08 },
+                borderRadius: { duration: pendingBoxLanding ? 0.24 : 0 },
+                opacity: { duration: pendingBoxLanding ? 0.18 : 0 },
               }
       }
       onAnimationComplete={finishDeleteMotion}
@@ -562,8 +555,7 @@ export function BaseBoxFrame({
           width: boxWidth,
           height: boxHeight,
           minWidth: 240,
-          minHeight: 170,
-          rotate: dragTilt,
+          minHeight: 176,
           transformOrigin: deleteMotion ? '50% 50%' : dragTransformOrigin,
           pointerEvents: deleteMotion ? 'none' : undefined,
           '--box-accent': accent,

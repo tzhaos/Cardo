@@ -38,6 +38,14 @@ export const boxFrameSchema = z
   })
   .strict();
 
+/** Waterfall + list frames isolated from freeform (freeform uses `frame`). */
+export const boxModeLayoutsSchema = z
+  .object({
+    waterfall: boxFrameSchema,
+    list: boxFrameSchema,
+  })
+  .strict();
+
 const itemBaseSchema = z.object({
   id: entityIdSchema,
   title: z.string().max(512),
@@ -84,6 +92,11 @@ export const workspacePageSchema = z
     id: entityIdSchema,
     title: z.string().max(512),
     order: z.number().int(),
+    /** freeform | waterfall | list — persisted per page. */
+    groupViewMode: z.enum(['freeform', 'waterfall', 'list']),
+    /** 0 = auto; otherwise fixed column count. */
+    waterfallColumns: z.number().int().min(0).max(6),
+    listColumns: z.number().int().min(1).max(4),
     createdAt: isoDateTimeSchema,
     updatedAt: isoDateTimeSchema,
   })
@@ -95,7 +108,10 @@ export const workspaceBoxSchema = z
     pageId: entityIdSchema,
     kind: workspaceBoxKindSchema,
     title: z.string().max(512),
+    /** Freeform layout only. */
     frame: boxFrameSchema,
+    /** Isolated managed layouts — never written by freeform edits. */
+    modeLayouts: boxModeLayoutsSchema,
     items: z.array(workspaceItemSchema),
     viewMode: workspaceBoxViewModeSchema,
     detailMode: workspaceBoxDetailModeSchema,
@@ -135,6 +151,7 @@ export type WorkspaceBoxDetailMode = z.infer<typeof workspaceBoxDetailModeSchema
 export type WorkspaceBoxKind = z.infer<typeof workspaceBoxKindSchema>;
 export type WorkspaceBoxIcon = z.infer<typeof workspaceBoxIconSchema>;
 export type BoxFrame = z.infer<typeof boxFrameSchema>;
+export type BoxModeLayouts = z.infer<typeof boxModeLayoutsSchema>;
 export type ItemMetadata = z.infer<typeof itemMetadataSchema>;
 export type WorkspacePage = z.infer<typeof workspacePageSchema>;
 export type WorkspaceBox = z.infer<typeof workspaceBoxSchema>;

@@ -13,63 +13,16 @@ export interface ThemeLookPreset {
 }
 
 /**
- * Accent-only helper: leave canvas / panel / text to the pack default.
- * Extra looks must not redesign the shell — defaults are the designed product.
- */
-function accentOnly(
-  light: { blue: string; create?: string; hover: string },
-  dark: { blue: string; create?: string; hover: string },
-): Record<ColorMode, OverridableColorMap> {
-  return {
-    light: {
-      blue: light.blue,
-      createBackground: light.create ?? light.blue,
-      settingsHover: light.hover,
-    },
-    dark: {
-      blue: dark.blue,
-      createBackground: dark.create ?? dark.blue,
-      settingsHover: dark.hover,
-    },
-  };
-}
-
-/**
  * Curated looks for the sole official theme pack (codex).
- *
- * - id "default": empty maps → 100% pack tokens.
- * - other ids: accent variants only (blue / create / settingsHover).
+ * Product UI only exposes the default look (no multi-preset picker).
  */
+/** Official default only — multi-look / custom accent pickers removed from product UI. */
 export const THEME_LOOK_PRESETS: Record<string, readonly ThemeLookPreset[]> = {
   codex: [
     {
       id: 'default',
       name: { en: 'Default', zh: '默认' },
       colors: { light: {}, dark: {} },
-    },
-    {
-      id: 'ocean',
-      name: { en: 'Ocean', zh: '海雾' },
-      colors: accentOnly(
-        { blue: '#2563eb', create: '#1d4ed8', hover: '#dbeafe' },
-        { blue: '#60a5fa', create: '#60a5fa', hover: '#1e3a5f' },
-      ),
-    },
-    {
-      id: 'sunset',
-      name: { en: 'Sunset', zh: '暮光' },
-      colors: accentOnly(
-        { blue: '#d97706', create: '#b45309', hover: '#fef3c7' },
-        { blue: '#fbbf24', create: '#fbbf24', hover: '#422006' },
-      ),
-    },
-    {
-      id: 'forest',
-      name: { en: 'Forest', zh: '林间' },
-      colors: accentOnly(
-        { blue: '#059669', create: '#047857', hover: '#d1fae5' },
-        { blue: '#34d399', create: '#34d399', hover: '#14532d' },
-      ),
     },
   ],
 };

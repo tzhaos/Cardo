@@ -11,6 +11,9 @@ export interface AddDraftState {
   highlightItemId?: string;
 }
 
+/** Visual morphology of the floating drag ghost. */
+export type BoxDragMorphology = 'freeform' | 'card' | 'list';
+
 export interface BoxDragSession {
   boxId: string;
   pointerId: number;
@@ -22,6 +25,18 @@ export interface BoxDragSession {
   startFrame: BoxFrame;
   latestFrame: BoxFrame;
   transformOrigin: string;
+  /** freeform box / waterfall card / list section — drives DraggedBoxLayer chrome. */
+  morphology: BoxDragMorphology;
+}
+
+/** Live insert slot while dragging in waterfall/list. */
+export interface ManagedInsertPreview {
+  pageId: string;
+  mode: 'waterfall' | 'list';
+  insertIndex: number;
+  slotFrame: BoxFrame;
+  /** Neighbor reflow frames (boxId → frame) so cards part open a hole. */
+  frames: Record<string, BoxFrame>;
 }
 
 interface UiStore {
@@ -40,6 +55,8 @@ interface UiStore {
     entryTransformOrigin: string;
   } | null;
   pendingBoxLanding: { boxId: string; frame: BoxFrame } | null;
+  /** Waterfall/list insert ghost while dragging. */
+  managedInsertPreview: ManagedInsertPreview | null;
   selectedBoxId: string | null;
   highlightedBoxId: string | null;
   searchQuery: string;
@@ -71,6 +88,7 @@ interface UiStore {
   rebaseBoxDragSession: (frame: BoxFrame, clientX: number, clientY: number) => void;
   setBoxDragOverTopBar: (overTopBar: boolean) => void;
   setBoxDropPage: (pageId: string | null) => void;
+  setManagedInsertPreview: (preview: ManagedInsertPreview | null) => void;
   finishBoxDrop: (
     boxId: string,
     pageId: string,
@@ -95,6 +113,7 @@ export const useUiStore = create<UiStore>((set) => ({
   boxDropPageId: null,
   boxDropRelease: null,
   pendingBoxLanding: null,
+  managedInsertPreview: null,
   selectedBoxId: null,
   highlightedBoxId: null,
   searchQuery: '',
@@ -163,11 +182,13 @@ export const useUiStore = create<UiStore>((set) => ({
         ...session,
         lastClientX: session.lastClientX ?? session.startClientX,
         lastClientY: session.lastClientY ?? session.startClientY,
+        morphology: session.morphology ?? 'freeform',
       },
       boxDragOverTopBar: false,
       boxDropPageId: null,
       boxDropRelease: null,
       pendingBoxLanding: null,
+      managedInsertPreview: null,
       selectedBoxId: session.boxId,
     }),
   /**
@@ -223,6 +244,26 @@ export const useUiStore = create<UiStore>((set) => ({
     set((state) =>
       state.draggedBoxId && state.boxDropPageId !== pageId ? { boxDropPageId: pageId } : state,
     ),
+  setManagedInsertPreview: (preview) =>
+    set((state) => {
+      if (!preview) {
+        return state.managedInsertPreview ? { managedInsertPreview: null } : state;
+      }
+      const prev = state.managedInsertPreview;
+      if (
+        prev &&
+        prev.pageId === preview.pageId &&
+        prev.mode === preview.mode &&
+        prev.insertIndex === preview.insertIndex &&
+        prev.slotFrame.x === preview.slotFrame.x &&
+        prev.slotFrame.y === preview.slotFrame.y &&
+        prev.slotFrame.width === preview.slotFrame.width &&
+        prev.slotFrame.height === preview.slotFrame.height
+      ) {
+        return state;
+      }
+      return { managedInsertPreview: preview };
+    }),
   finishBoxDrop: (boxId, pageId, entryFrame, entryScale, entryTransformOrigin) =>
     set({ boxDropRelease: { boxId, pageId, entryFrame, entryScale, entryTransformOrigin } }),
   clearBoxDropRelease: () => set({ boxDropRelease: null }),
@@ -239,5 +280,6 @@ export const useUiStore = create<UiStore>((set) => ({
       boxDragSession: null,
       boxDragOverTopBar: false,
       boxDropPageId: null,
+      managedInsertPreview: null,
     }),
 }));

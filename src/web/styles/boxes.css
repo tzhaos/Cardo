@@ -131,9 +131,40 @@
   position: fixed !important;
   z-index: 100 !important;
   box-shadow:
-    var(--cardo-shadow-hover),
-    0 0 0 1px color-mix(in srgb, var(--box-accent) 20%, transparent);
+    0 16px 40px color-mix(in srgb, var(--cardo-text) 16%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--box-accent) 28%, transparent);
   cursor: grabbing;
+  /* Kill idle shadow transition so drop remount does not “fade-pop” elevation. */
+  transition: none !important;
+}
+
+/*
+ * Freeform DROP landing (world coords under camera).
+ * Where the box rests on release — separate from the fixed finger ghost.
+ */
+.cardo-freeform-drop-landing {
+  position: absolute;
+  z-index: 6;
+  display: flex;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed color-mix(in srgb, var(--cardo-blue, #3b82f6) 78%, var(--cardo-border));
+  border-radius: var(--cardo-box-radius, var(--cardo-radius-xl));
+  background: color-mix(in srgb, var(--cardo-blue, #3b82f6) 14%, var(--cardo-panel, #fff));
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--cardo-blue, #3b82f6) 16%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--cardo-blue, #3b82f6) 10%, transparent);
+  pointer-events: none;
+}
+
+.cardo-freeform-drop-landing-label {
+  color: color-mix(in srgb, var(--cardo-blue, #3b82f6) 88%, var(--cardo-text));
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  opacity: 0.95;
+  user-select: none;
 }
 
 .cardo-box-dragging .cardo-item-reorder-entry {

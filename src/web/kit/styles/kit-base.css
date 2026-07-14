@@ -284,18 +284,21 @@
   transition: background 80ms ease;
 }
 
+/*
+ * Shell nav hover/active: fixed neutral gray only.
+ * Not theme tokens — custom accent/settingsHover must not recolor the rail.
+ */
 .cardo-nav-item:hover {
-  background: color-mix(in srgb, var(--cardo-text) 4.5%, transparent);
+  background: rgba(128, 128, 128, 0.12);
 }
 
 .cardo-nav-item[data-active='true'] {
-  background: var(--cardo-active, #e2e5eb);
+  background: rgba(128, 128, 128, 0.18);
   font-weight: 550;
 }
 
-/* Settings rail: clear emphasis wash on panel (not gray-active mix). */
 .cardo-nav-item[data-tone='settings'][data-active='true'] {
-  background: color-mix(in srgb, var(--cardo-blue, #3b82f6) 18%, var(--cardo-panel, #fff));
+  background: rgba(128, 128, 128, 0.18);
   color: var(--cardo-text);
 }
 

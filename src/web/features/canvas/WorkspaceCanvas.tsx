@@ -21,6 +21,7 @@ import { isManagedGroupView, resolveGroupViewMode } from '../../domain/groupLayo
 import { isCollectionPageId, isRecycleBinPageId, isSystemPageId } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { WorkspaceBoxRenderer } from './WorkspaceBoxRenderer';
+import { FloatingDragLayer } from './FloatingDragLayer';
 import { useCanvasTools } from './useCanvasTools';
 import { CollectionPage } from '../collection/CollectionPage';
 import { GroupScrollSurface } from '../group-views/GroupScrollSurface';
@@ -219,10 +220,10 @@ export function WorkspaceCanvas() {
         </motion.section>
       </AnimatePresence>
       {/*
-        Dragged box lives outside page scenes so horizontal page-turn can run
-        while the floating box stays under the pointer (fixed layer).
+        Dragged chrome lives outside page scenes so horizontal page-turn can run
+        while the float stays under the pointer (fixed layer). Morphology-aware.
       */}
-      <DraggedBoxLayer />
+      <FloatingDragLayer />
       {managedView ? null : <CanvasBoundaryFeedback pageId={activePageId} />}
     </main>
   );
@@ -238,33 +239,73 @@ function PageBoxes({
   excludeBoxId?: string | null;
 }) {
   const allBoxes = useWorkspaceStore((state) => state.projection.boxes);
+  const dragSession = useUiStore((state) => state.boxDragSession);
   const boxes = useMemo(
     () =>
       allBoxes.filter((box) => box.pageId === pageId && (!excludeBoxId || box.id !== excludeBoxId)),
     [allBoxes, excludeBoxId, pageId],
   );
 
-  return boxes.map((box) => (
-    <WorkspaceBoxRenderer
-      box={box}
-      key={box.id}
-      skipEntryAnimation={skipEntryAnimation}
-      layoutLocked={false}
-    />
-  ));
+  // Drop landing silhouette (world coords): where the box rests on release.
+  // Not the floating finger ghost — that lives in FloatingDragLayer.
+  const showLandingPreview =
+    Boolean(excludeBoxId) &&
+    dragSession?.boxId === excludeBoxId &&
+    dragSession?.morphology === 'freeform';
+
+  return (
+    <>
+      {showLandingPreview ? <FreeformDropLandingPreview /> : null}
+      {boxes.map((box) => (
+        <WorkspaceBoxRenderer
+          box={box}
+          key={box.id}
+          skipEntryAnimation={skipEntryAnimation}
+          layoutLocked={false}
+        />
+      ))}
+    </>
+  );
 }
 
-function DraggedBoxLayer() {
-  const draggedBoxId = useUiStore((state) => state.draggedBoxId);
-  const box = useWorkspaceStore((state) =>
-    draggedBoxId
-      ? (state.projection.boxes.find((entry) => entry.id === draggedBoxId) ?? null)
-      : null,
-  );
-  if (!box) return null;
+/**
+ * Freeform drop landing: dashed box footprint in world space under the camera.
+ * Tracks latestFrame (same as release commit). Hidden while over primary nav.
+ */
+function FreeformDropLandingPreview() {
+  const elRef = useRef<HTMLDivElement>(null);
+  const { t } = useI18n();
+
+  useLayoutEffect(() => {
+    let raf = 0;
+    const tick = () => {
+      const ui = useUiStore.getState();
+      const session = ui.boxDragSession;
+      const el = elRef.current;
+      if (!el) {
+        raf = window.requestAnimationFrame(tick);
+        return;
+      }
+      // Nav hover lands via adaptive placement — hide canvas footprint.
+      if (session?.morphology === 'freeform' && !ui.boxDragOverTopBar) {
+        const f = session.latestFrame;
+        el.style.left = `${f.x}px`;
+        el.style.top = `${f.y}px`;
+        el.style.width = `${f.width}px`;
+        el.style.height = `${f.height}px`;
+        el.hidden = false;
+      } else {
+        el.hidden = true;
+      }
+      raf = window.requestAnimationFrame(tick);
+    };
+    raf = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(raf);
+  }, []);
+
   return (
-    <div className="cardo-dragged-box-layer" aria-hidden="true">
-      <WorkspaceBoxRenderer box={box} skipEntryAnimation />
+    <div ref={elRef} className="cardo-freeform-drop-landing" aria-hidden="true" hidden>
+      <span className="cardo-freeform-drop-landing-label">{t('groupView.dropHere')}</span>
     </div>
   );
 }

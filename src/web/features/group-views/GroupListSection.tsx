@@ -1,17 +1,20 @@
-import type { PointerEvent as ReactPointerEvent } from 'react';
+import { useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { getBoxAccent, getBoxIcon } from '../../domain/boxAppearance';
 import type { WorkspaceBox } from '../../domain/workspace';
+import { isRecycleBinPageId } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { ThemeIcon } from '../../kit/icon';
 import { IconButton } from '../../kit/icon-button';
 import { BoxAppearanceIcon } from '../boxes/boxIconRegistry';
+import { SortableItemList } from '../items/SortableItemList';
+import { GroupBoxDeleteView } from './GroupBoxDeleteView';
 import { renderGroupItem } from './renderGroupItem';
 
 /**
  * List morphology: group (box) as section + items in a compact grid.
- * Not freeform box chrome — item rows/tiles under a group header.
+ * Items use the same SortableItemList drag as freeform (reorder + cross-box).
  */
 export function GroupListSection({ box }: { box: WorkspaceBox }) {
   const beginBoxDrag = useUiStore((state) => state.beginBoxDrag);
@@ -21,9 +24,11 @@ export function GroupListSection({ box }: { box: WorkspaceBox }) {
   const { t } = useI18n();
   const accent = getBoxAccent(box);
   const icon = getBoxIcon(box);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const permanent = isRecycleBinPageId(box.pageId);
 
   const beginDrag = (event: ReactPointerEvent<HTMLElement>) => {
-    if (box.isLocked) return;
+    if (box.isLocked || confirmDelete) return;
     if ((event.target as HTMLElement).closest('button,input,textarea,select,[data-no-drag]')) {
       return;
     }
@@ -32,7 +37,6 @@ export function GroupListSection({ box }: { box: WorkspaceBox }) {
     const rect = event.currentTarget
       .closest<HTMLElement>('[data-canvas-box]')
       ?.getBoundingClientRect();
-    // Synthetic frame for drag session (list sections are flow layout, not absolute).
     const frame = rect
       ? {
           x: Math.round(rect.left),
@@ -57,54 +61,66 @@ export function GroupListSection({ box }: { box: WorkspaceBox }) {
       startFrame: frame,
       latestFrame: frame,
       transformOrigin,
+      morphology: 'list',
     });
   };
 
   return (
     <section
-      className="cardo-group-list-section"
+      className={`cardo-group-list-section${confirmDelete ? ' cardo-group-list-section-delete-view' : ''}`}
       data-canvas-box
       data-box-id={box.id}
       data-group-morph="item"
       style={{ ['--box-accent' as string]: accent }}
       onPointerDown={() => selectBox(box.id)}
     >
-      <header className="cardo-group-list-section-header" onPointerDown={beginDrag}>
-        <span className="cardo-group-list-grip" aria-hidden="true">
-          <ThemeIcon name="grip" size={14} />
-        </span>
-        <span className="cardo-group-list-section-icon" aria-hidden="true">
-          <BoxAppearanceIcon icon={icon} size={14} />
-        </span>
-        <strong className="cardo-group-list-section-title">{box.title}</strong>
-        <span className="cardo-group-list-section-count">{box.items.length}</span>
-        <IconButton
-          data-no-drag
-          aria-label={t('box.addItem')}
-          tooltip={t('box.addItem')}
-          onClick={() => openAddView(box.id, 'clipboard')}
-        >
-          <ThemeIcon name="add" size={14} strokeWidth={2} />
-        </IconButton>
-        <IconButton
-          data-no-drag
-          aria-label={t('menu.moveToRecycleBin')}
-          tooltip={t('menu.moveToRecycleBin')}
-          onClick={() => deleteBox(box.id)}
-        >
-          <ThemeIcon name="trash" size={13} strokeWidth={2} />
-        </IconButton>
-      </header>
-      {box.items.length ? (
-        <div className="cardo-group-list-item-grid">
-          {box.items.map((item) => (
-            <div className="cardo-group-list-item-cell" key={item.id}>
-              {renderGroupItem(box.id, item)}
-            </div>
-          ))}
-        </div>
+      {confirmDelete ? (
+        <GroupBoxDeleteView
+          permanent={permanent}
+          onCancel={() => setConfirmDelete(false)}
+          onConfirm={() => deleteBox(box.id)}
+        />
       ) : (
-        <div className="cardo-group-list-section-empty">{t('box.empty')}</div>
+        <>
+          <header className="cardo-group-list-section-header" onPointerDown={beginDrag}>
+            <span className="cardo-group-list-grip" aria-hidden="true">
+              <ThemeIcon name="grip" size={14} />
+            </span>
+            <span className="cardo-group-list-section-icon" aria-hidden="true">
+              <BoxAppearanceIcon icon={icon} size={14} />
+            </span>
+            <strong className="cardo-group-list-section-title">{box.title}</strong>
+            <span className="cardo-group-list-section-count">{box.items.length}</span>
+            <IconButton
+              data-no-drag
+              aria-label={t('box.addItem')}
+              tooltip={t('box.addItem')}
+              onClick={() => openAddView(box.id, 'clipboard')}
+            >
+              <ThemeIcon name="add" size={14} strokeWidth={2} />
+            </IconButton>
+            <IconButton
+              data-no-drag
+              aria-label={t(permanent ? 'menu.deletePermanently' : 'menu.moveToRecycleBin')}
+              tooltip={t(permanent ? 'menu.deletePermanently' : 'menu.moveToRecycleBin')}
+              onClick={() => setConfirmDelete(true)}
+            >
+              <ThemeIcon name="trash" size={13} strokeWidth={2} />
+            </IconButton>
+          </header>
+          {box.items.length ? (
+            <div className="cardo-group-list-item-host" data-no-box-drag>
+              <SortableItemList
+                boxId={box.id}
+                items={box.items}
+                viewMode="grid"
+                renderItem={(item) => renderGroupItem(box.id, item)}
+              />
+            </div>
+          ) : (
+            <div className="cardo-group-list-section-empty">{t('box.empty')}</div>
+          )}
+        </>
       )}
     </section>
   );

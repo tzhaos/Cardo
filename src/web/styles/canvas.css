@@ -316,6 +316,11 @@
   pointer-events: auto;
 }
 
+/* Freeform finger ghost: slightly open so the world drop landing is readable. */
+.cardo-dragged-box-layer-freeform .cardo-box {
+  opacity: 0.78;
+}
+
 .cardo-canvas-world {
   position: absolute;
   inset: 0;

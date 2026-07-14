@@ -53,41 +53,43 @@ export async function initializeWorkspaceDatabase(
   const welcome = createWelcomeSeed(defaultPageId, timestamp, initialPreferences.locale);
 
   await database.transaction(async (transaction) => {
+    const pageDefaults = {
+      groupViewMode: 'freeform' as const,
+      waterfallColumns: 0,
+      listColumns: 1,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    };
     await transaction.insert(pages).values([
       {
         id: COLLECTION_PAGE_ID,
         title: 'Collection',
         sortOrder: -1,
-        createdAt: timestamp,
-        updatedAt: timestamp,
+        ...pageDefaults,
       },
       {
         id: defaultPageId,
         title: 'Workspaces',
         sortOrder: 0,
-        createdAt: timestamp,
-        updatedAt: timestamp,
+        ...pageDefaults,
       },
       {
         id: personalPageId,
         title: 'Personal',
         sortOrder: 1,
-        createdAt: timestamp,
-        updatedAt: timestamp,
+        ...pageDefaults,
       },
       {
         id: inspirationPageId,
         title: 'Inspiration',
         sortOrder: 2,
-        createdAt: timestamp,
-        updatedAt: timestamp,
+        ...pageDefaults,
       },
       {
         id: RECYCLE_BIN_PAGE_ID,
         title: 'Recycle Bin',
         sortOrder: 3,
-        createdAt: timestamp,
-        updatedAt: timestamp,
+        ...pageDefaults,
       },
     ]);
 
@@ -142,6 +144,10 @@ function createWelcomeSeed(pageId: string, timestamp: string, locale: Preference
     y: frame.y,
     width: frame.width,
     height: frame.height,
+    modeLayouts: {
+      waterfall: { ...frame },
+      list: { ...frame },
+    },
     viewMode: 'list' as const,
     detailMode: 'detailed' as const,
     isLocked: false,
