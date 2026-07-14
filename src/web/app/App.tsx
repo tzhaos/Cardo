@@ -29,6 +29,7 @@ import { FeatureGate } from '../shell/FeatureGate';
 import { applyLayoutProfile } from '../shell/layouts/applyLayoutProfile';
 import { applyCssSnippet } from '../shell/layouts/applyCssSnippet';
 import { useCancelActivePointerOnWindowExit } from './useCancelActivePointerOnWindowExit';
+import { useNavHistorySync } from './useNavHistorySync';
 import { usePasteIntoSelectedBox } from './usePasteIntoSelectedBox';
 import { useWorkspaceHistoryShortcuts } from './useWorkspaceHistoryShortcuts';
 import { usePreferencesStore } from './stores/preferencesStore';
@@ -38,6 +39,7 @@ import { MainStage } from '../shell/MainStage';
 import { PanelHeader } from '../shell/PanelHeader';
 import { SettingsFoot } from '../shell/SettingsFoot';
 import { SettingsShell } from '../shell/SettingsShell';
+import { ShellTitleLeading } from '../shell/ShellTitleLeading';
 import { SidebarNav } from '../shell/SidebarNav';
 import { SearchPage } from '../features/global-search/SearchPage';
 import { ContextMenuHost } from '../kit/context-menu';
@@ -59,6 +61,7 @@ export default function CardoApp() {
   useCancelActivePointerOnWindowExit();
   usePasteIntoSelectedBox();
   useWorkspaceHistoryShortcuts();
+  useNavHistorySync();
 
   const [mode, setMode] = useState<'workspace' | 'settings'>('workspace');
   const [settingsSection, setSettingsSection] = useState<SettingsSectionId>('general');
@@ -127,6 +130,8 @@ export default function CardoApp() {
     setMode('settings');
   };
 
+  const titleLeading = <ShellTitleLeading onOpenSettings={() => openSettings('general')} />;
+
   return (
     <TooltipProvider>
       <MotionConfig reducedMotion="user">
@@ -137,7 +142,7 @@ export default function CardoApp() {
           data-shell="sidebar"
           data-mode={mode}
         >
-          <DesktopTitleBar />
+          <DesktopTitleBar leading={titleLeading} />
           <FeatureGate feature="chrome.runtimeBanner">
             <RuntimeConnectionBanner />
           </FeatureGate>
@@ -148,6 +153,7 @@ export default function CardoApp() {
             <>
               <BoxPageDropController />
               <AppShell
+                webTitleLeading={isDesktopHost ? undefined : titleLeading}
                 productNav={
                   <FeatureGate feature="chrome.sidebar" fallback={<ShowSidebarControl />}>
                     <div

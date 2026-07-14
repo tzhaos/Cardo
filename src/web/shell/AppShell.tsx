@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react';
+import { useUiStore } from '../app/stores/uiStore';
+import { SidebarBrand } from './SidebarBrand';
 
 /**
  * Titlebar is rendered by CardoApp (DesktopTitleBar).
@@ -6,19 +8,44 @@ import type { ReactNode } from 'react';
  *
  * Pass productNav (page list) and settingsFoot separately so the drop hit root
  * can wrap only product nav (Settings foot stays reachable, not a page drop target).
+ *
+ * Product name sits at the top of the left sidebar (SidebarBrand).
+ * Collapse is driven by uiStore.sidebarCollapsed (titlebar toggle).
  */
 export function AppShell({
   productNav,
   settingsFoot,
   main,
+  webTitleLeading,
 }: {
   productNav: ReactNode;
   settingsFoot: ReactNode;
   main: ReactNode;
+  /** Browser host only: title leading chrome when DesktopTitleBar is absent. */
+  webTitleLeading?: ReactNode;
 }) {
+  const sidebarCollapsed = useUiStore((state) => state.sidebarCollapsed);
+
   return (
-    <div className="cardo-v2-shell-body">
-      <div className="cardo-v2-sidebar">
+    <div
+      className={[
+        'cardo-v2-shell-body',
+        sidebarCollapsed ? 'cardo-v2-shell-body-sidebar-collapsed' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      data-sidebar-collapsed={sidebarCollapsed ? 'true' : undefined}
+    >
+      <div
+        className={['cardo-v2-sidebar', sidebarCollapsed ? 'cardo-v2-sidebar-collapsed' : '']
+          .filter(Boolean)
+          .join(' ')}
+        aria-hidden={sidebarCollapsed || undefined}
+      >
+        {webTitleLeading ? (
+          <div className="cardo-shell-web-title-leading">{webTitleLeading}</div>
+        ) : null}
+        <SidebarBrand />
         {productNav}
         {settingsFoot}
       </div>

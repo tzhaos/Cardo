@@ -31,8 +31,80 @@
   backdrop-filter: none;
 }
 
-.cardo-v2-app .cardo-desktop-titlebar-brand {
+/* —— Title leading: sidebar toggle · back/forward · File —— */
+.cardo-shell-title-leading {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 2px;
+  padding: 0 6px 0 8px;
+  -webkit-app-region: no-drag;
+}
+
+.cardo-shell-title-control {
+  width: 28px;
+  height: 28px;
+  color: var(--cardo-secondary-text, #5c6370);
+}
+
+.cardo-shell-title-control:hover:not(:disabled) {
   color: var(--cardo-text, #1a1c1f);
+}
+
+.cardo-shell-file-menu-trigger {
+  display: inline-flex;
+  height: 28px;
+  align-items: center;
+  gap: 4px;
+  margin-left: 2px;
+  border: 0;
+  border-radius: var(--cardo-radius-md, 8px);
+  padding: 0 8px;
+  background: transparent;
+  color: var(--cardo-text, #1a1c1f);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+}
+
+.cardo-shell-file-menu-trigger:hover {
+  background: var(--cardo-hover, rgba(0, 0, 0, 0.045));
+}
+
+.cardo-shell-file-menu-trigger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--cardo-blue, #3b82f6) 28%, transparent);
+}
+
+/* Browser host: same controls above sidebar brand when no desktop titlebar. */
+.cardo-shell-web-title-leading {
+  flex: 0 0 auto;
+  padding: 4px 4px 0;
+}
+
+.cardo-shell-web-title-leading .cardo-shell-title-leading {
+  padding-left: 4px;
+}
+
+/* Large product wordmark at top of left sidebar (no logo). */
+.cardo-sidebar-brand {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  min-height: 40px;
+  padding: 10px 16px 6px;
+}
+
+.cardo-sidebar-brand-name {
+  color: var(--cardo-text, #1a1c1f);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  user-select: none;
 }
 
 /* —— Body row: sidebar + main stage —— */
@@ -49,6 +121,24 @@
   flex: 0 0 var(--cardo-shell-sidebar-width);
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
+  transition:
+    width 160ms ease,
+    flex-basis 160ms ease,
+    opacity 140ms ease;
+}
+
+.cardo-v2-sidebar-collapsed {
+  width: 0;
+  flex-basis: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardo-v2-sidebar {
+    transition: none;
+  }
 }
 
 /* Product nav (drop hit root) fills space above the always-on settings foot. */

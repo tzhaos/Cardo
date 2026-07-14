@@ -6,6 +6,8 @@ export { PanelHeader } from './PanelHeader';
 export { SettingsFoot } from './SettingsFoot';
 export { SettingsNav } from './SettingsNav';
 export { SettingsShell } from './SettingsShell';
+export { ShellTitleLeading } from './ShellTitleLeading';
+export { SidebarBrand } from './SidebarBrand';
 export { SidebarNav } from './SidebarNav';
 export {
   registerSidebarNavRoot,

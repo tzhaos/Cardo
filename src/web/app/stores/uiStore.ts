@@ -65,11 +65,31 @@ interface UiStore {
   searchOpen: boolean;
   /** Ephemeral Runtime event-stream status (not persisted). */
   runtimeConnectionStatus: RuntimeConnectionStatus;
+  /**
+   * Sidebar column collapsed (product IA). Session-only UI chrome — not a feature gate.
+   * Feature chrome.sidebar still hard-hides product nav when off.
+   */
+  sidebarCollapsed: boolean;
+  /** Page navigation stack for titlebar back/forward (session-only). */
+  navPast: string[];
+  navFuture: string[];
+  /** Last page id recorded into history (avoids duplicate pushes). */
+  navCurrentPageId: string | null;
+  /** When true, next page visit is from back/forward and must not push history. */
+  navHistorySilent: boolean;
   setSearchQuery: (query: string) => void;
   setSearchOpen: (open: boolean) => void;
   openSearch: () => void;
   closeSearch: () => void;
   setRuntimeConnectionStatus: (status: RuntimeConnectionStatus) => void;
+  setSidebarCollapsed: (collapsed: boolean) => void;
+  toggleSidebarCollapsed: () => void;
+  /** Record a page open for back/forward (no-op when silent or same page). */
+  recordPageVisit: (pageId: string) => void;
+  /** Consume one back step; returns page id to open, or null. */
+  consumeNavBack: () => string | null;
+  /** Consume one forward step; returns page id to open, or null. */
+  consumeNavForward: () => string | null;
   selectBox: (boxId: string | null) => void;
   highlightBox: (boxId: string) => void;
   openAddView: (boxId: string, itemType?: WorkspaceItemType) => void;
@@ -136,6 +156,11 @@ export const useUiStore = create<UiStore>((set) => ({
   searchQuery: '',
   searchOpen: false,
   runtimeConnectionStatus: 'connected',
+  sidebarCollapsed: false,
+  navPast: [],
+  navFuture: [],
+  navCurrentPageId: null,
+  navHistorySilent: false,
   setSearchQuery: (query) => set({ searchQuery: query }),
   setSearchOpen: (open) =>
     set((state) => (state.searchOpen === open ? state : { searchOpen: open })),
@@ -145,6 +170,58 @@ export const useUiStore = create<UiStore>((set) => ({
     set((state) =>
       state.runtimeConnectionStatus === status ? state : { runtimeConnectionStatus: status },
     ),
+  setSidebarCollapsed: (collapsed) =>
+    set((state) =>
+      state.sidebarCollapsed === collapsed ? state : { sidebarCollapsed: collapsed },
+    ),
+  toggleSidebarCollapsed: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
+  recordPageVisit: (pageId) =>
+    set((state) => {
+      if (state.navHistorySilent) {
+        return { navHistorySilent: false, navCurrentPageId: pageId };
+      }
+      if (state.navCurrentPageId === pageId) return state;
+      if (state.navCurrentPageId === null) {
+        return { navCurrentPageId: pageId, navPast: [], navFuture: [] };
+      }
+      return {
+        navPast: [...state.navPast, state.navCurrentPageId],
+        navFuture: [],
+        navCurrentPageId: pageId,
+      };
+    }),
+  consumeNavBack: () => {
+    let target: string | null = null;
+    set((state) => {
+      if (state.navPast.length === 0 || !state.navCurrentPageId) return state;
+      const past = state.navPast.slice();
+      target = past.pop() ?? null;
+      if (!target) return state;
+      return {
+        navPast: past,
+        navFuture: [state.navCurrentPageId, ...state.navFuture],
+        navCurrentPageId: target,
+        navHistorySilent: true,
+      };
+    });
+    return target;
+  },
+  consumeNavForward: () => {
+    let target: string | null = null;
+    set((state) => {
+      if (state.navFuture.length === 0 || !state.navCurrentPageId) return state;
+      const [next, ...rest] = state.navFuture;
+      target = next ?? null;
+      if (!target) return state;
+      return {
+        navPast: [...state.navPast, state.navCurrentPageId],
+        navFuture: rest,
+        navCurrentPageId: target,
+        navHistorySilent: true,
+      };
+    });
+    return target;
+  },
   selectBox: (boxId) => set({ selectedBoxId: boxId }),
   highlightBox: (boxId) => {
     if (boxHighlightTimeout !== null) window.clearTimeout(boxHighlightTimeout);

@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Maximize2, Minus, Square, X } from 'lucide-react';
-import cardoMarkUrl from '../../assets/brand/cardo-mark.svg';
 import { useI18n } from '../web/i18n/useI18n';
 import { Button } from '../web/kit/button';
 
-export default function DesktopTitleBar() {
+/**
+ * Desktop window chrome only: leading product controls slot + window buttons.
+ * Product name lives in the sidebar (SidebarBrand) — no logo / brand here.
+ */
+export default function DesktopTitleBar({ leading }: { leading?: ReactNode }) {
   const [isMaximized, setMaximized] = useState(false);
   const bridge = typeof window === 'undefined' ? undefined : window.cardoDesktop;
   const { t } = useI18n();
@@ -39,17 +42,8 @@ export default function DesktopTitleBar() {
       className="cardo-desktop-titlebar"
       onDoubleClick={() => void bridge.toggleMaximizeWindow()}
     >
-      <div className="cardo-desktop-titlebar-brand">
-        <img
-          className="cardo-desktop-titlebar-logo"
-          src={cardoMarkUrl}
-          alt=""
-          width={16}
-          height={16}
-          draggable={false}
-        />
-        <span>Cardo</span>
-      </div>
+      <div className="cardo-desktop-titlebar-leading">{leading}</div>
+      <div className="cardo-desktop-titlebar-drag" aria-hidden />
       <div
         className="cardo-desktop-window-controls"
         onDoubleClick={(event) => event.stopPropagation()}
