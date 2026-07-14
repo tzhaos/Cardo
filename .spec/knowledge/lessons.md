@@ -33,4 +33,16 @@ metadata:
 
 ## 条目
 
-（暂无；从第一条复发问题开始。）
+### 设置 UI 必须抄同页 list-group card 方言，禁止硬塞表单
+- 日期：2026-07-13
+- 现象：更新代理区把多字段塞进 `card-copy` / 包 `cardo-settings-group`，标题带背景、按钮竖断、文案啰嗦
+- 根因：未对照语言/搜索引擎/导出行结构；`cardo-settings-group` 有 item 表面；教程式 long `small`
+- 规避：单行 = list-group + card（左 copy、右 Select/Switch/secondary-button/inline Input）；标题只用 subheading；文案极短（对照「用于全局搜索」）；Desktop 改完 `build:all` + `desktop:package`
+- 来源：用户纠偏 + settings proxy 迭代（升格已部分进 `cardo-dev-constraints` / 前端规范）
+
+### Windows 检出后宿主软链常失效，先跑 init-host-links
+- 日期：2026-07-14
+- 现象：`core.symlinks=false` 或无 SeCreateSymbolicLink 时 `.claude/agents` 变成 14 字节文本文件，spec-lint 报软链接未解析
+- 根因：Git for Windows 默认不创建真实目录符号链接
+- 规避：克隆/重置后执行 `node .spec/tools/init-host-links.mjs`，再 `node .spec/tools/spec-lint.mjs`；勿手改 `.spec/` 副本冒充链接
+- 来源：本机 init LumioAgent

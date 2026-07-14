@@ -43,7 +43,9 @@
     "format": "node scripts/run-prettier.mjs --write \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.ts\" \"README.md\" \"README_zh.md\" \"vite/*.ts\" \"eslint.config.js\"",
     "format:check": "node scripts/run-prettier.mjs --check \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.ts\" \"README.md\" \"README_zh.md\" \"vite/*.ts\" \"eslint.config.js\"",
     "test:ts": "tsx --test \"src/**/*.test.ts\"",
-    "test": "npm run test:ts"
+    "test": "npm run test:ts",
+    "spec:lint": "node .spec/tools/spec-lint.mjs",
+    "spec:init-links": "node .spec/tools/init-host-links.mjs"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
