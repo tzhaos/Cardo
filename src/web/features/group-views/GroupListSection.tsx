@@ -54,17 +54,11 @@ export function GroupListSection({ box }: { box: WorkspaceBox }) {
     }
     event.preventDefault();
     selectBox(box.id);
+    // Content/world coords from modeLayouts.list — never viewport getBoundingClientRect.
+    const frame = box.modeLayouts.list;
     const rect = event.currentTarget
       .closest<HTMLElement>('[data-canvas-box]')
       ?.getBoundingClientRect();
-    const frame = rect
-      ? {
-          x: Math.round(rect.left),
-          y: Math.round(rect.top),
-          width: Math.max(240, Math.round(rect.width)),
-          height: Math.max(170, Math.round(rect.height)),
-        }
-      : box.frame;
     let transformOrigin = '50% 20%';
     if (rect) {
       const ox = Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100));

@@ -38,7 +38,7 @@ import {
   themeOptionValuesSchema,
   themePackSchema,
 } from '../../../core/contracts/themePack';
-import type { WebNextLocale } from '../../i18n/messages';
+import { translateWebNext, type WebNextLocale } from '../../i18n/messages';
 import {
   applyWebNextTheme,
   hasRegisteredThemePack,
@@ -47,13 +47,17 @@ import {
   syncImportedThemePacks,
   type WebNextColorMode,
 } from '../../themes/themeRegistry';
-import { importThemePackIntoRegistry } from '../../themes/themeIO';
+import {
+  importThemePackIntoRegistry,
+  removeImportedThemePack as unregisterImportedThemePack,
+} from '../../themes/themeIO';
 import {
   dispatchDatabaseCommand,
   queryLocalThemePacks,
   queryPreferences,
 } from '../../platform/hostPlatform';
 import { applyLayoutProfile } from '../../shell/layouts/applyLayoutProfile';
+import { showToast } from './toastStore';
 
 interface PreferencesStore {
   colorMode: WebNextColorMode;
@@ -199,10 +203,12 @@ const actions = {
     const registered = importThemePackIntoRegistry(pack);
     const withoutSameId = state.importedThemePacks.filter((entry) => entry.id !== registered.id);
     const next = importedThemePacksSchema.parse([...withoutSameId, registered]);
+    // Optimistic importedThemePacks + registry so AppearanceSettings re-reads themes immediately.
     fireCommand({ type: 'preferences.setImportedThemePacks', importedThemePacks: next });
     fireCommand({ type: 'preferences.setTheme', themeId: registered.id });
   },
   removeImportedThemePack: (themeId: string) => {
+    unregisterImportedThemePack(themeId);
     const next = importedThemePacksSchema.parse(
       state.importedThemePacks.filter((entry) => entry.id !== themeId),
     );
@@ -318,6 +324,9 @@ function patchPreferences(
       | 'featureFlags'
       | 'layoutProfileId'
       | 'themeOptionValues'
+      | 'importedThemePacks'
+      | 'cssSnippet'
+      | 'cssSnippetEnabled'
     >
   >,
 ) {
@@ -549,6 +558,17 @@ function applyOptimisticCommand(command: WorkspaceCommand) {
     case 'preferences.setThemeOptionValues':
       patchPreferences({ themeOptionValues: command.themeOptionValues });
       break;
+    case 'preferences.setImportedThemePacks':
+      patchPreferences({
+        importedThemePacks: structuredClone(command.importedThemePacks),
+      });
+      break;
+    case 'preferences.setCssSnippet':
+      patchPreferences({ cssSnippet: command.cssSnippet });
+      break;
+    case 'preferences.setCssSnippetEnabled':
+      patchPreferences({ cssSnippetEnabled: command.cssSnippetEnabled });
+      break;
     default:
       break;
   }
@@ -562,6 +582,7 @@ function fireCommand(command: WorkspaceCommand) {
     await dispatchDatabaseCommand(command);
   }).catch((error: unknown) => {
     console.error('Failed to update preferences', error);
+    showToast(translateWebNext(state.locale, 'toast.commandFailed'), 'error');
     // Roll back optimistic patch from authoritative Runtime state.
     void refreshPreferences().catch((refreshError: unknown) =>
       console.error('Failed to refresh preferences after command error', refreshError),

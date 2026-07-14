@@ -110,30 +110,36 @@ export function BoxPageDropController() {
       didOptimisticPreviewRef.current = true;
     };
 
+    const revertOptimisticPreviewToOrigin = () => {
+      if (!didOptimisticPreviewRef.current) return;
+      const workspace = useWorkspaceStore.getState();
+      const origin = originPageIdRef.current;
+      const session = useUiStore.getState().boxDragSession;
+      if (origin && session) {
+        workspace.previewBoxOnPage(draggedBoxId, origin, session.latestFrame);
+        previewPageIdRef.current = origin;
+        didOptimisticPreviewRef.current = false;
+      } else {
+        void workspace.revertOptimisticProjection();
+        didOptimisticPreviewRef.current = false;
+        previewPageIdRef.current = null;
+      }
+    };
+
     const updateDropTarget = ({ clientX, clientY }: { clientX: number; clientY: number }) => {
       const overTopBar = resolveTopBarHover(clientX, clientY);
       const pageId = overTopBar ? findPageDropAtPoint(clientX, clientY) : null;
       ui.setBoxDragOverTopBar(overTopBar);
       ui.setBoxDropPage(pageId);
-      if (overTopBar) {
+      if (overTopBar && pageId) {
         previewPageUnderPointer(clientX, clientY, pageId);
+      } else if (overTopBar && pageId === null) {
+        // Gap between page rows / nav chrome: do not keep a sticky page preview.
+        revertOptimisticPreviewToOrigin();
       } else {
         // Left primary nav: undo optimistic cross-page preview so release on canvas
         // cannot silently migrate the box to a group the user only hovered.
-        if (didOptimisticPreviewRef.current) {
-          const workspace = useWorkspaceStore.getState();
-          const origin = originPageIdRef.current;
-          const session = useUiStore.getState().boxDragSession;
-          if (origin && session) {
-            workspace.previewBoxOnPage(draggedBoxId, origin, session.latestFrame);
-            previewPageIdRef.current = origin;
-            didOptimisticPreviewRef.current = false;
-          } else {
-            void workspace.revertOptimisticProjection();
-            didOptimisticPreviewRef.current = false;
-            previewPageIdRef.current = null;
-          }
-        }
+        revertOptimisticPreviewToOrigin();
         // Keep managed drop landing in sync even if morph ghost session lags.
         updateManagedInsertPreview(clientX, clientY);
       }
@@ -199,7 +205,9 @@ function commitBoxDragRelease(
     }
     workspace.addBoxToCollection(draggedBoxId);
     ui.selectBox(null);
-    workspace.setActivePage(tabPageId);
+    // Stay on origin page — favorites add is non-navigating.
+    const locale = usePreferencesStore.getState().locale;
+    showToast(translateWebNext(locale, 'toast.addedToFavorites'), 'success');
     return;
   }
 

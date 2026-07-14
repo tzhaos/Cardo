@@ -642,11 +642,12 @@ export function BaseBoxFrame({
       {isTemporary ? (
         <header className="cardo-temporary-box-header" onPointerDown={beginDrag}>
           <span className="cardo-temporary-box-grip" aria-hidden="true" />
+          <span className="cardo-temporary-box-badge">{t('box.temporary')}</span>
           <Button
             type="button"
             data-no-drag
             onClick={() => {
-              const title = t('box.collectedItems');
+              const title = t('box.newBox');
               promoteTemporaryBox(box.id, title);
               titleRename.start(title);
             }}
@@ -817,7 +818,7 @@ export function BaseBoxFrame({
           children
         )}
       </div>
-      {!isTemporary && !addViewState?.mode && !appearanceView && !confirmDelete ? (
+      {!addViewState?.mode && !appearanceView && !confirmDelete ? (
         <footer className="cardo-box-footer">
           <Button variant="ghost" className="cardo-box-add-item" onClick={onAddItem}>
             <ThemeIcon name="add" size={12} />

@@ -9,12 +9,14 @@ import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { registerCanvasElement } from '../../app/interactionElementRegistry';
 import { useContextMenu } from '../../kit/context-menu';
 import { ThemeIcon } from '../../kit/icon';
+import { Button } from '../../kit/button';
 import type { ContextMenuItem } from '../../kit/context-menu';
 import {
   clientPointToCanvasWorld,
   constrainBoxFrameToCanvas,
   createCanvasWorldBounds,
   getCanvasPanLimits,
+  getCanvasViewportCenter,
 } from '../../domain/canvasGeometry';
 import { createBoxFrameCenteredAt } from '../../domain/placement';
 import { resolveFreeformDropFrame } from '../../domain/freeformLayout';
@@ -220,6 +222,27 @@ export function WorkspaceCanvas() {
                   {systemPageEmpty.icon}
                 </span>
                 <span className="cardo-system-page-empty-label">{systemPageEmpty.label}</span>
+                {systemPageEmpty.key === 'group-empty' ? (
+                  <Button
+                    type="button"
+                    className="cardo-system-page-empty-cta"
+                    onClick={() => {
+                      const canvas = useCanvasStore.getState();
+                      const camera = canvas.pages[activePageId]?.camera ?? { panX: 0, panY: 0 };
+                      const center = getCanvasViewportCenter(
+                        { panX: camera.panX, panY: camera.panY },
+                        canvas.viewportSize,
+                      );
+                      createBox(
+                        constrainBoxFrameToCanvas(createBoxFrameCenteredAt(center), canvasBounds),
+                        t('box.general'),
+                      );
+                    }}
+                  >
+                    <ThemeIcon name="add" size={14} />
+                    <span>{t('page.createBox')}</span>
+                  </Button>
+                ) : null}
               </motion.div>
             ) : null}
           </AnimatePresence>

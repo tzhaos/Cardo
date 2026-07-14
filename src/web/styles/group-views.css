@@ -1,5 +1,28 @@
 /* Managed group views: scroll document (not freeform pan canvas). */
 
+/* Panel header group-view segmented switcher (icons + tooltips). */
+.cardo-group-view-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  padding: 2px;
+  border-radius: var(--cardo-radius-md, 8px);
+  background: color-mix(in srgb, var(--cardo-text) 5%, transparent);
+}
+
+.cardo-group-view-switcher .cardo-group-view-option {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+
+.cardo-group-view-switcher .cardo-group-view-option[data-pressed='true'],
+.cardo-group-view-switcher .cardo-group-view-option.cardo-icon-button-pressed {
+  background: var(--cardo-panel, #fff);
+  color: var(--cardo-text);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--cardo-text) 6%, transparent);
+}
+
 .cardo-group-scroll {
   position: absolute;
   inset: 0;

@@ -58,6 +58,16 @@ export interface FeatureDefinition {
   defaultEnabled: true;
   /** Features that must also be effectively on. */
   dependsOn: readonly FeatureId[];
+  /**
+   * Core chrome: Settings confirms before disable (escape hatch must remain reachable).
+   * chrome.sidebar re-enable lives in App when gated off; bottom bar has no hard dead-end.
+   */
+  requiresConfirm?: boolean;
+  /**
+   * When false, FeatureSettings hides the toggle (feature stays at catalog default / deps).
+   * Recycle Bin remains always available so delete copy never lies about soft-delete.
+   */
+  settingsVisible?: boolean;
   /** i18n message keys for Settings. */
   labelKey: string;
   descriptionKey: string;
@@ -69,6 +79,7 @@ export const FEATURE_CATALOG: readonly FeatureDefinition[] = [
     slot: 'shell.nav',
     defaultEnabled: true,
     dependsOn: [],
+    requiresConfirm: true,
     labelKey: 'settings.feature.chrome.sidebar',
     descriptionKey: 'settings.feature.chrome.sidebarDescription',
   },
@@ -85,6 +96,7 @@ export const FEATURE_CATALOG: readonly FeatureDefinition[] = [
     slot: 'shell.bottom',
     defaultEnabled: true,
     dependsOn: [],
+    requiresConfirm: true,
     labelKey: 'settings.feature.chrome.bottomToolbar',
     descriptionKey: 'settings.feature.chrome.bottomToolbarDescription',
   },
@@ -126,6 +138,8 @@ export const FEATURE_CATALOG: readonly FeatureDefinition[] = [
     slot: 'nav.item',
     defaultEnabled: true,
     dependsOn: ['chrome.sidebar'],
+    // Soft-delete still lands here; do not offer a Settings toggle that creates a dead-end.
+    settingsVisible: false,
     labelKey: 'settings.feature.workspace.recycleBin',
     descriptionKey: 'settings.feature.workspace.recycleBinDescription',
   },
@@ -158,6 +172,7 @@ export function getFeatureDefinition(id: FeatureId): FeatureDefinition {
 /**
  * Effective enablement: override ?? catalog default, then all dependsOn must pass.
  * Empty overrides ⇒ official Cardo defaults (all on).
+ * Features with settingsVisible:false ignore user overrides (locked to catalog default).
  */
 export function isFeatureEnabled(
   id: FeatureId,
@@ -167,7 +182,8 @@ export function isFeatureEnabled(
   if (visiting.has(id)) return true;
   visiting.add(id);
   const def = getFeatureDefinition(id);
-  const selfOn = overrides?.[id] ?? def.defaultEnabled;
+  const selfOn =
+    def.settingsVisible === false ? def.defaultEnabled : (overrides?.[id] ?? def.defaultEnabled);
   if (!selfOn) return false;
   return def.dependsOn.every((dep) => isFeatureEnabled(dep, overrides, visiting));
 }
@@ -179,6 +195,11 @@ export function withFeatureEnabled(
   enabled: boolean,
 ): FeatureFlagOverrides {
   const next: FeatureFlagOverrides = { ...overrides };
+  // Locked catalog features cannot be toggled via preferences.
+  if (getFeatureDefinition(id).settingsVisible === false) {
+    delete next[id];
+    return pruneDefaultOverrides(next);
+  }
   if (!enabled) {
     next[id] = false;
     // Turning off a parent: leave child overrides; they resolve false via dependsOn.

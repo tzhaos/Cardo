@@ -44,6 +44,7 @@ export function PanelHeader() {
   const canRedo = useWorkspaceStore((state) => state.historyFuture.length > 0);
   const searchOpen = useUiStore((state) => state.searchOpen);
   const closeSearch = useUiStore((state) => state.closeSearch);
+  const dragBusy = useUiStore((state) => Boolean(state.draggedBoxId || state.boxResizeActive));
   const { isLocked, items: canvasToolItems } = useCanvasTools();
   const [emptyRecycleConfirm, setEmptyRecycleConfirm] = useState(false);
 
@@ -125,7 +126,10 @@ export function PanelHeader() {
                   key={mode}
                   className="cardo-group-view-option"
                   pressed={pressed}
-                  onClick={() => setPageGroupLayout(activePageId, { groupViewMode: mode })}
+                  onClick={() => {
+                    if (dragBusy) return;
+                    setPageGroupLayout(activePageId, { groupViewMode: mode });
+                  }}
                   aria-label={t(meta.labelKey)}
                   tooltip={`${t(meta.labelKey)} — ${t(meta.descriptionKey)}`}
                 >
@@ -140,7 +144,7 @@ export function PanelHeader() {
           <>
             <FeatureGate feature="chrome.historyToolbar">
               <IconButton
-                disabled={!canUndo}
+                disabled={!canUndo || dragBusy}
                 onClick={undo}
                 aria-label={t('history.undo')}
                 tooltip={t('history.undo')}
@@ -148,7 +152,7 @@ export function PanelHeader() {
                 <ThemeIcon name="undo" size={16} />
               </IconButton>
               <IconButton
-                disabled={!canRedo}
+                disabled={!canRedo || dragBusy}
                 onClick={redo}
                 aria-label={t('history.redo')}
                 tooltip={t('history.redo')}
@@ -156,34 +160,35 @@ export function PanelHeader() {
                 <ThemeIcon name="redo" size={16} />
               </IconButton>
             </FeatureGate>
-            {historyEnabled && canvasToolsEnabled ? <Divider /> : null}
-            <FeatureGate feature="chrome.canvasTools">
-              <IconButton
-                disabled={locateItem?.disabled || !freeformTools}
-                onClick={() => locateItem?.onSelect?.()}
-                aria-label={locateItem?.label ?? t('canvas.returnToOrigin')}
-                tooltip={locateItem?.label ?? t('canvas.returnToOrigin')}
-              >
-                <ThemeIcon name="locate" size={16} />
-              </IconButton>
-              <IconButton
-                disabled={arrangeItem?.disabled || !freeformTools}
-                onClick={() => arrangeItem?.onSelect?.()}
-                aria-label={arrangeItem?.label ?? t('canvas.arrangeBoxes')}
-                tooltip={arrangeItem?.label ?? t('canvas.arrangeBoxes')}
-              >
-                <ThemeIcon name="layoutGrid" size={16} />
-              </IconButton>
-              <IconButton
-                pressed={isLocked}
-                disabled={!freeformTools}
-                onClick={() => lockItem?.onSelect?.()}
-                aria-label={lockItem?.label ?? t('canvas.lockViewport')}
-                tooltip={lockItem?.label ?? t('canvas.lockViewport')}
-              >
-                <ThemeIcon name={isLocked ? 'lock' : 'unlock'} size={16} />
-              </IconButton>
-            </FeatureGate>
+            {historyEnabled && canvasToolsEnabled && freeformTools ? <Divider /> : null}
+            {freeformTools ? (
+              <FeatureGate feature="chrome.canvasTools">
+                <IconButton
+                  disabled={locateItem?.disabled}
+                  onClick={() => locateItem?.onSelect?.()}
+                  aria-label={locateItem?.label ?? t('canvas.returnToOrigin')}
+                  tooltip={locateItem?.label ?? t('canvas.returnToOrigin')}
+                >
+                  <ThemeIcon name="locate" size={16} />
+                </IconButton>
+                <IconButton
+                  disabled={arrangeItem?.disabled}
+                  onClick={() => arrangeItem?.onSelect?.()}
+                  aria-label={arrangeItem?.label ?? t('canvas.arrangeBoxes')}
+                  tooltip={arrangeItem?.label ?? t('canvas.arrangeBoxes')}
+                >
+                  <ThemeIcon name="layoutGrid" size={16} />
+                </IconButton>
+                <IconButton
+                  pressed={isLocked}
+                  onClick={() => lockItem?.onSelect?.()}
+                  aria-label={lockItem?.label ?? t('canvas.lockViewport')}
+                  tooltip={lockItem?.label ?? t('canvas.lockViewport')}
+                >
+                  <ThemeIcon name={isLocked ? 'lock' : 'unlock'} size={16} />
+                </IconButton>
+              </FeatureGate>
+            ) : null}
           </>
         ) : null}
       </div>

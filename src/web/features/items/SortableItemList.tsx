@@ -42,14 +42,15 @@ export function SortableItemList<TItem extends BoxItem>({
       values={orderedIds}
       onReorder={updateOrder}
       onCopy={(event) => {
+        // Allow real content copy (selection or clipboard-body text); block empty
+        // drag-chrome copy that would replace the system clipboard with nothing useful.
+        if (window.getSelection()?.toString().trim()) return;
         const target = event.target;
-        if (
-          target instanceof Element &&
-          target.closest('.cardo-item-view-content') &&
-          !target.closest('input,textarea,[contenteditable="true"]')
-        ) {
-          event.preventDefault();
+        if (target instanceof Element) {
+          if (target.closest('input,textarea,[contenteditable="true"]')) return;
+          if (target.closest('.cardo-clipboard-body')) return;
         }
+        event.preventDefault();
       }}
     >
       <AnimatePresence initial={false}>
@@ -61,7 +62,7 @@ export function SortableItemList<TItem extends BoxItem>({
             onReorderEnd={finishReordering}
             onReorderStart={startReordering}
             onCrossBoxDrop={(point) => {
-              const drop = resolveCrossBoxDrop(boxId, point, isGrid);
+              const drop = resolveCrossBoxDrop(boxId, point);
               if (!drop) return false;
               cancelReordering();
               moveItemBetweenBoxes(boxId, drop.targetBoxId, item.id, drop.targetIndex);
@@ -192,15 +193,14 @@ function SortableItemEntry({
   );
 }
 
-function resolveCrossBoxDrop(
-  sourceBoxId: string,
-  point: { x: number; y: number },
-  isGrid: boolean,
-) {
+function resolveCrossBoxDrop(sourceBoxId: string, point: { x: number; y: number }) {
   const target = document.elementFromPoint(point.x, point.y);
   const targetBox = target?.closest<HTMLElement>('[data-box-id]');
   const targetBoxId = targetBox?.dataset.boxId;
   if (!targetBox || !targetBoxId || targetBoxId === sourceBoxId) return null;
+
+  // Hit-test axis follows the TARGET box layout, not the source list mode.
+  const isGrid = Boolean(targetBox.querySelector('.cardo-item-list-grid'));
 
   const entries = Array.from(
     targetBox.querySelectorAll<HTMLElement>('.cardo-item-reorder-entry[data-item-id]'),

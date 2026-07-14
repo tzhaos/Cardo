@@ -287,6 +287,9 @@ async function moveItemBetweenBoxes(
   if (command.sourceBoxId === command.targetBoxId) return noMutation();
   const sourceBox = await requireBox(transaction, command.sourceBoxId);
   const targetBox = await requireBox(transaction, command.targetBoxId);
+  if (targetBox.pageId === RECYCLE_BIN_PAGE_ID) {
+    throw new DomainCommandError('precondition_failed', 'Items cannot be moved into Recycle Bin.');
+  }
   const sourcePlacements = await selectPlacements(transaction, sourceBox.id);
   const targetPlacements = await selectPlacements(transaction, targetBox.id);
   const sourcePlacement = sourcePlacements.find((placement) => placement.itemId === command.itemId);

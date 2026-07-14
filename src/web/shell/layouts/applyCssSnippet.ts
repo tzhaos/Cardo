@@ -6,7 +6,8 @@ const STYLE_ELEMENT_ID = 'cardo-user-css-snippet';
 /**
  * Inject validated CSS snippet into the document.
  * Combines optional theme-pack snippet + user snippet when enabled.
- * Failures refuse injection (no partial unsafe CSS).
+ * Each source is validated independently: invalid user snippet does not blank a
+ * valid theme-pack snippet (and vice versa).
  */
 export function applyCssSnippet(options: {
   themeId: string;
@@ -36,13 +37,9 @@ export function applyCssSnippet(options: {
     }
   }
 
-  if (errors.length > 0) {
-    style.textContent = '';
-    return { applied: false, errors };
-  }
-
+  // Apply all valid chunks even when one source failed validation.
   style.textContent = chunks.join('\n\n');
-  return { applied: chunks.length > 0, errors: [] };
+  return { applied: chunks.length > 0, errors };
 }
 
 function ensureStyleElement(): HTMLStyleElement {

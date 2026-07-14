@@ -46,14 +46,30 @@ export function GlobalSearchPanel({
   const resultsRef = useRef(results);
   const selectedIndexRef = useRef(selectedIndex);
   const onActivateRef = useRef(onActivate);
+  const listboxRef = useRef<HTMLDivElement>(null);
   resultsRef.current = results;
   selectedIndexRef.current = selectedIndex;
   onActivateRef.current = onActivate;
   const { t } = useI18n();
   const trimmedQuery = query.trim();
   const webSearchUrl = createWebSearchUrl(searchEngine, customSearchTemplate, trimmedQuery);
+  const webOptionId = 'result-web-search';
+  const activeOptionId =
+    results.length > 0 && selectedIndex >= 0 && selectedIndex < results.length
+      ? `result-${results[selectedIndex]?.id ?? selectedIndex}`
+      : trimmedQuery
+        ? webOptionId
+        : undefined;
 
   useEffect(() => setSelectedIndex(0), [query]);
+
+  // Keep the keyboard-highlighted option in view inside the scrollable listbox.
+  useEffect(() => {
+    if (!activeOptionId) return;
+    const root = listboxRef.current;
+    const option = root?.querySelector(`#${CSS.escape(activeOptionId)}`);
+    option?.scrollIntoView({ block: 'nearest' });
+  }, [activeOptionId, selectedIndex]);
   // Debounce Runtime search: every keystroke without delay floods SQLite + the client task queue.
   useEffect(() => {
     let active = true;
@@ -241,13 +257,19 @@ export function GlobalSearchPanel({
         transition={{ duration: 0.16 }}
       >
         {results.length ? (
-          <div className="cardo-global-search-results" role="listbox">
+          <div
+            ref={listboxRef}
+            className="cardo-global-search-results"
+            role="listbox"
+            aria-activedescendant={activeOptionId}
+          >
             {results.map((result, index) => (
               <Button
                 variant="ghost"
                 className={`cardo-global-search-result${index === selectedIndex ? ' cardo-global-search-result-active' : ''}`}
                 type="button"
                 role="option"
+                id={`result-${result.id}`}
                 aria-selected={index === selectedIndex}
                 key={result.id}
                 onMouseEnter={() => setSelectedIndex(index)}
@@ -274,6 +296,7 @@ export function GlobalSearchPanel({
                 className={`cardo-global-search-result cardo-global-search-web${webRowSelected ? ' cardo-global-search-result-active' : ''}`}
                 type="button"
                 role="option"
+                id={webOptionId}
                 aria-selected={webRowSelected}
                 onMouseEnter={() => setSelectedIndex(results.length)}
                 onClick={openWebSearch}
@@ -311,21 +334,31 @@ export function GlobalSearchPanel({
               ) : null}
             </div>
             {trimmedQuery ? (
-              <Button
-                variant="ghost"
-                className={`cardo-global-search-result cardo-global-search-web${webRowSelected ? ' cardo-global-search-result-active' : ''}`}
-                type="button"
-                onClick={openWebSearch}
+              <div
+                ref={listboxRef}
+                className="cardo-global-search-empty-listbox"
+                role="listbox"
+                aria-activedescendant={webOptionId}
               >
-                <ThemeIcon name="globe" size={17} />
-                <span className="cardo-global-search-copy">
-                  <span className="cardo-global-search-title">
-                    {t('search.webFor', { query: trimmedQuery })}
+                <Button
+                  variant="ghost"
+                  className={`cardo-global-search-result cardo-global-search-web${webRowSelected ? ' cardo-global-search-result-active' : ''}`}
+                  type="button"
+                  role="option"
+                  id={webOptionId}
+                  aria-selected={webRowSelected}
+                  onClick={openWebSearch}
+                >
+                  <ThemeIcon name="globe" size={17} />
+                  <span className="cardo-global-search-copy">
+                    <span className="cardo-global-search-title">
+                      {t('search.webFor', { query: trimmedQuery })}
+                    </span>
+                    <span className="cardo-global-search-path">{t('search.web')}</span>
                   </span>
-                  <span className="cardo-global-search-path">{t('search.web')}</span>
-                </span>
-                <span className="cardo-global-search-kind">{t('search.web')}</span>
-              </Button>
+                  <span className="cardo-global-search-kind">{t('search.web')}</span>
+                </Button>
+              </div>
             ) : null}
           </div>
         )}

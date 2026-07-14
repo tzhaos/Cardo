@@ -1,4 +1,5 @@
 import { useCanvasStore } from '../app/stores/canvasStore';
+import { useUiStore } from '../app/stores/uiStore';
 import { useWorkspaceStore } from '../app/stores/workspaceStore';
 import { IconButton } from '../kit/icon-button';
 import { ThemeIcon } from '../kit/icon';
@@ -24,6 +25,8 @@ export function BottomActionBar() {
   const { t } = useI18n();
 
   const handleAdd = () => {
+    const ui = useUiStore.getState();
+    if (ui.draggedBoxId || ui.boxResizeActive) return;
     const canvas = useCanvasStore.getState();
     const camera = canvas.pages[activePageId]?.camera ?? { panX: 0, panY: 0 };
     const viewportSize = canvas.viewportSize;

@@ -77,6 +77,24 @@
   background: color-mix(in srgb, var(--cardo-muted) 38%, transparent);
 }
 
+.cardo-temporary-box-badge {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  display: inline-flex;
+  height: 24px;
+  align-items: center;
+  border-radius: var(--cardo-radius-pill);
+  padding: 0 8px;
+  background: color-mix(in srgb, var(--box-accent) 12%, transparent);
+  color: color-mix(in srgb, var(--box-accent) 88%, var(--cardo-muted));
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  user-select: none;
+}
+
 .cardo-temporary-box-header > button {
   position: absolute;
   top: 4px;

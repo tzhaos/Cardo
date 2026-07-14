@@ -4,6 +4,7 @@ import { useUiStore } from '../app/stores/uiStore';
 import { useWorkspaceStore } from '../app/stores/workspaceStore';
 import { useInlineRename } from '../app/useInlineRename';
 import { Input } from '../kit/input';
+import { IconButton } from '../kit/icon-button';
 import { NavItem, SectionLabel } from '../kit/nav-item';
 import { ThemeIcon } from '../kit/icon';
 import { useContextMenu } from '../kit/context-menu';
@@ -81,8 +82,12 @@ export function SidebarNav() {
   );
   const visibleUserPages = useMemo(() => {
     if (multiPage) return workspacePages;
-    return workspacePages.filter((page) => page.id === activePageId);
-  }, [activePageId, multiPage, workspacePages]);
+    // Single-group mode: keep one user page visible even on system pages so nav is not a dead end.
+    const activeUser = workspacePages.find((page) => page.id === activePageId);
+    if (activeUser) return [activeUser];
+    const fallback = workspacePages.find((page) => page.id === defaultPageId) ?? workspacePages[0];
+    return fallback ? [fallback] : [];
+  }, [activePageId, defaultPageId, multiPage, workspacePages]);
 
   const pageToDelete = workspacePages.find((page) => page.id === deletePageId);
   const deleteBoxCount = useWorkspaceStore(
@@ -517,6 +522,21 @@ function PageNavRow({
       >
         {page.title}
       </NavItem>
+      <IconButton
+        className="cardo-v2-page-row-menu"
+        type="button"
+        aria-label={t('page.moreOptions')}
+        tooltip={t('page.moreOptions')}
+        tooltipSide="right"
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          onContextMenu(event);
+        }}
+        onPointerDown={(event) => event.stopPropagation()}
+      >
+        <ThemeIcon name="options" size={14} />
+      </IconButton>
     </div>
   );
 }

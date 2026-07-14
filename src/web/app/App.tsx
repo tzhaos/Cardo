@@ -10,6 +10,7 @@
  *
  * Feature gates (PR9 / KD-8 / KD-19):
  * - chrome.sidebar wraps product nav only; SettingsFoot stays outside and always on.
+ * - When chrome.sidebar is off, productNav shows a re-enable control (escape hatch).
  * - chrome.bottomToolbar wraps BottomActionBar (create box only).
  * - chrome.globalSearch: sidebar / Ctrl+K (Cmd+K) opens SearchPage (local + web search action).
  */
@@ -40,14 +41,18 @@ import { SettingsShell } from '../shell/SettingsShell';
 import { SidebarNav } from '../shell/SidebarNav';
 import { SearchPage } from '../features/global-search/SearchPage';
 import { ContextMenuHost } from '../kit/context-menu';
+import { NavItem } from '../kit/nav-item';
+import { ThemeIcon } from '../kit/icon';
 import { TooltipProvider } from '../kit/tooltip';
 import {
+  sidebarNavItemClassName,
   sidebarNavRootClassName,
   sidebarNavRootRef,
   useSidebarBoxDropUi,
 } from '../shell/SidebarPageDropBridge';
 import { useUiStore } from './stores/uiStore';
 import { useFeatureEnabled } from '../shell/FeatureGate';
+import { useI18n } from '../i18n/useI18n';
 import './styles.css';
 
 export default function CardoApp() {
@@ -144,7 +149,7 @@ export default function CardoApp() {
               <BoxPageDropController />
               <AppShell
                 productNav={
-                  <FeatureGate feature="chrome.sidebar">
+                  <FeatureGate feature="chrome.sidebar" fallback={<ShowSidebarControl />}>
                     <div
                       ref={sidebarNavRootRef}
                       className={sidebarNavRootClassName({
@@ -182,5 +187,28 @@ export default function CardoApp() {
         </div>
       </MotionConfig>
     </TooltipProvider>
+  );
+}
+
+/** Thin rail control when chrome.sidebar is off — re-enables navigation without Settings. */
+function ShowSidebarControl() {
+  const { t } = useI18n();
+  const setFeatureEnabled = usePreferencesStore((state) => state.setFeatureEnabled);
+
+  return (
+    <div className="cardo-v2-product-nav" data-v2-sidebar-nav-fallback="">
+      <div className="cardo-v2-sidebar-scroll">
+        <div className="cardo-v2-nav-block">
+          <NavItem
+            className={sidebarNavItemClassName({})}
+            icon={<ThemeIcon name="list" size={16} />}
+            aria-label={t('shell.showSidebar')}
+            onClick={() => setFeatureEnabled('chrome.sidebar', true)}
+          >
+            {t('shell.showSidebar')}
+          </NavItem>
+        </div>
+      </div>
+    </div>
   );
 }

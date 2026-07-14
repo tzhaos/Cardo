@@ -403,11 +403,12 @@ function FeatureSettings() {
   const resetFeatureFlags = usePreferencesStore((state) => state.resetFeatureFlags);
   const { t } = useI18n();
   const hasOverrides = Object.keys(featureFlags).length > 0;
+  const visibleFeatures = FEATURE_CATALOG.filter((feature) => feature.settingsVisible !== false);
 
   return (
     <>
       <SettingsCard head={t('settings.features')}>
-        {FEATURE_CATALOG.map((feature) => {
+        {visibleFeatures.map((feature) => {
           const enabled = isFeatureEnabled(feature.id, featureFlags);
           const label = t(feature.labelKey as WebNextMessageKey);
           const missingDeps = feature.dependsOn.filter(
@@ -433,7 +434,12 @@ function FeatureSettings() {
                 <Switch
                   checked={enabled}
                   aria-label={label}
-                  onCheckedChange={(next) => setFeatureEnabled(feature.id, next)}
+                  onCheckedChange={(next) => {
+                    if (!next && feature.requiresConfirm) {
+                      if (!window.confirm(t('settings.featureCoreWarning'))) return;
+                    }
+                    setFeatureEnabled(feature.id, next);
+                  }}
                 />
               }
             />
@@ -483,12 +489,12 @@ function AppearanceSettings({
   const removeImportedThemePack = usePreferencesStore((state) => state.removeImportedThemePack);
   const restoreOfficialLook = usePreferencesStore((state) => state.restoreOfficialLook);
   const importedThemePacks = usePreferencesStore((state) => state.importedThemePacks);
-  // importedThemePacks is a version signal; registry is outside React state.
-  const importedPackCount = Object.keys(importedThemePacks).length;
+  // Registry is outside React state — depend on pack identity, not just length (replace same count).
+  const importedThemeSignal = importedThemePacks.map((pack) => pack.id).join('|');
   const themes = useMemo(
     () => getRegisteredWebNextThemes(),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-read after import/remove
-    [importedPackCount],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-read registry after import/remove
+    [importedThemeSignal],
   );
   const selectedTheme = themes.find((theme) => theme.id === themeId);
   const selectedIsImported = Boolean(selectedTheme && !selectedTheme.official);
@@ -708,8 +714,16 @@ function AppearanceSettings({
               control={
                 <Switch
                   checked={cssSnippetEnabled}
+                  // Block turning on while invalid; still allow turning off an already-on switch.
+                  disabled={snippetInvalid && !cssSnippetEnabled}
                   aria-label={t('settings.cssSnippetEnabled')}
-                  onCheckedChange={(next) => setCssSnippetEnabled(next)}
+                  onCheckedChange={(next) => {
+                    if (next && snippetInvalid) {
+                      showToast(t('settings.cssSnippetInvalid'), 'error');
+                      return;
+                    }
+                    setCssSnippetEnabled(next);
+                  }}
                 />
               }
             />

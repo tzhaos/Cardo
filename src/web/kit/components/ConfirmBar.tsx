@@ -32,13 +32,19 @@ export function ConfirmBar({
   useEffect(() => {
     const root = barRef.current;
     if (!root) return;
-    const dangerButton = root.querySelector<HTMLButtonElement>('button.cardo-button-danger');
+    // Focus cancel/ghost first — safer default for destructive confirms.
+    const cancelButton = root.querySelector<HTMLButtonElement>('button.cardo-button-ghost');
     const focusables = root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
-    const prefer = dangerButton ?? focusables[focusables.length - 1] ?? focusables[0];
+    const prefer = cancelButton ?? focusables[0];
     prefer?.focus();
   }, []);
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      onCancel();
+      return;
+    }
     if (event.key !== 'Tab') return;
     const root = barRef.current;
     if (!root) return;
