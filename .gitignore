@@ -10,3 +10,10 @@ coverage/
 # Local agent / tool workspace (not product source)
 .orca/
 mcps/
+
+# Host discovery links into .spec/ (created by npm run spec:init-links).
+# On Windows these are often directory junctions; tracking them as git symlinks
+# makes Git list the entire .spec/agents|skills tree as "untracked". Keep local only.
+.claude/agents
+.claude/skills
+.agents/skills
