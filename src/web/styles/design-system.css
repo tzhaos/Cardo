@@ -70,7 +70,7 @@
 .cardo-ui-select-trigger[data-state='open'],
 .cardo-ui-select-trigger:focus-visible {
   border-color: color-mix(in srgb, var(--cardo-blue) 55%, var(--cardo-border));
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cardo-blue) 9%, transparent);
+  box-shadow: var(--cardo-focus-ring);
 }
 
 .cardo-ui-select-chevron {
@@ -161,7 +161,7 @@
 
 .cardo-ui-input:focus-visible {
   border-color: color-mix(in srgb, var(--cardo-blue) 55%, var(--cardo-border));
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cardo-blue) 9%, transparent);
+  box-shadow: var(--cardo-focus-ring);
 }
 
 .cardo-ui-textarea {

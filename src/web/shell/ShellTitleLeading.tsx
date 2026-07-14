@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useCanvasStore } from '../app/stores/canvasStore';
 import { useUiStore } from '../app/stores/uiStore';
 import { useWorkspaceStore } from '../app/stores/workspaceStore';
@@ -9,7 +9,7 @@ import {
 } from '../domain/canvasGeometry';
 import { createBoxFrameCenteredAt } from '../domain/placement';
 import { isSystemPageId } from '../domain/workspace';
-import { exportWorkspaceData } from '../platform/hostPlatform';
+import { exportWorkspaceData, parseWorkspaceImportFile } from '../platform/hostPlatform';
 import { useI18n } from '../i18n/useI18n';
 import {
   DropdownMenu,
@@ -29,55 +29,65 @@ import { useFeatureEnabled } from './FeatureGate';
  */
 export function ShellTitleLeading({
   onOpenSettings,
+  workspaceActionsDisabled = false,
 }: {
   onOpenSettings?: () => void;
+  /** When true (e.g. settings mode), disable new/import/nav; settings + export stay. */
+  workspaceActionsDisabled?: boolean;
 } = {}) {
   const { t } = useI18n();
+  const importInputRef = useRef<HTMLInputElement>(null);
   const sidebarEnabled = useFeatureEnabled('chrome.sidebar');
   const sidebarCollapsed = useUiStore((state) => state.sidebarCollapsed);
   const toggleSidebarCollapsed = useUiStore((state) => state.toggleSidebarCollapsed);
   const setSidebarCollapsed = useUiStore((state) => state.setSidebarCollapsed);
   const canBack = useUiStore((state) => state.navPast.length > 0);
   const canForward = useUiStore((state) => state.navFuture.length > 0);
-  const consumeNavBack = useUiStore((state) => state.consumeNavBack);
-  const consumeNavForward = useUiStore((state) => state.consumeNavForward);
+  const requestNavBack = useUiStore((state) => state.requestNavBack);
+  const requestNavForward = useUiStore((state) => state.requestNavForward);
   const setActivePage = useWorkspaceStore((state) => state.setActivePage);
   const createPage = useWorkspaceStore((state) => state.createPage);
   const createBox = useWorkspaceStore((state) => state.createBox);
+  const importWorkspace = useWorkspaceStore((state) => state.importWorkspace);
+  const pages = useWorkspaceStore((state) => state.projection.pages);
+  const selectBox = useUiStore((state) => state.selectBox);
   const activePageId = useWorkspaceStore((state) => state.projection.activePageId);
   const multiPage = useFeatureEnabled('workspace.multiPage');
   const closeSearch = useUiStore((state) => state.closeSearch);
   const dragBusy = useUiStore((state) => Boolean(state.draggedBoxId || state.boxResizeActive));
+  const actionsLocked = workspaceActionsDisabled || dragBusy;
 
   // Feature gate off always shows nav via ShowSidebarControl — force expanded chrome state.
   useEffect(() => {
     if (!sidebarEnabled) setSidebarCollapsed(false);
   }, [setSidebarCollapsed, sidebarEnabled]);
 
+  const validPageIds = () => new Set(pages.map((page) => page.id));
+
   const goBack = () => {
-    if (dragBusy) return;
-    const pageId = consumeNavBack();
+    if (actionsLocked) return;
+    const pageId = requestNavBack(validPageIds());
     if (!pageId) return;
     closeSearch();
     setActivePage(pageId, 'nav-back');
   };
 
   const goForward = () => {
-    if (dragBusy) return;
-    const pageId = consumeNavForward();
+    if (actionsLocked) return;
+    const pageId = requestNavForward(validPageIds());
     if (!pageId) return;
     closeSearch();
     setActivePage(pageId, 'nav-forward');
   };
 
   const handleNewGroup = () => {
-    if (dragBusy || !multiPage) return;
+    if (actionsLocked || !multiPage) return;
     closeSearch();
     createPage(t('page.untitled'));
   };
 
   const handleNewBox = () => {
-    if (dragBusy || isSystemPageId(activePageId)) return;
+    if (actionsLocked || isSystemPageId(activePageId)) return;
     closeSearch();
     const canvas = useCanvasStore.getState();
     const camera = canvas.pages[activePageId]?.camera ?? { panX: 0, panY: 0 };
@@ -101,6 +111,19 @@ export function ShellTitleLeading({
     })();
   };
 
+  const handleImportFile = (file: File) => {
+    void (async () => {
+      try {
+        const parsed = await parseWorkspaceImportFile(file);
+        if (!window.confirm(t('settings.importConfirm'))) return;
+        importWorkspace(parsed.workspace);
+        selectBox(null);
+      } catch {
+        showToast(t('settings.importInvalid'), 'error');
+      }
+    })();
+  };
+
   return (
     <div className="cardo-shell-title-leading" onDoubleClick={(event) => event.stopPropagation()}>
       {sidebarEnabled ? (
@@ -116,7 +139,7 @@ export function ShellTitleLeading({
       ) : null}
       <IconButton
         className="cardo-shell-title-control"
-        disabled={!canBack || dragBusy}
+        disabled={!canBack || actionsLocked}
         onClick={goBack}
         aria-label={t('shell.navBack')}
         tooltip={t('shell.navBack')}
@@ -125,7 +148,7 @@ export function ShellTitleLeading({
       </IconButton>
       <IconButton
         className="cardo-shell-title-control"
-        disabled={!canForward || dragBusy}
+        disabled={!canForward || actionsLocked}
         onClick={goForward}
         aria-label={t('shell.navForward')}
         tooltip={t('shell.navForward')}
@@ -145,12 +168,12 @@ export function ShellTitleLeading({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" side="bottom" sideOffset={4}>
           {multiPage ? (
-            <DropdownMenuItem disabled={dragBusy} onSelect={handleNewGroup}>
+            <DropdownMenuItem disabled={actionsLocked} onSelect={handleNewGroup}>
               {t('shell.newPage')}
             </DropdownMenuItem>
           ) : null}
           <DropdownMenuItem
-            disabled={dragBusy || isSystemPageId(activePageId)}
+            disabled={actionsLocked || isSystemPageId(activePageId)}
             onSelect={handleNewBox}
           >
             {t('shell.createBox')}
@@ -163,11 +186,30 @@ export function ShellTitleLeading({
           >
             {t('shell.settings')}
           </DropdownMenuItem>
+          <DropdownMenuItem
+            disabled={actionsLocked}
+            onSelect={() => importInputRef.current?.click()}
+          >
+            {t('shell.importWorkspace')}
+          </DropdownMenuItem>
           <DropdownMenuItem disabled={dragBusy} onSelect={handleExport}>
             {t('shell.exportWorkspace')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      <input
+        ref={importInputRef}
+        type="file"
+        accept="application/json,.json"
+        className="cardo-data-file-input"
+        tabIndex={-1}
+        aria-hidden
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file) handleImportFile(file);
+          event.currentTarget.value = '';
+        }}
+      />
     </div>
   );
 }

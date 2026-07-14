@@ -15,7 +15,7 @@ import { useI18n } from '../i18n/useI18n';
 const TOOLBAR_ICON_SIZE = 18;
 
 /**
- * Panel-bottom tools: create box only.
+ * Panel-bottom tools: create box only (true circular FAB, no pill dock shell).
  * Local search is a left-sidebar nav entry that opens SearchPage — not a bottom pill.
  * Parent FeatureGate chrome.bottomToolbar.
  */
@@ -44,18 +44,16 @@ export function BottomActionBar() {
 
   return (
     <div className="cardo-v2-bottom-shell">
-      <div className="cardo-v2-bottom-bar" aria-label={t('toolbar.workspaceTools')}>
-        <IconButton
-          className="cardo-toolbar-create"
-          onClick={handleAdd}
-          tooltip={t('shell.createBox')}
-          aria-label={t('shell.createBox')}
-        >
-          <span className="cardo-icon-frame">
-            <ThemeIcon name="add" size={TOOLBAR_ICON_SIZE} />
-          </span>
-        </IconButton>
-      </div>
+      <IconButton
+        className="cardo-toolbar-create"
+        onClick={handleAdd}
+        tooltip={t('shell.createBox')}
+        aria-label={t('shell.createBox')}
+      >
+        <span className="cardo-icon-frame">
+          <ThemeIcon name="add" size={TOOLBAR_ICON_SIZE} />
+        </span>
+      </IconButton>
     </div>
   );
 }

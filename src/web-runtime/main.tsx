@@ -17,7 +17,10 @@ function createWebRuntimePorts(): AppPorts {
     fileExport: browserFileExportPort,
     tabs: {
       openUrl(url) {
-        window.open(url, '_blank', 'noopener,noreferrer');
+        const opened = window.open(url, '_blank', 'noopener,noreferrer');
+        if (!opened) {
+          throw new Error('Browser blocked opening the URL.');
+        }
       },
     },
     localResource: {

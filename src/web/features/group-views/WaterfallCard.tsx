@@ -28,6 +28,7 @@ export function WaterfallCard({ box, frame }: { box: WorkspaceBox; frame: BoxFra
   const openAddView = useUiStore((state) => state.openAddView);
   const draftState = useUiStore((state) => state.addDrafts[box.id]);
   const highlightedBoxId = useUiStore((state) => state.highlightedBoxId);
+  const selectedBoxId = useUiStore((state) => state.selectedBoxId);
   const renameBox = useWorkspaceStore((state) => state.renameBox);
   const setBoxLocked = useWorkspaceStore((state) => state.setBoxLocked);
   const deleteBox = useWorkspaceStore((state) => state.deleteBox);
@@ -48,6 +49,8 @@ export function WaterfallCard({ box, frame }: { box: WorkspaceBox; frame: BoxFra
   });
 
   const beginDrag = (event: ReactPointerEvent<HTMLElement>) => {
+    // Primary left button only — ignore right-click / non-primary pointers.
+    if (event.button !== 0 || !event.isPrimary) return;
     if (box.isLocked || confirmDelete || titleRename.renaming) return;
     if ((event.target as HTMLElement).closest('button,input,textarea,select,[data-no-drag]')) {
       return;
@@ -81,6 +84,7 @@ export function WaterfallCard({ box, frame }: { box: WorkspaceBox; frame: BoxFra
     'cardo-waterfall-card',
     confirmDelete ? 'cardo-waterfall-card-delete-view' : '',
     highlightedBoxId === box.id ? 'cardo-waterfall-card-highlighted' : '',
+    selectedBoxId === box.id ? 'cardo-waterfall-card-selected' : '',
     box.isLocked ? 'cardo-waterfall-card-locked' : '',
   ]
     .filter(Boolean)

@@ -4,6 +4,7 @@ import type { FileItem, FolderItem, ShortcutItem } from '../../domain/workspace'
 import { useI18n } from '../../i18n/useI18n';
 import { openLocalResource } from '../../platform/hostPlatform';
 import { showToast } from '../../app/stores/toastStore';
+import { useUiStore } from '../../app/stores/uiStore';
 import { ItemContentEditView } from './ItemContentEditView';
 import { ItemDeleteView } from './ItemDeleteView';
 import { ItemActions } from './ItemActions';
@@ -34,6 +35,9 @@ export function LocalResourceItem({
 }) {
   const iconName = localItemIconName(item.type);
   const rename = useItemRename(boxId, item.id, item.title);
+  const locateHighlight = useUiStore(
+    (state) => state.locateHighlight?.boxId === boxId && state.locateHighlight?.itemId === item.id,
+  );
   const [deleteView, setDeleteView] = useState(false);
   const [editView, setEditView] = useState(false);
   const { t } = useI18n();
@@ -64,7 +68,7 @@ export function LocalResourceItem({
 
   return (
     <div
-      className={`cardo-item-row cardo-local-item cardo-local-item-${item.type}${item.isPinned ? ' cardo-item-pinned' : ''}${highlight ? ' cardo-item-new' : ''}${deleteView ? ' cardo-item-delete-state' : ''}${editView ? ' cardo-item-edit-state' : ''}`}
+      className={`cardo-item-row cardo-local-item cardo-local-item-${item.type}${item.isPinned ? ' cardo-item-pinned' : ''}${highlight ? ' cardo-item-new' : ''}${locateHighlight ? ' cardo-item-locate' : ''}${deleteView ? ' cardo-item-delete-state' : ''}${editView ? ' cardo-item-edit-state' : ''}`}
       onContextMenu={rename.renaming ? rename.onContextMenu : contextMenu.onContextMenu}
     >
       <AnimatePresence initial={false} mode="wait">

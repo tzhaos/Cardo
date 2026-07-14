@@ -222,7 +222,8 @@
   color: var(--cardo-text);
   font-size: 0.85rem;
   line-height: 1.3;
-  backdrop-filter: blur(12px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   transform: none;
   pointer-events: none;
 }

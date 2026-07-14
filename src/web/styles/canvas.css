@@ -316,9 +316,14 @@
   pointer-events: auto;
 }
 
-/* Freeform finger ghost: slightly open so the world drop landing is readable. */
+/*
+ * Freeform finger ghost: slightly open so the world drop landing is readable.
+ * pointer-events:none so the ghost never steals hit-tests (matches managed morph ghost).
+ * Overrides .cardo-dragged-box-layer .cardo-box { pointer-events: auto } above.
+ */
 .cardo-dragged-box-layer-freeform .cardo-box {
   opacity: 0.78;
+  pointer-events: none !important;
 }
 
 .cardo-canvas-world {

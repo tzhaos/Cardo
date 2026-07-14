@@ -383,11 +383,20 @@ function runDatabaseTask<T>(task: () => Promise<T>): Promise<T> {
 }
 
 /**
- * Non-DB platform boundary used by product UI (`src/web`). Entries configure shared shell
- * ports before rendering so the same UI can use Chrome or Electron.
+ * Open a URL via the host tabs port. Returns requested/failed so UI can toast
+ * without assuming fire-and-forget always succeeds (popup block, bad scheme, etc.).
  */
-export function openExternalUrl(url: string) {
-  getAppPorts().tabs.openUrl(url);
+export async function openExternalUrl(url: string) {
+  try {
+    await Promise.resolve(getAppPorts().tabs.openUrl(url));
+    return { status: 'requested' } as const;
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error && error.message
+        ? error.message
+        : 'Could not open the URL in the host environment.';
+    return { status: 'failed', errorMessage } as const;
+  }
 }
 
 /** True when the host can show a native file/folder picker (Desktop bridge). */

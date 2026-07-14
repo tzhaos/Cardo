@@ -9,11 +9,13 @@ import { useI18n } from '../../i18n/useI18n';
 import { openExternalUrl, resolveWebsiteIcon } from '../../platform/hostPlatform';
 import { useItemContextMenu } from './useItemContextMenu';
 import { recordItemActivity } from '../../app/operationActivity';
+import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { showToast } from '../../app/stores/toastStore';
 import { Input } from '../../kit/input';
 import { IconFrame } from '../../kit/icon-button';
 import { ThemeIcon } from '../../kit/icon';
+import { FaviconImage } from './FaviconImage';
 
 export function BookmarkItem({
   boxId,
@@ -27,12 +29,18 @@ export function BookmarkItem({
   const rename = useItemRename(boxId, item.id, item.title);
   const [deleteView, setDeleteView] = useState(false);
   const [editView, setEditView] = useState(false);
-  const [faviconBroken, setFaviconBroken] = useState(false);
   const setBookmarkFavicon = useWorkspaceStore((state) => state.setBookmarkFavicon);
+  const locateHighlight = useUiStore(
+    (state) => state.locateHighlight?.boxId === boxId && state.locateHighlight?.itemId === item.id,
+  );
   const { t } = useI18n();
-  const openItem = () => {
+  const openItem = async () => {
     try {
-      openExternalUrl(item.url);
+      const result = await openExternalUrl(item.url);
+      if (result.status === 'failed') {
+        showToast(t('toast.openFailed'), 'error');
+        return;
+      }
       recordItemActivity(boxId, item, 'item.open');
     } catch {
       showToast(t('toast.openFailed'), 'error');
@@ -43,17 +51,13 @@ export function BookmarkItem({
     primaryAction: {
       label: t('item.open'),
       icon: <ThemeIcon name="externalLink" size={16} />,
-      onSelect: openItem,
+      onSelect: () => void openItem(),
     },
     onRename: rename.startRenaming,
     onEdit: () => setEditView(true),
     onPin: () => rename.setPinned(!item.isPinned),
     onDelete: () => setDeleteView(true),
   });
-
-  useEffect(() => {
-    setFaviconBroken(false);
-  }, [item.favicon]);
 
   useEffect(() => {
     if (item.favicon) return;
@@ -68,7 +72,7 @@ export function BookmarkItem({
 
   return (
     <div
-      className={`cardo-item-row cardo-bookmark-item${item.isPinned ? ' cardo-item-pinned' : ''}${highlight ? ' cardo-item-new' : ''}${deleteView ? ' cardo-item-delete-state' : ''}${editView ? ' cardo-item-edit-state' : ''}`}
+      className={`cardo-item-row cardo-bookmark-item${item.isPinned ? ' cardo-item-pinned' : ''}${highlight ? ' cardo-item-new' : ''}${locateHighlight ? ' cardo-item-locate' : ''}${deleteView ? ' cardo-item-delete-state' : ''}${editView ? ' cardo-item-edit-state' : ''}`}
       onContextMenu={rename.renaming ? rename.onContextMenu : contextMenu.onContextMenu}
     >
       <AnimatePresence initial={false} mode="wait">
@@ -99,25 +103,16 @@ export function BookmarkItem({
               role="button"
               tabIndex={0}
               onClick={() => {
-                openItem();
+                void openItem();
               }}
               onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault();
-                  openItem();
+                  void openItem();
                 }
               }}
             >
-              {item.favicon && !faviconBroken ? (
-                <img
-                  className="cardo-website-icon"
-                  src={item.favicon}
-                  alt=""
-                  onError={() => setFaviconBroken(true)}
-                />
-              ) : (
-                <ThemeIcon name="globe" size={12} />
-              )}
+              <FaviconImage src={item.favicon} size={12} />
             </IconFrame>
             <div className="cardo-item-main">
               {rename.renaming ? (
@@ -147,7 +142,7 @@ export function BookmarkItem({
                 rel="noreferrer"
                 onClick={(event) => {
                   event.preventDefault();
-                  openItem();
+                  void openItem();
                 }}
               >
                 {item.url}

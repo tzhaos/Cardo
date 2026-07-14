@@ -6,7 +6,7 @@
   align-items: center;
   gap: 1px;
   padding: 2px;
-  border-radius: var(--cardo-radius-md, 8px);
+  border-radius: var(--cardo-radius-md, 10px);
   background: color-mix(in srgb, var(--cardo-text) 5%, transparent);
 }
 
@@ -128,6 +128,12 @@
 
 .cardo-waterfall-card-highlighted {
   animation: cardo-managed-search-highlight 1.8s ease-out;
+}
+
+.cardo-waterfall-card-selected {
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--cardo-text) 6%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--box-accent, var(--cardo-blue)) 55%, transparent);
 }
 
 @keyframes cardo-managed-search-highlight {
@@ -274,6 +280,11 @@
 
 .cardo-group-list-section-highlighted {
   animation: cardo-managed-search-highlight 1.8s ease-out;
+}
+
+.cardo-group-list-section-selected {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--box-accent, var(--cardo-blue)) 50%, transparent);
+  border-radius: var(--cardo-radius-md, 10px);
 }
 
 @media (hover: none) {

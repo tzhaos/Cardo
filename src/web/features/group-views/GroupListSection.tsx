@@ -28,6 +28,7 @@ export function GroupListSection({ box }: { box: WorkspaceBox }) {
   const openAddView = useUiStore((state) => state.openAddView);
   const draftState = useUiStore((state) => state.addDrafts[box.id]);
   const highlightedBoxId = useUiStore((state) => state.highlightedBoxId);
+  const selectedBoxId = useUiStore((state) => state.selectedBoxId);
   const renameBox = useWorkspaceStore((state) => state.renameBox);
   const setBoxLocked = useWorkspaceStore((state) => state.setBoxLocked);
   const deleteBox = useWorkspaceStore((state) => state.deleteBox);
@@ -48,6 +49,8 @@ export function GroupListSection({ box }: { box: WorkspaceBox }) {
   });
 
   const beginDrag = (event: ReactPointerEvent<HTMLElement>) => {
+    // Primary left button only — ignore right-click / non-primary pointers.
+    if (event.button !== 0 || !event.isPrimary) return;
     if (box.isLocked || confirmDelete || titleRename.renaming) return;
     if ((event.target as HTMLElement).closest('button,input,textarea,select,[data-no-drag]')) {
       return;
@@ -83,6 +86,7 @@ export function GroupListSection({ box }: { box: WorkspaceBox }) {
     'cardo-group-list-section',
     confirmDelete ? 'cardo-group-list-section-delete-view' : '',
     highlightedBoxId === box.id ? 'cardo-group-list-section-highlighted' : '',
+    selectedBoxId === box.id ? 'cardo-group-list-section-selected' : '',
     box.isLocked ? 'cardo-group-list-section-locked' : '',
   ]
     .filter(Boolean)

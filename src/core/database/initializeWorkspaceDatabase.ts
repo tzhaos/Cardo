@@ -21,7 +21,7 @@ import {
 } from '../contracts/preferences';
 import { COLLECTION_PAGE_ID, RECYCLE_BIN_PAGE_ID } from '../contracts/systemPages';
 import { createWelcomeBoxFrame } from '../domains/layout/boxDefaults';
-import { getWelcomeSeedCopy } from './welcomeSeed';
+import { getDefaultGroupTitles, getWelcomeSeedCopy } from './welcomeSeed';
 
 export interface InitialWorkspacePreferences {
   locale: PreferenceLocale;
@@ -50,7 +50,10 @@ export async function initializeWorkspaceDatabase(
   const defaultPageId = `page-${crypto.randomUUID()}`;
   const personalPageId = `page-${crypto.randomUUID()}`;
   const inspirationPageId = `page-${crypto.randomUUID()}`;
-  const welcome = createWelcomeSeed(defaultPageId, timestamp, initialPreferences.locale);
+  const locale = initialPreferences.locale;
+  const welcome = createWelcomeSeed(defaultPageId, timestamp, locale);
+  // First-run titles only — existing DBs keep whatever names the user already has.
+  const [workspacesTitle, personalTitle, inspirationTitle] = getDefaultGroupTitles(locale);
 
   await database.transaction(async (transaction) => {
     const pageDefaults = {
@@ -69,19 +72,19 @@ export async function initializeWorkspaceDatabase(
       },
       {
         id: defaultPageId,
-        title: 'Workspaces',
+        title: workspacesTitle,
         sortOrder: 0,
         ...pageDefaults,
       },
       {
         id: personalPageId,
-        title: 'Personal',
+        title: personalTitle,
         sortOrder: 1,
         ...pageDefaults,
       },
       {
         id: inspirationPageId,
-        title: 'Inspiration',
+        title: inspirationTitle,
         sortOrder: 2,
         ...pageDefaults,
       },

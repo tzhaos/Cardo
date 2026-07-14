@@ -140,9 +140,10 @@ export function BoxPageDropController() {
         // Left primary nav: undo optimistic cross-page preview so release on canvas
         // cannot silently migrate the box to a group the user only hovered.
         revertOptimisticPreviewToOrigin();
-        // Keep managed drop landing in sync even if morph ghost session lags.
-        updateManagedInsertPreview(clientX, clientY);
       }
+      // Sole owner of managed insert landing (FloatingDragLayer only paints the ghost).
+      // Always run after top-bar flags so over-nav clears the hole (fn short-circuits).
+      updateManagedInsertPreview(clientX, clientY);
     };
 
     const frameScheduler = createLatestFrameScheduler(updateDropTarget);
@@ -162,11 +163,20 @@ export function BoxPageDropController() {
       },
     });
 
+    // Escape cancels cleanly via session.end('manual') → onEnd reverts preview + endBoxDrag.
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      session.end('manual');
+    };
+
     window.addEventListener('resize', updateTopBarRect);
+    window.addEventListener('keydown', onKeyDown);
     return () => {
       frameScheduler.cancel();
       topBarObserver.disconnect();
       window.removeEventListener('resize', updateTopBarRect);
+      window.removeEventListener('keydown', onKeyDown);
       // dispose() does not run onEnd — if we still hold an optimistic cross-page
       // preview, revert so pageId/frame do not stick after external endBoxDrag.
       session.dispose();
@@ -198,7 +208,12 @@ function commitBoxDragRelease(
   const tabPageId = findPageDropAtPoint(event.clientX, event.clientY) ?? ui.boxDropPageId;
 
   if (tabPageId && isCollectionPageId(tabPageId)) {
-    if (isRecycleBinPageId(movingBox.pageId) || isRecycleBinPageId(originPageId ?? '')) return;
+    const locale = usePreferencesStore.getState().locale;
+    // Recycle → favorites is invalid; never silent-return without feedback.
+    if (isRecycleBinPageId(movingBox.pageId) || isRecycleBinPageId(originPageId ?? '')) {
+      showToast(translateWebNext(locale, 'toast.dropNotAllowed'), 'info');
+      return;
+    }
     // Roll back local page preview before collection write (box stays on origin page).
     if (originPageId && movingBox.pageId !== originPageId) {
       workspace.previewBoxOnPage(draggedBoxId, originPageId, dragSession.latestFrame);
@@ -206,7 +221,6 @@ function commitBoxDragRelease(
     workspace.addBoxToCollection(draggedBoxId);
     ui.selectBox(null);
     // Stay on origin page — favorites add is non-navigating.
-    const locale = usePreferencesStore.getState().locale;
     showToast(translateWebNext(locale, 'toast.addedToFavorites'), 'success');
     return;
   }

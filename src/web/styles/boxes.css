@@ -538,9 +538,18 @@ button.cardo-box-icon:disabled {
 }
 
 .cardo-box-header:hover .cardo-box-controls,
-.cardo-box-controls:focus-within {
+.cardo-box-controls:focus-within,
+.cardo-box-selected .cardo-box-controls {
   opacity: 1;
   pointer-events: auto;
+}
+
+/* Touch / no-hover: always show freeform header controls (match waterfall actions). */
+@media (hover: none) {
+  .cardo-box-controls {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 .cardo-box-view-toggle {

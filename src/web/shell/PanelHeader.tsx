@@ -14,6 +14,12 @@ import { useI18n } from '../i18n/useI18n';
 import { FeatureGate, useFeatureEnabled } from './FeatureGate';
 import { ConfirmBar } from '../kit/confirm-bar';
 import { Divider, PanelHeader as KitPanelHeader } from '../kit/panel';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../kit/dropdown-menu';
 import { IconButton } from '../kit/icon-button';
 import { ThemeIcon, type ThemeIconName } from '../kit/icon';
 
@@ -25,6 +31,7 @@ const GROUP_VIEW_ICONS: Record<GroupViewMode, ThemeIconName> = {
 
 /**
  * Main panel header: group title, group-view switcher, history/canvas tools.
+ * Freeform canvas tools pack into a single "Canvas tools" dropdown.
  * Search lives in the sidebar next to New group — not here.
  */
 export function PanelHeader() {
@@ -163,30 +170,37 @@ export function PanelHeader() {
             {historyEnabled && canvasToolsEnabled && freeformTools ? <Divider /> : null}
             {freeformTools ? (
               <FeatureGate feature="chrome.canvasTools">
-                <IconButton
-                  disabled={locateItem?.disabled}
-                  onClick={() => locateItem?.onSelect?.()}
-                  aria-label={locateItem?.label ?? t('canvas.returnToOrigin')}
-                  tooltip={locateItem?.label ?? t('canvas.returnToOrigin')}
-                >
-                  <ThemeIcon name="locate" size={16} />
-                </IconButton>
-                <IconButton
-                  disabled={arrangeItem?.disabled}
-                  onClick={() => arrangeItem?.onSelect?.()}
-                  aria-label={arrangeItem?.label ?? t('canvas.arrangeBoxes')}
-                  tooltip={arrangeItem?.label ?? t('canvas.arrangeBoxes')}
-                >
-                  <ThemeIcon name="layoutGrid" size={16} />
-                </IconButton>
-                <IconButton
-                  pressed={isLocked}
-                  onClick={() => lockItem?.onSelect?.()}
-                  aria-label={lockItem?.label ?? t('canvas.lockViewport')}
-                  tooltip={lockItem?.label ?? t('canvas.lockViewport')}
-                >
-                  <ThemeIcon name={isLocked ? 'lock' : 'unlock'} size={16} />
-                </IconButton>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    {/* No tooltip here — IconButton+HoverTip breaks Radix asChild ref. */}
+                    <IconButton
+                      pressed={isLocked}
+                      disabled={dragBusy}
+                      aria-label={t('canvas.layoutTools')}
+                      title={t('canvas.layoutTools')}
+                    >
+                      <ThemeIcon name="options" size={16} />
+                    </IconButton>
+                  </DropdownMenuTrigger>
+
+                  <DropdownMenuContent align="end" side="bottom" sideOffset={4}>
+                    <DropdownMenuItem
+                      disabled={locateItem?.disabled}
+                      onSelect={() => locateItem?.onSelect?.()}
+                    >
+                      {locateItem?.label ?? t('canvas.returnToOrigin')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      disabled={arrangeItem?.disabled}
+                      onSelect={() => arrangeItem?.onSelect?.()}
+                    >
+                      {arrangeItem?.label ?? t('canvas.arrangeBoxes')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => lockItem?.onSelect?.()}>
+                      {lockItem?.label ?? t('canvas.lockViewport')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </FeatureGate>
             ) : null}
           </>

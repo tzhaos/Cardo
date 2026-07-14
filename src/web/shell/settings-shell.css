@@ -39,7 +39,7 @@
   gap: 6px;
   margin: 0 8px 4px 10px;
   border: 0;
-  border-radius: var(--cardo-radius-md, 8px);
+  border-radius: var(--cardo-radius-md, 10px);
   padding: 6px 10px;
   background: transparent;
   color: var(--cardo-secondary-text);
@@ -60,7 +60,6 @@
   display: grid;
   flex-shrink: 0;
   place-items: center;
-  transform: rotate(180deg);
 }
 
 .cardo-v2-settings-search {
@@ -146,7 +145,7 @@
   align-items: center;
   gap: 10px;
   border: 0;
-  border-radius: var(--cardo-radius-md, 8px);
+  border-radius: var(--cardo-radius-md, 10px);
   padding: 0 12px;
   background: transparent;
   color: var(--cardo-secondary-text);

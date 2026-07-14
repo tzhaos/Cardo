@@ -5,7 +5,6 @@ import { getBoxAccent, getBoxIcon } from '../../domain/boxAppearance';
 import { ThemeIcon } from '../../kit/icon';
 import { BoxAppearanceIcon } from '../boxes/boxIconRegistry';
 import { WorkspaceBoxRenderer } from './WorkspaceBoxRenderer';
-import { updateManagedInsertPreview } from './managedInsertPreview';
 import {
   startWindowPointerSession,
   type WindowPointerSession,
@@ -101,8 +100,8 @@ function ManagedMorphDragGhost({
             ? Math.min(latestFrame.height, 200)
             : Math.max(48, Math.min(latestFrame.height, 72));
         applyPaint(moveEvent.clientX, moveEvent.clientY, latestFrame.width, paintH);
-        // Landing hole follows the pointer (not the origin gap).
-        updateManagedInsertPreview(moveEvent.clientX, moveEvent.clientY);
+        // Managed insert landing is owned solely by BoxPageDropController (rAF schedule).
+        // Do not call updateManagedInsertPreview here — dual writers raced the hole.
       },
       onEnd: () => {
         if (pointerSessionRef.current === pointerSession) {
@@ -111,7 +110,6 @@ function ManagedMorphDragGhost({
       },
     });
     pointerSessionRef.current = pointerSession;
-    updateManagedInsertPreview(session.lastClientX, session.lastClientY);
 
     return () => {
       pointerSession.dispose();

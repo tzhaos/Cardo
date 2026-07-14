@@ -60,6 +60,11 @@ interface UiStore {
   managedInsertPreview: ManagedInsertPreview | null;
   selectedBoxId: string | null;
   highlightedBoxId: string | null;
+  /**
+   * Search-locate flash for an item (separate from create `highlightItemId` so
+   * enter animation and locate pulse do not share CSS / timers).
+   */
+  locateHighlight: { boxId: string; itemId: string } | null;
   searchQuery: string;
   /** Full search page open from sidebar entry (with new group). */
   searchOpen: boolean;
@@ -75,8 +80,11 @@ interface UiStore {
   navFuture: string[];
   /** Last page id recorded into history (avoids duplicate pushes). */
   navCurrentPageId: string | null;
-  /** When true, next page visit is from back/forward and must not push history. */
-  navHistorySilent: boolean;
+  /**
+   * Pending back/forward: stacks mutate only after activePageId matches target
+   * (avoids silent-flag stuck when page.open is noMutation / fails).
+   */
+  navIntent: { type: 'back' | 'forward'; targetPageId: string } | null;
   setSearchQuery: (query: string) => void;
   setSearchOpen: (open: boolean) => void;
   openSearch: () => void;
@@ -84,14 +92,21 @@ interface UiStore {
   setRuntimeConnectionStatus: (status: RuntimeConnectionStatus) => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
   toggleSidebarCollapsed: () => void;
-  /** Record a page open for back/forward (no-op when silent or same page). */
+  /** Record a page open for back/forward (no-op when intent or same page). */
   recordPageVisit: (pageId: string) => void;
-  /** Consume one back step; returns page id to open, or null. */
-  consumeNavBack: () => string | null;
-  /** Consume one forward step; returns page id to open, or null. */
-  consumeNavForward: () => string | null;
+  /**
+   * Arm back navigation toward a valid page id. Stacks apply on successful visit.
+   * `validPageIds` prunes dead entries (deleted groups).
+   */
+  requestNavBack: (validPageIds: ReadonlySet<string>) => string | null;
+  requestNavForward: (validPageIds: ReadonlySet<string>) => string | null;
+  /** Drop deleted page ids from stacks (call after page.delete). */
+  pruneNavHistory: (pageId: string) => void;
+  clearNavIntent: () => void;
   selectBox: (boxId: string | null) => void;
   highlightBox: (boxId: string) => void;
+  /** Pulse an item after search locate (auto-clears ~1.8s). Does not touch create highlight. */
+  markLocated: (boxId: string, itemId: string) => void;
   openAddView: (boxId: string, itemType?: WorkspaceItemType) => void;
   selectAddItemType: (boxId: string, itemType: WorkspaceItemType) => void;
   updateDraft: (boxId: string, patch: Record<string, string>) => void;
@@ -122,6 +137,8 @@ const emptyDraft: AddDraftState = { mode: false, draft: {} };
 let boxHighlightTimeout: number | null = null;
 /** Per-box item highlight clear timers (created-item flash). */
 const itemHighlightTimeouts = new Map<string, number>();
+/** Search-locate item pulse clear timer. */
+let locateHighlightTimeout: number | null = null;
 
 export function clearItemHighlight(boxId: string) {
   const timeout = itemHighlightTimeouts.get(boxId);
@@ -153,6 +170,7 @@ export const useUiStore = create<UiStore>((set) => ({
   managedInsertPreview: null,
   selectedBoxId: null,
   highlightedBoxId: null,
+  locateHighlight: null,
   searchQuery: '',
   searchOpen: false,
   runtimeConnectionStatus: 'connected',
@@ -160,7 +178,7 @@ export const useUiStore = create<UiStore>((set) => ({
   navPast: [],
   navFuture: [],
   navCurrentPageId: null,
-  navHistorySilent: false,
+  navIntent: null,
   setSearchQuery: (query) => set({ searchQuery: query }),
   setSearchOpen: (open) =>
     set((state) => (state.searchOpen === open ? state : { searchOpen: open })),
@@ -177,51 +195,128 @@ export const useUiStore = create<UiStore>((set) => ({
   toggleSidebarCollapsed: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
   recordPageVisit: (pageId) =>
     set((state) => {
-      if (state.navHistorySilent) {
-        return { navHistorySilent: false, navCurrentPageId: pageId };
+      const intent = state.navIntent;
+      if (intent) {
+        if (intent.targetPageId !== pageId) {
+          // Open failed or raced — drop intent; leave stacks unchanged.
+          return { navIntent: null };
+        }
+        if (intent.type === 'back') {
+          if (state.navPast.length === 0 || !state.navCurrentPageId) {
+            return { navIntent: null, navCurrentPageId: pageId };
+          }
+          const past = state.navPast.slice();
+          // Pop until target (dead ids already pruned on request).
+          while (past.length > 0 && past[past.length - 1] !== pageId) past.pop();
+          const popped = past.pop();
+          if (popped !== pageId) {
+            return { navIntent: null, navCurrentPageId: pageId };
+          }
+          return {
+            navIntent: null,
+            navPast: past,
+            navFuture: [state.navCurrentPageId, ...state.navFuture].slice(0, 50),
+            navCurrentPageId: pageId,
+          };
+        }
+        // forward
+        if (state.navFuture.length === 0 || !state.navCurrentPageId) {
+          return { navIntent: null, navCurrentPageId: pageId };
+        }
+        const future = state.navFuture.slice();
+        while (future.length > 0 && future[0] !== pageId) future.shift();
+        const next = future.shift();
+        if (next !== pageId) {
+          return { navIntent: null, navCurrentPageId: pageId };
+        }
+        return {
+          navIntent: null,
+          navPast: [...state.navPast, state.navCurrentPageId].slice(-50),
+          navFuture: future,
+          navCurrentPageId: pageId,
+        };
       }
       if (state.navCurrentPageId === pageId) return state;
       if (state.navCurrentPageId === null) {
         return { navCurrentPageId: pageId, navPast: [], navFuture: [] };
       }
       return {
-        navPast: [...state.navPast, state.navCurrentPageId],
+        navPast: [...state.navPast, state.navCurrentPageId].slice(-50),
         navFuture: [],
         navCurrentPageId: pageId,
       };
     }),
-  consumeNavBack: () => {
+  requestNavBack: (validPageIds) => {
     let target: string | null = null;
     set((state) => {
-      if (state.navPast.length === 0 || !state.navCurrentPageId) return state;
-      const past = state.navPast.slice();
-      target = past.pop() ?? null;
-      if (!target) return state;
+      const past = state.navPast.filter((id) => validPageIds.has(id));
+      const future = state.navFuture.filter((id) => validPageIds.has(id));
+      while (past.length > 0) {
+        const candidate = past[past.length - 1]!;
+        if (candidate === state.navCurrentPageId) {
+          past.pop();
+          continue;
+        }
+        target = candidate;
+        break;
+      }
+      if (!target) {
+        return past.length === state.navPast.length && future.length === state.navFuture.length
+          ? state
+          : { navPast: past, navFuture: future, navIntent: null };
+      }
       return {
         navPast: past,
-        navFuture: [state.navCurrentPageId, ...state.navFuture],
-        navCurrentPageId: target,
-        navHistorySilent: true,
+        navFuture: future,
+        navIntent: { type: 'back', targetPageId: target },
       };
     });
     return target;
   },
-  consumeNavForward: () => {
+  requestNavForward: (validPageIds) => {
     let target: string | null = null;
     set((state) => {
-      if (state.navFuture.length === 0 || !state.navCurrentPageId) return state;
-      const [next, ...rest] = state.navFuture;
-      target = next ?? null;
-      if (!target) return state;
+      const past = state.navPast.filter((id) => validPageIds.has(id));
+      const future = state.navFuture.filter((id) => validPageIds.has(id));
+      while (future.length > 0) {
+        const candidate = future[0]!;
+        if (candidate === state.navCurrentPageId) {
+          future.shift();
+          continue;
+        }
+        target = candidate;
+        break;
+      }
+      if (!target) {
+        return past.length === state.navPast.length && future.length === state.navFuture.length
+          ? state
+          : { navPast: past, navFuture: future, navIntent: null };
+      }
       return {
-        navPast: [...state.navPast, state.navCurrentPageId],
-        navFuture: rest,
-        navCurrentPageId: target,
-        navHistorySilent: true,
+        navPast: past,
+        navFuture: future,
+        navIntent: { type: 'forward', targetPageId: target },
       };
     });
     return target;
   },
+  pruneNavHistory: (pageId) =>
+    set((state) => {
+      const navPast = state.navPast.filter((id) => id !== pageId);
+      const navFuture = state.navFuture.filter((id) => id !== pageId);
+      const navIntent = state.navIntent?.targetPageId === pageId ? null : state.navIntent;
+      const navCurrentPageId = state.navCurrentPageId === pageId ? null : state.navCurrentPageId;
+      if (
+        navPast.length === state.navPast.length &&
+        navFuture.length === state.navFuture.length &&
+        navIntent === state.navIntent &&
+        navCurrentPageId === state.navCurrentPageId
+      ) {
+        return state;
+      }
+      return { navPast, navFuture, navIntent, navCurrentPageId };
+    }),
+  clearNavIntent: () => set((state) => (state.navIntent ? { navIntent: null } : state)),
   selectBox: (boxId) => set({ selectedBoxId: boxId }),
   highlightBox: (boxId) => {
     if (boxHighlightTimeout !== null) window.clearTimeout(boxHighlightTimeout);
@@ -229,6 +324,18 @@ export const useUiStore = create<UiStore>((set) => ({
     boxHighlightTimeout = window.setTimeout(() => {
       boxHighlightTimeout = null;
       set((state) => (state.highlightedBoxId === boxId ? { highlightedBoxId: null } : state));
+    }, 1800);
+  },
+  markLocated: (boxId, itemId) => {
+    if (locateHighlightTimeout !== null) window.clearTimeout(locateHighlightTimeout);
+    set({ locateHighlight: { boxId, itemId } });
+    locateHighlightTimeout = window.setTimeout(() => {
+      locateHighlightTimeout = null;
+      set((state) =>
+        state.locateHighlight?.boxId === boxId && state.locateHighlight?.itemId === itemId
+          ? { locateHighlight: null }
+          : state,
+      );
     }, 1800);
   },
   openAddView: (boxId, itemType) =>

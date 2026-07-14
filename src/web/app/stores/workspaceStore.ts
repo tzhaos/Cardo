@@ -27,6 +27,7 @@ import {
 import { translateWebNext } from '../../i18n/messages';
 import { usePreferencesStore } from './preferencesStore';
 import { showToast } from './toastStore';
+import { useUiStore } from './uiStore';
 
 interface WorkspaceStore {
   projection: WorkspaceProjection;
@@ -144,7 +145,11 @@ const actions = {
   createPage: (title = 'Untitled') => fireCommand({ type: 'page.create', title }),
   renamePage: (pageId: string, title: string) =>
     fireCommand({ type: 'page.rename', pageId, title }),
-  deletePage: (pageId: string) => fireCommand({ type: 'page.delete', pageId }),
+  deletePage: (pageId: string) => {
+    // Session nav stacks must not keep deleted group ids (titlebar back/forward).
+    useUiStore.getState().pruneNavHistory(pageId);
+    fireCommand({ type: 'page.delete', pageId });
+  },
   reorderPages: (orderedPageIds: string[]) => {
     // Optimistic so sidebar list reorders before pageTabs invalidation lands.
     applyOptimisticPageOrder(orderedPageIds);

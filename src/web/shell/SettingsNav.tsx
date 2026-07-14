@@ -40,7 +40,7 @@ export function SettingsNav({
   return (
     <aside className="cardo-v2-settings-nav" aria-label={t('settings.sections')}>
       <Button variant="ghost" size="sm" className="cardo-v2-settings-back" onClick={onBack}>
-        <ThemeIcon name="chevronRight" size={14} className="cardo-v2-settings-back-icon" />
+        <ThemeIcon name="chevronLeft" size={14} className="cardo-v2-settings-back-icon" />
         <span>{t('settings.backToApp')}</span>
       </Button>
 

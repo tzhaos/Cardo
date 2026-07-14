@@ -104,6 +104,7 @@
   background: transparent;
   color: var(--cardo-secondary-text);
   text-align: left;
+  cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -162,6 +163,16 @@
   color: var(--cardo-muted);
   font-size: 10px;
   white-space: nowrap;
+}
+
+.cardo-global-search-open {
+  flex-shrink: 0;
+  color: var(--cardo-muted);
+}
+
+.cardo-global-search-result:hover .cardo-global-search-open,
+.cardo-global-search-result-active .cardo-global-search-open {
+  color: var(--cardo-blue);
 }
 
 .cardo-global-search-empty {

@@ -53,6 +53,7 @@ import {
   useSidebarBoxDropUi,
 } from '../shell/SidebarPageDropBridge';
 import { useUiStore } from './stores/uiStore';
+import { useWorkspaceStore } from './stores/workspaceStore';
 import { useFeatureEnabled } from '../shell/FeatureGate';
 import { useI18n } from '../i18n/useI18n';
 import './styles.css';
@@ -70,13 +71,49 @@ export default function CardoApp() {
   const globalSearchEnabled = useFeatureEnabled('chrome.globalSearch');
 
   useEffect(() => {
-    if (!globalSearchEnabled) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey) return;
-      if (event.key.toLowerCase() !== 'k') return;
-      event.preventDefault();
-      if (mode === 'settings') setMode('workspace');
-      openSearch();
+      // Ctrl/Cmd+K — search
+      if (
+        globalSearchEnabled &&
+        (event.ctrlKey || event.metaKey) &&
+        !event.altKey &&
+        !event.shiftKey &&
+        event.key.toLowerCase() === 'k'
+      ) {
+        event.preventDefault();
+        if (mode === 'settings') setMode('workspace');
+        openSearch();
+        return;
+      }
+      // Ctrl/Cmd+B — toggle sidebar
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        !event.altKey &&
+        !event.shiftKey &&
+        event.key.toLowerCase() === 'b'
+      ) {
+        if (isEditableTarget(event.target)) return;
+        event.preventDefault();
+        useUiStore.getState().toggleSidebarCollapsed();
+        return;
+      }
+      // Alt+← / Alt+→ — page history (workspace mode only; not when typing)
+      if (event.altKey && !event.ctrlKey && !event.metaKey && mode === 'workspace') {
+        if (isEditableTarget(event.target)) return;
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+        const ui = useUiStore.getState();
+        if (ui.draggedBoxId || ui.boxResizeActive) return;
+        const pages = useWorkspaceStore.getState().projection.pages;
+        const valid = new Set(pages.map((page) => page.id));
+        event.preventDefault();
+        const pageId =
+          event.key === 'ArrowLeft' ? ui.requestNavBack(valid) : ui.requestNavForward(valid);
+        if (!pageId) return;
+        ui.closeSearch();
+        useWorkspaceStore
+          .getState()
+          .setActivePage(pageId, event.key === 'ArrowLeft' ? 'nav-back' : 'nav-forward');
+      }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
@@ -130,7 +167,12 @@ export default function CardoApp() {
     setMode('settings');
   };
 
-  const titleLeading = <ShellTitleLeading onOpenSettings={() => openSettings('general')} />;
+  const titleLeading = (
+    <ShellTitleLeading
+      onOpenSettings={() => openSettings('general')}
+      workspaceActionsDisabled={mode === 'settings'}
+    />
+  );
 
   return (
     <TooltipProvider>
@@ -216,5 +258,12 @@ function ShowSidebarControl() {
         </div>
       </div>
     </div>
+  );
+}
+
+function isEditableTarget(target: EventTarget | null) {
+  return (
+    target instanceof Element &&
+    Boolean(target.closest('input,textarea,select,[contenteditable="true"]'))
   );
 }

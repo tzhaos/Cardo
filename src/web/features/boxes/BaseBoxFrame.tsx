@@ -20,7 +20,7 @@ import {
 import {
   FREEFORM_MIN_HEIGHT,
   FREEFORM_MIN_WIDTH,
-  snapFreeformFrame,
+  resolveFreeformDropFrame,
 } from '../../domain/freeformLayout';
 import {
   RECYCLE_BIN_PAGE_ID,
@@ -212,6 +212,10 @@ export function BaseBoxFrame({
   }, [attachDragPointerSession, box.id, box.pageId, boxDragSession, isDraggingThisBox]);
 
   const beginDrag = (event: ReactPointerEvent<HTMLElement>) => {
+    // Primary left button only — ignore right-click, pen barrel, multi-touch second finger.
+    if (event.button !== 0 || !event.isPrimary) {
+      return;
+    }
     if (box.isLocked) {
       return;
     }
@@ -268,6 +272,10 @@ export function BaseBoxFrame({
 
   /** SE freeform resize — motion-only mid-drag; commit frame on pointerup. */
   const beginResize = (event: ReactPointerEvent<HTMLElement>) => {
+    // Primary left button only — same gate as beginDrag / canvas pan.
+    if (event.button !== 0 || !event.isPrimary) {
+      return;
+    }
     if (layoutLocked || box.isLocked || isDraggingThisBox || deleteMotion) {
       return;
     }
@@ -310,14 +318,22 @@ export function BaseBoxFrame({
           pointerSessionRef.current = null;
         }
         if (reason === 'pointerup') {
-          // Snap size/position to freeform grid on commit only.
-          const snapped = snapFreeformFrame(
-            latestFrame,
-            createCanvasWorldBounds(useCanvasStore.getState().viewportSize),
-          );
-          boxWidth.set(snapped.width);
-          boxHeight.set(snapped.height);
-          useWorkspaceStore.getState().updateBoxFrame(box.id, snapped);
+          // Same freeform drop path: snap + push out of neighbors (min gap).
+          const bounds = createCanvasWorldBounds(useCanvasStore.getState().viewportSize);
+          const occupied = useWorkspaceStore
+            .getState()
+            .projection.boxes.filter((entry) => entry.pageId === box.pageId && entry.id !== box.id)
+            .map((entry) => entry.frame);
+          const resolved = resolveFreeformDropFrame({
+            frame: latestFrame,
+            occupied,
+            bounds,
+          });
+          boxLeft.set(resolved.x);
+          boxTop.set(resolved.y);
+          boxWidth.set(resolved.width);
+          boxHeight.set(resolved.height);
+          useWorkspaceStore.getState().updateBoxFrame(box.id, resolved);
           return;
         }
         // Cancel / blur / leave: revert visual size without a command.

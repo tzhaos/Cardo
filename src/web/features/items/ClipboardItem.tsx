@@ -8,6 +8,7 @@ import { ItemActions } from './ItemActions';
 import { useItemRename } from './useItemRename';
 import { writeClipboardText } from '../../platform/hostPlatform';
 import { showToast } from '../../app/stores/toastStore';
+import { useUiStore } from '../../app/stores/uiStore';
 import { useI18n } from '../../i18n/useI18n';
 import { useItemContextMenu } from './useItemContextMenu';
 import { recordItemActivity } from '../../app/operationActivity';
@@ -22,6 +23,9 @@ export function ClipboardItem({
   highlight: boolean;
 }) {
   const rename = useItemRename(boxId, item.id, item.title);
+  const locateHighlight = useUiStore(
+    (state) => state.locateHighlight?.boxId === boxId && state.locateHighlight?.itemId === item.id,
+  );
   const [copied, setCopied] = useState(false);
   const [deleteView, setDeleteView] = useState(false);
   const [editView, setEditView] = useState(false);
@@ -65,7 +69,7 @@ export function ClipboardItem({
 
   return (
     <div
-      className={`cardo-item-row cardo-clipboard-item${item.isPinned ? ' cardo-item-pinned' : ''}${highlight ? ' cardo-item-new' : ''}${deleteView ? ' cardo-item-delete-state' : ''}${editView ? ' cardo-item-edit-state' : ''}`}
+      className={`cardo-item-row cardo-clipboard-item${item.isPinned ? ' cardo-item-pinned' : ''}${highlight ? ' cardo-item-new' : ''}${locateHighlight ? ' cardo-item-locate' : ''}${deleteView ? ' cardo-item-delete-state' : ''}${editView ? ' cardo-item-edit-state' : ''}`}
       title={!deleteView && !editView ? t('item.copy') : undefined}
       onContextMenu={contextMenu.onContextMenu}
       onClick={(event) => {

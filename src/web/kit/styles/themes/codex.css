@@ -31,7 +31,7 @@
 }
 
 [data-cardo-theme='codex'] .cardo-surface {
-  border-radius: 18px;
+  border-radius: var(--cardo-radius-xl);
 }
 
 [data-cardo-theme='codex'] .cardo-form-card {

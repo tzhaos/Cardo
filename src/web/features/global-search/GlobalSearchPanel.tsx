@@ -8,20 +8,30 @@ import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { createWebSearchUrl } from '../../domain/webSearch';
-import type { BoxItem } from '../../domain/workspace';
+import type { BoxFrame, BoxItem } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { ThemeIcon } from '../../kit/icon';
 import { Button } from '../../kit/button';
+import { IconButton } from '../../kit/icon-button';
 import {
   openExternalUrl,
   openLocalResource,
   queryGlobalSearch,
   writeClipboardText,
 } from '../../platform/hostPlatform';
+import { FaviconImage } from '../items/FaviconImage';
+
+/** Delays after search closes so managed layouts can paint before scroll. */
+const SCROLL_RETRY_MS = [0, 50, 150, 300, 500] as const;
 
 /**
  * Local workspace search results body for SearchPage.
  * Also offers a web-search action using preferences search engine.
+ *
+ * Activation split:
+ * - Click result → locate only (navigate + highlight + scroll), no open/copy
+ * - Double-click / Enter / Open action → open/copy (clipboard copies; others open)
+ * - Web search row → single activate (opens engine URL)
  */
 export function GlobalSearchPanel({
   query,
@@ -32,9 +42,10 @@ export function GlobalSearchPanel({
   onActivate?: () => void;
 }) {
   const setActivePage = useWorkspaceStore((state) => state.setActivePage);
+  const projection = useWorkspaceStore((state) => state.projection);
   const selectBox = useUiStore((state) => state.selectBox);
   const highlightBox = useUiStore((state) => state.highlightBox);
-  const markCreated = useUiStore((state) => state.markCreated);
+  const markLocated = useUiStore((state) => state.markLocated);
   const focusFrame = useCanvasStore((state) => state.focusFrame);
   const searchEngine = usePreferencesStore((state) => state.searchEngine);
   const customSearchTemplate = usePreferencesStore((state) => state.customSearchTemplate);
@@ -47,9 +58,18 @@ export function GlobalSearchPanel({
   const selectedIndexRef = useRef(selectedIndex);
   const onActivateRef = useRef(onActivate);
   const listboxRef = useRef<HTMLDivElement>(null);
+  /** Delays locate-on-click so double-click can open without racing unmount. */
+  const itemClickTimerRef = useRef<number | null>(null);
   resultsRef.current = results;
   selectedIndexRef.current = selectedIndex;
   onActivateRef.current = onActivate;
+
+  useEffect(
+    () => () => {
+      if (itemClickTimerRef.current !== null) window.clearTimeout(itemClickTimerRef.current);
+    },
+    [],
+  );
   const { t } = useI18n();
   const trimmedQuery = query.trim();
   const webSearchUrl = createWebSearchUrl(searchEngine, customSearchTemplate, trimmedQuery);
@@ -123,17 +143,47 @@ export function GlobalSearchPanel({
       }
     };
     window.requestAnimationFrame(() => {
-      window.setTimeout(run, 0);
-      window.setTimeout(run, 50);
+      for (const delay of SCROLL_RETRY_MS) {
+        window.setTimeout(run, delay);
+      }
     });
+  };
+
+  /** Resolve frame for focusFrame: freeform uses box.frame; managed uses modeLayouts. */
+  const resolveFocusFrame = (
+    pageId: string,
+    boxId: string,
+    fallback: BoxFrame,
+  ): BoxFrame | null => {
+    const page = projection.pages.find((entry) => entry.id === pageId);
+    const mode = page?.groupViewMode ?? 'freeform';
+    if (mode === 'freeform') return fallback;
+    const box = projection.boxes.find((entry) => entry.id === boxId);
+    if (!box) return null;
+    return mode === 'list' ? box.modeLayouts.list : box.modeLayouts.waterfall;
+  };
+
+  const focusSearchTarget = (pageId: string, boxId: string, fallbackFrame: BoxFrame) => {
+    const frame = resolveFocusFrame(pageId, boxId, fallbackFrame);
+    // Skip freeform-only focus when managed layout frame is unavailable.
+    if (frame) focusFrame(pageId, frame);
+  };
+
+  const locateBoxResult = (result: Extract<GlobalSearchResult, { kind: 'box' }>) => {
+    recordBoxActivity(result.box.id, 'box.open', { origin: 'search' });
+    setActivePage(result.page.id, 'search');
+    focusSearchTarget(result.page.id, result.box.id, result.box.frame);
+    selectBox(result.box.id);
+    highlightBox(result.box.id);
+    scrollSearchTargetIntoView(result.box.id);
   };
 
   const locateItemResult = (result: Extract<GlobalSearchResult, { kind: 'item' }>) => {
     setActivePage(result.page.id, 'search');
-    focusFrame(result.page.id, result.box.frame);
+    focusSearchTarget(result.page.id, result.box.id, result.box.frame);
     selectBox(result.box.id);
     highlightBox(result.box.id);
-    markCreated(result.box.id, result.item.id);
+    markLocated(result.box.id, result.item.id);
     scrollSearchTargetIntoView(result.box.id, result.item.id);
   };
 
@@ -146,7 +196,11 @@ export function GlobalSearchPanel({
         return true;
       }
       if (item.type === 'bookmark') {
-        openExternalUrl(item.url);
+        const openResult = await openExternalUrl(item.url);
+        if (openResult.status === 'failed') {
+          showToast(t('toast.openFailed'), 'error');
+          return false;
+        }
         recordItemActivity(boxId, item, 'item.open', 'search');
         return true;
       }
@@ -164,16 +218,21 @@ export function GlobalSearchPanel({
     }
   };
 
-  const openWebSearch = () => {
+  const openWebSearch = async () => {
     if (!webSearchUrl) {
       showToast(t('toast.webSearchUnavailable'), 'error');
       return;
     }
-    openExternalUrl(webSearchUrl);
+    const openResult = await openExternalUrl(webSearchUrl);
+    if (openResult.status === 'failed') {
+      showToast(t('toast.openFailed'), 'error');
+      return;
+    }
     onActivateRef.current?.();
   };
 
-  const activateResult = async (result: GlobalSearchResult) => {
+  /** Navigate / locate only — no open/copy for items. */
+  const locateResult = (result: GlobalSearchResult) => {
     if (result.kind === 'page') {
       setActivePage(result.page.id, 'search');
       selectBox(null);
@@ -181,13 +240,22 @@ export function GlobalSearchPanel({
       return;
     }
     if (result.kind === 'box') {
-      recordBoxActivity(result.box.id, 'box.open', { origin: 'search' });
-      setActivePage(result.page.id, 'search');
-      focusFrame(result.page.id, result.box.frame);
-      selectBox(result.box.id);
-      highlightBox(result.box.id);
-      scrollSearchTargetIntoView(result.box.id);
+      locateBoxResult(result);
       onActivateRef.current?.();
+      return;
+    }
+    locateItemResult(result);
+    onActivateRef.current?.();
+  };
+
+  /** Open/copy (items) or navigate (page/box). Enter and primary Open use this. */
+  const openResult = async (result: GlobalSearchResult) => {
+    if (itemClickTimerRef.current !== null) {
+      window.clearTimeout(itemClickTimerRef.current);
+      itemClickTimerRef.current = null;
+    }
+    if (result.kind === 'page' || result.kind === 'box') {
+      locateResult(result);
       return;
     }
     locateItemResult(result);
@@ -197,8 +265,26 @@ export function GlobalSearchPanel({
     if (ok) onActivateRef.current?.();
   };
 
-  const activateResultRef = useRef(activateResult);
-  activateResultRef.current = activateResult;
+  /**
+   * Single click: locate. For items, delay so a second click (dblclick) can open
+   * without the first click unmounting the search panel.
+   */
+  const handleResultClick = (result: GlobalSearchResult) => {
+    if (result.kind !== 'item') {
+      locateResult(result);
+      return;
+    }
+    if (itemClickTimerRef.current !== null) window.clearTimeout(itemClickTimerRef.current);
+    itemClickTimerRef.current = window.setTimeout(() => {
+      itemClickTimerRef.current = null;
+      locateResult(result);
+    }, 250);
+  };
+
+  const locateResultRef = useRef(locateResult);
+  locateResultRef.current = locateResult;
+  const openResultRef = useRef(openResult);
+  openResultRef.current = openResult;
   const openWebSearchRef = useRef(openWebSearch);
   openWebSearchRef.current = openWebSearch;
 
@@ -231,12 +317,13 @@ export function GlobalSearchPanel({
           const target = list[index];
           if (!target) return;
           event.preventDefault();
-          void activateResultRef.current(target);
+          // Enter = open/copy (items) or navigate (page/box).
+          void openResultRef.current(target);
           return;
         }
         if (hasWeb && (index === list.length || !list.length)) {
           event.preventDefault();
-          openWebSearchRef.current();
+          void openWebSearchRef.current();
         }
       }
     };
@@ -264,16 +351,17 @@ export function GlobalSearchPanel({
             aria-activedescendant={activeOptionId}
           >
             {results.map((result, index) => (
-              <Button
-                variant="ghost"
+              <div
                 className={`cardo-global-search-result${index === selectedIndex ? ' cardo-global-search-result-active' : ''}`}
-                type="button"
                 role="option"
                 id={`result-${result.id}`}
                 aria-selected={index === selectedIndex}
                 key={result.id}
                 onMouseEnter={() => setSelectedIndex(index)}
-                onClick={() => void activateResult(result)}
+                onClick={() => handleResultClick(result)}
+                onDoubleClick={() => {
+                  if (result.kind === 'item') void openResult(result);
+                }}
               >
                 <ResultIcon result={result} />
                 <span className="cardo-global-search-copy">
@@ -287,8 +375,27 @@ export function GlobalSearchPanel({
                     </span>
                   ) : null}
                 </span>
-                <span className="cardo-global-search-kind">{t(`search.kind.${result.kind}`)}</span>
-              </Button>
+                {result.kind === 'item' ? (
+                  <IconButton
+                    className="cardo-global-search-open"
+                    aria-label={result.item.type === 'clipboard' ? t('item.copy') : t('item.open')}
+                    tooltip={result.item.type === 'clipboard' ? t('item.copy') : t('item.open')}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void openResult(result);
+                    }}
+                  >
+                    <ThemeIcon
+                      name={result.item.type === 'clipboard' ? 'copy' : 'externalLink'}
+                      size={14}
+                    />
+                  </IconButton>
+                ) : (
+                  <span className="cardo-global-search-kind">
+                    {t(`search.kind.${result.kind}`)}
+                  </span>
+                )}
+              </div>
             ))}
             {trimmedQuery ? (
               <Button
@@ -299,7 +406,7 @@ export function GlobalSearchPanel({
                 id={webOptionId}
                 aria-selected={webRowSelected}
                 onMouseEnter={() => setSelectedIndex(results.length)}
-                onClick={openWebSearch}
+                onClick={() => void openWebSearch()}
               >
                 <ThemeIcon name="globe" size={17} />
                 <span className="cardo-global-search-copy">
@@ -347,7 +454,7 @@ export function GlobalSearchPanel({
                   role="option"
                   id={webOptionId}
                   aria-selected={webRowSelected}
-                  onClick={openWebSearch}
+                  onClick={() => void openWebSearch()}
                 >
                   <ThemeIcon name="globe" size={17} />
                   <span className="cardo-global-search-copy">
@@ -382,11 +489,7 @@ function ItemTypeIcon({ item }: { item: BoxItem }) {
     case 'shortcut':
       return <ThemeIcon name="apps" size={17} />;
     case 'bookmark':
-      return item.favicon ? (
-        <img className="cardo-website-icon" src={item.favicon} alt="" />
-      ) : (
-        <ThemeIcon name="globe" size={17} />
-      );
+      return <FaviconImage src={item.favicon} size={17} />;
     case 'clipboard':
       return <ThemeIcon name="clipboard" size={17} />;
   }

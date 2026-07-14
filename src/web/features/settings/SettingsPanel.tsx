@@ -31,10 +31,12 @@ import {
   FEATURE_CATALOG,
   getFeatureDefinition,
   isFeatureEnabled,
+  type FeatureId,
 } from '../../../core/contracts/featureCatalog';
 import { validateCssSnippet } from '../../../core/contracts/cssSnippet';
 import { matchSettingsSearchEntries, type SettingsSectionId } from './settingsSearchCatalog';
 import { Button } from '../../kit/button';
+import { ConfirmBar } from '../../kit/confirm-bar';
 import { IconFrame } from '../../kit/icon-button';
 import { Input } from '../../kit/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../kit/select';
@@ -44,6 +46,15 @@ import { Textarea } from '../../kit/textarea';
 import { ThemeIcon } from '../../kit/icon';
 import { ToggleGroup, ToggleGroupItem } from '../../kit/toggle-group';
 import type { WebNextMessageKey } from '../../i18n/messages';
+
+/** Curated accent swatches for L1 color override (writes `blue` token). */
+const ACCENT_COLOR_PRESETS = [
+  { id: 'blue', value: '#3b82f6' },
+  { id: 'orange', value: '#f97316' },
+  { id: 'purple', value: '#a855f7' },
+  { id: 'emerald', value: '#10b981' },
+  { id: 'red', value: '#ef4444' },
+] as const;
 
 type SettingsSection = SettingsSectionId;
 
@@ -402,8 +413,12 @@ function FeatureSettings() {
   const setFeatureEnabled = usePreferencesStore((state) => state.setFeatureEnabled);
   const resetFeatureFlags = usePreferencesStore((state) => state.resetFeatureFlags);
   const { t } = useI18n();
+  const [pendingDisableId, setPendingDisableId] = useState<FeatureId | null>(null);
   const hasOverrides = Object.keys(featureFlags).length > 0;
   const visibleFeatures = FEATURE_CATALOG.filter((feature) => feature.settingsVisible !== false);
+  const pendingFeature = pendingDisableId
+    ? visibleFeatures.find((feature) => feature.id === pendingDisableId)
+    : null;
 
   return (
     <>
@@ -436,8 +451,10 @@ function FeatureSettings() {
                   aria-label={label}
                   onCheckedChange={(next) => {
                     if (!next && feature.requiresConfirm) {
-                      if (!window.confirm(t('settings.featureCoreWarning'))) return;
+                      setPendingDisableId(feature.id);
+                      return;
                     }
+                    setPendingDisableId((current) => (current === feature.id ? null : current));
                     setFeatureEnabled(feature.id, next);
                   }}
                 />
@@ -445,6 +462,20 @@ function FeatureSettings() {
             />
           );
         })}
+        {pendingFeature ? (
+          <ConfirmBar
+            className="cardo-settings-feature-confirm"
+            aria-label={t(pendingFeature.labelKey as WebNextMessageKey)}
+            message={t('settings.featureCoreWarning')}
+            cancelLabel={t('common.cancel')}
+            confirmLabel={t('settings.featureDisableConfirm')}
+            onCancel={() => setPendingDisableId(null)}
+            onConfirm={() => {
+              setFeatureEnabled(pendingFeature.id, false);
+              setPendingDisableId(null);
+            }}
+          />
+        ) : null}
       </SettingsCard>
       <SettingsRow
         className="cardo-feature-reset-card cardo-settings-list-group-spaced"
@@ -488,6 +519,9 @@ function AppearanceSettings({
   const importThemePack = usePreferencesStore((state) => state.importThemePack);
   const removeImportedThemePack = usePreferencesStore((state) => state.removeImportedThemePack);
   const restoreOfficialLook = usePreferencesStore((state) => state.restoreOfficialLook);
+  const themeColorOverrides = usePreferencesStore((state) => state.themeColorOverrides);
+  const setThemeColorOverride = usePreferencesStore((state) => state.setThemeColorOverride);
+  const resetThemeColorOverrides = usePreferencesStore((state) => state.resetThemeColorOverrides);
   const importedThemePacks = usePreferencesStore((state) => state.importedThemePacks);
   // Registry is outside React state — depend on pack identity, not just length (replace same count).
   const importedThemeSignal = importedThemePacks.map((pack) => pack.id).join('|');
@@ -502,6 +536,14 @@ function AppearanceSettings({
   const themeImportRef = useRef<HTMLInputElement>(null);
   const [importThemeError, setImportThemeError] = useState(false);
   const snippetInvalid = cssSnippet.trim().length > 0 && !validateCssSnippet(cssSnippet).ok;
+  const themeModeOverrides = themeColorOverrides[themeId];
+  const hasColorOverrides = Boolean(
+    themeModeOverrides &&
+    ((themeModeOverrides.light && Object.keys(themeModeOverrides.light).length > 0) ||
+      (themeModeOverrides.dark && Object.keys(themeModeOverrides.dark).length > 0)),
+  );
+  const packAccent = selectedTheme?.palettes[colorMode].blue ?? '#3b82f6';
+  const effectiveAccent = (themeModeOverrides?.[colorMode]?.blue ?? packAccent).toLowerCase();
 
   return (
     <>
@@ -675,6 +717,67 @@ function AppearanceSettings({
                 {t('settings.density.spacious')}
               </SegmentButton>
             </ToggleGroup>
+          }
+        />
+      </SettingsCard>
+
+      <SettingsCard
+        spaced
+        head={t('settings.themeLooks')}
+        description={t('settings.themeLooksDescription')}
+      >
+        <SettingsRow
+          title={t('settings.colorOverride.blue')}
+          description={t('settings.colorOverridesDescription')}
+          control={
+            <div
+              className="cardo-theme-color-presets"
+              role="group"
+              aria-label={t('settings.colorOverride.presets', {
+                label: t('settings.colorOverride.blue'),
+              })}
+            >
+              {ACCENT_COLOR_PRESETS.map((preset) => {
+                const active = effectiveAccent === preset.value.toLowerCase();
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    className={[
+                      'cardo-theme-color-preset',
+                      active ? 'cardo-theme-color-preset-active' : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                    aria-label={preset.value}
+                    aria-pressed={active}
+                    onClick={() => setThemeColorOverride(colorMode, 'blue', preset.value)}
+                  >
+                    <span
+                      className="cardo-theme-color-preset-fill"
+                      style={{ background: preset.value }}
+                      aria-hidden="true"
+                    />
+                  </button>
+                );
+              })}
+            </div>
+          }
+        />
+        <SettingsRow
+          className="cardo-theme-color-reset-card"
+          title={t('settings.resetColorOverrides')}
+          description={t('settings.resetColorOverridesDescription')}
+          control={
+            <Button
+              type="button"
+              variant="ghost"
+              className="cardo-settings-secondary-button"
+              disabled={!hasColorOverrides}
+              onClick={() => resetThemeColorOverrides(themeId)}
+            >
+              {t('settings.resetColorOverridesAction')}
+            </Button>
           }
         />
       </SettingsCard>

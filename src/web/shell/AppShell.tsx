@@ -41,6 +41,9 @@ export function AppShell({
           .filter(Boolean)
           .join(' ')}
         aria-hidden={sidebarCollapsed || undefined}
+        // Prevent Tab into collapsed chrome (aria-hidden alone is not enough).
+        // React types may lag the inert attribute.
+        {...(sidebarCollapsed ? ({ inert: true } as Record<string, unknown>) : {})}
       >
         {webTitleLeading ? (
           <div className="cardo-shell-web-title-leading">{webTitleLeading}</div>

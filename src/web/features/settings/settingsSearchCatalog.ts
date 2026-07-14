@@ -55,6 +55,16 @@ export const SETTINGS_SEARCH_CATALOG: readonly SettingsSearchEntry[] = [
     keywords: { en: ['light', 'dark', 'night'], zh: ['浅色', '深色', '暗色', '夜间'] },
   },
   {
+    id: 'theme-looks',
+    section: 'appearance',
+    titleKey: 'settings.themeLooks',
+    descriptionKey: 'settings.themeLooksDescription',
+    keywords: {
+      en: ['accent', 'color', 'looks', 'swatch', 'blue', 'orange'],
+      zh: ['配色', '强调色', '颜色', '色板', '自定义颜色'],
+    },
+  },
+  {
     id: 'font-family',
     section: 'appearance',
     titleKey: 'settings.fontFamily',

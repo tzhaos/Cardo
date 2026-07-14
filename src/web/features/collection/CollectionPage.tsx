@@ -31,6 +31,7 @@ import {
 } from '../../platform/hostPlatform';
 import { showToast } from '../../app/stores/toastStore';
 import { BoxAppearanceIcon } from '../boxes/boxIconRegistry';
+import { FaviconImage } from '../items/FaviconImage';
 
 export function CollectionPage() {
   const projection = useWorkspaceStore((state) => state.projection);
@@ -87,7 +88,11 @@ export function CollectionPage() {
         return;
       }
       if (item.type === 'bookmark') {
-        openExternalUrl(item.url);
+        const openResult = await openExternalUrl(item.url);
+        if (openResult.status === 'failed') {
+          showToast(t('toast.openFailed'), 'error');
+          return;
+        }
         recordItemActivity(boxId, item, 'item.open', 'collection');
         return;
       }
@@ -105,7 +110,14 @@ export function CollectionPage() {
 
   const locateSource = (box: WorkspaceBox) => {
     setActivePage(box.pageId, 'collection');
-    focusFrame(box.pageId, box.frame);
+    const page = pagesById.get(box.pageId);
+    const mode = page?.groupViewMode ?? 'freeform';
+    if (mode === 'freeform') {
+      focusFrame(box.pageId, box.frame);
+    } else {
+      const managedFrame = mode === 'list' ? box.modeLayouts.list : box.modeLayouts.waterfall;
+      focusFrame(box.pageId, managedFrame);
+    }
     selectBox(box.id);
     highlightBox(box.id);
   };
@@ -231,6 +243,7 @@ function CollectionBox({
   useEffect(() => () => sessionRef.current?.end(), []);
 
   const beginFrameChange = (event: ReactPointerEvent<HTMLElement>, mode: 'move' | 'resize') => {
+    if (event.button !== 0 || !event.isPrimary) return;
     if (mode === 'move' && (event.target as Element).closest('button,[data-no-collection-drag]'))
       return;
     event.preventDefault();
@@ -406,11 +419,7 @@ function CollectionItemIcon({ item }: { item: BoxItem }) {
     case 'shortcut':
       return <ThemeIcon name="apps" size={16} />;
     case 'bookmark':
-      return item.favicon ? (
-        <img className="cardo-website-icon" src={item.favicon} alt="" />
-      ) : (
-        <ThemeIcon name="globe" size={16} />
-      );
+      return <FaviconImage src={item.favicon} size={16} />;
     case 'clipboard':
       return <ThemeIcon name="clipboard" size={16} />;
   }

@@ -20,8 +20,8 @@ export function createDesktopPorts(): AppPorts {
       },
     },
     tabs: {
-      openUrl: (url) => {
-        void getDesktopBridge().openExternal(url);
+      openUrl: async (url) => {
+        await getDesktopBridge().openExternal(url);
       },
     },
     localResource: {

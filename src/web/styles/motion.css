@@ -15,6 +15,25 @@
   animation: cardo-enter-item 520ms ease both;
 }
 
+/* Search locate pulse — stays fully opaque; no enter/exit translate. */
+@keyframes cardo-locate-item {
+  0%,
+  100% {
+    background: color-mix(in srgb, var(--cardo-blue) 10%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cardo-blue) 28%, transparent);
+  }
+
+  50% {
+    background: color-mix(in srgb, var(--cardo-blue) 22%, transparent);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--cardo-blue) 48%, transparent);
+  }
+}
+
+.cardo-item-locate {
+  animation: cardo-locate-item 600ms ease 3;
+  opacity: 1;
+}
+
 @keyframes cardo-tab-drop-ready {
   0%,
   100% {

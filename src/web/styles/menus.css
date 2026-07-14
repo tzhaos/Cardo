@@ -50,7 +50,8 @@
   padding: 6px;
   background: var(--cardo-surface);
   box-shadow: var(--cardo-shadow);
-  backdrop-filter: blur(18px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .cardo-menu-row {

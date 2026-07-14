@@ -431,7 +431,7 @@ function PageNavRow({
       return;
     }
     event.dataTransfer.setData(PAGE_REORDER_MIME, page.id);
-    event.dataTransfer.setData('text/plain', page.id);
+    // Do not also write text/plain — avoids false reorder hits from external text drops.
     event.dataTransfer.effectAllowed = 'move';
     onReorderDragStart();
   };
@@ -439,7 +439,7 @@ function PageNavRow({
   const onDragOver = (event: ReactDragEvent<HTMLElement>) => {
     if (!reorderEnabled) return;
     const types = event.dataTransfer.types;
-    if (!types.includes(PAGE_REORDER_MIME) && !types.includes('text/plain')) return;
+    if (!types.includes(PAGE_REORDER_MIME)) return;
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
     const rect = event.currentTarget.getBoundingClientRect();
@@ -456,8 +456,7 @@ function PageNavRow({
 
   const onDrop = (event: ReactDragEvent<HTMLElement>) => {
     if (!reorderEnabled) return;
-    const sourceId =
-      event.dataTransfer.getData(PAGE_REORDER_MIME) || event.dataTransfer.getData('text/plain');
+    const sourceId = event.dataTransfer.getData(PAGE_REORDER_MIME);
     if (!sourceId) return;
     event.preventDefault();
     event.stopPropagation();
