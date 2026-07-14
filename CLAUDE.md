@@ -18,5 +18,6 @@ System rules (**force-loaded at every agent init, no progressive disclosure** â€
 
 Claude-specific:
 
-- Sub-agents and skills are exposed via symlinks: `.claude/agents -> ../.spec/agents`, `.claude/skills -> ../.spec/skills`. Rules reach context via the `@import` lines above, not via a symlink.
+- Sub-agents and skills are discovered under `.claude/agents` and `.claude/skills`, which must resolve into `.spec/` (create with `npm run spec:init-links` after clone; not committed on this repoâ€™s Windows workflow).
+- Rules reach context via the `@import` lines above, not via those links.
 - Do not maintain any Claude-only rules here. When behavior changes, edit `.spec/`; this file is just a pointer.

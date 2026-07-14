@@ -28,7 +28,9 @@ LumioAgent/
 │   └── tools/                # spec-lint 结构校验脚本 + fixture 自测
 ├── AGENTS.md                 # 根入口指针 → .spec/AGENTS.md
 ├── CLAUDE.md                 # Claude Code 入口：@import 强制加载三份核心
-├── .claude/、.agents/        # 软链接 → .spec/（宿主自动发现 agents / skills）
+├── .claude/settings.json     # Claude Code hooks（commit 前 spec-lint）
+├── .claude/agents|skills     # 本机链接 → .spec/（不入库；见 init-host-links）
+├── .agents/skills            # Codex 技能发现链接 → .spec/skills（不入库）
 ├── LICENSE                   # MIT
 ├── .gitignore
 └── README.md
@@ -47,25 +49,30 @@ LumioAgent/
 1. **填空**：`.spec/AGENTS.md` 顶部有「项目是什么 / 收口门槛」两处占位，填上你项目的定位和验证命令。
 2. **改写规范骨架**：`.spec/knowledge/standards/` 里三份文档标了「落地必填」的段落，换成你项目的真实约定；其余通用部分可保留。
 3. **保留框架资产**：`.spec/rules/` 的红线原样保留；`.spec/decisions/` 从 0001 写 ADR；`.claude/settings.json` 的提交前 lint 兜底随仓生效（Claude Code 启动会话时加载）。
-4. **宿主链接（Windows 必做）**：`git clone` / `reset` 后若 `node .spec/tools/spec-lint.mjs` 报软链接失败，执行：
+4. **宿主链接（本机创建，权威设计在种子仓是入库的 git symlink）**  
+   Cardo 在 Windows 上改为**不入库**链接路径（见 ADR / `.gitignore`），避免 junction 把整棵 `.spec/skills` 显示成数十个 untracked。克隆后执行：
 
 ```text
 npm run spec:init-links
-# 或 node .spec/tools/init-host-links.mjs
 npm run spec:lint
 ```
 
-无管理员权限时会建 directory junction（本机可用）；Git 仍保存 POSIX symlink 元数据。Developer Mode 开启后可改用真实 symlink。
+有符号链接权限时建 dir symlink；否则 Windows 用 junction。链接只服务本机宿主发现，真值永远在 `.spec/`。
 5. **老项目也能用**：不必一步到位，先只搬 `.spec/rules/` + `.spec/AGENTS.md`，其余分批接入。
 
 > 每次收尾跑一下 `npm run spec:lint`（= `node .spec/tools/spec-lint.mjs`），结构不一致会被当场指出。
 
 ### Cardo 本仓状态（已初始化）
 
-- 项目槽位与收口门槛：`.spec/AGENTS.md`（对齐 `cardo-dev-constraints`）
-- 产品硬约束：`.spec/knowledge/standards/cardo-dev-constraints.md`
-- ADR：`.spec/decisions/0001-adopt-lumioagent.md`
-- 入口：根 `AGENTS.md`（指针）、`CLAUDE.md`（`@import` 三份核心）
+| 项 | 状态 |
+| --- | --- |
+| 权威目录 | `.spec/`（SoT） |
+| 中心文档 / 收口门槛 | `.spec/AGENTS.md` + `cardo-dev-constraints` |
+| 入口指针 | 根 `AGENTS.md`、`CLAUDE.md`（`@import` 三份核心） |
+| Claude hooks | `.claude/settings.json`（入库） |
+| 宿主 agents/skills 链接 | 本机 `spec:init-links`，不入库 |
+| ADR | `0001-adopt-lumioagent` |
+| 校验 | `npm run spec:lint` 须 OK |
 
 ## 怎么扩展
 
