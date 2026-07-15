@@ -534,7 +534,7 @@ button.cardo-box-icon:disabled {
   pointer-events: auto;
 }
 
-/* Touch / no-hover: always show freeform header controls (match waterfall actions). */
+/* Touch / no-hover: always show freeform header controls. */
 @media (hover: none) {
   .cardo-box-controls {
     opacity: 1;

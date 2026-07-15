@@ -57,9 +57,6 @@ export async function initializeWorkspaceDatabase(
 
   await database.transaction(async (transaction) => {
     const pageDefaults = {
-      groupViewMode: 'freeform' as const,
-      waterfallColumns: 0,
-      listColumns: 1,
       createdAt: timestamp,
       updatedAt: timestamp,
     };
@@ -147,10 +144,6 @@ function createWelcomeSeed(pageId: string, timestamp: string, locale: Preference
     y: frame.y,
     width: frame.width,
     height: frame.height,
-    modeLayouts: {
-      waterfall: { ...frame },
-      list: { ...frame },
-    },
     viewMode: 'list' as const,
     detailMode: 'detailed' as const,
     isLocked: false,

@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { getPageCanvasState, useCanvasStore } from '../../app/stores/canvasStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { createCanvasWorldBounds, getVisibleCanvasWorldBounds } from '../../domain/canvasGeometry';
-import { isManagedGroupView, resolveGroupViewMode } from '../../domain/groupLayout';
 import { arrangeFreeformBoxes } from '../../domain/placement';
 import { isCollectionPageId } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
@@ -11,7 +10,6 @@ import type { ContextMenuItem } from '../../kit/context-menu';
 
 export function useCanvasTools() {
   const activePageId = useWorkspaceStore((state) => state.projection.activePageId);
-  const pages = useWorkspaceStore((state) => state.projection.pages);
   const panX = useCanvasStore((state) => state.pages[activePageId]?.camera.panX ?? 0);
   const panY = useCanvasStore((state) => state.pages[activePageId]?.camera.panY ?? 0);
   const isLocked = useCanvasStore((state) => state.pages[activePageId]?.isLocked ?? false);
@@ -28,9 +26,7 @@ export function useCanvasTools() {
   const { t } = useI18n();
 
   const isCollection = isCollectionPageId(activePageId);
-  const groupView = isCollection ? 'freeform' : resolveGroupViewMode(pages, activePageId);
-  const freeformArrangeAvailable =
-    !isCollection && !isManagedGroupView(groupView) && unlockedBoxCount > 0;
+  const freeformArrangeAvailable = !isCollection && unlockedBoxCount > 0;
 
   const items = useMemo<ContextMenuItem[]>(
     () => [

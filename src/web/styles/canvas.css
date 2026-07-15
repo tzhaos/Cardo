@@ -318,7 +318,7 @@
 
 /*
  * Freeform finger ghost: slightly open so the world drop landing is readable.
- * pointer-events:none so the ghost never steals hit-tests (matches managed morph ghost).
+ * pointer-events:none so the ghost never steals hit-tests.
  * Overrides .cardo-dragged-box-layer .cardo-box { pointer-events: auto } above.
  */
 .cardo-dragged-box-layer-freeform .cardo-box {

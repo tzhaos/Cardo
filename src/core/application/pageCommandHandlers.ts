@@ -25,8 +25,6 @@ export async function executePageCommand(
       return setDefaultPage(transaction, command.pageId);
     case 'page.open':
       return openPage(transaction, command.pageId);
-    case 'page.setGroupLayout':
-      return setGroupLayout(transaction, command);
   }
 }
 
@@ -41,9 +39,6 @@ async function createPage(transaction: DatabaseTransaction, title: string) {
     id: pageId,
     title: nextTitle,
     sortOrder: nextSortOrder,
-    groupViewMode: 'freeform' as const,
-    waterfallColumns: 0,
-    listColumns: 1,
     createdAt: timestamp,
     updatedAt: timestamp,
   };
@@ -266,30 +261,6 @@ async function deletePage(transaction: DatabaseTransaction, pageId: string) {
   changes.push(rowChange('app_state', { id: APP_STATE_ID }, stateBefore, stateAfter));
 
   return { changes };
-}
-
-async function setGroupLayout(
-  transaction: DatabaseTransaction,
-  command: Extract<WorkspaceCommand, { type: 'page.setGroupLayout' }>,
-) {
-  assertNormalPageId(command.pageId);
-  const page = await requirePage(transaction, command.pageId);
-  const patch: Partial<typeof pages.$inferInsert> = {
-    updatedAt: new Date().toISOString(),
-  };
-  if (command.groupViewMode !== undefined) patch.groupViewMode = command.groupViewMode;
-  if (command.waterfallColumns !== undefined) patch.waterfallColumns = command.waterfallColumns;
-  if (command.listColumns !== undefined) patch.listColumns = command.listColumns;
-  const after = { ...page, ...patch };
-  if (
-    after.groupViewMode === page.groupViewMode &&
-    after.waterfallColumns === page.waterfallColumns &&
-    after.listColumns === page.listColumns
-  ) {
-    return noMutation();
-  }
-  await transaction.update(pages).set(patch).where(eq(pages.id, command.pageId));
-  return { changes: [rowChange('pages', { id: command.pageId }, page, after)] };
 }
 
 function assertNormalPageId(pageId: string) {

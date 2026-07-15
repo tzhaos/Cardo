@@ -27,15 +27,8 @@ import {
 } from '../domain/canvasGeometry';
 import { resolveFreeformDropFrame } from '../domain/freeformLayout';
 import { findViewportAdaptiveFrame, isFrameInViewport } from '../domain/placement';
-import {
-  clientPointToGroupScrollContent,
-  isManagedGroupView,
-  reflowGroupBoxesAfterDrop,
-  resolveGroupViewMode,
-} from '../domain/groupLayout';
 import type { BoxFrame } from '../domain/workspace';
-import { isCollectionPageId, isRecycleBinPageId, isSystemPageId } from '../domain/workspace';
-import { updateManagedInsertPreview } from '../features/canvas/managedInsertPreview';
+import { isCollectionPageId, isRecycleBinPageId } from '../domain/workspace';
 import { translateWebNext } from '../i18n/messages';
 
 export function BoxPageDropController() {
@@ -141,9 +134,6 @@ export function BoxPageDropController() {
         // cannot silently migrate the box to a group the user only hovered.
         revertOptimisticPreviewToOrigin();
       }
-      // Sole owner of managed insert landing (FloatingDragLayer only paints the ghost).
-      // Always run after primary-nav flags so over-nav clears the hole (fn short-circuits).
-      updateManagedInsertPreview(clientX, clientY);
     };
 
     const frameScheduler = createLatestFrameScheduler(updateDropTarget);
@@ -239,7 +229,7 @@ function commitBoxDragRelease(
   // visible snap/bounce on every release.
   const dragFrame = constrainBoxFrameToCanvas(dragSession.latestFrame, canvasBounds);
 
-  // Freeform: snap to grid + min gap (no overlap). Managed handled above.
+  // Freeform: snap to grid + min gap (no overlap). Tab drop uses adaptive placement.
   let landingFrame: BoxFrame;
   if (releasedOnTab) {
     const occupiedFrames = workspace.projection.boxes
@@ -274,28 +264,6 @@ function commitBoxDragRelease(
     });
   }
 
-  const destMode = isSystemPageId(destinationPageId)
-    ? 'freeform'
-    : resolveGroupViewMode(workspace.projection.pages, destinationPageId);
-  const managedDest = isManagedGroupView(destMode);
-
-  // Managed layouts: reorder/reflow on release (no freeform free placement).
-  if (managedDest && !releasedOnTab && (destMode === 'waterfall' || destMode === 'list')) {
-    const dropPoint = clientPointToGroupScrollContent(event.clientX, event.clientY) ?? {
-      x: dragFrame.x + dragFrame.width / 2,
-      y: dragFrame.y + dragFrame.height / 2,
-    };
-    commitManagedLayoutDrop({
-      draggedBoxId,
-      destinationPageId,
-      originPageId,
-      dropPoint,
-      mode: destMode,
-      viewportWidth: canvas.viewportSize.width > 0 ? canvas.viewportSize.width : 960,
-    });
-    return;
-  }
-
   // Only animate meaningful landings (cross-page tab place / off-screen pull-in).
   // Same-page freeform: never arm pendingBoxLanding — snap avoids drop flash.
   const moved =
@@ -303,11 +271,7 @@ function commitBoxDragRelease(
     Math.abs(landingFrame.y - dragSession.latestFrame.y) > 1;
   const crossPageLanding =
     (originPageId ?? movingBox.pageId) !== destinationPageId || releasedOnTab;
-  if (
-    moved &&
-    !managedDest &&
-    (crossPageLanding || !isFrameInViewport(dragFrame, viewportBounds))
-  ) {
+  if (moved && (crossPageLanding || !isFrameInViewport(dragFrame, viewportBounds))) {
     ui.setPendingBoxLanding(draggedBoxId, landingFrame);
   }
 
@@ -321,11 +285,6 @@ function commitBoxDragRelease(
     }
     void workspace
       .moveBoxToPage(draggedBoxId, destinationPageId, landingFrame)
-      .then(() => {
-        if (managedDest) {
-          reflowManagedPage(destinationPageId, draggedBoxId, landingFrame);
-        }
-      })
       .catch((error: unknown) => {
         console.error('Cardo command failed', error);
         void workspace.revertOptimisticProjection();
@@ -337,117 +296,8 @@ function commitBoxDragRelease(
 
   if (workspace.projection.activePageId !== destinationPageId) {
     workspace.setActivePage(destinationPageId);
-  }
-  if (managedDest) {
-    reflowManagedPage(destinationPageId, draggedBoxId, landingFrame);
-    return;
   }
   workspace.updateBoxFrame(draggedBoxId, landingFrame);
-}
-
-function commitManagedLayoutDrop(args: {
-  draggedBoxId: string;
-  destinationPageId: string;
-  originPageId: string | null;
-  dropPoint: { x: number; y: number };
-  mode: 'waterfall' | 'list';
-  viewportWidth: number;
-}) {
-  const { draggedBoxId, destinationPageId, originPageId, dropPoint, mode, viewportWidth } = args;
-  const workspace = useWorkspaceStore.getState();
-  const movingBox = workspace.projection.boxes.find((box) => box.id === draggedBoxId);
-  if (!movingBox) return;
-
-  // Temporary frame until reflow writes the real slot.
-  const seedFrame: BoxFrame = {
-    x: dropPoint.x,
-    y: dropPoint.y,
-    width: movingBox.frame.width,
-    height: movingBox.frame.height,
-  };
-
-  const persistedPageId = originPageId ?? movingBox.pageId;
-  if (persistedPageId !== destinationPageId) {
-    if (movingBox.pageId !== destinationPageId) {
-      workspace.previewBoxOnPage(draggedBoxId, destinationPageId, seedFrame);
-    }
-    void workspace
-      .moveBoxToPage(draggedBoxId, destinationPageId, seedFrame)
-      .then(() =>
-        reflowManagedPage(destinationPageId, draggedBoxId, dropPoint, mode, viewportWidth),
-      )
-      .catch((error: unknown) => {
-        console.error('Cardo command failed', error);
-        void workspace.revertOptimisticProjection();
-        const locale = usePreferencesStore.getState().locale;
-        showToast(translateWebNext(locale, 'toast.commandFailed'), 'error');
-      });
-    return;
-  }
-
-  if (workspace.projection.activePageId !== destinationPageId) {
-    workspace.setActivePage(destinationPageId);
-  }
-  reflowManagedPage(destinationPageId, draggedBoxId, dropPoint, mode, viewportWidth);
-}
-
-function reflowManagedPage(
-  pageId: string,
-  draggedId: string,
-  dropPoint: { x: number; y: number },
-  modeHint?: 'waterfall' | 'list',
-  viewportWidthHint?: number,
-) {
-  const workspace = useWorkspaceStore.getState();
-  const ui = useUiStore.getState();
-  const canvas = useCanvasStore.getState();
-  const resolved =
-    modeHint ??
-    (isSystemPageId(pageId)
-      ? 'freeform'
-      : resolveGroupViewMode(workspace.projection.pages, pageId));
-  if (resolved !== 'waterfall' && resolved !== 'list') return;
-  const mode = resolved;
-
-  const viewportWidth =
-    viewportWidthHint ?? (canvas.viewportSize.width > 0 ? canvas.viewportSize.width : 960);
-  const pageBoxes = workspace.projection.boxes.filter((box) => box.pageId === pageId);
-  const page = workspace.projection.pages.find((entry) => entry.id === pageId);
-  const columnCount = mode === 'list' ? (page?.listColumns ?? 1) : (page?.waterfallColumns ?? 0);
-
-  // Prefer live landing insertIndex so commit matches what the user saw.
-  const preview = ui.managedInsertPreview;
-  const insertIndex =
-    preview && preview.pageId === pageId && preview.mode === mode ? preview.insertIndex : undefined;
-
-  const frames = reflowGroupBoxesAfterDrop({
-    boxes: pageBoxes,
-    draggedId,
-    dropPoint,
-    mode,
-    viewportWidth,
-    insertIndex,
-    columnCount,
-  });
-
-  const changed: Record<string, BoxFrame> = {};
-  for (const box of pageBoxes) {
-    const next = frames.get(box.id);
-    if (!next) continue;
-    if (
-      next.x === box.frame.x &&
-      next.y === box.frame.y &&
-      next.width === box.frame.width &&
-      next.height === box.frame.height
-    ) {
-      continue;
-    }
-    changed[box.id] = next;
-  }
-  if (Object.keys(changed).length === 0) return;
-
-  // Managed mode only — freeform columns untouched (layout isolation).
-  workspace.arrangeBoxesOnPage(pageId, changed, mode);
 }
 
 /**

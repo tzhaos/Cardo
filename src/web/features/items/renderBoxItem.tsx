@@ -1,9 +1,10 @@
 import type { WorkspaceBox } from '../../domain/workspace';
-import { BookmarkItem } from '../items/BookmarkItem';
-import { ClipboardItem } from '../items/ClipboardItem';
-import { LocalResourceItem } from '../items/LocalResourceItem';
+import { BookmarkItem } from './BookmarkItem';
+import { ClipboardItem } from './ClipboardItem';
+import { LocalResourceItem } from './LocalResourceItem';
 
-export function renderGroupItem(
+/** Shared item renderer for freeform box contents. */
+export function renderBoxItem(
   boxId: string,
   item: WorkspaceBox['items'][number],
   highlight = false,

@@ -8,7 +8,7 @@ import { usePreferencesStore } from '../../app/stores/preferencesStore';
 import { useUiStore } from '../../app/stores/uiStore';
 import { useWorkspaceStore } from '../../app/stores/workspaceStore';
 import { createWebSearchUrl } from '../../domain/webSearch';
-import type { BoxFrame, BoxItem } from '../../domain/workspace';
+import type { BoxItem } from '../../domain/workspace';
 import { useI18n } from '../../i18n/useI18n';
 import { ThemeIcon } from '../../kit/icon';
 import { Button } from '../../kit/button';
@@ -21,7 +21,7 @@ import {
 } from '../../platform/hostPlatform';
 import { FaviconImage } from '../items/FaviconImage';
 
-/** Delays after search closes so managed layouts can paint before scroll. */
+/** Delays after search closes so canvas/list paint before scroll. */
 const SCROLL_RETRY_MS = [0, 50, 150, 300, 500] as const;
 
 /**
@@ -130,8 +130,7 @@ export function GlobalSearchPanel({
   }, [query, retryToken, t]);
 
   const scrollSearchTargetIntoView = (boxId: string, itemId?: string) => {
-    // Managed views (waterfall/list) may not finish paint on the same tick as page switch.
-    // Overlay closes after activate; canvas stays mounted — still retry for layout reflow.
+    // Overlay closes after activate; canvas stays mounted — retry for page-turn paint.
     const run = () => {
       document
         .querySelector(`[data-box-id="${CSS.escape(boxId)}"]`)
@@ -149,30 +148,10 @@ export function GlobalSearchPanel({
     });
   };
 
-  /** Resolve frame for focusFrame: freeform uses box.frame; managed uses modeLayouts. */
-  const resolveFocusFrame = (
-    pageId: string,
-    boxId: string,
-    fallback: BoxFrame,
-  ): BoxFrame | null => {
-    const page = projection.pages.find((entry) => entry.id === pageId);
-    const mode = page?.groupViewMode ?? 'freeform';
-    if (mode === 'freeform') return fallback;
-    const box = projection.boxes.find((entry) => entry.id === boxId);
-    if (!box) return null;
-    return mode === 'list' ? box.modeLayouts.list : box.modeLayouts.waterfall;
-  };
-
-  const focusSearchTarget = (pageId: string, boxId: string, fallbackFrame: BoxFrame) => {
-    const frame = resolveFocusFrame(pageId, boxId, fallbackFrame);
-    // Skip freeform-only focus when managed layout frame is unavailable.
-    if (frame) focusFrame(pageId, frame);
-  };
-
   const locateBoxResult = (result: Extract<GlobalSearchResult, { kind: 'box' }>) => {
     recordBoxActivity(result.box.id, 'box.open', { origin: 'search' });
     setActivePage(result.page.id, 'search');
-    focusSearchTarget(result.page.id, result.box.id, result.box.frame);
+    focusFrame(result.page.id, result.box.frame);
     selectBox(result.box.id);
     highlightBox(result.box.id);
     scrollSearchTargetIntoView(result.box.id);
@@ -180,7 +159,7 @@ export function GlobalSearchPanel({
 
   const locateItemResult = (result: Extract<GlobalSearchResult, { kind: 'item' }>) => {
     setActivePage(result.page.id, 'search');
-    focusSearchTarget(result.page.id, result.box.id, result.box.frame);
+    focusFrame(result.page.id, result.box.frame);
     selectBox(result.box.id);
     highlightBox(result.box.id);
     markLocated(result.box.id, result.item.id);

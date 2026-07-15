@@ -90,7 +90,7 @@ async function pasteItem(
       kind: 'temporary',
       title: '',
       ...frame,
-      modeLayouts: { waterfall: { ...frame }, list: { ...frame } },
+
       viewMode: 'list',
       detailMode: 'detailed',
       isLocked: false,

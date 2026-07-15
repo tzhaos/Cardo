@@ -104,8 +104,8 @@ Sidebar (~236px × density):
   Recycle Bin
   foot: Settings
 Main panel (white, radius token):
-  header: group title | view switcher | undo/redo | canvas tools menu
-  canvas: freeform / waterfall / list
+  header: group title | undo/redo | canvas tools menu
+  canvas: freeform only
   bottom: circular create FAB only
 Search: overlay over canvas (Ctrl/Cmd+K)
 Settings: full shell swap

@@ -58,22 +58,8 @@ interface WorkspaceStore {
    * (Runtime commit still goes through updateBoxFrame / moveBoxToPage).
    */
   previewBoxFrame: (boxId: string, frame: BoxFrame) => void;
-  /** Optimistic multi-box reflow for waterfall/list before drag end clears the ghost. */
-  previewBoxFrames: (frames: ReadonlyMap<string, BoxFrame>) => void;
-  /** Auto-arrange for one isolated layout mode (freeform | waterfall | list). */
-  arrangeBoxesOnPage: (
-    pageId: string,
-    frames: Record<string, BoxFrame>,
-    layoutMode?: 'freeform' | 'waterfall' | 'list',
-  ) => void;
-  setPageGroupLayout: (
-    pageId: string,
-    patch: {
-      groupViewMode?: 'freeform' | 'waterfall' | 'list';
-      waterfallColumns?: number;
-      listColumns?: number;
-    },
-  ) => void;
+  /** Auto-arrange freeform canvas frames for one page. */
+  arrangeBoxesOnPage: (pageId: string, frames: Record<string, BoxFrame>) => void;
   updateCollectionBoxFrame: (boxId: string, frame: BoxFrame) => void;
   updateCollectionBoxView: (
     boxId: string,
@@ -195,21 +181,11 @@ const actions = {
     fireCommand({ type: 'box.updateFrame', boxId, frame });
   },
   previewBoxFrame: (boxId, frame) => applyOptimisticBoxFrame(boxId, frame),
-  previewBoxFrames: (frames) => applyOptimisticBoxFrames(frames),
-  arrangeBoxesOnPage: (pageId, frames, layoutMode = 'freeform') => {
+  arrangeBoxesOnPage: (pageId, frames) => {
     const ids = Object.keys(frames);
     if (ids.length === 0) return;
-    if (layoutMode === 'freeform') {
-      applyOptimisticBoxFrames(new Map(Object.entries(frames)));
-    } else {
-      applyOptimisticManagedFrames(layoutMode, frames);
-    }
-    fireCommand({ type: 'canvas.arrange', pageId, frames, layoutMode });
-  },
-  setPageGroupLayout: (pageId, patch) => {
-    // Optimistic page meta so group-view switcher paints before pageTabs invalidation.
-    applyOptimisticPageGroupLayout(pageId, patch);
-    fireCommand({ type: 'page.setGroupLayout', pageId, ...patch });
+    applyOptimisticBoxFrames(new Map(Object.entries(frames)));
+    fireCommand({ type: 'canvas.arrange', pageId, frames, layoutMode: 'freeform' });
   },
   updateCollectionBoxFrame: (boxId: string, frame: BoxFrame) =>
     fireCommand({ type: 'collection.updateBoxFrame', boxId, frame }),
@@ -322,45 +298,6 @@ function applyOptimisticPageOrder(orderedPageIds: string[]) {
   emitChange();
 }
 
-function applyOptimisticPageGroupLayout(
-  pageId: string,
-  patch: {
-    groupViewMode?: 'freeform' | 'waterfall' | 'list';
-    waterfallColumns?: number;
-    listColumns?: number;
-  },
-) {
-  const projection = state.projection;
-  const page = projection.pages.find((entry) => entry.id === pageId);
-  if (!page) return;
-  if (
-    (patch.groupViewMode === undefined || page.groupViewMode === patch.groupViewMode) &&
-    (patch.waterfallColumns === undefined || page.waterfallColumns === patch.waterfallColumns) &&
-    (patch.listColumns === undefined || page.listColumns === patch.listColumns)
-  ) {
-    return;
-  }
-  state = {
-    ...state,
-    projection: {
-      ...projection,
-      pages: projection.pages.map((entry) =>
-        entry.id === pageId
-          ? {
-              ...entry,
-              ...(patch.groupViewMode !== undefined ? { groupViewMode: patch.groupViewMode } : {}),
-              ...(patch.waterfallColumns !== undefined
-                ? { waterfallColumns: patch.waterfallColumns }
-                : {}),
-              ...(patch.listColumns !== undefined ? { listColumns: patch.listColumns } : {}),
-            }
-          : entry,
-      ),
-    },
-  };
-  emitChange();
-}
-
 function applyOptimisticBoxFrame(boxId: string, frame: BoxFrame) {
   const projection = state.projection;
   const box = projection.boxes.find((entry) => entry.id === boxId);
@@ -402,35 +339,6 @@ function applyOptimisticBoxFrames(frames: ReadonlyMap<string, BoxFrame>) {
     }
     changed = true;
     return { ...entry, frame: { ...next } };
-  });
-  if (!changed) return;
-  state = { ...state, projection: { ...projection, boxes } };
-  emitChange();
-}
-
-function applyOptimisticManagedFrames(
-  mode: 'waterfall' | 'list',
-  frames: Record<string, BoxFrame>,
-) {
-  const projection = state.projection;
-  let changed = false;
-  const boxes = projection.boxes.map((entry) => {
-    const next = frames[entry.id];
-    if (!next) return entry;
-    const prev = entry.modeLayouts[mode];
-    if (
-      prev.x === next.x &&
-      prev.y === next.y &&
-      prev.width === next.width &&
-      prev.height === next.height
-    ) {
-      return entry;
-    }
-    changed = true;
-    return {
-      ...entry,
-      modeLayouts: { ...entry.modeLayouts, [mode]: { ...next } },
-    };
   });
   if (!changed) return;
   state = { ...state, projection: { ...projection, boxes } };

@@ -1,14 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import {
-  groupViewModeIds,
-  GROUP_VIEW_MODE_META,
-  type GroupViewMode,
-} from '../../core/contracts/groupView';
 import { RECYCLE_BIN_PAGE_ID } from '../../core/contracts/systemPages';
 import { useUiStore } from '../app/stores/uiStore';
 import { useWorkspaceStore } from '../app/stores/workspaceStore';
 import { useCanvasTools } from '../features/canvas/useCanvasTools';
-import { resolveGroupViewMode } from '../domain/groupLayout';
 import { isCollectionPageId, isRecycleBinPageId, isSystemPageId } from '../domain/workspace';
 import { useI18n } from '../i18n/useI18n';
 import { FeatureGate, useFeatureEnabled } from './FeatureGate';
@@ -21,16 +15,10 @@ import {
   DropdownMenuTrigger,
 } from '../kit/dropdown-menu';
 import { IconButton } from '../kit/icon-button';
-import { ThemeIcon, type ThemeIconName } from '../kit/icon';
-
-const GROUP_VIEW_ICONS: Record<GroupViewMode, ThemeIconName> = {
-  freeform: 'layoutGrid',
-  waterfall: 'panel',
-  list: 'list',
-};
+import { ThemeIcon } from '../kit/icon';
 
 /**
- * Main panel header: group title, group-view switcher, history/canvas tools.
+ * Main panel header: group title, history/canvas tools.
  * Freeform canvas tools pack into a single "Canvas tools" dropdown.
  * Search lives in the sidebar next to New group — not here.
  */
@@ -43,7 +31,6 @@ export function PanelHeader() {
   const recycleBoxCount = useWorkspaceStore(
     (state) => state.projection.boxes.filter((box) => box.pageId === RECYCLE_BIN_PAGE_ID).length,
   );
-  const setPageGroupLayout = useWorkspaceStore((state) => state.setPageGroupLayout);
   const emptyRecycleBin = useWorkspaceStore((state) => state.emptyRecycleBin);
   const undo = useWorkspaceStore((state) => state.undo);
   const redo = useWorkspaceStore((state) => state.redo);
@@ -67,9 +54,7 @@ export function PanelHeader() {
   const arrangeItem = canvasToolItems.find((item) => item.id === 'arrange-boxes');
   const lockItem = canvasToolItems.find((item) => item.id === 'toggle-canvas-lock');
   const showWorkspaceTools = !searchOpen && (historyEnabled || canvasToolsEnabled);
-  const showGroupView = !searchOpen && !isSystemPageId(activePageId) && activePageId.length > 0;
-  const activeGroupView = resolveGroupViewMode(pages, activePageId);
-  const freeformTools = activeGroupView === 'freeform' && !isSystemPageId(activePageId);
+  const freeformTools = !searchOpen && !isSystemPageId(activePageId) && activePageId.length > 0;
   const isRecycleActive = !searchOpen && isRecycleBinPageId(activePageId);
   const showEmptyRecycle = isRecycleActive && recycleBoxCount > 0;
 
@@ -117,120 +102,61 @@ export function PanelHeader() {
 
   const tools =
     recycleTools ??
-    (showGroupView || showWorkspaceTools ? (
+    (showWorkspaceTools ? (
       <div className="cardo-surface-tools" aria-label={t('history.controls')}>
-        {showGroupView ? (
-          <div
-            className="cardo-group-view-switcher"
-            role="group"
-            aria-label={t('groupView.switcher')}
+        <FeatureGate feature="chrome.historyToolbar">
+          <IconButton
+            disabled={!canUndo || dragBusy}
+            onClick={undo}
+            aria-label={t('history.undo')}
+            tooltip={t('history.undo')}
           >
-            {groupViewModeIds.map((mode) => {
-              const meta = GROUP_VIEW_MODE_META[mode];
-              const pressed = activeGroupView === mode;
-              return (
-                <IconButton
-                  key={mode}
-                  className="cardo-group-view-option"
-                  pressed={pressed}
-                  onClick={() => {
-                    if (dragBusy) return;
-                    setPageGroupLayout(activePageId, { groupViewMode: mode });
-                  }}
-                  aria-label={t(meta.labelKey)}
-                  tooltip={`${t(meta.labelKey)} — ${t(meta.descriptionKey)}`}
-                >
-                  <ThemeIcon name={GROUP_VIEW_ICONS[mode]} size={15} />
-                </IconButton>
-              );
-            })}
-          </div>
-        ) : null}
-        {showGroupView && activeGroupView === 'list' ? (
-          <div
-            className="cardo-group-view-switcher"
-            role="group"
-            aria-label={t('groupView.listColumns')}
+            <ThemeIcon name="undo" size={16} />
+          </IconButton>
+          <IconButton
+            disabled={!canRedo || dragBusy}
+            onClick={redo}
+            aria-label={t('history.redo')}
+            tooltip={t('history.redo')}
           >
-            {([1, 2, 3] as const).map((count) => {
-              const page = pages.find((entry) => entry.id === activePageId);
-              const current = page?.listColumns ?? 1;
-              return (
+            <ThemeIcon name="redo" size={16} />
+          </IconButton>
+        </FeatureGate>
+        {historyEnabled && canvasToolsEnabled && freeformTools ? <Divider /> : null}
+        {freeformTools ? (
+          <FeatureGate feature="chrome.canvasTools">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                {/* No tooltip here — IconButton+HoverTip breaks Radix asChild ref. */}
                 <IconButton
-                  key={count}
-                  className="cardo-group-view-option"
-                  pressed={current === count}
-                  onClick={() => {
-                    if (dragBusy) return;
-                    setPageGroupLayout(activePageId, { listColumns: count });
-                  }}
-                  aria-label={t('groupView.listColumnsN', { count: String(count) })}
-                  tooltip={t('groupView.listColumnsN', { count: String(count) })}
+                  pressed={isLocked}
+                  disabled={dragBusy}
+                  aria-label={t('canvas.layoutTools')}
+                  title={t('canvas.layoutTools')}
                 >
-                  <span className="cardo-group-columns-label">{count}</span>
+                  <ThemeIcon name="options" size={16} />
                 </IconButton>
-              );
-            })}
-          </div>
-        ) : null}
-        {showGroupView && showWorkspaceTools ? <Divider /> : null}
-        {showWorkspaceTools ? (
-          <>
-            <FeatureGate feature="chrome.historyToolbar">
-              <IconButton
-                disabled={!canUndo || dragBusy}
-                onClick={undo}
-                aria-label={t('history.undo')}
-                tooltip={t('history.undo')}
-              >
-                <ThemeIcon name="undo" size={16} />
-              </IconButton>
-              <IconButton
-                disabled={!canRedo || dragBusy}
-                onClick={redo}
-                aria-label={t('history.redo')}
-                tooltip={t('history.redo')}
-              >
-                <ThemeIcon name="redo" size={16} />
-              </IconButton>
-            </FeatureGate>
-            {historyEnabled && canvasToolsEnabled && freeformTools ? <Divider /> : null}
-            {freeformTools ? (
-              <FeatureGate feature="chrome.canvasTools">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    {/* No tooltip here — IconButton+HoverTip breaks Radix asChild ref. */}
-                    <IconButton
-                      pressed={isLocked}
-                      disabled={dragBusy}
-                      aria-label={t('canvas.layoutTools')}
-                      title={t('canvas.layoutTools')}
-                    >
-                      <ThemeIcon name="options" size={16} />
-                    </IconButton>
-                  </DropdownMenuTrigger>
+              </DropdownMenuTrigger>
 
-                  <DropdownMenuContent align="end" side="bottom" sideOffset={4}>
-                    <DropdownMenuItem
-                      disabled={locateItem?.disabled}
-                      onSelect={() => locateItem?.onSelect?.()}
-                    >
-                      {locateItem?.label ?? t('canvas.returnToOrigin')}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      disabled={arrangeItem?.disabled}
-                      onSelect={() => arrangeItem?.onSelect?.()}
-                    >
-                      {arrangeItem?.label ?? t('canvas.arrangeBoxes')}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => lockItem?.onSelect?.()}>
-                      {lockItem?.label ?? t('canvas.lockViewport')}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </FeatureGate>
-            ) : null}
-          </>
+              <DropdownMenuContent align="end" side="bottom" sideOffset={4}>
+                <DropdownMenuItem
+                  disabled={locateItem?.disabled}
+                  onSelect={() => locateItem?.onSelect?.()}
+                >
+                  {locateItem?.label ?? t('canvas.returnToOrigin')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  disabled={arrangeItem?.disabled}
+                  onSelect={() => arrangeItem?.onSelect?.()}
+                >
+                  {arrangeItem?.label ?? t('canvas.arrangeBoxes')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => lockItem?.onSelect?.()}>
+                  {lockItem?.label ?? t('canvas.lockViewport')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </FeatureGate>
         ) : null}
       </div>
     ) : null);

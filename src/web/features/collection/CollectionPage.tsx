@@ -110,14 +110,7 @@ export function CollectionPage() {
 
   const locateSource = (box: WorkspaceBox) => {
     setActivePage(box.pageId, 'collection');
-    const page = pagesById.get(box.pageId);
-    const mode = page?.groupViewMode ?? 'freeform';
-    if (mode === 'freeform') {
-      focusFrame(box.pageId, box.frame);
-    } else {
-      const managedFrame = mode === 'list' ? box.modeLayouts.list : box.modeLayouts.waterfall;
-      focusFrame(box.pageId, managedFrame);
-    }
+    focusFrame(box.pageId, box.frame);
     selectBox(box.id);
     highlightBox(box.id);
   };

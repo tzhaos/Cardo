@@ -16,6 +16,7 @@ import themeCustomizationMigrationSql from '../../../drizzle/0004_theme_customiz
 import featureFlagsMigrationSql from '../../../drizzle/0005_feature_flags.sql?raw';
 import layoutSnippetMigrationSql from '../../../drizzle/0006_layout_snippet.sql?raw';
 import layoutIsolationMigrationSql from '../../../drizzle/0007_layout_isolation.sql?raw';
+import removeManagedGroupViewsMigrationSql from '../../../drizzle/0008_remove_managed_group_views.sql?raw';
 import { BASELINE_SCHEMA_VERSION, DATABASE_SCHEMA_VERSION } from './version';
 
 export interface MigratorAdapter {
@@ -40,6 +41,7 @@ const FORWARD_MIGRATIONS: Readonly<Record<number, string>> = {
   8: featureFlagsMigrationSql,
   9: layoutSnippetMigrationSql,
   10: layoutIsolationMigrationSql,
+  11: removeManagedGroupViewsMigrationSql,
 };
 
 /**

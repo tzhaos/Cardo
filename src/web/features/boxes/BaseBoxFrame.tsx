@@ -23,13 +23,11 @@ import {
   FREEFORM_MIN_WIDTH,
   resolveFreeformDropFrame,
 } from '../../domain/freeformLayout';
-import { resolveGroupViewMode, reflowGroupBoxesAfterDrop } from '../../domain/groupLayout';
 import { findPageLandingFrame } from '../../domain/placement';
 import {
   RECYCLE_BIN_PAGE_ID,
   isRecycleBinPageId,
   isSystemPageId,
-  type BoxFrame,
   type WorkspaceBox,
   type WorkspaceBoxIcon,
 } from '../../domain/workspace';
@@ -217,8 +215,6 @@ export function BaseBoxFrame({
     if (box.isLocked) {
       return;
     }
-    // Managed layouts (waterfall/list) still allow drag for reorder + cross-page;
-    // release reflows slots (see BoxPageDropController).
 
     if ((event.target as HTMLElement).closest('button,input,textarea,select,[data-no-drag]')) {
       return;
@@ -252,7 +248,6 @@ export function BaseBoxFrame({
       startFrame: box.frame,
       latestFrame: box.frame,
       transformOrigin,
-      morphology: 'freeform',
     };
     // Seed paint on this instance before remount so the first fixed frame is correct
     // if React reuses anything; DraggedBoxLayer remount seeds from session.lastClient*.
@@ -615,45 +610,10 @@ export function BaseBoxFrame({
             findPageLandingFrame(workspace.projection, box.id, targetPageId, center, bounds, {
               avoidOverlap: true,
             }) ?? undefined;
-          void moveBoxToPage(box.id, targetPageId, frame)
-            .then(() => {
-              // Managed pages need a modeLayouts reflow so the box slots into the grid.
-              const latest = useWorkspaceStore.getState();
-              const mode = resolveGroupViewMode(latest.projection.pages, targetPageId);
-              if (mode !== 'waterfall' && mode !== 'list') return;
-              const viewportWidth = canvas.viewportSize.width > 0 ? canvas.viewportSize.width : 960;
-              const pageBoxes = latest.projection.boxes.filter(
-                (entry) => entry.pageId === targetPageId,
-              );
-              const frames = reflowGroupBoxesAfterDrop({
-                boxes: pageBoxes,
-                draggedId: box.id,
-                dropPoint: center,
-                mode,
-                viewportWidth,
-              });
-              const changed: Record<string, BoxFrame> = {};
-              for (const entry of pageBoxes) {
-                const next = frames.get(entry.id);
-                if (!next) continue;
-                if (
-                  next.x === entry.frame.x &&
-                  next.y === entry.frame.y &&
-                  next.width === entry.frame.width &&
-                  next.height === entry.frame.height
-                ) {
-                  continue;
-                }
-                changed[entry.id] = next;
-              }
-              if (Object.keys(changed).length) {
-                latest.arrangeBoxesOnPage(targetPageId, changed, mode);
-              }
-            })
-            .catch((error: unknown) => {
-              console.error('Cardo command failed', error);
-              showToast(t('toast.commandFailed'), 'error');
-            });
+          void moveBoxToPage(box.id, targetPageId, frame).catch((error: unknown) => {
+            console.error('Cardo command failed', error);
+            showToast(t('toast.commandFailed'), 'error');
+          });
         };
         contextMenu.openMenu(event.clientX, event.clientY, [
           {

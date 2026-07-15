@@ -2,13 +2,13 @@ import type { WorkspaceBox } from '../../domain/workspace';
 import { getBoxAccent, getBoxIcon } from '../../domain/boxAppearance';
 import { useUiStore } from '../../app/stores/uiStore';
 import { SortableItemList } from '../items/SortableItemList';
-import { renderGroupItem } from '../group-views/renderGroupItem';
+import { renderBoxItem } from '../items/renderBoxItem';
 import { UniversalAddView } from './add-views/UniversalAddView';
 import { BaseBoxFrame } from './BaseBoxFrame';
 import { useI18n } from '../../i18n/useI18n';
 import { BoxAppearanceIcon } from './boxIconRegistry';
 
-/** Freeform canvas morphology — full box chrome. */
+/** Freeform canvas box — full chrome. */
 export function UniversalBox({ box }: { box: WorkspaceBox }) {
   const draftState = useUiStore((state) => state.addDrafts[box.id]);
   const openAddView = useUiStore((state) => state.openAddView);
@@ -32,7 +32,7 @@ export function UniversalBox({ box }: { box: WorkspaceBox }) {
           items={box.items}
           viewMode={box.kind === 'temporary' ? 'list' : box.viewMode}
           renderItem={(item) =>
-            renderGroupItem(box.id, item, draftState?.highlightItemId === item.id)
+            renderBoxItem(box.id, item, draftState?.highlightItemId === item.id)
           }
         />
       ) : !draftState?.mode ? (

@@ -23,7 +23,7 @@ export const databaseCommandRegistry = Object.freeze({
   'page.reorder': executePageCommand,
   'page.setDefault': executePageCommand,
   'page.open': executePageCommand,
-  'page.setGroupLayout': executePageCommand,
+
   'preferences.setLocale': executePreferencesCommand,
   'preferences.setColorMode': executePreferencesCommand,
   'preferences.setTheme': executePreferencesCommand,

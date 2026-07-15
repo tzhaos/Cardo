@@ -42,15 +42,6 @@ const commandSchemas = [
   z.object({ type: z.literal('page.reorder'), orderedPageIds: idListSchema }).strict(),
   z.object({ type: z.literal('page.setDefault'), pageId: entityIdSchema }).strict(),
   z.object({ type: z.literal('page.open'), pageId: entityIdSchema }).strict(),
-  z
-    .object({
-      type: z.literal('page.setGroupLayout'),
-      pageId: entityIdSchema,
-      groupViewMode: z.enum(['freeform', 'waterfall', 'list']).optional(),
-      waterfallColumns: z.number().int().min(0).max(6).optional(),
-      listColumns: z.number().int().min(1).max(4).optional(),
-    })
-    .strict(),
   z.object({ type: z.literal('preferences.setLocale'), locale: preferenceLocaleSchema }).strict(),
   z.object({ type: z.literal('preferences.setColorMode'), colorMode: colorModeSchema }).strict(),
   z.object({ type: z.literal('preferences.setTheme'), themeId: entityIdSchema }).strict(),
@@ -159,7 +150,7 @@ const commandSchemas = [
       type: z.literal('canvas.arrange'),
       pageId: entityIdSchema,
       /** Which isolated layout receives these frames. Default freeform. */
-      layoutMode: z.enum(['freeform', 'waterfall', 'list']).optional(),
+      layoutMode: z.literal('freeform').optional(),
       frames: z.record(entityIdSchema, boxFrameSchema),
     })
     .strict(),
