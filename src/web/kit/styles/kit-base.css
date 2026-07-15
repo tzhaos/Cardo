@@ -285,26 +285,27 @@
 }
 
 /*
- * Shell nav hover/active: fixed neutral gray only.
- * Not theme tokens — custom accent/settingsHover must not recolor the rail.
+ * Shell nav hover/active: monochrome light gray only (no brand blue wash).
  */
 .cardo-nav-item:hover {
-  background: rgba(128, 128, 128, 0.12);
+  background: rgba(128, 128, 128, 0.1);
 }
 
-.cardo-nav-item[data-active='true'] {
-  background: rgba(128, 128, 128, 0.18);
+.cardo-nav-item[data-active='true'],
+.cardo-nav-item-active {
+  background: rgba(128, 128, 128, 0.16);
+  color: var(--cardo-text);
   font-weight: 550;
 }
 
 .cardo-nav-item[data-tone='settings'][data-active='true'] {
-  background: rgba(128, 128, 128, 0.18);
+  background: rgba(128, 128, 128, 0.16);
   color: var(--cardo-text);
 }
 
 .cardo-nav-item[data-drop-target='true'] {
-  background: color-mix(in srgb, var(--cardo-blue) 14%, var(--cardo-active, #e2e5eb));
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--cardo-blue) 35%, transparent);
+  background: rgba(128, 128, 128, 0.2);
+  box-shadow: 0 0 0 1px rgba(128, 128, 128, 0.28);
 }
 
 .cardo-nav-item-icon {

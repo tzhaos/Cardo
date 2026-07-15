@@ -43,7 +43,7 @@
 
 [data-cardo-theme='codex'] .cardo-nav-item-active,
 [data-cardo-theme='codex'] .cardo-nav-item[data-active='true'] {
-  background: var(--cardo-active);
+  background: rgba(128, 128, 128, 0.16);
   color: var(--cardo-text);
   font-weight: 550;
 }
@@ -53,16 +53,16 @@
   color: var(--cardo-text);
 }
 
-/* Settings foot active — emphasis blue wash */
+/* Settings foot active — same light gray as product nav */
 [data-cardo-theme='codex'] .cardo-shell-sidebar-foot .cardo-nav-item-active,
 [data-cardo-theme='codex'] .cardo-shell-sidebar-foot .cardo-nav-item[data-active='true'] {
-  background: color-mix(in srgb, var(--cardo-blue) 18%, var(--cardo-panel));
+  background: rgba(128, 128, 128, 0.16);
 }
 
 [data-cardo-theme='codex'] .cardo-shell-nav-drop-target,
 [data-cardo-theme='codex'] .cardo-nav-item[data-drop-target='true'] {
-  background: color-mix(in srgb, var(--cardo-blue) 14%, var(--cardo-active));
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--cardo-blue) 35%, transparent);
+  background: rgba(128, 128, 128, 0.2);
+  box-shadow: 0 0 0 1px rgba(128, 128, 128, 0.28);
   color: var(--cardo-text);
   font-weight: 500;
 }
@@ -117,7 +117,7 @@
 [data-cardo-theme='codex'] .cardo-shell-settings-shell {
   background: var(--cardo-shell);
   color: var(--cardo-text);
-  --cardo-shell-pill-settings: color-mix(in srgb, var(--cardo-blue) 14%, var(--cardo-shell));
+  --cardo-shell-pill-settings: rgba(128, 128, 128, 0.16);
 }
 
 [data-cardo-theme='codex'] .cardo-shell-settings-nav {

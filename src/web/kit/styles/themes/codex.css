@@ -20,13 +20,16 @@
   border-color: var(--cardo-border);
 }
 
-[data-cardo-theme='codex'] .cardo-nav-item[data-active='true'] {
-  background: var(--cardo-active);
+[data-cardo-theme='codex'] .cardo-nav-item[data-active='true'],
+[data-cardo-theme='codex'] .cardo-nav-item-active {
+  /* Same light-gray rail active as kit-base — no blue wash. */
+  background: rgba(128, 128, 128, 0.16);
   box-shadow: none;
+  color: var(--cardo-text);
 }
 
 [data-cardo-theme='codex'] .cardo-nav-item[data-tone='settings'][data-active='true'] {
-  background: color-mix(in srgb, var(--cardo-blue, #3b82f6) 18%, var(--cardo-panel));
+  background: rgba(128, 128, 128, 0.16);
   color: var(--cardo-text);
 }
 
