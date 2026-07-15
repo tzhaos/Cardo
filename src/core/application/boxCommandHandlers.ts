@@ -14,7 +14,11 @@ import {
 import type { DatabaseCommandMutation, DatabaseTransaction } from './commandTypes';
 import { DomainCommandError } from './domainError';
 import { rowChange } from './historyChanges';
-import { chooseAvailableBoxAccent, DEFAULT_BOX_ICON } from '../domains/boxAppearance';
+import {
+  chooseAvailableBoxAccent,
+  DEFAULT_BOX_ACCENT,
+  DEFAULT_BOX_ICON,
+} from '../domains/boxAppearance';
 
 type BoxCommandType =
   | 'box.create'
@@ -55,9 +59,10 @@ export async function executeBoxCommand(
     case 'box.setLocked':
       return updateBox(transaction, command.boxId, { isLocked: command.isLocked });
     case 'box.setAppearance':
+      // Icons may change; accent is always product default gray (no custom colors).
       return updateBox(transaction, command.boxId, {
         ...(command.icon ? { icon: command.icon } : {}),
-        ...(command.accent ? { accent: command.accent.toLowerCase() } : {}),
+        accent: DEFAULT_BOX_ACCENT,
       });
     case 'box.setViewMode':
       return updateBox(transaction, command.boxId, { viewMode: command.viewMode });

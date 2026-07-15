@@ -148,7 +148,7 @@ function createWelcomeSeed(pageId: string, timestamp: string, locale: Preference
     detailMode: 'detailed' as const,
     isLocked: false,
     icon: 'idea' as const,
-    accent: '#3b82f6',
+    accent: '#c4c7cc',
     zIndex: 1,
     createdAt: timestamp,
     updatedAt: timestamp,

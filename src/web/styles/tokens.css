@@ -74,12 +74,12 @@
   --cardo-emerald: #10b981;
   --cardo-red: #ef4444;
 
-  /* Item type accent tokens (used as --item-accent on rows). */
-  --cardo-item-file: #64748b;
-  --cardo-item-folder: #3b82f6;
-  --cardo-item-shortcut: #8b5cf6;
-  --cardo-item-bookmark: #f97316;
-  --cardo-item-clipboard: #10b981;
+  /* Item type accents — monochrome product (no type-colored chrome). */
+  --cardo-item-file: #9ca3af;
+  --cardo-item-folder: #9ca3af;
+  --cardo-item-shortcut: #9ca3af;
+  --cardo-item-bookmark: #9ca3af;
+  --cardo-item-clipboard: #9ca3af;
   --cardo-inset-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
   --cardo-selection-ring: rgba(59, 130, 246, 0.18);
   --cardo-focus-ring: 0 0 0 3px color-mix(in srgb, var(--cardo-blue) 22%, transparent);

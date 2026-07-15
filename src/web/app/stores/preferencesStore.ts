@@ -132,87 +132,21 @@ const actions = {
   setFontScale: (fontScale: FontScale) =>
     fireCommand({ type: 'preferences.setFontScale', fontScale }),
   setDensity: (density: Density) => fireCommand({ type: 'preferences.setDensity', density }),
-  setThemeColorOverride: (
-    colorMode: WebNextColorMode,
-    key: OverridableColorKey,
-    value: string | null,
-  ) => {
-    const themeId = state.themeId || OFFICIAL_DEFAULT_THEME_ID;
-    const next: ThemeColorOverrides = structuredClone(state.themeColorOverrides);
-    const themeBucket = { ...(next[themeId] ?? {}) };
-    const modeBucket = { ...(themeBucket[colorMode] ?? {}) };
-    if (value == null || value.trim() === '') {
-      delete modeBucket[key];
-    } else {
-      modeBucket[key] = value.trim();
-    }
-    if (Object.keys(modeBucket).length === 0) {
-      delete themeBucket[colorMode];
-    } else {
-      themeBucket[colorMode] = modeBucket;
-    }
-    if (Object.keys(themeBucket).length === 0) {
-      delete next[themeId];
-    } else {
-      next[themeId] = themeBucket;
-    }
-    commitThemeColorOverrides(next);
+  /** Product forbids custom theme colors — no-op. */
+  setThemeColorOverride: () => undefined,
+  applyThemeColorLook: () => undefined,
+  resetThemeColorOverrides: () => {
+    fireCommand({ type: 'preferences.setThemeColorOverrides', themeColorOverrides: {} });
   },
-  /**
-   * Apply a designed light+dark color look for a theme pack.
-   * Pass empty maps to clear overrides (pack defaults).
-   * Optimistically patches local state so CSS vars update before Runtime ack.
-   */
-  applyThemeColorLook: (themeId, colors) => {
-    const next: ThemeColorOverrides = structuredClone(state.themeColorOverrides);
-    const lightEmpty = Object.keys(colors.light).length === 0;
-    const darkEmpty = Object.keys(colors.dark).length === 0;
-    if (lightEmpty && darkEmpty) {
-      delete next[themeId];
-    } else {
-      // Replace this theme's bucket entirely so look switches are absolute, not merged.
-      next[themeId] = {
-        ...(lightEmpty ? {} : { light: { ...colors.light } }),
-        ...(darkEmpty ? {} : { dark: { ...colors.dark } }),
-      };
-    }
-    commitThemeColorOverrides(next);
-  },
-  resetThemeColorOverrides: (themeId = state.themeId || OFFICIAL_DEFAULT_THEME_ID) => {
-    const next: ThemeColorOverrides = structuredClone(state.themeColorOverrides);
-    delete next[themeId];
-    commitThemeColorOverrides(next);
-  },
-  setThemeOptionValue: (optionId: string, value: boolean | string) => {
-    const next: ThemeOptionValues = {
-      ...state.themeOptionValues,
-      [optionId]: value,
-    };
-    fireCommand({
-      type: 'preferences.setThemeOptionValues',
-      themeOptionValues: themeOptionValuesSchema.parse(next),
-    });
-  },
+  setThemeOptionValue: () => undefined,
   resetThemeOptionValues: () => {
-    fireCommand({
-      type: 'preferences.setThemeOptionValues',
-      themeOptionValues: {},
-    });
+    fireCommand({ type: 'preferences.setThemeOptionValues', themeOptionValues: {} });
   },
-  importThemePack: (pack: ThemePack) => {
-    const registered = importThemePackIntoRegistry(pack);
-    const withoutSameId = state.importedThemePacks.filter((entry) => entry.id !== registered.id);
-    const next = importedThemePacksSchema.parse([...withoutSameId, registered]);
-    // Optimistic importedThemePacks + registry so AppearanceSettings re-reads themes immediately.
-    fireCommand({ type: 'preferences.setImportedThemePacks', importedThemePacks: next });
-    fireCommand({ type: 'preferences.setTheme', themeId: registered.id });
-  },
+  /** Product forbids custom theme packs — no-op. */
+  importThemePack: () => undefined,
   removeImportedThemePack: (themeId: string) => {
     unregisterImportedThemePack(themeId);
-    const next = importedThemePacksSchema.parse(
-      state.importedThemePacks.filter((entry) => entry.id !== themeId),
-    );
-    fireCommand({ type: 'preferences.setImportedThemePacks', importedThemePacks: next });
+    fireCommand({ type: 'preferences.setImportedThemePacks', importedThemePacks: [] });
     if (state.themeId === themeId) {
       fireCommand({ type: 'preferences.setTheme', themeId: OFFICIAL_DEFAULT_THEME_ID });
     }
@@ -238,13 +172,9 @@ const actions = {
       layoutProfileId: next,
     });
   },
-  setCssSnippet: (cssSnippet: string) =>
-    fireCommand({
-      type: 'preferences.setCssSnippet',
-      cssSnippet: cssSnippetSchema.parse(cssSnippet),
-    }),
-  setCssSnippetEnabled: (cssSnippetEnabled: boolean) =>
-    fireCommand({ type: 'preferences.setCssSnippetEnabled', cssSnippetEnabled }),
+  /** Product forbids custom CSS — no-op (App never applies snippets). */
+  setCssSnippet: () => undefined,
+  setCssSnippetEnabled: () => undefined,
   restoreOfficialLook: () => {
     fireCommand({ type: 'preferences.setTheme', themeId: OFFICIAL_DEFAULT_THEME_ID });
     fireCommand({
@@ -254,7 +184,7 @@ const actions = {
     fireCommand({ type: 'preferences.setFontFamily', fontFamily: DEFAULT_FONT_FAMILY_ID });
     fireCommand({ type: 'preferences.setFontScale', fontScale: DEFAULT_FONT_SCALE });
     fireCommand({ type: 'preferences.setDensity', density: DEFAULT_DENSITY });
-    commitThemeColorOverrides({});
+    fireCommand({ type: 'preferences.setThemeColorOverrides', themeColorOverrides: {} });
     fireCommand({ type: 'preferences.setThemeOptionValues', themeOptionValues: {} });
     fireCommand({ type: 'preferences.setFeatureFlags', featureFlags: {} });
     fireCommand({ type: 'preferences.setCssSnippetEnabled', cssSnippetEnabled: false });

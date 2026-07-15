@@ -1,11 +1,12 @@
 import {
-  BOX_ACCENT_PRESETS,
   DEFAULT_BOX_ACCENT,
   chooseAvailableBoxAccent as chooseAccent,
 } from '../../core/domains/boxAppearance';
 import type { WorkspaceBox, WorkspaceBoxIcon } from './workspace';
 
-export { BOX_ACCENT_PRESETS, DEFAULT_BOX_ACCENT };
+export { DEFAULT_BOX_ACCENT };
+/** @deprecated Product forbids custom accents — always default gray. */
+export const BOX_ACCENT_PRESETS = [DEFAULT_BOX_ACCENT] as const;
 
 export const BOX_ICON_PRESETS: WorkspaceBoxIcon[] = [
   'box',
@@ -22,26 +23,20 @@ export const BOX_ICON_PRESETS: WorkspaceBoxIcon[] = [
   'heart',
 ];
 
-export function normalizeBoxAccent(value: string) {
-  const trimmed = value.trim();
-  const hex = trimmed.startsWith('#') ? trimmed.slice(1) : trimmed;
-  if (/^[0-9a-fA-F]{3}$/.test(hex)) {
-    return `#${hex
-      .split('')
-      .map((character) => `${character}${character}`)
-      .join('')}`.toLowerCase();
-  }
-  return /^[0-9a-fA-F]{6}$/.test(hex) ? `#${hex.toLowerCase()}` : null;
-}
-
-export function getBoxAccent(box: Pick<WorkspaceBox, 'accent'>) {
-  return box.accent;
+/** Always product default gray — stored accent values are ignored. */
+export function getBoxAccent(_box?: Pick<WorkspaceBox, 'accent'>) {
+  return DEFAULT_BOX_ACCENT;
 }
 
 export function getBoxIcon(box: Pick<WorkspaceBox, 'icon'>): WorkspaceBoxIcon {
   return box.icon;
 }
 
-export function chooseAvailableBoxAccent(boxes: Pick<WorkspaceBox, 'accent'>[]) {
-  return chooseAccent(boxes.map((box) => box.accent));
+export function chooseAvailableBoxAccent(_boxes?: Pick<WorkspaceBox, 'accent'>[]) {
+  return chooseAccent();
+}
+
+/** Accents are fixed; any input maps to the default gray. */
+export function normalizeBoxAccent(_value: string) {
+  return DEFAULT_BOX_ACCENT;
 }

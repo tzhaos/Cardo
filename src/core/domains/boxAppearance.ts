@@ -1,24 +1,17 @@
 import type { WorkspaceBoxIcon } from '../contracts/workspace';
 
-export const BOX_ACCENT_PRESETS = [
-  '#3b82f6',
-  '#f97316',
-  '#10b981',
-  '#8b5cf6',
-  '#f43f5e',
-  '#f59e0b',
-  '#06b6d4',
-  '#6366f1',
-] as const;
+/**
+ * Product chrome is monochrome: all boxes use the same light-gray accent.
+ * Custom accent colors are not supported.
+ */
+export const DEFAULT_BOX_ACCENT = '#c4c7cc';
 
-export const DEFAULT_BOX_ACCENT = '#64748b';
+/** @deprecated No color presets — product forbids custom accents. */
+export const BOX_ACCENT_PRESETS = [DEFAULT_BOX_ACCENT] as const;
 
 export const DEFAULT_BOX_ICON: WorkspaceBoxIcon = 'box';
 
-export function chooseAvailableBoxAccent(usedAccents: Iterable<string>) {
-  const used = new Set([...usedAccents].map((accent) => accent.toLowerCase()));
-  const available = BOX_ACCENT_PRESETS.filter((accent) => !used.has(accent));
-  return available.length
-    ? available[Math.floor(Math.random() * available.length)]
-    : DEFAULT_BOX_ACCENT;
+/** Always the product default gray (ignores used accents). */
+export function chooseAvailableBoxAccent(_usedAccents?: Iterable<string>) {
+  return DEFAULT_BOX_ACCENT;
 }

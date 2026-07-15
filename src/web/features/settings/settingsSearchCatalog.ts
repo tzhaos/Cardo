@@ -55,16 +55,6 @@ export const SETTINGS_SEARCH_CATALOG: readonly SettingsSearchEntry[] = [
     keywords: { en: ['light', 'dark', 'night'], zh: ['浅色', '深色', '暗色', '夜间'] },
   },
   {
-    id: 'theme-looks',
-    section: 'appearance',
-    titleKey: 'settings.themeLooks',
-    descriptionKey: 'settings.themeLooksDescription',
-    keywords: {
-      en: ['accent', 'color', 'looks', 'swatch', 'blue', 'orange'],
-      zh: ['配色', '强调色', '颜色', '色板', '自定义颜色'],
-    },
-  },
-  {
     id: 'font-family',
     section: 'appearance',
     titleKey: 'settings.fontFamily',
@@ -84,13 +74,6 @@ export const SETTINGS_SEARCH_CATALOG: readonly SettingsSearchEntry[] = [
     titleKey: 'settings.density',
     descriptionKey: 'settings.densityDescription',
     keywords: { en: ['spacing', 'compact', 'spacious'], zh: ['密度', '间距', '紧凑', '宽松'] },
-  },
-  {
-    id: 'css-snippet',
-    section: 'appearance',
-    titleKey: 'settings.cssSnippet',
-    descriptionKey: 'settings.cssSnippetDescription',
-    keywords: { en: ['css', 'custom style', 'advanced'], zh: ['css', '自定义样式', '高级'] },
   },
   {
     id: 'workspace-backup',

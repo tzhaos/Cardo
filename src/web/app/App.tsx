@@ -135,40 +135,26 @@ export default function CardoApp() {
   const fontFamily = usePreferencesStore((state) => state.fontFamily);
   const fontScale = usePreferencesStore((state) => state.fontScale);
   const density = usePreferencesStore((state) => state.density);
-  const themeColorOverrides = usePreferencesStore((state) => state.themeColorOverrides);
-  const themeOptionValues = usePreferencesStore((state) => state.themeOptionValues);
-  const cssSnippet = usePreferencesStore((state) => state.cssSnippet);
-  const cssSnippetEnabled = usePreferencesStore((state) => state.cssSnippetEnabled);
   const isDesktopHost = typeof window !== 'undefined' && Boolean(window.cardoDesktop);
   const dropUi = useSidebarBoxDropUi();
 
   useLayoutEffect(() => {
     document.documentElement.lang = locale === 'zh' ? 'zh-CN' : 'en';
+    // No user color overrides / CSS snippets — official theme chrome only.
     applyWebNextTheme(document.documentElement, themeId, colorMode, {
       fontFamily,
       fontScale,
       density,
-      colorOverrides: themeColorOverrides,
-      optionValues: themeOptionValues,
+      colorOverrides: {},
+      optionValues: {},
     });
     applyLayoutProfile(document.documentElement);
     applyCssSnippet({
       themeId,
-      userSnippet: cssSnippet,
-      userSnippetEnabled: cssSnippetEnabled,
+      userSnippet: '',
+      userSnippetEnabled: false,
     });
-  }, [
-    colorMode,
-    cssSnippet,
-    cssSnippetEnabled,
-    density,
-    fontFamily,
-    fontScale,
-    locale,
-    themeColorOverrides,
-    themeId,
-    themeOptionValues,
-  ]);
+  }, [colorMode, density, fontFamily, fontScale, locale, themeId]);
 
   const closeSearch = useUiStore((state) => state.closeSearch);
   const openSettings = (section: SettingsSectionId = 'general') => {

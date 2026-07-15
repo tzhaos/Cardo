@@ -12,11 +12,9 @@ import { useUiStore } from '../../app/stores/uiStore';
 import { showToast } from '../../app/stores/toastStore';
 import {
   exportOperationLog,
-  exportThemePackFile,
   exportWorkspaceData,
   parseWorkspaceImportFile,
 } from '../../platform/hostPlatform';
-import { parseThemePackImportFile } from '../../themes/themeIO';
 import { isValidCustomSearchTemplate, type WebSearchEngineId } from '../../domain/webSearch';
 import {
   colorModeSchema,
@@ -33,7 +31,6 @@ import {
   isFeatureEnabled,
   type FeatureId,
 } from '../../../core/contracts/featureCatalog';
-import { validateCssSnippet } from '../../../core/contracts/cssSnippet';
 import { matchSettingsSearchEntries, type SettingsSectionId } from './settingsSearchCatalog';
 import { Button } from '../../kit/button';
 import { ConfirmBar } from '../../kit/confirm-bar';
@@ -43,19 +40,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Segmented } from '../../kit/segmented';
 import { SettingsCard, SettingsRow } from '../../kit/settings-form';
 import { Switch } from '../../kit/switch';
-import { Textarea } from '../../kit/textarea';
 import { ThemeIcon } from '../../kit/icon';
 import { ToggleGroup, ToggleGroupItem } from '../../kit/toggle-group';
 import type { WebNextMessageKey } from '../../i18n/messages';
-
-/** Curated accent swatches for L1 color override (writes `blue` token). */
-const ACCENT_COLOR_PRESETS = [
-  { id: 'blue', value: '#3b82f6' },
-  { id: 'orange', value: '#f97316' },
-  { id: 'purple', value: '#a855f7' },
-  { id: 'emerald', value: '#10b981' },
-  { id: 'red', value: '#ef4444' },
-] as const;
 
 type SettingsSection = SettingsSectionId;
 
@@ -509,38 +496,8 @@ function AppearanceSettings({
   const setFontFamily = usePreferencesStore((state) => state.setFontFamily);
   const setFontScale = usePreferencesStore((state) => state.setFontScale);
   const setDensity = usePreferencesStore((state) => state.setDensity);
-  const cssSnippet = usePreferencesStore((state) => state.cssSnippet);
-  const cssSnippetEnabled = usePreferencesStore((state) => state.cssSnippetEnabled);
-  const setCssSnippet = usePreferencesStore((state) => state.setCssSnippet);
-  const setCssSnippetEnabled = usePreferencesStore((state) => state.setCssSnippetEnabled);
-  const importThemePack = usePreferencesStore((state) => state.importThemePack);
-  const removeImportedThemePack = usePreferencesStore((state) => state.removeImportedThemePack);
-  const restoreOfficialLook = usePreferencesStore((state) => state.restoreOfficialLook);
-  const themeColorOverrides = usePreferencesStore((state) => state.themeColorOverrides);
-  const setThemeColorOverride = usePreferencesStore((state) => state.setThemeColorOverride);
-  const resetThemeColorOverrides = usePreferencesStore((state) => state.resetThemeColorOverrides);
-  const importedThemePacks = usePreferencesStore((state) => state.importedThemePacks);
-  // Registry is outside React state — depend on pack identity, not just length (replace same count).
-  const importedThemeSignal = importedThemePacks.map((pack) => pack.id).join('|');
-  const themes = useMemo(
-    () => getRegisteredWebNextThemes(),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-read registry after import/remove
-    [importedThemeSignal],
-  );
-  const selectedTheme = themes.find((theme) => theme.id === themeId);
-  const selectedIsImported = Boolean(selectedTheme && !selectedTheme.official);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
-  const themeImportRef = useRef<HTMLInputElement>(null);
-  const [importThemeError, setImportThemeError] = useState(false);
-  const snippetInvalid = cssSnippet.trim().length > 0 && !validateCssSnippet(cssSnippet).ok;
-  const themeModeOverrides = themeColorOverrides[themeId];
-  const hasColorOverrides = Boolean(
-    themeModeOverrides &&
-    ((themeModeOverrides.light && Object.keys(themeModeOverrides.light).length > 0) ||
-      (themeModeOverrides.dark && Object.keys(themeModeOverrides.dark).length > 0)),
-  );
-  const packAccent = selectedTheme?.palettes[colorMode].blue ?? '#3b82f6';
-  const effectiveAccent = (themeModeOverrides?.[colorMode]?.blue ?? packAccent).toLowerCase();
+  // Official packs only — no user theme import / color override / CSS snippet.
+  const themes = useMemo(() => getRegisteredWebNextThemes().filter((theme) => theme.official), []);
 
   return (
     <>
@@ -577,9 +534,7 @@ function AppearanceSettings({
               <span className="cardo-theme-choice-meta">
                 <span className="cardo-theme-choice-title">
                   {theme.name[locale === 'zh' ? 'zh' : 'en']}
-                  {theme.official ? (
-                    <em className="cardo-theme-official-badge">{t('settings.themeOfficial')}</em>
-                  ) : null}
+                  <em className="cardo-theme-official-badge">{t('settings.themeOfficial')}</em>
                 </span>
                 <small className="cardo-theme-choice-desc">
                   {theme.description[locale === 'zh' ? 'zh' : 'en']}
@@ -596,39 +551,6 @@ function AppearanceSettings({
             </button>
           );
         })}
-      </SettingsCard>
-
-      <SettingsCard spaced>
-        <SettingsRow
-          title={t('settings.restoreOfficialLook')}
-          description={t('settings.restoreOfficialLookDescription')}
-          control={
-            <Button
-              type="button"
-              variant="ghost"
-              className="cardo-settings-secondary-button"
-              onClick={() => restoreOfficialLook()}
-            >
-              {t('settings.restoreOfficialLook')}
-            </Button>
-          }
-        />
-        {selectedIsImported ? (
-          <SettingsRow
-            title={t('settings.removeImportedTheme')}
-            description={t('settings.removeImportedThemeDescription')}
-            control={
-              <Button
-                type="button"
-                variant="danger"
-                size="sm"
-                onClick={() => removeImportedThemePack(themeId)}
-              >
-                {t('settings.removeImportedTheme')}
-              </Button>
-            }
-          />
-        ) : null}
       </SettingsCard>
 
       <SettingsCard spaced>
@@ -717,182 +639,6 @@ function AppearanceSettings({
           }
         />
       </SettingsCard>
-
-      <SettingsCard
-        spaced
-        head={t('settings.themeLooks')}
-        description={t('settings.themeLooksDescription')}
-      >
-        <SettingsRow
-          title={t('settings.colorOverride.blue')}
-          description={t('settings.colorOverridesDescription')}
-          control={
-            <div
-              className="cardo-theme-color-presets"
-              role="group"
-              aria-label={t('settings.colorOverride.presets', {
-                label: t('settings.colorOverride.blue'),
-              })}
-            >
-              {ACCENT_COLOR_PRESETS.map((preset) => {
-                const active = effectiveAccent === preset.value.toLowerCase();
-                return (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    className={[
-                      'cardo-theme-color-preset',
-                      active ? 'cardo-theme-color-preset-active' : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                    aria-label={preset.value}
-                    aria-pressed={active}
-                    onClick={() => setThemeColorOverride(colorMode, 'blue', preset.value)}
-                  >
-                    <span
-                      className="cardo-theme-color-preset-fill"
-                      style={{ background: preset.value }}
-                      aria-hidden="true"
-                    />
-                  </button>
-                );
-              })}
-            </div>
-          }
-        />
-        <SettingsRow
-          className="cardo-theme-color-reset-card"
-          title={t('settings.resetColorOverrides')}
-          description={t('settings.resetColorOverridesDescription')}
-          control={
-            <Button
-              type="button"
-              variant="ghost"
-              className="cardo-settings-secondary-button"
-              disabled={!hasColorOverrides}
-              onClick={() => resetThemeColorOverrides(themeId)}
-            >
-              {t('settings.resetColorOverridesAction')}
-            </Button>
-          }
-        />
-      </SettingsCard>
-
-      <button
-        type="button"
-        className="cardo-settings-disclosure cardo-settings-list-group-spaced"
-        aria-expanded={advancedOpen}
-        onClick={() => setAdvancedOpen((open) => !open)}
-      >
-        <span>
-          {t('settings.advancedTheme')}
-          <small>{t('settings.advancedThemeDescription')}</small>
-        </span>
-        <ThemeIcon
-          name="chevronRight"
-          size={16}
-          className={[
-            'cardo-settings-disclosure-chevron',
-            advancedOpen ? 'cardo-settings-disclosure-chevron-open' : '',
-          ]
-            .filter(Boolean)
-            .join(' ')}
-        />
-      </button>
-
-      {advancedOpen ? (
-        <>
-          <SettingsCard
-            spaced
-            head={t('settings.expertCss')}
-            description={t('settings.expertCssDescription')}
-          >
-            <SettingsRow
-              title={t('settings.cssSnippetEnabled')}
-              description={t('settings.cssSnippetDescription')}
-              control={
-                <Switch
-                  checked={cssSnippetEnabled}
-                  // Block turning on while invalid; still allow turning off an already-on switch.
-                  disabled={snippetInvalid && !cssSnippetEnabled}
-                  aria-label={t('settings.cssSnippetEnabled')}
-                  onCheckedChange={(next) => {
-                    if (next && snippetInvalid) {
-                      showToast(t('settings.cssSnippetInvalid'), 'error');
-                      return;
-                    }
-                    setCssSnippetEnabled(next);
-                  }}
-                />
-              }
-            />
-            <div className="cardo-settings-card cardo-settings-css-snippet">
-              <Textarea
-                value={cssSnippet}
-                onChange={(event) => setCssSnippet(event.target.value)}
-                placeholder={t('settings.cssSnippetPlaceholder')}
-                spellCheck={false}
-                aria-label={t('settings.cssSnippet')}
-              />
-              <small>
-                {snippetInvalid ? t('settings.cssSnippetInvalid') : t('settings.cssSnippetHint')}
-              </small>
-            </div>
-          </SettingsCard>
-
-          <SettingsCard spaced>
-            <SettingsRow
-              title={t('settings.exportTheme')}
-              description={t('settings.exportThemeDescription')}
-              control={
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="cardo-settings-secondary-button"
-                  onClick={() => exportThemePackFile(themeId)}
-                >
-                  {t('settings.exportTheme')}
-                </Button>
-              }
-            />
-            <SettingsRow
-              title={t('settings.importTheme')}
-              description={t('settings.importThemeDescription')}
-              control={
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="cardo-settings-secondary-button"
-                  onClick={() => themeImportRef.current?.click()}
-                >
-                  {t('settings.importTheme')}
-                </Button>
-              }
-            />
-          </SettingsCard>
-          <Input
-            className="cardo-data-file-input"
-            ref={themeImportRef}
-            type="file"
-            accept="application/json,.json,.cardo-theme.json"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              event.currentTarget.value = '';
-              if (!file) return;
-              void parseThemePackImportFile(file)
-                .then((pack) => {
-                  importThemePack(pack);
-                  setImportThemeError(false);
-                })
-                .catch(() => setImportThemeError(true));
-            }}
-          />
-          {importThemeError ? (
-            <p className="cardo-data-error">{t('settings.importThemeInvalid')}</p>
-          ) : null}
-        </>
-      ) : null}
     </>
   );
 }
